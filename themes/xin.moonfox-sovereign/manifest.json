@@ -1,0 +1,45 @@
+{
+  "$schema": "https://tessalume.local/schemas/theme-manifest-v2.json",
+  "schemaVersion": 2,
+  "id": "xin.moonfox-sovereign",
+  "name": "心 · 朝月孤城",
+  "version": "2.1.7",
+  "author": "Tessalume",
+  "description": "以梦州岁主心月狐的人形与白狐本体、朝月孤城、朝月心珰及红玉岁序结界为核心的重磅旗舰主题。亮色为白玉云宫，暗色为赤月黑城，任务页采用双角色卡交替动效。",
+  "engineVersion": 2,
+  "type": "advanced",
+  "capabilities": {
+    "light": true,
+    "dark": true
+  },
+  "entryPoints": {
+    "css": "theme.css",
+    "script": "theme.js"
+  },
+  "previews": {
+    "light": "assets/hero-light.png",
+    "dark": "assets/hero-dark.png"
+  },
+  "assets": {
+    "hero-light": "assets/hero-light.png",
+    "hero-dark": "assets/hero-dark.png",
+    "sidebar-light": "assets/sidebar-light.png",
+    "sidebar-dark": "assets/sidebar-dark.png",
+    "chat-light": "assets/chat-light.png",
+    "chat-dark": "assets/chat-dark.png",
+    "task-oracle": "assets/task-oracle.png",
+    "task-human": "assets/task-human.png",
+    "task-fox": "assets/task-fox.png",
+    "memory-light": "assets/memory-light.png",
+    "memory-dark": "assets/memory-dark.png"
+  },
+  "config": {
+    "title": "心 · 朝月孤城",
+    "subtitle": "朝月清辉照孤城，万千心念皆归岁序。",
+    "status": "MOONHEART FOX · SOVEREIGN ONLINE",
+    "memory": "她以人形听取心念，以狐身巡行梦州；赤月升起时，所有未竟之愿都会在岁序中留下回响。"
+  },
+  "compatibility": {
+    "petOverlay": false
+  }
+}

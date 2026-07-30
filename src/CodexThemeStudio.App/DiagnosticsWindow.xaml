@@ -1,0 +1,104 @@
+<Window x:Class="CodexThemeStudio.App.DiagnosticsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:CodexThemeStudio.App"
+        Title="{x:Static local:BrandInfo.DiagnosticsTitle}"
+        Width="680" Height="540" MinWidth="620" MinHeight="500"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResize"
+        Background="#FFF8FC"
+        FontFamily="Microsoft YaHei UI">
+    <Window.Resources>
+        <LinearGradientBrush x:Key="Accent" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#F05AA8" Offset="0" />
+            <GradientStop Color="#8B4CD6" Offset="1" />
+        </LinearGradientBrush>
+        <Style x:Key="StatusCard" TargetType="Border">
+            <Setter Property="Background" Value="#EFFFFFFF" />
+            <Setter Property="BorderBrush" Value="#E9CDE1" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="15" />
+            <Setter Property="Padding" Value="15,13" />
+            <Setter Property="Margin" Value="0,0,12,0" />
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="26,23">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="20" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="18" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="18" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel>
+            <TextBlock Text="本机运行诊断" FontSize="25" FontWeight="Bold" Foreground="#48245E" />
+            <TextBlock Text="这里只检查本地主题库、Codex 进程和回环端口，不访问互联网。" Margin="0,6,0,0" Foreground="#806C8C" FontSize="12" />
+        </StackPanel>
+
+        <UniformGrid Grid.Row="2" Columns="3">
+            <Border Style="{StaticResource StatusCard}">
+                <StackPanel>
+                    <TextBlock Text="CODEX" Foreground="#F05AA8" FontWeight="Bold" FontSize="10" />
+                    <TextBlock x:Name="CodexStateText" Margin="0,6,0,0" Foreground="#48245E" FontWeight="SemiBold" FontSize="15" />
+                </StackPanel>
+            </Border>
+            <Border Style="{StaticResource StatusCard}">
+                <StackPanel>
+                    <TextBlock Text="本机端口" Foreground="#F05AA8" FontWeight="Bold" FontSize="10" />
+                    <TextBlock x:Name="PortStateText" Margin="0,6,0,0" Foreground="#48245E" FontWeight="SemiBold" FontSize="15" />
+                </StackPanel>
+            </Border>
+            <Border Style="{StaticResource StatusCard}" Margin="0">
+                <StackPanel>
+                    <TextBlock Text="主题包" Foreground="#F05AA8" FontWeight="Bold" FontSize="10" />
+                    <TextBlock x:Name="ThemeStateText" Margin="0,6,0,0" Foreground="#48245E" FontWeight="SemiBold" FontSize="15" />
+                </StackPanel>
+            </Border>
+        </UniformGrid>
+
+        <Border Grid.Row="4" Background="#EFFFFFFF" BorderBrush="#E9CDE1" BorderThickness="1" CornerRadius="17" Padding="17">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="12" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <TextBlock Text="诊断详情" Foreground="#48245E" FontWeight="SemiBold" FontSize="14" />
+                <TextBox x:Name="DetailsText"
+                         Grid.Row="2"
+                         IsReadOnly="True"
+                         TextWrapping="Wrap"
+                         VerticalScrollBarVisibility="Auto"
+                         BorderThickness="0"
+                         Background="Transparent"
+                         Foreground="#60496E"
+                         FontFamily="Consolas, Microsoft YaHei UI"
+                         FontSize="11" />
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="6">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="安全边界：WindowsApps / app.asar / 用户数据均未修改" VerticalAlignment="Center" Foreground="#806C8C" FontSize="10" />
+            <Button Grid.Column="1" Width="100" Height="36" Content="关闭" Foreground="White" BorderThickness="0" Click="Close_Click">
+                <Button.Background>
+                    <StaticResource ResourceKey="Accent" />
+                </Button.Background>
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="12">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+        </Grid>
+    </Grid>
+</Window>

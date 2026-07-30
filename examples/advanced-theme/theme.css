@@ -1,0 +1,45 @@
+html.cts-theme-example-advanced-theme #cts-theme-root {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
+}
+
+.example-theme-widget {
+  position: absolute;
+  right: 24px;
+  bottom: 110px;
+  display: grid;
+  grid-template-columns: 48px auto;
+  gap: 11px;
+  align-items: center;
+  padding: 10px 15px 10px 10px;
+  color: #39234f;
+  background: rgba(255, 255, 255, .88);
+  border: 1px solid rgba(171, 112, 214, .35);
+  border-radius: 18px;
+  box-shadow: 0 15px 42px rgba(70, 38, 100, .2);
+  backdrop-filter: blur(18px);
+}
+
+.example-theme-widget img {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  object-fit: cover;
+}
+
+.example-theme-widget b,
+.example-theme-widget small {
+  display: block;
+}
+
+.example-theme-widget small {
+  margin-top: 3px;
+  opacity: .65;
+}
+
+html.electron-dark .example-theme-widget {
+  color: #f6ebff;
+  background: rgba(29, 20, 43, .9);
+}

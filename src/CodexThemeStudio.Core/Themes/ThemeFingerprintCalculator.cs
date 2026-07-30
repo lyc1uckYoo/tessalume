@@ -1,0 +1,35 @@
+using System.Security.Cryptography;
+using System.Text;
+
+namespace CodexThemeStudio.Core.Themes;
+
+public static class ThemeFingerprintCalculator
+{
+    public static async Task<string> CalculateAsync(ThemePackage package, CancellationToken cancellationToken = default)
+    {
+        using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        var files = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["manifest"] = package.ManifestPath,
+        };
+        if (package.CssPath is not null) files["css"] = package.CssPath;
+        if (package.ScriptPath is not null) files["script"] = package.ScriptPath;
+        if (package.PreviewLightPath is not null) files["preview.light"] = package.PreviewLightPath;
+        if (package.PreviewDarkPath is not null) files["preview.dark"] = package.PreviewDarkPath;
+        foreach (var (name, path) in package.AssetPaths) files[$"asset.{name}"] = path;
+
+        var buffer = new byte[64 * 1024];
+        foreach (var (name, path) in files.OrderBy(item => item.Key, StringComparer.Ordinal))
+        {
+            hash.AppendData(Encoding.UTF8.GetBytes($"{name}\0{Path.GetRelativePath(package.RootDirectory, path)}\0"));
+            await using var stream = File.OpenRead(path);
+            int bytesRead;
+            while ((bytesRead = await stream.ReadAsync(buffer, cancellationToken)) > 0)
+            {
+                hash.AppendData(buffer.AsSpan(0, bytesRead));
+            }
+        }
+
+        return Convert.ToHexString(hash.GetHashAndReset()).ToLowerInvariant();
+    }
+}

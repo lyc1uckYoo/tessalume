@@ -1,0 +1,31 @@
+# .NET and IDE state
+.vs/
+**/bin/
+**/obj/
+*.suo
+*.user
+*.userosscache
+
+# Build and test output
+dist/
+optimized-themes/
+.test-output/
+.build-themes-optimized/
+.qa/
+
+# Local visual QA and working files
+tmp/
+artifacts/
+previews/
+backups/
+
+# Every direct child of themes/ is a publishable theme package. Design sources
+# and historical working copies inside a package are not release assets.
+themes/*/.legacy/
+themes/*/.references/
+themes/*/.sources/
+
+# OS metadata
+Thumbs.db
+Desktop.ini
+.DS_Store

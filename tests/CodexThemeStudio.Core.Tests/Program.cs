@@ -1,0 +1,752 @@
+using System.Text.Json;
+using CodexThemeStudio.Core.Themes;
+using CodexThemeStudio.Core.Runtime;
+using CodexThemeStudio.Core.Security;
+
+if (args is ["--probe", var portText] && int.TryParse(portText, out var probePort))
+{
+    return await ProbeRuntimeAsync(probePort);
+}
+
+if (args is ["--remove", var removePortText] && int.TryParse(removePortText, out var removePort))
+{
+    return await RemoveRuntimeAsync(removePort);
+}
+
+if (args is ["--apply", var applyPortText] && int.TryParse(applyPortText, out var applyPort))
+{
+    return await ApplyRuntimeAsync(applyPort);
+}
+
+if (args is ["--theme-modes", var modePortText] && int.TryParse(modePortText, out var modePort))
+{
+    return await ProbeThemeModesAsync(modePort);
+}
+
+if (args is ["--toggle-color-scheme", var togglePortText] && int.TryParse(togglePortText, out var togglePort))
+{
+    return await ToggleColorSchemeAsync(togglePort);
+}
+
+if (args is ["--appearance-state", var appearancePortText] && int.TryParse(appearancePortText, out var appearancePort))
+{
+    return await ProbeAppearanceStateAsync(appearancePort);
+}
+
+if (args is ["--appearance-bundles", var bundlePortText] && int.TryParse(bundlePortText, out var bundlePort))
+{
+    return await ProbeAppearanceBundlesAsync(bundlePort);
+}
+
+if (args is ["--query-clients", var queryPortText] && int.TryParse(queryPortText, out var queryPort))
+{
+    return await ProbeQueryClientsAsync(queryPort);
+}
+
+if (args is ["--apply-package", var packagePortText, var packagePath] &&
+    int.TryParse(packagePortText, out var packagePort))
+{
+    return await ApplyPackageRuntimeAsync(packagePort, packagePath);
+}
+
+if (args is ["--trust-package", var trustDataPath, var trustedPackagePath])
+{
+    return await TrustPackageAsync(trustDataPath, trustedPackagePath);
+}
+
+var tests = new (string Name, Func<Task> Run)[]
+{
+    ("valid package loads", ValidPackageLoadsAsync),
+    ("path traversal is rejected", PathTraversalIsRejectedAsync),
+    ("remote CSS is rejected", RemoteCssIsRejectedAsync),
+    ("catalog keeps invalid packages visible", CatalogIncludesInvalidPackagesAsync),
+    ("representative open theme loads", RepresentativeOpenThemeLoadsAsync),
+    ("published theme library loads and builds", PublishedThemeLibraryLoadsAndBuildsAsync),
+    ("theme assets use disposable blob URLs", ThemeAssetsUseBlobUrlsAsync),
+    ("runtime payload stages large assets separately", RuntimePayloadStagesLargeAssetsSeparatelyAsync),
+    ("skipped pet overlays retain the processed marker", SkippedPetOverlaysRetainProcessedMarkerAsync),
+    ("runtime removes native composer fade", RuntimeRemovesNativeComposerFadeAsync),
+    ("local importer copies a validated package", LocalImporterCopiesPackageAsync),
+    ("bundled adapter builds a complete payload", BundledAdapterBuildsPayloadAsync),
+    ("open advanced template loads and fingerprints", OpenAdvancedTemplateLoadsAndFingerprintsAsync),
+    ("advanced import keeps script and trust follows fingerprint", AdvancedImportAndTrustFollowFingerprintAsync),
+};
+
+var failures = new List<string>();
+foreach (var (name, run) in tests)
+{
+    try
+    {
+        await run();
+        Console.WriteLine($"PASS  {name}");
+    }
+    catch (Exception exception)
+    {
+        failures.Add(name);
+        Console.Error.WriteLine($"FAIL  {name}: {exception.Message}");
+    }
+}
+
+Console.WriteLine($"{tests.Length - failures.Count}/{tests.Length} checks passed.");
+return failures.Count == 0 ? 0 : 1;
+
+static async Task ValidPackageLoadsAsync()
+{
+    using var fixture = await ThemeFixture.CreateAsync();
+    var result = await new ThemePackageLoader().LoadAsync(fixture.Root);
+    Ensure(result.Validation.IsValid, FormatIssues(result.Validation));
+    var package = result.Package ?? throw new InvalidOperationException("Expected the sample theme to load.");
+    Ensure(package.Manifest.Id == "sample.theme", "Expected the sample theme to load.");
+    Ensure(package.AssetPaths.ContainsKey("hero"), "Expected hero asset mapping.");
+}
+
+static async Task PathTraversalIsRejectedAsync()
+{
+    using var fixture = await ThemeFixture.CreateAsync(cssPath: "../outside.css");
+    var outsidePath = Path.Combine(Path.GetDirectoryName(fixture.Root)!, "outside.css");
+    try
+    {
+        await File.WriteAllTextAsync(outsidePath, "body {}");
+        var result = await new ThemePackageLoader().LoadAsync(fixture.Root);
+        Ensure(!result.Validation.IsValid, "Traversal package must be invalid.");
+        Ensure(result.Validation.Issues.Any(issue => issue.Code == "path.outside-package"), "Traversal issue was not reported.");
+    }
+    finally
+    {
+        File.Delete(outsidePath);
+    }
+}
+
+static async Task RemoteCssIsRejectedAsync()
+{
+    using var fixture = await ThemeFixture.CreateAsync(css: "@import url('https://example.com/theme.css');");
+    var result = await new ThemePackageLoader().LoadAsync(fixture.Root);
+    Ensure(!result.Validation.IsValid, "Remote CSS package must be invalid.");
+    Ensure(result.Validation.Issues.Any(issue => issue.Code == "css.import.forbidden"), "Remote import issue was not reported.");
+}
+
+static async Task CatalogIncludesInvalidPackagesAsync()
+{
+    var root = Path.Combine(Path.GetTempPath(), $"cts-catalog-{Guid.NewGuid():N}");
+    Directory.CreateDirectory(root);
+    try
+    {
+        using var valid = await ThemeFixture.CreateAsync(Path.Combine(root, "valid"));
+        Directory.CreateDirectory(Path.Combine(root, "broken"));
+        var catalog = await new ThemeCatalog(new ThemePackageLoader()).ScanAsync(root);
+        Ensure(catalog.Count == 2, "Catalog should report both valid and invalid directories.");
+        Ensure(catalog.Count(item => item.Validation.IsValid) == 1, "Expected one valid package.");
+    }
+    finally
+    {
+        Directory.Delete(root, recursive: true);
+    }
+}
+
+static async Task RepresentativeOpenThemeLoadsAsync()
+{
+    var repositoryRoot = FindRepositoryRoot();
+    var package = await LoadRepresentativePackageAsync(repositoryRoot);
+    Ensure(package.IsAdvanced, "The representative theme must use the open advanced lifecycle.");
+}
+
+static async Task PublishedThemeLibraryLoadsAndBuildsAsync()
+{
+    var repositoryRoot = FindRepositoryRoot();
+    var themesRoot = Path.Combine(repositoryRoot, "themes");
+    if (!Directory.Exists(themesRoot))
+    {
+        return;
+    }
+
+    var discoveredIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+    var catalog = await new ThemeCatalog(new ThemePackageLoader()).ScanAsync(themesRoot);
+    foreach (var item in catalog)
+    {
+        Ensure(item.Validation.IsValid, $"{Path.GetFileName(item.Directory)}: {FormatIssues(item.Validation)}");
+        var package = item.Package
+            ?? throw new InvalidOperationException($"{Path.GetFileName(item.Directory)} did not load.");
+        Ensure(discoveredIds.Add(package.Manifest.Id), $"Duplicate bundled theme id: {package.Manifest.Id}");
+        var payload = await BuildPayloadAsync(repositoryRoot, package);
+        Ensure(payload.Contains(package.Manifest.Id, StringComparison.Ordinal),
+            $"Payload is missing {package.Manifest.Id} metadata.");
+    }
+}
+
+static async Task ThemeAssetsUseBlobUrlsAsync()
+{
+    var repositoryRoot = FindRepositoryRoot();
+    var package = await LoadRepresentativePackageAsync(repositoryRoot);
+
+    var payload = await BuildPayloadAsync(repositoryRoot, package);
+    Ensure(payload.Contains("URL.createObjectURL", StringComparison.Ordinal),
+        "Large theme assets must be converted to short blob URLs before entering CSS values.");
+    Ensure(payload.Contains("URL.revokeObjectURL", StringComparison.Ordinal),
+        "Theme blob URLs must be released when the theme is removed.");
+    Ensure(!payload.Contains("setProperty(variable, `url(\"${dataUrl}\")`)", StringComparison.Ordinal),
+        "Raw data URLs must not be assigned directly to CSS custom properties.");
+}
+
+static async Task RuntimePayloadStagesLargeAssetsSeparatelyAsync()
+{
+    var repositoryRoot = FindRepositoryRoot();
+    var package = await LoadRepresentativePackageAsync(repositoryRoot);
+    var builder = new ThemePayloadBuilder(new Dictionary<string, string>
+    {
+        [ThemePayloadBuilder.OpenRuntimeAdapterKey] = Path.Combine(
+            repositoryRoot,
+            "src",
+            "CodexThemeStudio.App",
+            "Compatibility",
+            "theme-runtime-v2.js"),
+    });
+    var payload = await builder.BuildRuntimeAsync(package);
+    Ensure(payload.Contains("__CODEX_THEME_STUDIO_STAGED_ASSETS__", StringComparison.Ordinal),
+        "Runtime payload must consume separately staged assets.");
+    Ensure(payload.Length < 512 * 1024,
+        $"Runtime payload unexpectedly embeds large assets ({payload.Length} characters).");
+}
+
+static async Task SkippedPetOverlaysRetainProcessedMarkerAsync()
+{
+    var repositoryRoot = FindRepositoryRoot();
+    var runtimePath = Path.Combine(
+        repositoryRoot,
+        "src",
+        "CodexThemeStudio.App",
+        "Compatibility",
+        "theme-runtime-v2.js");
+    var runtime = await File.ReadAllTextAsync(runtimePath);
+    var skippedBranchStart = runtime.IndexOf(
+        "if (isPetOverlay && !allowPetOverlay)",
+        StringComparison.Ordinal);
+    Ensure(skippedBranchStart >= 0, "The pet-overlay skip branch is missing.");
+    var skippedBranch = runtime.Substring(
+        skippedBranchStart,
+        Math.Min(600, runtime.Length - skippedBranchStart));
+    Ensure(
+        skippedBranch.Contains("window.__CODEX_THEME_STUDIO_THEME_ID__ = themeId", StringComparison.Ordinal),
+        "Skipped pet overlays must be marked as processed to prevent repeated large-payload injection.");
+}
+
+static async Task RuntimeRemovesNativeComposerFadeAsync()
+{
+    var repositoryRoot = FindRepositoryRoot();
+    var package = await LoadRepresentativePackageAsync(repositoryRoot);
+
+    var payload = await BuildPayloadAsync(repositoryRoot, package);
+    Ensure(payload.Contains("from-token-main-surface-primary", StringComparison.Ordinal),
+        "The runtime must neutralize Codex's native bottom composer fade for every active theme.");
+    Ensure(payload.Contains("background: transparent !important", StringComparison.Ordinal),
+        "The native composer fade override must remain transparent.");
+    Ensure(payload.Contains(":has(.composer-surface-chrome) .sticky.bottom-0", StringComparison.Ordinal),
+        "The runtime must keep the sticky composer visible on Codex home layout changes.");
+    Ensure(payload.Contains("min-height: 64px !important", StringComparison.Ordinal),
+        "The composer surface must keep a visible minimum hit area.");
+    Ensure(payload.Contains("cts-code-review-open", StringComparison.Ordinal),
+        "The runtime must track Codex's code-review diff state.");
+    Ensure(payload.Contains("data-cts-side-panel-overlay", StringComparison.Ordinal),
+        "The runtime must hide theme overlays while the native sidebar is open.");
+    Ensure(!payload.Contains("min-height: 0 !important", StringComparison.Ordinal),
+        "The runtime must not flatten themed home hero containers.");
+    Ensure(payload.Contains("home-banners:empty", StringComparison.Ordinal),
+        "The runtime must repair Codex's empty home-banners wrapper before themes inspect the home DOM.");
+    Ensure(payload.Contains(".group\\\\/home-suggestions", StringComparison.Ordinal),
+        "The runtime must hide Codex's native home suggestion cards for themed home pages.");
+    Ensure(payload.Contains(".group\\\\/title", StringComparison.Ordinal),
+        "The runtime must hide Codex's native home prompt title for themed home pages.");
+}
+
+static async Task LocalImporterCopiesPackageAsync()
+{
+    using var fixture = await ThemeFixture.CreateAsync();
+    var library = Path.Combine(Path.GetTempPath(), $"cts-library-{Guid.NewGuid():N}");
+    try
+    {
+        var package = await new ThemeImporter(new ThemePackageLoader()).ImportAsync(
+            fixture.Root,
+            library,
+            overwrite: false);
+        Ensure(package.Manifest.Id == "sample.theme", "Imported theme id did not match.");
+        Ensure(File.Exists(Path.Combine(library, "sample.theme", "manifest.json")), "Imported manifest is missing.");
+        Ensure(File.Exists(Path.Combine(library, "sample.theme", "assets", "hero.png")), "Imported asset is missing.");
+    }
+    finally
+    {
+        if (Directory.Exists(library))
+        {
+            Directory.Delete(library, recursive: true);
+        }
+    }
+}
+
+static async Task BundledAdapterBuildsPayloadAsync()
+{
+    var repositoryRoot = FindRepositoryRoot();
+    var package = await LoadRepresentativePackageAsync(repositoryRoot);
+    var payload = await new ThemePayloadBuilder(new Dictionary<string, string>
+    {
+        [ThemePayloadBuilder.OpenRuntimeAdapterKey] = Path.Combine(
+            repositoryRoot,
+            "src",
+            "CodexThemeStudio.App",
+            "Compatibility",
+            "theme-runtime-v2.js"),
+    }).BuildAsync(package);
+    Ensure(!payload.Contains("__DREAM_", StringComparison.Ordinal), "A dream placeholder remained in the payload.");
+    Ensure(!payload.Contains("__CTS_", StringComparison.Ordinal), "A Studio placeholder remained in the payload.");
+    Ensure(package.Manifest.Config.TryGetValue("title", out var titleElement), "Theme title config is missing.");
+    var title = titleElement.GetString();
+    Ensure(!string.IsNullOrWhiteSpace(title), "Theme title config is empty.");
+    var encodedTitle = JsonSerializer.Serialize(title).Trim('"');
+    Ensure(package.IsAdvanced, "The representative theme should use the open advanced lifecycle.");
+    Ensure(payload.Contains("registerTheme", StringComparison.Ordinal), "Advanced theme lifecycle is missing.");
+    Ensure(payload.Contains(encodedTitle, StringComparison.Ordinal), "Theme config is missing.");
+}
+
+static async Task OpenAdvancedTemplateLoadsAndFingerprintsAsync()
+{
+    var repositoryRoot = FindRepositoryRoot();
+    var package = (await new ThemePackageLoader().LoadAsync(
+        Path.Combine(repositoryRoot, "examples", "advanced-theme"))).Package
+        ?? throw new InvalidOperationException("Open advanced template could not be loaded.");
+    var payload = await BuildPayloadAsync(repositoryRoot, package);
+    var first = await ThemeFingerprintCalculator.CalculateAsync(package);
+    var second = await ThemeFingerprintCalculator.CalculateAsync(package);
+    Ensure(package.IsAdvanced, "Advanced template must require script trust.");
+    Ensure(payload.Contains("registerTheme", StringComparison.Ordinal), "Advanced lifecycle is missing.");
+    Ensure(first.Length == 64 && first == second, "Theme fingerprint must be stable SHA-256.");
+}
+
+static async Task AdvancedImportAndTrustFollowFingerprintAsync()
+{
+    var repositoryRoot = FindRepositoryRoot();
+    var library = Path.Combine(Path.GetTempPath(), $"cts-advanced-library-{Guid.NewGuid():N}");
+    var trustData = Path.Combine(Path.GetTempPath(), $"cts-trust-{Guid.NewGuid():N}");
+    try
+    {
+        var imported = await new ThemeImporter(new ThemePackageLoader()).ImportAsync(
+            Path.Combine(repositoryRoot, "examples", "advanced-theme"),
+            library,
+            overwrite: false);
+        var scriptPath = imported.ScriptPath ?? throw new InvalidOperationException("Advanced script was not imported.");
+        Ensure(File.Exists(scriptPath), "Advanced script was not imported.");
+
+        Directory.CreateDirectory(trustData);
+        using var trustStore = new ThemeTrustStore(trustData);
+        Ensure(!await trustStore.IsTrustedAsync(imported), "Advanced theme must start untrusted.");
+        await trustStore.TrustAsync(imported);
+        Ensure(await trustStore.IsTrustedAsync(imported), "Trusted fingerprint was not remembered.");
+
+        await File.AppendAllTextAsync(scriptPath, "\n// fingerprint change");
+        var changed = (await new ThemePackageLoader().LoadAsync(imported.RootDirectory)).Package
+            ?? throw new InvalidOperationException("Changed advanced theme did not reload.");
+        Ensure(!await trustStore.IsTrustedAsync(changed), "Changed script must invalidate prior trust.");
+    }
+    finally
+    {
+        if (Directory.Exists(library)) Directory.Delete(library, recursive: true);
+        if (Directory.Exists(trustData)) Directory.Delete(trustData, recursive: true);
+    }
+}
+
+static string FindRepositoryRoot()
+{
+    foreach (var startingPath in new[] { Directory.GetCurrentDirectory(), AppContext.BaseDirectory })
+    {
+        var directory = new DirectoryInfo(startingPath);
+        while (directory is not null)
+        {
+            if (File.Exists(Path.Combine(directory.FullName, "global.json")))
+            {
+                return directory.FullName;
+            }
+
+            directory = directory.Parent;
+        }
+    }
+
+    throw new DirectoryNotFoundException("Could not find the Tessalume repository root.");
+}
+
+static async Task<ThemePackage> LoadRepresentativePackageAsync(string repositoryRoot)
+{
+    var loader = new ThemePackageLoader();
+    var themesRoot = Path.Combine(repositoryRoot, "themes");
+    if (Directory.Exists(themesRoot))
+    {
+        var catalog = await new ThemeCatalog(loader).ScanAsync(themesRoot);
+        var published = catalog.FirstOrDefault(item => item.Validation.IsValid && item.Package is not null);
+        if (published?.Package is not null)
+        {
+            return published.Package;
+        }
+    }
+
+    var templateRoot = Path.Combine(repositoryRoot, "examples", "advanced-theme");
+    var template = await loader.LoadAsync(templateRoot);
+    Ensure(template.Validation.IsValid, FormatIssues(template.Validation));
+    return template.Package
+        ?? throw new InvalidOperationException("No published theme or open theme template could be loaded.");
+}
+
+static async Task<int> ProbeRuntimeAsync(int port)
+{
+    using var discovery = new LoopbackCdpDiscovery();
+    var targets = await discovery.DiscoverAsync(port);
+    if (targets.Count == 0)
+    {
+        Console.Error.WriteLine($"No Codex targets found on {port}.");
+        return 2;
+    }
+
+    foreach (var target in targets.OrderBy(target =>
+                 target.Url.Contains("initialRoute=", StringComparison.OrdinalIgnoreCase) ? 1 : 0))
+    {
+        await using var session = new CdpSession();
+        await session.ConnectAsync(target.WebSocketDebuggerUrl);
+        var result = await session.EvaluateAsync(
+            "({ themeId: window.__CODEX_THEME_STUDIO_THEME_ID__ || null, installed: !!window.__CODEX_THEME_STUDIO_THEME_ID__, runtime: !!window.__CODEX_THEME_STUDIO_RUNTIME__, root: !!document.getElementById('cts-theme-root'), style: !!document.getElementById('cts-theme-style') || !!document.getElementById('codex-dream-skin-style'), chrome: !!document.getElementById('codex-dream-skin-chrome'), title: document.querySelector('.dream-brand b')?.textContent || document.querySelector('.example-theme-widget b')?.textContent || null, exampleMounted: document.documentElement.getAttribute('data-example-theme-mounted') })");
+        Console.WriteLine(result);
+    }
+
+    return 0;
+}
+
+static async Task<int> RemoveRuntimeAsync(int port)
+{
+    await using var runtime = new ThemeRuntime(
+        new LoopbackCdpDiscovery(),
+        new ThemePayloadBuilder(new Dictionary<string, string>()));
+    await runtime.RemoveAsync(port);
+    Console.WriteLine("Theme removed.");
+    return 0;
+}
+
+static async Task<int> ApplyRuntimeAsync(int port)
+{
+    var repositoryRoot = FindRepositoryRoot();
+    var package = await LoadRepresentativePackageAsync(repositoryRoot);
+    await using var runtime = new ThemeRuntime(
+        new LoopbackCdpDiscovery(),
+        new ThemePayloadBuilder(new Dictionary<string, string>
+        {
+            [ThemePayloadBuilder.OpenRuntimeAdapterKey] = Path.Combine(
+                repositoryRoot,
+                "src",
+                "CodexThemeStudio.App",
+                "Compatibility",
+                "theme-runtime-v2.js"),
+        }));
+    await runtime.StartAsync(port, package);
+    await runtime.StopAsync();
+    Console.WriteLine("Theme applied.");
+    return 0;
+}
+
+static async Task<int> ApplyPackageRuntimeAsync(int port, string packagePath)
+{
+    var repositoryRoot = FindRepositoryRoot();
+    var package = (await new ThemePackageLoader().LoadAsync(packagePath)).Package
+        ?? throw new InvalidOperationException("The requested theme package could not be loaded.");
+    await using var runtime = new ThemeRuntime(
+        new LoopbackCdpDiscovery(),
+        new ThemePayloadBuilder(new Dictionary<string, string>
+        {
+            [ThemePayloadBuilder.OpenRuntimeAdapterKey] = Path.Combine(
+                repositoryRoot,
+                "src",
+                "CodexThemeStudio.App",
+                "Compatibility",
+                "theme-runtime-v2.js"),
+        }));
+    await runtime.StartAsync(port, package);
+    await runtime.StopAsync();
+    Console.WriteLine($"Theme applied: {package.Manifest.Id}");
+    return 0;
+}
+
+static async Task<int> TrustPackageAsync(string dataPath, string packagePath)
+{
+    var package = (await new ThemePackageLoader().LoadAsync(packagePath)).Package
+        ?? throw new InvalidOperationException("The requested theme package could not be loaded.");
+    Directory.CreateDirectory(dataPath);
+    using var trustStore = new ThemeTrustStore(dataPath);
+    await trustStore.TrustAsync(package);
+    Console.WriteLine($"Theme trusted for local diagnostics: {package.Manifest.Id}");
+    return 0;
+}
+
+static async Task<string> BuildPayloadAsync(string repositoryRoot, ThemePackage package) =>
+    await new ThemePayloadBuilder(new Dictionary<string, string>
+    {
+        [ThemePayloadBuilder.OpenRuntimeAdapterKey] = Path.Combine(
+            repositoryRoot,
+            "src",
+            "CodexThemeStudio.App",
+            "Compatibility",
+            "theme-runtime-v2.js"),
+    }).BuildAsync(package);
+
+static async Task<int> ProbeThemeModesAsync(int port)
+{
+    using var discovery = new LoopbackCdpDiscovery();
+    var targets = await discovery.DiscoverAsync(port);
+    foreach (var target in targets)
+    {
+        await using var session = new CdpSession();
+        await session.ConnectAsync(target.WebSocketDebuggerUrl);
+        var installed = await session.EvaluateAsync(
+            "document.documentElement.classList.contains('codex-dream-skin')");
+        if (installed.ValueKind != JsonValueKind.True)
+        {
+            continue;
+        }
+
+        var result = await session.EvaluateAsync(
+            """
+            (() => {
+              const root = document.documentElement;
+              const wasDark = root.classList.contains('electron-dark');
+              const sample = () => ({
+                colorScheme: getComputedStyle(root).colorScheme,
+                textColor: getComputedStyle(document.body).color,
+                composerBackground: getComputedStyle(document.querySelector('.composer-surface-chrome') || document.body).backgroundColor
+              });
+              root.classList.remove('electron-dark');
+              const light = sample();
+              root.classList.add('electron-dark');
+              const dark = sample();
+              root.classList.toggle('electron-dark', wasDark);
+              return { light, dark, different: JSON.stringify(light) !== JSON.stringify(dark) };
+            })()
+            """);
+        Console.WriteLine(result);
+        return result.GetProperty("different").GetBoolean() ? 0 : 3;
+    }
+
+    Console.Error.WriteLine("No themed Codex target found.");
+    return 2;
+}
+
+static async Task<int> ToggleColorSchemeAsync(int port)
+{
+    await using var runtime = new ThemeRuntime(
+        new LoopbackCdpDiscovery(),
+        new ThemePayloadBuilder(new Dictionary<string, string>()));
+    var dark = await runtime.ToggleColorSchemeAsync(port);
+    Console.WriteLine(dark ? "dark" : "light");
+    return 0;
+}
+
+static async Task<int> ProbeAppearanceStateAsync(int port)
+{
+    using var discovery = new LoopbackCdpDiscovery();
+    var targets = await discovery.DiscoverAsync(port);
+    foreach (var target in targets.OrderBy(target =>
+                 target.Url.Contains("initialRoute=", StringComparison.OrdinalIgnoreCase) ? 1 : 0))
+    {
+        await using var session = new CdpSession();
+        await session.ConnectAsync(target.WebSocketDebuggerUrl);
+        var result = await session.EvaluateAsync(
+            """
+            (() => {
+              const root = document.documentElement;
+              const interesting = ([key]) => /theme|appearance|color|dark|light|scheme/i.test(key);
+              const storage = store => Object.entries(store).filter(interesting);
+              return {
+                isMain: !!document.querySelector('main') &&
+                  !root.classList.contains('compact-window') &&
+                  !new URLSearchParams(location.search).has('initialRoute'),
+                url: location.href,
+                rootClass: root.className,
+                rootAttributes: Object.fromEntries([...root.attributes].map(x => [x.name, x.value])),
+                bodyAttributes: Object.fromEntries([...document.body.attributes].map(x => [x.name, x.value])),
+                colorScheme: getComputedStyle(root).colorScheme,
+                prefersDark: matchMedia('(prefers-color-scheme: dark)').matches,
+                localStorage: storage(localStorage),
+                sessionStorage: storage(sessionStorage),
+                globalKeys: Object.keys(window).filter(key => /theme|appearance|color|dark|light|scheme/i.test(key)).slice(0, 100)
+              };
+            })()
+            """);
+        if (result.ValueKind == JsonValueKind.Object &&
+            result.TryGetProperty("isMain", out var isMain) && isMain.GetBoolean())
+        {
+            Console.WriteLine(result);
+            return 0;
+        }
+    }
+
+    Console.Error.WriteLine("No main Codex target found.");
+    return 2;
+}
+
+static async Task<int> ProbeAppearanceBundlesAsync(int port)
+{
+    using var discovery = new LoopbackCdpDiscovery();
+    var targets = await discovery.DiscoverAsync(port);
+    foreach (var target in targets)
+    {
+        await using var session = new CdpSession();
+        await session.ConnectAsync(target.WebSocketDebuggerUrl);
+        var result = await session.EvaluateAsync(
+            """
+            (async () => {
+              if (!document.querySelector('main')) return null;
+              const urls = [...new Set([
+                ...[...document.scripts].map(x => x.src),
+                ...performance.getEntriesByType('resource').map(x => x.name)
+              ].filter(url => /\.m?js(?:\?|$)/i.test(url)))];
+              const needles = ['electron-dark', 'color-scheme', 'appearance', 'setTheme', 'themePreference'];
+              const matches = [];
+              for (const url of urls) {
+                let text;
+                try { text = await fetch(url).then(response => response.text()); } catch { continue; }
+                for (const needle of needles) {
+                  let offset = 0;
+                  for (let count = 0; count < 4; count++) {
+                    const index = text.indexOf(needle, offset);
+                    if (index < 0) break;
+                    matches.push({ url, needle, index, snippet: text.slice(Math.max(0,index-500),index+900) });
+                    offset = index + needle.length;
+                  }
+                }
+              }
+              return matches.slice(0, 60);
+            })()
+            """);
+        if (result.ValueKind == JsonValueKind.Array)
+        {
+            Console.WriteLine(result);
+            return 0;
+        }
+    }
+
+    Console.Error.WriteLine("No main Codex target found.");
+    return 2;
+}
+
+static async Task<int> ProbeQueryClientsAsync(int port)
+{
+    using var discovery = new LoopbackCdpDiscovery();
+    var targets = await discovery.DiscoverAsync(port);
+    foreach (var target in targets)
+    {
+        await using var session = new CdpSession();
+        await session.ConnectAsync(target.WebSocketDebuggerUrl);
+        var result = await session.EvaluateAsync(
+            """
+            (() => {
+              if (!document.querySelector('main')) return null;
+              const rootNode = document.querySelector('#root') || document.body;
+              const fiberKey = Object.keys(rootNode).find(key => key.startsWith('__reactContainer$') || key.startsWith('__reactFiber$'));
+              let root = fiberKey ? rootNode[fiberKey] : null;
+              const seenFibers = new Set();
+              const seenObjects = new WeakSet();
+              const clients = [];
+              const inspect = (value, path, depth = 0) => {
+                if (!value || (typeof value !== 'object' && typeof value !== 'function') || seenObjects.has(value) || depth > 5) return;
+                seenObjects.add(value);
+                try {
+                  if (typeof value.getQueryCache === 'function' && typeof value.invalidateQueries === 'function') {
+                    const queries = value.getQueryCache().getAll().map(q => ({ hash: q.queryHash, key: q.queryKey, state: q.state?.status }));
+                    clients.push({ path, queries: queries.filter(q => JSON.stringify(q).includes('settings')).slice(0, 20), total: queries.length });
+                    return;
+                  }
+                } catch {}
+                let entries;
+                try { entries = Object.entries(value); } catch { return; }
+                for (const [key, child] of entries.slice(0, 80)) {
+                  if (/^(return|child|sibling|stateNode|alternate|_owner)$/.test(key)) continue;
+                  inspect(child, `${path}.${key}`, depth + 1);
+                }
+              };
+              const queue = root ? [root] : [];
+              while (queue.length && seenFibers.size < 12000 && clients.length < 10) {
+                const fiber = queue.shift();
+                if (!fiber || seenFibers.has(fiber)) continue;
+                seenFibers.add(fiber);
+                inspect(fiber.memoizedProps, 'fiber.memoizedProps');
+                inspect(fiber.memoizedState, 'fiber.memoizedState');
+                inspect(fiber.dependencies, 'fiber.dependencies');
+                if (fiber.child) queue.push(fiber.child);
+                if (fiber.sibling) queue.push(fiber.sibling);
+              }
+              return { fiberKey, fibers: seenFibers.size, clients };
+            })()
+            """);
+        if (result.ValueKind == JsonValueKind.Object)
+        {
+            Console.WriteLine(result);
+            return 0;
+        }
+    }
+
+    Console.Error.WriteLine("No main Codex target found.");
+    return 2;
+}
+
+static void Ensure(bool condition, string message)
+{
+    if (!condition)
+    {
+        throw new InvalidOperationException(message);
+    }
+}
+
+static string FormatIssues(ThemeValidationResult validation) =>
+    string.Join("; ", validation.Issues.Select(issue => $"{issue.Code}: {issue.Message}"));
+
+file sealed class ThemeFixture : IDisposable
+{
+    private ThemeFixture(string root) => Root = root;
+
+    public string Root { get; }
+
+    public static async Task<ThemeFixture> CreateAsync(
+        string? root = null,
+        string cssPath = "theme.css",
+        string css = ":root { --accent: #ff79c6; }")
+    {
+        root ??= Path.Combine(Path.GetTempPath(), $"cts-theme-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(root);
+        Directory.CreateDirectory(Path.Combine(root, "assets"));
+
+        if (!cssPath.StartsWith("..", StringComparison.Ordinal))
+        {
+            await File.WriteAllTextAsync(Path.Combine(root, cssPath), css);
+        }
+        await File.WriteAllTextAsync(
+            Path.Combine(root, "theme.js"),
+            "window.codexThemeStudio.registerTheme({ mount() {}, unmount() {} });");
+
+        await File.WriteAllBytesAsync(Path.Combine(root, "assets", "hero.png"), [0x89, 0x50, 0x4e, 0x47]);
+        var manifest = new
+        {
+            schemaVersion = 2,
+            id = "sample.theme",
+            name = "Sample Theme",
+            version = "1.0.0",
+            author = "Tests",
+            engineVersion = 2,
+            type = "advanced",
+            capabilities = new { light = true, dark = true },
+            entryPoints = new { css = cssPath, script = "theme.js" },
+            assets = new { hero = "assets/hero.png" },
+        };
+        await File.WriteAllTextAsync(
+            Path.Combine(root, ThemePackageLoader.ManifestFileName),
+            JsonSerializer.Serialize(manifest));
+        return new ThemeFixture(root);
+    }
+
+    public void Dispose()
+    {
+        if (Directory.Exists(Root))
+        {
+            Directory.Delete(Root, recursive: true);
+        }
+    }
+}
