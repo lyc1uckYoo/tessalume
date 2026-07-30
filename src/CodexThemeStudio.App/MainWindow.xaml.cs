@@ -44,6 +44,7 @@ public partial class MainWindow : Window, IAsyncDisposable
     private int? _activePort;
     private bool _showFavorites;
     private bool _darkMode;
+    private bool? _codexDarkMode;
     private bool _updatingStartupSetting;
     private bool _startupInitialized;
     private bool _shutdownRequested;
@@ -133,10 +134,13 @@ public partial class MainWindow : Window, IAsyncDisposable
         foreach (var item in catalog)
         {
             var themeId = item.Package?.Manifest.Id;
-            _themes.Add(new ThemeCardModel(
+            var theme = new ThemeCardModel(
                 item,
                 themeId is not null && _favoriteThemeIds.Contains(themeId),
-                loadPreviews ?? _uiInitialized));
+                loadPreviews ?? _uiInitialized);
+            theme.SetDarkMode(_darkMode);
+            theme.IsApplied = string.Equals(themeId, _activeThemeId, StringComparison.OrdinalIgnoreCase);
+            _themes.Add(theme);
         }
 
         if (!_uiInitialized)
@@ -236,6 +240,7 @@ public partial class MainWindow : Window, IAsyncDisposable
     {
         var isEmpty = _visibleThemes.Count == 0;
         EmptyState.Visibility = isEmpty ? Visibility.Visible : Visibility.Collapsed;
+        SelectionDock.Visibility = isEmpty ? Visibility.Collapsed : Visibility.Visible;
         EmptyStateTitleText.Text = _showFavorites ? "还没有收藏的主题" : "这里还没有主题";
         EmptyStateBodyText.Text = _showFavorites
             ? "点击任意主题卡片右上角的爱心，把它加入我的收藏。"
@@ -296,6 +301,7 @@ public partial class MainWindow : Window, IAsyncDisposable
         SetEngineState($"运行中 · 本机 {port.Value}");
         _activeThemeId = theme.CatalogItem.Package.Manifest.Id;
         _lastThemeId = _activeThemeId;
+        UpdateAppliedThemeState();
         SetStatus($"{theme.Name} 已恢复");
         RefreshQuickSwitchWindow();
     }
@@ -495,8 +501,9 @@ public partial class MainWindow : Window, IAsyncDisposable
                     UpdatedAt = DateTimeOffset.Now,
                     Enabled = false,
                 });
-                EngineStateText.Text = "Codex 默认外观";
+                SetEngineState("Codex 默认外观");
                 _activeThemeId = null;
+                UpdateAppliedThemeState();
             }
 
             Directory.Delete(theme.CatalogItem.Directory, recursive: true);
@@ -556,24 +563,18 @@ public partial class MainWindow : Window, IAsyncDisposable
                 ApplyThemeAsync,
                 ToggleRestoreThemeAsync,
                 ToggleCodexColorSchemeAsync,
+                ReadCodexColorSchemeAsync,
                 ShowMainInterface,
                 () => _usageReader.ReadAsync());
+            _quickSwitchWindow.SetShellTheme(_darkMode);
             _quickSwitchWindow.Closed += (_, _) =>
             {
                 _quickSwitchWindow = null;
-                if (_uiInitialized)
-                {
-                    QuickSwitchButton.Content = "主题浮窗";
-                    QuickSwitchButton.Background = (Brush)Resources["Surface"];
-                }
+                UpdateQuickSwitchButton();
             };
             RefreshQuickSwitchWindow();
             _quickSwitchWindow.Show();
-            if (_uiInitialized)
-            {
-                QuickSwitchButton.Content = "关闭浮窗";
-                QuickSwitchButton.Background = (Brush)Resources["ActiveNav"];
-            }
+            UpdateQuickSwitchButton();
         }
         catch (Exception exception)
         {
@@ -615,6 +616,7 @@ public partial class MainWindow : Window, IAsyncDisposable
         try
         {
             await ReloadThemesAsync(_activeThemeId, loadPreviews: true);
+            _ = RefreshCodexColorSchemeAsync();
         }
         catch (Exception exception)
         {
@@ -658,9 +660,22 @@ public partial class MainWindow : Window, IAsyncDisposable
     {
         if (StartupButton is null) return;
         var enabled = StartupRegistration.IsEnabled();
-        StartupButton.Tag = enabled ? "✓" : "↟";
-        StartupButton.Content = enabled ? "已开机启动" : "开机启动";
-        StartupButton.Background = (Brush)Resources[enabled ? "ActiveNav" : "Surface"];
+        StartupButton.Tag = enabled ? "active" : "inactive";
+        StartupButton.Content = enabled ? "开机启动已开启" : "开启开机启动";
+        StartupButton.ToolTip = enabled ? "点击关闭登录 Windows 后自动启动" : "点击开启登录 Windows 后自动启动";
+    }
+
+    private void UpdateQuickSwitchButton()
+    {
+        if (!_uiInitialized || QuickSwitchButton is null)
+        {
+            return;
+        }
+
+        var enabled = _quickSwitchWindow is { IsVisible: true };
+        QuickSwitchButton.Tag = enabled ? "active" : "inactive";
+        QuickSwitchButton.Content = enabled ? "浮窗已开启" : "打开主题浮窗";
+        QuickSwitchButton.ToolTip = enabled ? "点击关闭主题浮窗" : "点击打开主题浮窗";
     }
 
     private void StartupCheckBox_Changed(object sender, RoutedEventArgs e)
@@ -795,18 +810,16 @@ public partial class MainWindow : Window, IAsyncDisposable
         DiagnosticThemesText.Text = _themes.Count - validThemes == 0
             ? $"{validThemes} 个有效"
             : $"{validThemes} 有效 / {_themes.Count - validThemes} 异常";
-        DiagnosticDetailsText.Text = string.Join(
-            Environment.NewLine,
-            $"Studio 根目录：{_layout.RootDirectory}",
-            $"本地主题库：{_layout.ThemesDirectory}",
-            $"Codex 进程：{(codexRunning ? "已发现" : "未发现")}",
-            $"回环 CDP：{(portReady ? $"127.0.0.1:{port} 可用" : "当前不可用")}",
-            $"主题状态：{(state?.Enabled == true ? "已启用" : "默认外观")}",
-            $"当前主题：{activeTheme ?? "无"}",
-            $"主题包校验：{validThemes} 个通过，{_themes.Count - validThemes} 个未通过",
-            string.Empty,
-            "网络能力：无公网请求、无远程下载、无在线更新",
-            "注入范围：仅本机 Codex 主渲染页面；宠物浮层自动排除");
+        DiagnosticCodexText.SetResourceReference(TextBlock.ForegroundProperty, codexRunning ? "Positive" : "MutedText");
+        DiagnosticPortText.SetResourceReference(TextBlock.ForegroundProperty, portReady ? "Positive" : port is null ? "MutedText" : "Amber");
+        DiagnosticThemesText.SetResourceReference(TextBlock.ForegroundProperty, _themes.Count == validThemes ? "Positive" : "Amber");
+        DiagnosticRootText.Text = _layout.RootDirectory;
+        DiagnosticLibraryText.Text = _layout.ThemesDirectory;
+        DiagnosticProcessText.Text = codexRunning ? "已发现 · 正在运行" : "未发现";
+        DiagnosticLoopbackText.Text = portReady ? $"127.0.0.1:{port} · 可用" : "当前不可用";
+        DiagnosticThemeStateText.Text = state?.Enabled == true ? "沉浸式主题已启用" : "Codex 默认外观";
+        DiagnosticCurrentThemeText.Text = $"当前主题：{activeTheme ?? "无"}";
+        DiagnosticValidationText.Text = $"{validThemes} 个通过 · {_themes.Count - validThemes} 个异常";
         ShowInfoPage(RightPane.Diagnostics);
     }
 
@@ -863,6 +876,7 @@ public partial class MainWindow : Window, IAsyncDisposable
             _activePort = port;
             _activeThemeId = package.Manifest.Id;
             _lastThemeId = _activeThemeId;
+            UpdateAppliedThemeState();
             SetEngineState($"运行中 · 本机 {port}");
             SetStatus($"{package.Manifest.Name} 已应用，可继续实时切换");
             RefreshQuickSwitchWindow();
@@ -933,6 +947,7 @@ public partial class MainWindow : Window, IAsyncDisposable
                 _lastThemeId = _activeThemeId;
             }
             _activeThemeId = null;
+            UpdateAppliedThemeState();
             SetStatus("本地主题已移除，Codex 安装文件未被修改");
             RefreshQuickSwitchWindow();
             return true;
@@ -976,10 +991,8 @@ public partial class MainWindow : Window, IAsyncDisposable
         {
             _activePort = port.Value;
             var dark = await _runtime.ToggleColorSchemeAsync(port.Value);
-            if (_uiInitialized)
-            {
-                CodexModeButton.Content = dark ? "☀ 切到亮色" : "☾ 切到暗色";
-            }
+            _codexDarkMode = dark;
+            UpdateCodexModeButton();
 
             SetStatus(dark ? "Codex 已切换为暗色" : "Codex 已切换为亮色");
             return dark;
@@ -996,42 +1009,95 @@ public partial class MainWindow : Window, IAsyncDisposable
         }
     }
 
+    private async Task<bool?> ReadCodexColorSchemeAsync()
+    {
+        try
+        {
+            var state = await _stateStore.LoadAsync();
+            var port = _activePort ?? state?.Port ?? await _launcher.FindRunningDebugPortAsync();
+            if (port is null || !await _launcher.IsDebugPortReadyAsync(port.Value))
+            {
+                return null;
+            }
+
+            _activePort = port.Value;
+            var dark = await _runtime.ReadColorSchemeAsync(port.Value);
+            _codexDarkMode = dark;
+            UpdateCodexModeButton();
+            return dark;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private async Task RefreshCodexColorSchemeAsync()
+    {
+        var dark = await ReadCodexColorSchemeAsync();
+        if (dark is null)
+        {
+            return;
+        }
+
+        _codexDarkMode = dark;
+        UpdateCodexModeButton();
+    }
+
     private void ApplyStudioTheme(bool dark)
     {
         SetGradientBrush(
             "WindowBackground",
-            dark ? "#101116" : "#F7F8FA",
-            dark ? "#14171D" : "#F1F3F6");
+            dark ? "#0D1015" : "#F7F8FA",
+            dark ? "#11151B" : "#F1F3F6");
         SetGradientBrush(
             "SidebarBackground",
-            dark ? "#14151A" : "#FBFBFC",
-            dark ? "#181B21" : "#F6F7F9");
+            dark ? "#13161D" : "#FBFBFC",
+            dark ? "#171B23" : "#F6F7F9");
         SetGradientBrush(
             "PrimaryGradient",
-            dark ? "#6879F2" : "#5365E8",
-            dark ? "#4FA7D8" : "#438FC9");
+            dark ? "#7480F4" : "#5968EA",
+            dark ? "#A16BE7" : "#8A5FDF");
+        SetGradientBrush(
+            "PrimaryActionGradient",
+            dark ? "#736BFA" : "#615FE8",
+            dark ? "#A45AD9" : "#8C58D5");
         SetGradientBrush(
             "AdvancedPreview",
             dark ? "#17212C" : "#E8EDF3",
             dark ? "#33475C" : "#BECBD8");
-        SetBrush("Surface", dark ? "#1B1D23" : "#FFFFFF");
-        SetBrush("SurfaceAlt", dark ? "#22252C" : "#EFF1F4");
-        SetBrush("SurfaceElevated", dark ? "#1F2229" : "#FFFFFF");
-        SetBrush("HoverSurface", dark ? "#292C34" : "#E9EBEF");
-        SetBrush("InfoSurface", dark ? "#202631" : "#EEF2FF");
-        SetBrush("InfoBorder", dark ? "#364153" : "#D9E0FA");
-        SetBrush("PrimaryText", dark ? "#F3F4F7" : "#191B20");
-        SetBrush("MutedText", dark ? "#ADB1BA" : "#626670");
-        SetBrush("SubtleText", dark ? "#7B808A" : "#9297A1");
-        SetBrush("Border", dark ? "#30333A" : "#DFE2E7");
+        SetBrush("Surface", dark ? "#20242C" : "#FFFFFF");
+        SetBrush("SurfaceAlt", dark ? "#282D36" : "#EFF1F4");
+        SetBrush("SurfaceElevated", dark ? "#242933" : "#FFFFFF");
+        SetBrush("HoverSurface", dark ? "#303641" : "#E9EBEF");
+        SetBrush("InfoSurface", dark ? "#272C3D" : "#EEF2FF");
+        SetBrush("InfoBorder", dark ? "#414962" : "#D9E0FA");
+        SetBrush("PrimaryText", dark ? "#E8ECF2" : "#191B20");
+        SetBrush("MutedText", dark ? "#B1B8C3" : "#626670");
+        SetBrush("SubtleText", dark ? "#858D99" : "#9297A1");
+        SetBrush("Border", dark ? "#3A414C" : "#DFE2E7");
         SetBrush("Accent", dark ? "#8493FA" : "#5365E8");
         SetBrush("AccentSoft", dark ? "#29304B" : "#E9ECFF");
-        SetBrush("ActiveNav", dark ? "#272B35" : "#ECEEF3");
+        SetBrush("ActiveNav", dark ? "#292D43" : "#EEF0FF");
         SetBrush("Positive", dark ? "#52CEA0" : "#2EB47F");
+        SetBrush("Danger", dark ? "#FF829E" : "#D94C70");
+        SetBrush("DangerSoft", dark ? "#38232B" : "#FFF0F4");
+        SetBrush("Sky", dark ? "#8F9BFF" : "#6272E8");
+        SetBrush("SkySoft", dark ? "#2C324D" : "#EDF0FF");
+        SetBrush("Amber", dark ? "#F1B85B" : "#D58A22");
+        SetBrush("AmberSoft", dark ? "#3A3020" : "#FFF6E6");
+        foreach (var theme in _themes)
+        {
+            theme.SetDarkMode(dark);
+        }
+        _quickSwitchWindow?.SetShellTheme(dark);
+        SetEngineState(EngineStateText.Text);
         NativeTitleBar.Apply(this, dark);
         UpdateCategoryButtons();
         UpdateModeButtons();
         UpdateStartupButton();
+        UpdateQuickSwitchButton();
+        UpdateCodexModeButton();
     }
 
     private void SetBrush(string key, string color) =>
@@ -1044,14 +1110,25 @@ public partial class MainWindow : Window, IAsyncDisposable
             new Point(0, 0),
             new Point(1, 1));
 
+    private void UpdateAppliedThemeState()
+    {
+        foreach (var theme in _themes)
+        {
+            theme.IsApplied = !string.IsNullOrWhiteSpace(_activeThemeId) &&
+                string.Equals(theme.ThemeId, _activeThemeId, StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
     private void UpdateCategoryButtons()
     {
         if (ThemesButton is null || FavoritesButton is null) return;
         var themesActive = _rightPane == RightPane.Themes && !_showFavorites;
         ThemesButton.Background = themesActive ? (Brush)Resources["ActiveNav"] : Brushes.Transparent;
         FavoritesButton.Background = _rightPane == RightPane.Themes && _showFavorites ? (Brush)Resources["ActiveNav"] : Brushes.Transparent;
-        ThemesButton.Foreground = (Brush)Resources[themesActive ? "PrimaryText" : "MutedText"];
-        FavoritesButton.Foreground = (Brush)Resources[_rightPane == RightPane.Themes && _showFavorites ? "PrimaryText" : "MutedText"];
+        ThemesButton.Foreground = (Brush)Resources[themesActive ? "Accent" : "MutedText"];
+        FavoritesButton.Foreground = (Brush)Resources[_rightPane == RightPane.Themes && _showFavorites ? "Accent" : "MutedText"];
+        ThemesButton.Tag = themesActive ? "active" : "inactive";
+        FavoritesButton.Tag = _rightPane == RightPane.Themes && _showFavorites ? "active" : "inactive";
         ThemesButton.FontWeight = themesActive ? FontWeights.SemiBold : FontWeights.Normal;
         FavoritesButton.FontWeight = _rightPane == RightPane.Themes && _showFavorites ? FontWeights.SemiBold : FontWeights.Normal;
         FavoritesLabelText.Text = _favoriteThemeIds.Count == 0
@@ -1088,6 +1165,19 @@ public partial class MainWindow : Window, IAsyncDisposable
         scale.BeginAnimation(
             ScaleTransform.ScaleYProperty,
             new DoubleAnimation(0.965, 1, TimeSpan.FromMilliseconds(230)) { EasingFunction = easing });
+    }
+
+    private void RoundedCard_SizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        if (sender is not Border border || border.ActualWidth <= 0 || border.ActualHeight <= 0)
+        {
+            return;
+        }
+
+        border.Clip = new RectangleGeometry(
+            new Rect(0, 0, border.ActualWidth, border.ActualHeight),
+            16,
+            16);
     }
 
     private void AnimateSelectionDock()
@@ -1128,8 +1218,9 @@ public partial class MainWindow : Window, IAsyncDisposable
     private void UpdateInfoNavigationButton(Button button, bool active)
     {
         button.Background = active ? (Brush)Resources["ActiveNav"] : Brushes.Transparent;
-        button.Foreground = (Brush)Resources[active ? "PrimaryText" : "MutedText"];
+        button.Foreground = (Brush)Resources[active ? "Accent" : "MutedText"];
         button.FontWeight = active ? FontWeights.SemiBold : FontWeights.Normal;
+        button.Tag = active ? "active" : "inactive";
     }
 
     private Task SavePreferencesAsync() => _preferencesStore.SaveAsync(new UiPreferences
@@ -1141,8 +1232,50 @@ public partial class MainWindow : Window, IAsyncDisposable
     private void UpdateModeButtons()
     {
         if (LightModeButton is null || DarkModeButton is null) return;
-        LightModeButton.Background = _darkMode ? Brushes.Transparent : (Brush)Resources["ActiveNav"];
-        DarkModeButton.Background = _darkMode ? (Brush)Resources["ActiveNav"] : Brushes.Transparent;
+        LightModeButton.Background = _darkMode ? Brushes.Transparent : (Brush)Resources["SkySoft"];
+        LightModeButton.Foreground = (Brush)Resources[_darkMode ? "MutedText" : "Sky"];
+        LightModeButton.BorderBrush = _darkMode ? Brushes.Transparent : (Brush)Resources["Sky"];
+        LightModeButton.FontWeight = _darkMode ? FontWeights.Normal : FontWeights.SemiBold;
+        DarkModeButton.Background = _darkMode ? (Brush)Resources["AccentSoft"] : Brushes.Transparent;
+        DarkModeButton.Foreground = (Brush)Resources[_darkMode ? "Accent" : "MutedText"];
+        DarkModeButton.BorderBrush = _darkMode ? (Brush)Resources["Accent"] : Brushes.Transparent;
+        DarkModeButton.FontWeight = _darkMode ? FontWeights.SemiBold : FontWeights.Normal;
+    }
+
+    private void UpdateCodexModeButton()
+    {
+        if (!_uiInitialized || CodexModeButton is null || CodexModeText is null || CodexModeIconPath is null)
+        {
+            return;
+        }
+
+        if (_codexDarkMode is true)
+        {
+            CodexModeText.Text = "Codex 当前暗色";
+            CodexModeIconPath.Data = Geometry.Parse("M 15,3 C 9,4 7,9 8.5,13.5 C 10,18 14.5,19.5 19,17 C 17,20.5 12.5,22 8.5,20 C 4,17.8 2,12.5 4,8 C 6,3.8 11,1.7 15,3 Z");
+            CodexModeButton.Background = (Brush)Resources["AccentSoft"];
+            CodexModeButton.Foreground = (Brush)Resources["Accent"];
+            CodexModeButton.BorderBrush = (Brush)Resources["Accent"];
+            CodexModeButton.ToolTip = "Codex 当前为暗色，点击切换到亮色";
+            return;
+        }
+
+        if (_codexDarkMode is false)
+        {
+            CodexModeText.Text = "Codex 当前亮色";
+            CodexModeIconPath.Data = Geometry.Parse("M 12,7 A 5,5 0 1 1 11.9,7 M 12,1 L 12,3 M 12,21 L 12,23 M 1,12 L 3,12 M 21,12 L 23,12");
+            CodexModeButton.Background = (Brush)Resources["SkySoft"];
+            CodexModeButton.Foreground = (Brush)Resources["Sky"];
+            CodexModeButton.BorderBrush = (Brush)Resources["Sky"];
+            CodexModeButton.ToolTip = "Codex 当前为亮色，点击切换到暗色";
+            return;
+        }
+
+        CodexModeText.Text = "检测 Codex 明暗";
+        CodexModeButton.Background = (Brush)Resources["SkySoft"];
+        CodexModeButton.Foreground = (Brush)Resources["Sky"];
+        CodexModeButton.BorderBrush = (Brush)Resources["Sky"];
+        CodexModeButton.ToolTip = "点击切换 Codex 明暗色；首次切换后显示当前状态";
     }
 
     private void SetBusy(bool busy, string? status)
@@ -1171,6 +1304,14 @@ public partial class MainWindow : Window, IAsyncDisposable
         if (_uiInitialized)
         {
             EngineStateText.Text = status;
+            EngineStateDot.Fill = (Brush)Resources[
+                status.Contains("运行中", StringComparison.Ordinal) ||
+                status.Contains("可用", StringComparison.Ordinal)
+                    ? "Positive"
+                    : status.Contains("失败", StringComparison.Ordinal) ||
+                      status.Contains("不在", StringComparison.Ordinal)
+                        ? "Danger"
+                        : "SubtleText"];
         }
     }
 

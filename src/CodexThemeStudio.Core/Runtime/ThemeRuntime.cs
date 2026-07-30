@@ -40,6 +40,55 @@ public sealed class ThemeRuntime(
         StatusChanged?.Invoke(this, "已恢复 Codex 默认外观");
     }
 
+    public async Task<bool> ReadColorSchemeAsync(int port, CancellationToken cancellationToken = default)
+    {
+        await _applyLock.WaitAsync(cancellationToken);
+        try
+        {
+            var targets = await discovery.DiscoverAsync(port, cancellationToken);
+            if (targets.Count == 0)
+            {
+                throw new InvalidOperationException($"本机端口 {port} 尚未发现 Codex 页面");
+            }
+
+            CdpTarget? mainTarget = null;
+            foreach (var target in targets.OrderBy(target =>
+                         target.Url.Contains("initialRoute=", StringComparison.OrdinalIgnoreCase) ? 1 : 0))
+            {
+                await using var session = new CdpSession();
+                await session.ConnectAsync(target.WebSocketDebuggerUrl, cancellationToken);
+                var isMain = await session.EvaluateAsync(
+                    "!!document.querySelector('main') && " +
+                    "!document.documentElement.classList.contains('compact-window') && " +
+                    "!new URLSearchParams(location.search).has('initialRoute')",
+                    cancellationToken);
+                if (isMain.ValueKind == JsonValueKind.True)
+                {
+                    mainTarget = target;
+                    break;
+                }
+            }
+
+            mainTarget ??= targets.FirstOrDefault(target =>
+                !target.Url.Contains("initialRoute=", StringComparison.OrdinalIgnoreCase)) ?? targets[0];
+            await using var mainSession = new CdpSession();
+            await mainSession.ConnectAsync(mainTarget.WebSocketDebuggerUrl, cancellationToken);
+            var result = await mainSession.EvaluateAsync(
+                "window.electronBridge?.getSystemThemeVariant?.() === 'dark'",
+                cancellationToken);
+            if (result.ValueKind is not (JsonValueKind.True or JsonValueKind.False))
+            {
+                throw new InvalidOperationException("Codex 返回了无法识别的外观状态");
+            }
+
+            return result.GetBoolean();
+        }
+        finally
+        {
+            _applyLock.Release();
+        }
+    }
+
     public async Task<bool> ToggleColorSchemeAsync(int port, CancellationToken cancellationToken = default)
     {
         await _applyLock.WaitAsync(cancellationToken);

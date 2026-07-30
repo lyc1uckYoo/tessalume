@@ -13,6 +13,10 @@ internal sealed class ThemeCardModel : INotifyPropertyChanged
 {
     private bool _isSelected;
     private bool _isFavorite;
+    private bool _isApplied;
+    private BitmapImage? _preview;
+    private readonly BitmapImage? _lightPreview;
+    private readonly BitmapImage? _darkPreview;
 
     public ThemeCardModel(
         ThemeCatalogItem item,
@@ -27,7 +31,12 @@ internal sealed class ThemeCardModel : INotifyPropertyChanged
         IsValid = item.Validation.IsValid;
         SupportsLight = item.Package?.Manifest.Capabilities.Light == true;
         SupportsDark = item.Package?.Manifest.Capabilities.Dark == true;
-        Preview = loadPreview ? CreatePreview(item) : null;
+        if (loadPreview)
+        {
+            _lightPreview = CreatePreview(item.Package?.PreviewLightPath);
+            _darkPreview = CreatePreview(item.Package?.PreviewDarkPath);
+            _preview = _lightPreview ?? _darkPreview;
+        }
         (FallbackBackground, FallbackAccent, FallbackPanel) = CreateFallbackPalette(
             item.Package?.Manifest.Id ?? Name);
         _isFavorite = isFavorite;
@@ -84,7 +93,26 @@ internal sealed class ThemeCardModel : INotifyPropertyChanged
 
     public Brush FallbackPanel { get; }
 
-    public BitmapImage? Preview { get; }
+    public BitmapImage? Preview
+    {
+        get => _preview;
+        private set
+        {
+            if (ReferenceEquals(_preview, value))
+            {
+                return;
+            }
+
+            _preview = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(HasPreview));
+        }
+    }
+
+    public void SetDarkMode(bool dark) =>
+        Preview = dark
+            ? _darkPreview ?? _lightPreview
+            : _lightPreview ?? _darkPreview;
 
     public bool IsSelected
     {
@@ -101,9 +129,23 @@ internal sealed class ThemeCardModel : INotifyPropertyChanged
         }
     }
 
-    private static BitmapImage? CreatePreview(ThemeCatalogItem item)
+    public bool IsApplied
     {
-        var previewPath = item.Package?.PreviewLightPath ?? item.Package?.PreviewDarkPath;
+        get => _isApplied;
+        set
+        {
+            if (_isApplied == value)
+            {
+                return;
+            }
+
+            _isApplied = value;
+            OnPropertyChanged();
+        }
+    }
+
+    private static BitmapImage? CreatePreview(string? previewPath)
+    {
         if (previewPath is null || !File.Exists(previewPath))
         {
             return null;

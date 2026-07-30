@@ -12,8 +12,12 @@
         TextOptions.TextFormattingMode="Display">
     <Window.Resources>
         <LinearGradientBrush x:Key="PrimaryGradient" StartPoint="0,0" EndPoint="1,1">
-            <GradientStop Color="#5365E8" Offset="0" />
-            <GradientStop Color="#4A9FD8" Offset="1" />
+            <GradientStop Color="#5968EA" Offset="0" />
+            <GradientStop Color="#8A5FDF" Offset="1" />
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="PrimaryActionGradient" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#615FE8" Offset="0" />
+            <GradientStop Color="#8C58D5" Offset="1" />
         </LinearGradientBrush>
         <LinearGradientBrush x:Key="AdvancedPreview" StartPoint="0,0" EndPoint="1,1">
             <GradientStop Color="#141222" Offset="0" />
@@ -36,9 +40,15 @@
         <SolidColorBrush x:Key="AccentSoft" Color="#E9ECFF" />
         <SolidColorBrush x:Key="ActiveNav" Color="#ECEEF5" />
         <SolidColorBrush x:Key="Positive" Color="#30B982" />
-        <DropShadowEffect x:Key="CardShadow" Color="#17151F" BlurRadius="28" ShadowDepth="7" Opacity="0.10" />
-        <DropShadowEffect x:Key="SelectedCardShadow" Color="#536FE8" BlurRadius="30" ShadowDepth="7" Opacity="0.24" />
-        <DropShadowEffect x:Key="FloatingShadow" Color="#17151F" BlurRadius="36" ShadowDepth="12" Opacity="0.13" />
+        <SolidColorBrush x:Key="Danger" Color="#D94C70" />
+        <SolidColorBrush x:Key="DangerSoft" Color="#FFF0F4" />
+        <SolidColorBrush x:Key="Sky" Color="#3989C9" />
+        <SolidColorBrush x:Key="SkySoft" Color="#EDF7FF" />
+        <SolidColorBrush x:Key="Amber" Color="#D58A22" />
+        <SolidColorBrush x:Key="AmberSoft" Color="#FFF6E6" />
+        <DropShadowEffect x:Key="CardShadow" Color="#17151F" BlurRadius="14" ShadowDepth="2" Opacity="0.055" />
+        <DropShadowEffect x:Key="SelectedCardShadow" Color="#665FD8" BlurRadius="20" ShadowDepth="4" Opacity="0.15" />
+        <DropShadowEffect x:Key="PrimaryButtonShadow" Color="#5149C8" BlurRadius="18" ShadowDepth="4" Opacity="0.26" />
 
         <Style TargetType="Button">
             <Setter Property="Cursor" Value="Hand" />
@@ -49,6 +59,7 @@
             <Setter Property="Foreground" Value="{DynamicResource MutedText}" />
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
             <Setter Property="HorizontalContentAlignment" Value="Left" />
             <Setter Property="Padding" Value="13,10" />
             <Setter Property="Margin" Value="0,1" />
@@ -58,13 +69,18 @@
                     <ControlTemplate TargetType="Button">
                         <Grid RenderTransformOrigin="0.5,0.5">
                             <Grid.RenderTransform><ScaleTransform x:Name="NavScale" ScaleX="1" ScaleY="1" /></Grid.RenderTransform>
-                            <Border x:Name="Chrome" Background="{TemplateBinding Background}" CornerRadius="10">
-                                <ContentPresenter Margin="{TemplateBinding Padding}" />
+                            <Border x:Name="Chrome" Background="{TemplateBinding Background}" BorderBrush="Transparent" BorderThickness="1" CornerRadius="10">
+                                <Grid>
+                                    <Border x:Name="ActiveBar" Width="3" Height="20" CornerRadius="2" Background="{DynamicResource Accent}"
+                                            HorizontalAlignment="Left" VerticalAlignment="Center" Opacity="0" />
+                                    <ContentPresenter Margin="{TemplateBinding Padding}" />
+                                </Grid>
                             </Border>
                         </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource HoverSurface}" />
+                                <Setter Property="Foreground" Value="{DynamicResource Accent}" />
                                 <Trigger.EnterActions>
                                     <BeginStoryboard><Storyboard>
                                         <DoubleAnimation Storyboard.TargetName="NavScale" Storyboard.TargetProperty="ScaleX" To="1.018" Duration="0:0:0.167" />
@@ -80,6 +96,13 @@
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="Chrome" Property="Opacity" Value="0.76" />
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource Accent}" />
+                                <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource AccentSoft}" />
+                            </Trigger>
+                            <Trigger Property="Tag" Value="active">
+                                <Setter TargetName="ActiveBar" Property="Opacity" Value="1" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -124,37 +147,168 @@
                 </Setter.Value>
             </Setter>
         </Style>
-        <Style x:Key="FeatureButton" TargetType="Button">
-            <Setter Property="Height" Value="36" />
-            <Setter Property="Foreground" Value="{DynamicResource PrimaryText}" />
-            <Setter Property="Background" Value="{DynamicResource Surface}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource Border}" />
+        <Style x:Key="ModeToggleButton" TargetType="Button">
+            <Setter Property="Width" Value="61" />
+            <Setter Property="Height" Value="30" />
+            <Setter Property="Foreground" Value="{DynamicResource MutedText}" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="FontSize" Value="11" />
-            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Padding" Value="7,0" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="Chrome" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="10" Padding="13,4">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-                        </Border>
+                        <Grid x:Name="ModeMotion" RenderTransformOrigin="0.5,0.5">
+                            <Grid.RenderTransform><ScaleTransform ScaleX="1" ScaleY="1" /></Grid.RenderTransform>
+                            <Border x:Name="ModeChrome" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="9.5">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="{TemplateBinding Padding}" />
+                            </Border>
+                        </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource HoverSurface}" />
-                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource Accent}" />
+                                <Setter TargetName="ModeChrome" Property="BorderBrush" Value="{DynamicResource Accent}" />
+                                <Trigger.EnterActions><BeginStoryboard><Storyboard>
+                                    <DoubleAnimation Storyboard.TargetName="ModeMotion" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1.025" Duration="0:0:0.15" />
+                                    <DoubleAnimation Storyboard.TargetName="ModeMotion" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1.025" Duration="0:0:0.15" />
+                                </Storyboard></BeginStoryboard></Trigger.EnterActions>
+                                <Trigger.ExitActions><BeginStoryboard><Storyboard>
+                                    <DoubleAnimation Storyboard.TargetName="ModeMotion" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1" Duration="0:0:0.16" />
+                                    <DoubleAnimation Storyboard.TargetName="ModeMotion" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1" Duration="0:0:0.16" />
+                                </Storyboard></BeginStoryboard></Trigger.ExitActions>
                             </Trigger>
-                            <Trigger Property="IsPressed" Value="True"><Setter TargetName="Chrome" Property="Opacity" Value="0.78" /></Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ModeMotion" Property="Opacity" Value="0.72" />
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="ModeChrome" Property="BorderBrush" Value="{DynamicResource Accent}" />
+                            </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
-        <Style x:Key="PrimaryActionButton" TargetType="Button" BasedOn="{StaticResource RoundButton}">
-            <Setter Property="Background" Value="{DynamicResource PrimaryGradient}" />
+        <Style x:Key="FeatureButton" TargetType="Button">
+            <Setter Property="Height" Value="38" />
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryText}" />
+            <Setter Property="Background" Value="{DynamicResource Surface}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Border}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="FontSize" Value="10.5" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Tag" Value="inactive" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid x:Name="MotionRoot" RenderTransformOrigin="0.5,0.5">
+                            <Grid.RenderTransform><ScaleTransform ScaleX="1" ScaleY="1" /></Grid.RenderTransform>
+                            <Border x:Name="Chrome" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="11" Padding="12,4">
+                                <Grid>
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="9" /><ColumnDefinition Width="8" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                    <Ellipse x:Name="StateHalo" Width="9" Height="9" Fill="{DynamicResource Accent}" Opacity="0" />
+                                    <Ellipse x:Name="StateDot" Width="6" Height="6" Fill="{DynamicResource SubtleText}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    <ContentPresenter Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Grid>
+                            </Border>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource HoverSurface}" />
+                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource Accent}" />
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard><Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="MotionRoot" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1.025" Duration="0:0:0.16" />
+                                        <DoubleAnimation Storyboard.TargetName="MotionRoot" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1.025" Duration="0:0:0.16" />
+                                    </Storyboard></BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard><Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="MotionRoot" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1" Duration="0:0:0.16" />
+                                        <DoubleAnimation Storyboard.TargetName="MotionRoot" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1" Duration="0:0:0.16" />
+                                    </Storyboard></BeginStoryboard>
+                                </Trigger.ExitActions>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True"><Setter TargetName="Chrome" Property="Opacity" Value="0.78" /></Trigger>
+                            <Trigger Property="Tag" Value="active">
+                                <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource InfoSurface}" />
+                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource Accent}" />
+                                <Setter TargetName="StateDot" Property="Fill" Value="{DynamicResource Positive}" />
+                                <Setter TargetName="StateHalo" Property="Fill" Value="{DynamicResource Positive}" />
+                                <Setter TargetName="StateHalo" Property="Opacity" Value="0.18" />
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard><Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="StateHalo" Storyboard.TargetProperty="Opacity" From="0.65" To="0.18" Duration="0:0:0.34" />
+                                    </Storyboard></BeginStoryboard>
+                                </Trigger.EnterActions>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False"><Setter TargetName="MotionRoot" Property="Opacity" Value="0.45" /></Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="PrimaryActionButton" TargetType="Button">
+            <Setter Property="Background" Value="{DynamicResource PrimaryActionGradient}" />
             <Setter Property="Foreground" Value="White" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Padding" Value="16,10" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid x:Name="PrimaryMotion" RenderTransformOrigin="0.5,0.5">
+                            <Grid.RenderTransform><ScaleTransform ScaleX="1" ScaleY="1" /></Grid.RenderTransform>
+                            <Grid.Effect><StaticResource ResourceKey="PrimaryButtonShadow" /></Grid.Effect>
+                            <Border x:Name="PrimaryChrome" Background="{TemplateBinding Background}" CornerRadius="12">
+                                <Grid>
+                                    <Border x:Name="PrimaryGlow" Background="#18FFFFFF" CornerRadius="12" Opacity="0" />
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="{TemplateBinding Padding}" />
+                                </Grid>
+                            </Border>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="PrimaryGlow" Property="Opacity" Value="1" />
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard><Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="PrimaryMotion" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1.025" Duration="0:0:0.16" />
+                                        <DoubleAnimation Storyboard.TargetName="PrimaryMotion" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1.025" Duration="0:0:0.16" />
+                                    </Storyboard></BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard><Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="PrimaryMotion" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1" Duration="0:0:0.18" />
+                                        <DoubleAnimation Storyboard.TargetName="PrimaryMotion" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1" Duration="0:0:0.18" />
+                                    </Storyboard></BeginStoryboard>
+                                </Trigger.ExitActions>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="PrimaryChrome" Property="Opacity" Value="0.86" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="PrimaryMotion" Property="Opacity" Value="0.42" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="DangerActionButton" TargetType="Button" BasedOn="{StaticResource RoundButton}">
+            <Setter Property="Background" Value="{DynamicResource DangerSoft}" />
+            <Setter Property="Foreground" Value="{DynamicResource Danger}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Danger}" />
+        </Style>
+        <Style x:Key="RestoreActionButton" TargetType="Button" BasedOn="{StaticResource RoundButton}">
+            <Setter Property="Background" Value="{DynamicResource AccentSoft}" />
+            <Setter Property="Foreground" Value="{DynamicResource Accent}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
+        </Style>
+        <Style x:Key="CodexActionButton" TargetType="Button" BasedOn="{StaticResource RoundButton}">
+            <Setter Property="Background" Value="{DynamicResource SkySoft}" />
+            <Setter Property="Foreground" Value="{DynamicResource Sky}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Sky}" />
         </Style>
         <Style x:Key="PillText" TargetType="TextBlock">
             <Setter Property="FontSize" Value="9.5" />
@@ -203,7 +357,7 @@
                 </Grid>
 
                 <StackPanel Grid.Row="2">
-                    <TextBlock Text="LIBRARY" Foreground="{DynamicResource SubtleText}" FontSize="8.5" FontWeight="SemiBold" Margin="13,0,0,7" />
+                    <TextBlock Text="LIBRARY" Foreground="{DynamicResource Accent}" Opacity="0.76" FontSize="8.5" FontWeight="SemiBold" Margin="13,0,0,7" />
                     <Button x:Name="ThemesButton" Style="{StaticResource NavButton}" Click="ShowThemes_Click">
                         <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="27" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
                             <Path Style="{StaticResource NavIcon}" Data="M 2,2 L 9,2 L 9,9 L 2,9 Z M 13,2 L 20,2 L 20,9 L 13,9 Z M 2,13 L 9,13 L 9,20 L 2,20 Z M 13,13 L 20,13 L 20,20 L 13,20 Z" />
@@ -223,7 +377,7 @@
                         </Grid>
                     </Button>
                     <Border Height="1" Background="{DynamicResource Border}" Margin="10,13,10,12" />
-                    <TextBlock Text="SYSTEM" Foreground="{DynamicResource SubtleText}" FontSize="8.5" FontWeight="SemiBold" Margin="12,0,0,7" />
+                    <TextBlock Text="SYSTEM" Foreground="{DynamicResource Accent}" Opacity="0.72" FontSize="8.5" FontWeight="SemiBold" Margin="12,0,0,7" />
                     <Button x:Name="DiagnosticsButton" Style="{StaticResource NavButton}" Click="Diagnostics_Click">
                         <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="27" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
                             <Path Style="{StaticResource NavIcon}" Data="M 3,13 L 7,13 L 9.5,7 L 13,18 L 15.5,11 L 21,11" />
@@ -243,7 +397,7 @@
                         </Grid>
                     </Button>
                     <Border Height="1" Background="{DynamicResource Border}" Margin="10,13,10,12" />
-                    <TextBlock Text="DEVELOPER" Foreground="{DynamicResource SubtleText}" FontSize="8.5" FontWeight="SemiBold" Margin="12,0,0,7" />
+                    <TextBlock Text="DEVELOPER" Foreground="{DynamicResource Amber}" Opacity="0.78" FontSize="8.5" FontWeight="SemiBold" Margin="12,0,0,7" />
                     <Button x:Name="ImportGuideButton" Style="{StaticResource NavButton}" Click="ImportGuide_Click">
                         <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="27" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
                             <Path Style="{StaticResource NavIcon}" Data="M 12,3 L 12,15 M 7.5,10.5 L 12,15 L 16.5,10.5 M 4,18 L 4,21 L 20,21 L 20,18" />
@@ -300,16 +454,28 @@
                 </StackPanel>
                 <Border Grid.Column="1" Height="34" VerticalAlignment="Center" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="11" Padding="11,0">
                     <StackPanel Orientation="Horizontal">
-                        <Ellipse Width="7" Height="7" Fill="{DynamicResource Positive}" Margin="0,0,7,0" />
+                        <Ellipse x:Name="EngineStateDot" Width="7" Height="7" Fill="{DynamicResource SubtleText}" Margin="0,0,7,0" />
                         <TextBlock x:Name="EngineStateText" Text="引擎待启动" Foreground="{DynamicResource PrimaryText}" FontSize="11" VerticalAlignment="Center" />
                     </StackPanel>
                 </Border>
-                <Button x:Name="QuickSwitchButton" Grid.Column="3" Style="{StaticResource FeatureButton}" Width="100" Tag="◇" Click="QuickSwitchButton_Click" Content="主题浮窗" />
-                <Button x:Name="StartupButton" Grid.Column="5" Style="{StaticResource FeatureButton}" Width="100" Tag="↟" Click="StartupButton_Click" Content="开机启动" />
-                <Border Grid.Column="7" Height="36" Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="11" Padding="3">
+                <Button x:Name="QuickSwitchButton" Grid.Column="3" Style="{StaticResource FeatureButton}" Width="116" Click="QuickSwitchButton_Click" Content="打开主题浮窗" />
+                <Button x:Name="StartupButton" Grid.Column="5" Style="{StaticResource FeatureButton}" Width="116" Click="StartupButton_Click" Content="开启开机启动" />
+                <Border Grid.Column="7" Height="38" Background="{DynamicResource SurfaceElevated}" BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="12" Padding="3">
                     <StackPanel Orientation="Horizontal">
-                        <Button x:Name="LightModeButton" Width="43" Style="{StaticResource RoundButton}" BorderThickness="0" Padding="4" Tag="light" Click="StudioMode_Click" Content="亮" FontSize="10" ToolTip="亮色界面" />
-                        <Button x:Name="DarkModeButton" Width="43" Style="{StaticResource RoundButton}" BorderThickness="0" Padding="4" Tag="dark" Click="StudioMode_Click" Content="暗" FontSize="10" ToolTip="暗色界面" />
+                        <Button x:Name="LightModeButton" Style="{StaticResource ModeToggleButton}" Tag="light" Click="StudioMode_Click" ToolTip="切换为亮色界面">
+                            <StackPanel Orientation="Horizontal">
+                                <Path Width="14" Height="14" Data="M 12,8 A 4,4 0 1 1 11.9,8 M 12,1 L 12,3 M 12,21 L 12,23 M 1,12 L 3,12 M 21,12 L 23,12 M 4.2,4.2 L 5.7,5.7 M 18.3,18.3 L 19.8,19.8 M 19.8,4.2 L 18.3,5.7 M 5.7,18.3 L 4.2,19.8"
+                                       Style="{StaticResource NavIcon}" Margin="0,0,6,0" />
+                                <TextBlock Text="亮色" FontSize="10.5" FontWeight="SemiBold" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                        <Button x:Name="DarkModeButton" Style="{StaticResource ModeToggleButton}" Tag="dark" Click="StudioMode_Click" ToolTip="切换为暗色界面">
+                            <StackPanel Orientation="Horizontal">
+                                <Path Width="14" Height="14" Data="M 15,3 C 9,4 7,9 8.5,13.5 C 10,18 14.5,19.5 19,17 C 17,20.5 12.5,22 8.5,20 C 4,17.8 2,12.5 4,8 C 6,3.8 11,1.7 15,3 Z"
+                                       Style="{StaticResource NavIcon}" Margin="0,0,6,0" />
+                                <TextBlock Text="暗色" FontSize="10.5" FontWeight="SemiBold" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
                     </StackPanel>
                 </Border>
             </Grid>
@@ -376,7 +542,7 @@
                                                         <Trigger.EnterActions>
                                                             <BeginStoryboard>
                                                                 <Storyboard>
-                                                                    <DoubleAnimation Storyboard.TargetName="CardLift" Storyboard.TargetProperty="Y" To="-5" Duration="0:0:0.2">
+                                                                    <DoubleAnimation Storyboard.TargetName="CardLift" Storyboard.TargetProperty="Y" To="0" Duration="0:0:0.2">
                                                                         <DoubleAnimation.EasingFunction><CubicEase EasingMode="EaseOut" /></DoubleAnimation.EasingFunction>
                                                                     </DoubleAnimation>
                                                                 </Storyboard>
@@ -398,9 +564,11 @@
                                                 </ControlTemplate.Triggers>
                                             </ControlTemplate>
                                         </Button.Template>
-                                        <Border x:Name="CardShell" Height="276" CornerRadius="16" Background="{DynamicResource SurfaceElevated}"
-                                                BorderBrush="{DynamicResource Border}" BorderThickness="1" Effect="{StaticResource CardShadow}"
-                                                ClipToBounds="True">
+                                        <Border x:Name="CardFrame" Height="276" CornerRadius="17" Background="Transparent" Effect="{StaticResource CardShadow}">
+                                        <Grid>
+                                        <Border x:Name="CardShell" CornerRadius="16" Background="{DynamicResource SurfaceElevated}"
+                                                BorderBrush="{DynamicResource Border}" BorderThickness="1"
+                                                SizeChanged="RoundedCard_SizeChanged">
                                             <Grid>
                                                 <Grid x:Name="PreviewArea" Background="{DynamicResource AdvancedPreview}">
                                                     <Image x:Name="PreviewImage" Source="{Binding Preview}" Stretch="UniformToFill" />
@@ -445,14 +613,20 @@
                                                             <TextBlock Text="{Binding Version, StringFormat=v{0}}" Foreground="#AFFFFFFF" FontSize="8.5" />
                                                         </StackPanel>
                                                     </StackPanel>
-                                                    <Border x:Name="SelectedMark" Grid.Column="1" Width="34" Height="34" CornerRadius="17" Background="{DynamicResource PrimaryGradient}"
-                                                            VerticalAlignment="Bottom" Opacity="0" RenderTransformOrigin="0.5,0.5">
-                                                        <Border.RenderTransform><ScaleTransform x:Name="SelectedScale" ScaleX="0.55" ScaleY="0.55" /></Border.RenderTransform>
-                                                        <Path Width="14" Height="14" Data="M 2,7 L 5.5,10.5 L 12,3.5" Stretch="Uniform" Stroke="White" StrokeThickness="2"
-                                                              StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" />
+                                                    <Border x:Name="SelectedMark" Grid.Column="1" Height="26" CornerRadius="8" Background="{DynamicResource PrimaryActionGradient}"
+                                                            Padding="9,0"
+                                                            VerticalAlignment="Bottom" Opacity="0">
+                                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                            <Ellipse Width="5" Height="5" Fill="White" Margin="0,0,6,0" />
+                                                            <TextBlock Text="已应用" Foreground="White" FontSize="9.5" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                                        </StackPanel>
                                                     </Border>
                                                 </Grid>
                                             </Grid>
+                                        </Border>
+                                        <Border x:Name="SelectionRing" CornerRadius="16" BorderBrush="{DynamicResource PrimaryActionGradient}" BorderThickness="1.5"
+                                                 Opacity="0" IsHitTestVisible="False" />
+                                        </Grid>
                                         </Border>
                                     </Button>
                                     <Button x:Name="FavoriteButton" Tag="{Binding}" Click="FavoriteTheme_Click" HorizontalAlignment="Right" VerticalAlignment="Top"
@@ -477,25 +651,32 @@
                                     <DataTrigger Binding="{Binding HasPreview}" Value="False"><Setter TargetName="PreviewImage" Property="Visibility" Value="Collapsed" /></DataTrigger>
                                     <DataTrigger Binding="{Binding HasPreview}" Value="True"><Setter TargetName="FallbackPreview" Property="Visibility" Value="Collapsed" /></DataTrigger>
                                     <DataTrigger Binding="{Binding IsSelected}" Value="True">
-                                        <Setter TargetName="CardShell" Property="BorderBrush" Value="{DynamicResource Accent}" />
-                                        <Setter TargetName="CardShell" Property="BorderThickness" Value="2" />
-                                        <Setter TargetName="CardShell" Property="Effect" Value="{StaticResource SelectedCardShadow}" />
+                                        <Setter TargetName="CardFrame" Property="Effect" Value="{StaticResource SelectedCardShadow}" />
                                         <DataTrigger.EnterActions>
                                             <BeginStoryboard>
                                                 <Storyboard>
                                                     <DoubleAnimation Storyboard.TargetName="CardScale" Storyboard.TargetProperty="ScaleX" From="0.975" To="1" Duration="0:0:0.25"><DoubleAnimation.EasingFunction><BackEase Amplitude="0.35" EasingMode="EaseOut" /></DoubleAnimation.EasingFunction></DoubleAnimation>
                                                     <DoubleAnimation Storyboard.TargetName="CardScale" Storyboard.TargetProperty="ScaleY" From="0.975" To="1" Duration="0:0:0.25"><DoubleAnimation.EasingFunction><BackEase Amplitude="0.35" EasingMode="EaseOut" /></DoubleAnimation.EasingFunction></DoubleAnimation>
-                                                    <DoubleAnimation Storyboard.TargetName="SelectedMark" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.16" />
-                                                    <DoubleAnimation Storyboard.TargetName="SelectedScale" Storyboard.TargetProperty="ScaleX" To="1" Duration="0:0:0.25"><DoubleAnimation.EasingFunction><BackEase Amplitude="0.4" EasingMode="EaseOut" /></DoubleAnimation.EasingFunction></DoubleAnimation>
-                                                    <DoubleAnimation Storyboard.TargetName="SelectedScale" Storyboard.TargetProperty="ScaleY" To="1" Duration="0:0:0.25"><DoubleAnimation.EasingFunction><BackEase Amplitude="0.4" EasingMode="EaseOut" /></DoubleAnimation.EasingFunction></DoubleAnimation>
+                                                    <DoubleAnimation Storyboard.TargetName="SelectionRing" Storyboard.TargetProperty="Opacity" To="0.78" Duration="0:0:0.16" />
                                                 </Storyboard>
                                             </BeginStoryboard>
                                         </DataTrigger.EnterActions>
                                         <DataTrigger.ExitActions>
                                             <BeginStoryboard><Storyboard>
+                                                <DoubleAnimation Storyboard.TargetName="SelectionRing" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.12" />
+                                            </Storyboard></BeginStoryboard>
+                                        </DataTrigger.ExitActions>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding IsApplied}" Value="True">
+                                        <Setter TargetName="SelectedMark" Property="Opacity" Value="1" />
+                                        <DataTrigger.EnterActions>
+                                            <BeginStoryboard><Storyboard>
+                                                <DoubleAnimation Storyboard.TargetName="SelectedMark" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.18" />
+                                            </Storyboard></BeginStoryboard>
+                                        </DataTrigger.EnterActions>
+                                        <DataTrigger.ExitActions>
+                                            <BeginStoryboard><Storyboard>
                                                 <DoubleAnimation Storyboard.TargetName="SelectedMark" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.12" />
-                                                <DoubleAnimation Storyboard.TargetName="SelectedScale" Storyboard.TargetProperty="ScaleX" To="0.55" Duration="0:0:0.12" />
-                                                <DoubleAnimation Storyboard.TargetName="SelectedScale" Storyboard.TargetProperty="ScaleY" To="0.55" Duration="0:0:0.12" />
                                             </Storyboard></BeginStoryboard>
                                         </DataTrigger.ExitActions>
                                     </DataTrigger>
@@ -503,7 +684,7 @@
                                     <DataTrigger Binding="{Binding IsFavorite}" Value="True">
                                         <Setter TargetName="FavoriteButton" Property="Background" Value="#D90A0C12" />
                                         <Setter TargetName="FavoriteButton" Property="Content" Value="♥" />
-                                        <Setter TargetName="FavoriteButton" Property="Foreground" Value="#8ED7FF" />
+                                        <Setter TargetName="FavoriteButton" Property="Foreground" Value="#C9BEFF" />
                                     </DataTrigger>
                                 </DataTemplate.Triggers>
                             </DataTemplate>
@@ -512,17 +693,23 @@
                 </ScrollViewer>
                 <Border x:Name="EmptyState" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center"
                         Background="{DynamicResource SurfaceElevated}" BorderBrush="{DynamicResource Border}" BorderThickness="1"
-                        CornerRadius="18" Padding="54,34">
+                        CornerRadius="22" Padding="74,46" MinWidth="470" Effect="{StaticResource CardShadow}">
                     <StackPanel>
-                        <TextBlock Text="◇" Foreground="{DynamicResource Accent}" FontSize="38" HorizontalAlignment="Center" />
-                        <TextBlock x:Name="EmptyStateTitleText" Text="这里还没有主题" Foreground="{DynamicResource PrimaryText}" FontSize="15" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,8,0,0" />
-                        <TextBlock x:Name="EmptyStateBodyText" Text="使用上方按钮导入一个本地主题文件夹。" Foreground="{DynamicResource MutedText}" FontSize="11" Margin="0,5,0,0" />
+                        <Grid Width="74" Height="74" HorizontalAlignment="Center">
+                            <Ellipse Fill="{DynamicResource AccentSoft}" />
+                            <Ellipse Width="48" Height="48" Fill="{DynamicResource PrimaryActionGradient}" Opacity="0.18" />
+                            <Path Width="28" Height="28" Data="M 14,1 L 16.8,10.2 L 27,14 L 16.8,17.8 L 14,27 L 11.2,17.8 L 1,14 L 11.2,10.2 Z"
+                                  Stretch="Uniform" Fill="{DynamicResource Accent}" />
+                        </Grid>
+                        <TextBlock x:Name="EmptyStateTitleText" Text="这里还没有主题" Foreground="{DynamicResource PrimaryText}" FontSize="19" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,16,0,0" />
+                        <TextBlock x:Name="EmptyStateBodyText" Text="使用上方按钮导入一个本地主题文件夹。" Foreground="{DynamicResource MutedText}" FontSize="11.5"
+                                   TextWrapping="Wrap" TextAlignment="Center" MaxWidth="340" LineHeight="19" HorizontalAlignment="Center" Margin="0,7,0,0" />
                     </StackPanel>
                 </Border>
             </Grid>
 
-            <Border x:Name="SelectionDock" Grid.Row="6" Height="72" Background="{DynamicResource SurfaceElevated}" BorderBrush="{DynamicResource Border}"
-                    BorderThickness="1" CornerRadius="18" Padding="17,0" Effect="{StaticResource FloatingShadow}" RenderTransformOrigin="0.5,1">
+            <Border x:Name="SelectionDock" Grid.Row="6" Height="84" Background="{DynamicResource SurfaceElevated}" BorderBrush="{DynamicResource Border}"
+                    BorderThickness="1" CornerRadius="18" Padding="18,0" Effect="{StaticResource SelectedCardShadow}" RenderTransformOrigin="0.5,1">
                 <Border.RenderTransform><ScaleTransform x:Name="SelectionDockScale" ScaleX="1" ScaleY="1" /></Border.RenderTransform>
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -537,38 +724,45 @@
                         <ColumnDefinition Width="8" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <Border Width="38" Height="38" CornerRadius="12" Background="{DynamicResource AccentSoft}">
-                        <Path Width="15" Height="15" Data="M 7.5,1 L 9,5.7 L 14,7.5 L 9,9.3 L 7.5,14 L 6,9.3 L 1,7.5 L 6,5.7 Z"
+                    <Border Width="44" Height="44" CornerRadius="13" Background="{DynamicResource AccentSoft}">
+                        <Path Width="17" Height="17" Data="M 7.5,1 L 9,5.7 L 14,7.5 L 9,9.3 L 7.5,14 L 6,9.3 L 1,7.5 L 6,5.7 Z"
                               Stretch="Uniform" Fill="{DynamicResource Accent}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
                     <StackPanel Grid.Column="2" VerticalAlignment="Center">
-                        <TextBlock x:Name="SelectedThemeText" Text="正在读取主题库…" Foreground="{DynamicResource PrimaryText}" FontWeight="SemiBold" FontSize="13" />
-                        <TextBlock x:Name="StatusText" Text="请稍候" Foreground="{DynamicResource MutedText}" FontSize="10" TextTrimming="CharacterEllipsis" Margin="0,3,20,0" />
+                        <TextBlock Text="当前选择" Foreground="{DynamicResource SubtleText}" FontWeight="SemiBold" FontSize="9" />
+                        <TextBlock x:Name="SelectedThemeText" Text="正在读取主题库…" Foreground="{DynamicResource PrimaryText}" FontWeight="SemiBold" FontSize="14" Margin="0,2,0,0" />
+                        <TextBlock x:Name="StatusText" Text="请稍候" Foreground="{DynamicResource MutedText}" FontSize="10.5" TextTrimming="CharacterEllipsis" Margin="0,3,20,0" />
                     </StackPanel>
-                    <Button x:Name="DeleteButton" Grid.Column="3" Style="{StaticResource RoundButton}" Width="40" Height="40" Foreground="{DynamicResource MutedText}" ToolTip="删除主题" IsEnabled="False" Click="DeleteTheme_Click">
-                        <Path Width="15" Height="15" Data="M 4,6 L 5,20 L 19,20 L 20,6 M 2,6 L 22,6 M 8,6 L 8.8,3 L 15.2,3 L 16,6 M 9,10 L 9,16 M 15,10 L 15,16"
-                              Style="{StaticResource NavIcon}" />
-                    </Button>
-                    <Button x:Name="RestoreButton" Grid.Column="5" Style="{StaticResource RoundButton}" Width="40" Height="40" FontWeight="SemiBold" ToolTip="恢复默认外观" Click="RestoreTheme_Click">
-                        <Path Width="15" Height="15" Data="M 7,8 L 3,8 L 3,4 M 3.5,8 C 5.8,3.5 11,2 15.5,4.2 C 20,6.5 21.5,12 19,16.5 C 16.5,21 10.8,22 6.7,19.2"
-                              Style="{StaticResource NavIcon}" />
-                    </Button>
-                    <Button x:Name="CodexModeButton" Grid.Column="7" Style="{StaticResource RoundButton}" Width="106" Height="40" FontWeight="SemiBold" Click="CodexMode_Click">
+                    <Button x:Name="DeleteButton" Grid.Column="3" Style="{StaticResource DangerActionButton}" Width="78" Height="46" ToolTip="删除主题" IsEnabled="False" Click="DeleteTheme_Click">
                         <StackPanel Orientation="Horizontal">
-                            <Path Width="14" Height="14" Data="M 12,3 C 7,4 5,8 6.5,12.5 C 8,17 12.5,18.5 17,16 C 15,19.5 10.5,21 6.5,19 C 2.5,17 1,12 3,8 C 5,4 9,2 12,3 Z"
+                            <Path Width="15" Height="15" Data="M 4,6 L 5,20 L 19,20 L 20,6 M 2,6 L 22,6 M 8,6 L 8.8,3 L 15.2,3 L 16,6 M 9,10 L 9,16 M 15,10 L 15,16"
                                   Style="{StaticResource NavIcon}" Margin="0,0,7,0" />
-                            <TextBlock Text="Codex 明暗" VerticalAlignment="Center" />
+                            <TextBlock Text="删除" FontSize="11.5" FontWeight="SemiBold" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
-                    <Button x:Name="ActivateButton" Grid.Column="9" Width="154" Height="40" Style="{StaticResource PrimaryActionButton}" Content="应用所选主题  →" Click="ActivateButton_Click" />
+                    <Button x:Name="RestoreButton" Grid.Column="5" Style="{StaticResource RestoreActionButton}" Width="108" Height="46" FontWeight="SemiBold" ToolTip="恢复默认外观" Click="RestoreTheme_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Width="15" Height="15" Data="M 7,8 L 3,8 L 3,4 M 3.5,8 C 5.8,3.5 11,2 15.5,4.2 C 20,6.5 21.5,12 19,16.5 C 16.5,21 10.8,22 6.7,19.2"
+                                  Style="{StaticResource NavIcon}" Margin="0,0,7,0" />
+                            <TextBlock Text="恢复默认" FontSize="11.5" FontWeight="SemiBold" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="CodexModeButton" Grid.Column="7" Style="{StaticResource CodexActionButton}" Width="140" Height="46" FontWeight="SemiBold" Click="CodexMode_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <Path x:Name="CodexModeIconPath" Width="15" Height="15" Data="M 12,3 C 7,4 5,8 6.5,12.5 C 8,17 12.5,18.5 17,16 C 15,19.5 10.5,21 6.5,19 C 2.5,17 1,12 3,8 C 5,4 9,2 12,3 Z"
+                                  Style="{StaticResource NavIcon}" Margin="0,0,7,0" />
+                            <TextBlock x:Name="CodexModeText" Text="检测 Codex 明暗" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="ActivateButton" Grid.Column="9" Width="188" Height="48" Style="{StaticResource PrimaryActionButton}" FontSize="11.5" Content="启动 Codex 并应用" Click="ActivateButton_Click" />
                 </Grid>
             </Border>
         </Grid>
 
         <Grid x:Name="InfoPage" Grid.Column="1" Margin="32,25,32,22" Visibility="Collapsed">
-            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                <StackPanel>
-                    <StackPanel x:Name="ImportInfoPanel">
+            <ScrollViewer x:Name="InfoScroll" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <Grid Width="{Binding ViewportWidth, ElementName=InfoScroll}" MinHeight="{Binding ViewportHeight, ElementName=InfoScroll}" MaxWidth="940" HorizontalAlignment="Center">
+                    <StackPanel x:Name="ImportInfoPanel" VerticalAlignment="Center">
                         <TextBlock Text="导入说明" Foreground="{DynamicResource PrimaryText}" FontSize="27" FontWeight="Bold" />
                         <TextBlock Text="软件只接收完整的沉浸式主题包，让角色视觉、动效与交互保持一致。" Foreground="{DynamicResource MutedText}" FontSize="12" Margin="1,6,0,20" />
                         <Border Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="16" Padding="22">
@@ -589,7 +783,7 @@
                         </Border>
                     </StackPanel>
 
-                    <StackPanel x:Name="UsageInfoPanel" Visibility="Collapsed">
+                    <StackPanel x:Name="UsageInfoPanel" Visibility="Collapsed" VerticalAlignment="Center">
                         <TextBlock Text="使用说明" Foreground="{DynamicResource PrimaryText}" FontSize="27" FontWeight="Bold" />
                         <TextBlock Text="从模板开始设计，复制后即可修改并导入本地主题库。" Foreground="{DynamicResource MutedText}" FontSize="12" Margin="1,6,0,20" />
                         <Border Background="{DynamicResource InfoSurface}" BorderBrush="{DynamicResource InfoBorder}" BorderThickness="1" CornerRadius="14" Padding="18"><TextBlock Text="推荐顺序：先修改 manifest.json 中唯一的 id、名称和作者；再建立亮暗色 CSS 与资源；最后完善 theme.js 的组件、动画和自动清理。" TextWrapping="Wrap" Foreground="{DynamicResource PrimaryText}" FontSize="11" LineHeight="19" /></Border>
@@ -609,14 +803,14 @@
                         </Border>
                     </StackPanel>
 
-                    <StackPanel x:Name="SettingsInfoPanel" Visibility="Collapsed">
+                    <StackPanel x:Name="SettingsInfoPanel" Visibility="Collapsed" VerticalAlignment="Center">
                         <TextBlock Text="设置" Foreground="{DynamicResource PrimaryText}" FontSize="27" FontWeight="Bold" />
                         <TextBlock Text="{x:Static local:BrandInfo.RuntimeSettingsDescription}" Foreground="{DynamicResource MutedText}" FontSize="12" Margin="1,6,0,20" />
                         <Border Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="16" Padding="20"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><StackPanel><TextBlock Text="开机自动启动" Foreground="{DynamicResource PrimaryText}" FontWeight="SemiBold" FontSize="15" /><TextBlock Text="{x:Static local:BrandInfo.StartupDescription}" TextWrapping="Wrap" Foreground="{DynamicResource MutedText}" FontSize="11" LineHeight="18" Margin="0,7,18,0" /></StackPanel><CheckBox x:Name="StartupCheckBox" Grid.Column="1" VerticalAlignment="Center" Checked="StartupCheckBox_Changed" Unchecked="StartupCheckBox_Changed" Content="启用" Foreground="{DynamicResource PrimaryText}" FontSize="12" /></Grid></Border>
                         <Border Background="{DynamicResource InfoSurface}" BorderBrush="{DynamicResource InfoBorder}" BorderThickness="1" CornerRadius="14" Padding="18" Margin="0,18,0,0"><TextBlock Text="{x:Static local:BrandInfo.PortableDataDescription}" TextWrapping="Wrap" Foreground="{DynamicResource MutedText}" FontSize="11" LineHeight="19" /></Border>
                     </StackPanel>
 
-                    <StackPanel x:Name="DiagnosticsInfoPanel" Visibility="Collapsed">
+                    <StackPanel x:Name="DiagnosticsInfoPanel" Visibility="Collapsed" VerticalAlignment="Center">
                         <TextBlock Text="运行与诊断" Foreground="{DynamicResource PrimaryText}" FontSize="27" FontWeight="Bold" />
                         <TextBlock Text="仅检查本机主题库、Codex 进程与本机回环端口，不访问互联网。" Foreground="{DynamicResource MutedText}" FontSize="12" Margin="1,6,0,20" />
                         <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="14" /><ColumnDefinition Width="*" /><ColumnDefinition Width="14" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
@@ -624,10 +818,36 @@
                             <Border Grid.Column="2" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="14" Padding="16"><StackPanel><TextBlock Text="本机端口" Foreground="{DynamicResource Accent}" FontSize="10" FontWeight="Bold" /><TextBlock x:Name="DiagnosticPortText" Text="正在检查…" Foreground="{DynamicResource PrimaryText}" FontSize="16" FontWeight="SemiBold" Margin="0,7,0,0" /></StackPanel></Border>
                             <Border Grid.Column="4" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="14" Padding="16"><StackPanel><TextBlock Text="主题包" Foreground="{DynamicResource Accent}" FontSize="10" FontWeight="Bold" /><TextBlock x:Name="DiagnosticThemesText" Text="正在检查…" Foreground="{DynamicResource PrimaryText}" FontSize="16" FontWeight="SemiBold" Margin="0,7,0,0" /></StackPanel></Border>
                         </Grid>
-                        <Border Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="16" Padding="18" Margin="0,18,0,0"><StackPanel><TextBlock Text="诊断详情" Foreground="{DynamicResource PrimaryText}" FontSize="14" FontWeight="SemiBold" /><TextBox x:Name="DiagnosticDetailsText" Margin="0,10,0,0" IsReadOnly="True" BorderThickness="0" Background="Transparent" Foreground="{DynamicResource MutedText}" FontFamily="Consolas" FontSize="10.5" TextWrapping="Wrap" AcceptsReturn="True" /></StackPanel></Border>
+                        <Border Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="16" Padding="20" Margin="0,18,0,0">
+                            <StackPanel>
+                                <TextBlock Text="诊断详情" Foreground="{DynamicResource PrimaryText}" FontSize="14" FontWeight="SemiBold" />
+                                <Grid Margin="0,14,0,0">
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="18" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="12" /><RowDefinition Height="Auto" /><RowDefinition Height="12" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                                    <Border Background="{DynamicResource SurfaceAlt}" CornerRadius="11" Padding="14">
+                                        <StackPanel><TextBlock Text="STUDIO 根目录" Foreground="{DynamicResource SubtleText}" FontSize="9" FontWeight="SemiBold" /><TextBlock x:Name="DiagnosticRootText" Text="—" Foreground="{DynamicResource PrimaryText}" FontSize="10.5" TextWrapping="Wrap" Margin="0,6,0,0" /></StackPanel>
+                                    </Border>
+                                    <Border Grid.Column="2" Background="{DynamicResource SurfaceAlt}" CornerRadius="11" Padding="14">
+                                        <StackPanel><TextBlock Text="本地主题库" Foreground="{DynamicResource SubtleText}" FontSize="9" FontWeight="SemiBold" /><TextBlock x:Name="DiagnosticLibraryText" Text="—" Foreground="{DynamicResource PrimaryText}" FontSize="10.5" TextWrapping="Wrap" Margin="0,6,0,0" /></StackPanel>
+                                    </Border>
+                                    <Border Grid.Row="2" Background="{DynamicResource SurfaceAlt}" CornerRadius="11" Padding="14">
+                                        <StackPanel><TextBlock Text="CODEX 进程" Foreground="{DynamicResource SubtleText}" FontSize="9" FontWeight="SemiBold" /><TextBlock x:Name="DiagnosticProcessText" Text="—" Foreground="{DynamicResource PrimaryText}" FontSize="11" FontWeight="SemiBold" Margin="0,6,0,0" /></StackPanel>
+                                    </Border>
+                                    <Border Grid.Row="2" Grid.Column="2" Background="{DynamicResource SurfaceAlt}" CornerRadius="11" Padding="14">
+                                        <StackPanel><TextBlock Text="本机回环连接" Foreground="{DynamicResource SubtleText}" FontSize="9" FontWeight="SemiBold" /><TextBlock x:Name="DiagnosticLoopbackText" Text="—" Foreground="{DynamicResource PrimaryText}" FontSize="11" FontWeight="SemiBold" Margin="0,6,0,0" /></StackPanel>
+                                    </Border>
+                                    <Border Grid.Row="4" Background="{DynamicResource InfoSurface}" BorderBrush="{DynamicResource InfoBorder}" BorderThickness="1" CornerRadius="11" Padding="14">
+                                        <StackPanel><TextBlock Text="主题状态" Foreground="{DynamicResource Accent}" FontSize="9" FontWeight="SemiBold" /><TextBlock x:Name="DiagnosticThemeStateText" Text="—" Foreground="{DynamicResource PrimaryText}" FontSize="11" FontWeight="SemiBold" Margin="0,6,0,0" /><TextBlock x:Name="DiagnosticCurrentThemeText" Text="当前主题：—" Foreground="{DynamicResource MutedText}" FontSize="10" Margin="0,4,0,0" /></StackPanel>
+                                    </Border>
+                                    <Border Grid.Row="4" Grid.Column="2" Background="{DynamicResource InfoSurface}" BorderBrush="{DynamicResource InfoBorder}" BorderThickness="1" CornerRadius="11" Padding="14">
+                                        <StackPanel><TextBlock Text="主题包校验" Foreground="{DynamicResource Accent}" FontSize="9" FontWeight="SemiBold" /><TextBlock x:Name="DiagnosticValidationText" Text="—" Foreground="{DynamicResource PrimaryText}" FontSize="11" FontWeight="SemiBold" Margin="0,6,0,0" /><TextBlock Text="仅本机注入 · 无公网请求" Foreground="{DynamicResource MutedText}" FontSize="10" Margin="0,4,0,0" /></StackPanel>
+                                    </Border>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
                         <Button Style="{StaticResource RoundButton}" Click="Diagnostics_Click" Content="↻ 刷新诊断" HorizontalAlignment="Left" Margin="0,18,0,0" />
                     </StackPanel>
-                </StackPanel>
+                </Grid>
             </ScrollViewer>
         </Grid>
     </Grid>
