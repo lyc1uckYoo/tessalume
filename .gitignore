@@ -18,6 +18,7 @@ tmp/
 artifacts/
 previews/
 backups/
+AGENTS.md
 
 # Every direct child of themes/ is a publishable theme package. Design sources
 # and historical working copies inside a package are not release assets.
