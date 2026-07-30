@@ -1,9 +1,11 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using CodexThemeStudio.App.Infrastructure;
 using CodexThemeStudio.App.Models;
 using CodexThemeStudio.Core.Runtime;
@@ -79,6 +81,7 @@ public partial class MainWindow : Window, IAsyncDisposable
 
         InitializeComponent();
         _uiInitialized = true;
+        SourceInitialized += (_, _) => NativeTitleBar.Apply(this, _darkMode);
         ThemeItems.ItemsSource = _visibleThemes;
         ApplyStudioTheme(_darkMode);
         UpdateStartupButton();
@@ -156,6 +159,7 @@ public partial class MainWindow : Window, IAsyncDisposable
             : _themes.Count == 0
                 ? "本地主题库为空"
                 : "主题包未通过安全校验，请打开诊断查看";
+        UpdateLibraryMetrics();
         RefreshQuickSwitchWindow();
     }
 
@@ -170,10 +174,10 @@ public partial class MainWindow : Window, IAsyncDisposable
 
         CategoryTitleText.Text = "主题画廊";
         CategoryDescriptionText.Text = "沉浸式角色主题、动态组件与完整交互，都集中在这里。";
-        ImportDeclarationTitleText.Text = "导入主题";
-        ImportDeclarationBodyText.Text = "选择包含 manifest.json 与 theme.js 的完整主题文件夹；启用前会检查本地源码。";
-        DeclarationIconText.Text = "FX";
-        ImportButton.Content = "＋ 导入主题";
+        ImportDeclarationTitleText.Text = "你的视觉工作台";
+        ImportDeclarationBodyText.Text = "浏览、收藏并一键应用完整主题；导入前会检查本地源码。";
+        DeclarationIconText.Text = "✦";
+        ImportButton.Content = "导入主题";
         ImportButton.Visibility = Visibility.Visible;
         UpdateCategoryButtons();
         UpdateEmptyState();
@@ -191,7 +195,6 @@ public partial class MainWindow : Window, IAsyncDisposable
             SelectedThemeText.Text = "这里还没有可用主题";
             ActivateButton.IsEnabled = false;
             DeleteButton.IsEnabled = false;
-            DeleteButton.Content = "删除主题";
         }
     }
 
@@ -206,8 +209,8 @@ public partial class MainWindow : Window, IAsyncDisposable
 
         CategoryTitleText.Text = "我的收藏";
         CategoryDescriptionText.Text = "集中查看你喜欢的角色主题，可直接选择并应用。";
-        ImportDeclarationTitleText.Text = "收藏会保存在本机";
-        ImportDeclarationBodyText.Text = "在任意主题卡片右上角点击爱心，即可收藏或取消收藏。";
+        ImportDeclarationTitleText.Text = "只留下真正喜欢的主题";
+        ImportDeclarationBodyText.Text = "收藏仅保存在本机，在卡片右上角即可随时加入或移出。";
         DeclarationIconText.Text = "♥";
         ImportButton.Visibility = Visibility.Collapsed;
         UpdateCategoryButtons();
@@ -227,7 +230,6 @@ public partial class MainWindow : Window, IAsyncDisposable
         SelectedThemeText.Text = "还没有收藏的主题";
         ActivateButton.IsEnabled = false;
         DeleteButton.IsEnabled = false;
-        DeleteButton.Content = "删除主题";
     }
 
     private void UpdateEmptyState()
@@ -337,7 +339,13 @@ public partial class MainWindow : Window, IAsyncDisposable
 
     private void ThemeCard_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is Button { Tag: ThemeCardModel theme }) SelectTheme(theme);
+        if (sender is not Button { Tag: ThemeCardModel theme } button)
+        {
+            return;
+        }
+
+        AnimateCardPress(button);
+        SelectTheme(theme);
     }
 
     private async void FavoriteTheme_Click(object sender, RoutedEventArgs e)
@@ -367,6 +375,7 @@ public partial class MainWindow : Window, IAsyncDisposable
             UpdateCategoryButtons();
         }
 
+        UpdateLibraryMetrics();
         StatusText.Text = theme.IsFavorite
             ? $"{theme.Name} 已加入我的收藏"
             : $"{theme.Name} 已移出我的收藏";
@@ -382,10 +391,10 @@ public partial class MainWindow : Window, IAsyncDisposable
         SelectedThemeText.Text = theme.Name;
         ActivateButton.IsEnabled = theme.IsValid;
         DeleteButton.IsEnabled = theme.CanDelete;
-        DeleteButton.Content = "删除主题";
         StatusText.Text = theme.IsValid
             ? $"v{theme.Version} · 沉浸式主题 · 启用时检查本地源码"
             : string.Join("；", theme.CatalogItem.Validation.Issues.Select(issue => issue.Message));
+        AnimateSelectionDock();
     }
 
     private async void ImportTheme_Click(object sender, RoutedEventArgs e)
@@ -682,6 +691,7 @@ public partial class MainWindow : Window, IAsyncDisposable
         ThemeLibraryPage.Visibility = Visibility.Visible;
         InfoPage.Visibility = Visibility.Collapsed;
         UpdateCategoryButtons();
+        AnimatePage(ThemeLibraryPage);
     }
 
     private void ShowInfoPage(RightPane page)
@@ -694,6 +704,7 @@ public partial class MainWindow : Window, IAsyncDisposable
         SettingsInfoPanel.Visibility = page == RightPane.Settings ? Visibility.Visible : Visibility.Collapsed;
         DiagnosticsInfoPanel.Visibility = page == RightPane.Diagnostics ? Visibility.Visible : Visibility.Collapsed;
         UpdateCategoryButtons();
+        AnimatePage(InfoPage);
     }
 
     private void OpenTemplate_Click(object sender, RoutedEventArgs e)
@@ -989,31 +1000,35 @@ public partial class MainWindow : Window, IAsyncDisposable
     {
         SetGradientBrush(
             "WindowBackground",
-            dark ? "#0D0C15" : "#FAFAFE",
-            dark ? "#171322" : "#F1EFF9");
+            dark ? "#101116" : "#F7F8FA",
+            dark ? "#14171D" : "#F1F3F6");
         SetGradientBrush(
             "SidebarBackground",
-            dark ? "#171522" : "#FFFFFF",
-            dark ? "#1D182A" : "#F4F1FA");
+            dark ? "#14151A" : "#FBFBFC",
+            dark ? "#181B21" : "#F6F7F9");
         SetGradientBrush(
             "PrimaryGradient",
-            dark ? "#8C6BFF" : "#6D4EEA",
-            dark ? "#F26AB2" : "#D84B9B");
+            dark ? "#6879F2" : "#5365E8",
+            dark ? "#4FA7D8" : "#438FC9");
         SetGradientBrush(
             "AdvancedPreview",
-            dark ? "#15102A" : "#2A1A57",
-            dark ? "#B14ED1" : "#EC69AC");
-        SetBrush("Surface", dark ? "#1D1A28" : "#FFFFFF");
-        SetBrush("SurfaceAlt", dark ? "#272235" : "#F1EFF7");
-        SetBrush("HoverSurface", dark ? "#342C46" : "#EAE6F6");
-        SetBrush("InfoSurface", dark ? "#211D31" : "#F4F1FB");
-        SetBrush("InfoBorder", dark ? "#443B5B" : "#DAD3EC");
-        SetBrush("PrimaryText", dark ? "#F8F6FF" : "#211C31");
-        SetBrush("MutedText", dark ? "#BDB6CD" : "#6C657B");
-        SetBrush("SubtleText", dark ? "#888095" : "#9891A6");
-        SetBrush("Border", dark ? "#383247" : "#DED9EA");
-        SetBrush("Accent", dark ? "#B99CFF" : "#7252D3");
-        SetBrush("ActiveNav", dark ? "#302847" : "#E9E3F8");
+            dark ? "#17212C" : "#E8EDF3",
+            dark ? "#33475C" : "#BECBD8");
+        SetBrush("Surface", dark ? "#1B1D23" : "#FFFFFF");
+        SetBrush("SurfaceAlt", dark ? "#22252C" : "#EFF1F4");
+        SetBrush("SurfaceElevated", dark ? "#1F2229" : "#FFFFFF");
+        SetBrush("HoverSurface", dark ? "#292C34" : "#E9EBEF");
+        SetBrush("InfoSurface", dark ? "#202631" : "#EEF2FF");
+        SetBrush("InfoBorder", dark ? "#364153" : "#D9E0FA");
+        SetBrush("PrimaryText", dark ? "#F3F4F7" : "#191B20");
+        SetBrush("MutedText", dark ? "#ADB1BA" : "#626670");
+        SetBrush("SubtleText", dark ? "#7B808A" : "#9297A1");
+        SetBrush("Border", dark ? "#30333A" : "#DFE2E7");
+        SetBrush("Accent", dark ? "#8493FA" : "#5365E8");
+        SetBrush("AccentSoft", dark ? "#29304B" : "#E9ECFF");
+        SetBrush("ActiveNav", dark ? "#272B35" : "#ECEEF3");
+        SetBrush("Positive", dark ? "#52CEA0" : "#2EB47F");
+        NativeTitleBar.Apply(this, dark);
         UpdateCategoryButtons();
         UpdateModeButtons();
         UpdateStartupButton();
@@ -1039,12 +1054,75 @@ public partial class MainWindow : Window, IAsyncDisposable
         FavoritesButton.Foreground = (Brush)Resources[_rightPane == RightPane.Themes && _showFavorites ? "PrimaryText" : "MutedText"];
         ThemesButton.FontWeight = themesActive ? FontWeights.SemiBold : FontWeights.Normal;
         FavoritesButton.FontWeight = _rightPane == RightPane.Themes && _showFavorites ? FontWeights.SemiBold : FontWeights.Normal;
-        FavoritesButton.Content = _favoriteThemeIds.Count == 0
-            ? "♡   我的收藏"
-            : $"♥   我的收藏 · {_favoriteThemeIds.Count}";
+        FavoritesLabelText.Text = _favoriteThemeIds.Count == 0
+            ? "我的收藏"
+            : $"我的收藏  {_favoriteThemeIds.Count}";
         UpdateInfoNavigationButton(DiagnosticsButton, _rightPane == RightPane.Diagnostics);
+        UpdateInfoNavigationButton(SettingsButton, _rightPane == RightPane.Settings);
         UpdateInfoNavigationButton(ImportGuideButton, _rightPane == RightPane.ImportGuide);
         UpdateInfoNavigationButton(UsageGuideButton, _rightPane == RightPane.UsageGuide);
+    }
+
+    private void UpdateLibraryMetrics()
+    {
+        if (!_uiInitialized || ThemeCountText is null || FavoriteCountText is null)
+        {
+            return;
+        }
+
+        ThemeCountText.Text = _themes.Count.ToString(CultureInfo.InvariantCulture);
+        FavoriteCountText.Text = _themes.Count(theme => theme.IsFavorite).ToString(CultureInfo.InvariantCulture);
+    }
+
+    private static void AnimateCardPress(Button button)
+    {
+        if (button.RenderTransform is not ScaleTransform scale)
+        {
+            return;
+        }
+
+        var easing = new BackEase { Amplitude = 0.25, EasingMode = EasingMode.EaseOut };
+        scale.BeginAnimation(
+            ScaleTransform.ScaleXProperty,
+            new DoubleAnimation(0.965, 1, TimeSpan.FromMilliseconds(230)) { EasingFunction = easing });
+        scale.BeginAnimation(
+            ScaleTransform.ScaleYProperty,
+            new DoubleAnimation(0.965, 1, TimeSpan.FromMilliseconds(230)) { EasingFunction = easing });
+    }
+
+    private void AnimateSelectionDock()
+    {
+        if (!_uiInitialized || SelectionDockScale is null)
+        {
+            return;
+        }
+
+        var easing = new BackEase { Amplitude = 0.22, EasingMode = EasingMode.EaseOut };
+        SelectionDockScale.BeginAnimation(
+            ScaleTransform.ScaleXProperty,
+            new DoubleAnimation(0.985, 1, TimeSpan.FromMilliseconds(220)) { EasingFunction = easing });
+        SelectionDockScale.BeginAnimation(
+            ScaleTransform.ScaleYProperty,
+            new DoubleAnimation(0.985, 1, TimeSpan.FromMilliseconds(220)) { EasingFunction = easing });
+    }
+
+    private static void AnimatePage(FrameworkElement page)
+    {
+        page.Opacity = 0;
+        if (page.RenderTransform is not TranslateTransform translate)
+        {
+            translate = new TranslateTransform();
+            page.RenderTransform = translate;
+        }
+
+        translate.Y = 10;
+        var easing = new CubicEase { EasingMode = EasingMode.EaseOut };
+        page.BeginAnimation(
+            OpacityProperty,
+            new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(200)) { EasingFunction = easing });
+        translate.BeginAnimation(
+            TranslateTransform.YProperty,
+            new DoubleAnimation(10, 0, TimeSpan.FromMilliseconds(240)) { EasingFunction = easing });
     }
 
     private void UpdateInfoNavigationButton(Button button, bool active)

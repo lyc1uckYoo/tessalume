@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using System.Windows.Input;
 using System.Windows.Threading;
 using System.Globalization;
 using CodexThemeStudio.App.Infrastructure;
@@ -55,7 +56,7 @@ public partial class ThemeQuickSwitchWindow : Window
             : "M 7,8 L 3.5,8 L 3.5,4.5 M 4,8 C 6,4 10,2.5 14,3.5 C 18.5,4.5 21,9 20,13.5 C 19,18 14.5,21 10,20 C 7,19.4 4.8,17.5 3.7,15");
         RestoreThemeButton.ToolTip = _isDefaultAppearance ? "恢复刚刚使用的主题" : "恢复 Codex 默认外观";
         RestoreThemeButton.Background = (System.Windows.Media.Brush)new System.Windows.Media.BrushConverter()
-            .ConvertFromString(_isDefaultAppearance ? "#2C8B72D8" : "#267E67D0")!;
+            .ConvertFromString(_isDefaultAppearance ? "#355A73E8" : "#2B526CE0")!;
     }
 
     private async void Previous_Click(object sender, RoutedEventArgs e) => await ApplyRelativeAsync(-1);
@@ -96,6 +97,12 @@ public partial class ThemeQuickSwitchWindow : Window
     private async void ThemeQuickSwitchWindow_Loaded(object sender, RoutedEventArgs e)
     {
         PositionAtTopCenter();
+        Opacity = 0;
+        var entrance = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(220))
+        {
+            EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut },
+        };
+        BeginAnimation(OpacityProperty, entrance);
         await RefreshUsageAsync();
         _usageTimer.Start();
     }
@@ -109,39 +116,95 @@ public partial class ThemeQuickSwitchWindow : Window
         try
         {
             var usage = await _readUsage();
-            if (usage?.MostConstrained is not { } constrained)
+            if (usage is null)
             {
-                UsagePercentText.Text = "--";
-                UsageArcPath.Data = Geometry.Empty;
-                UsageToolTip.Content = "暂时无法读取 Codex 用量";
+                ClearUsageRings();
                 return;
             }
 
-            UsagePercentText.Text = Math.Round(constrained.RemainingPercent)
-                .ToString("0", CultureInfo.InvariantCulture);
-            UsageArcPath.Stroke = new SolidColorBrush(constrained.RemainingPercent switch
-            {
-                >= 55 => Color.FromRgb(117, 231, 192),
-                >= 25 => Color.FromRgb(255, 193, 109),
-                _ => Color.FromRgb(255, 105, 145),
-            });
-            UsageArcPath.Data = BuildUsageArc(constrained.RemainingPercent);
-            UsageArcPath.BeginAnimation(
-                OpacityProperty,
-                new DoubleAnimation(0.45, 1, TimeSpan.FromMilliseconds(320)));
-            UsageToolTip.Content = BuildUsageToolTip(usage);
+            var fiveHour = usage.Windows.FirstOrDefault(window => window.WindowDurationMinutes == 300);
+            var longWindow = usage.Windows
+                .Where(window => window.WindowDurationMinutes != 300)
+                .OrderByDescending(window => window.WindowDurationMinutes)
+                .FirstOrDefault();
+
+            UpdateUsageRing(
+                fiveHour,
+                FiveHourUsagePercentText,
+                FiveHourUsageArcPath,
+                FiveHourUsageToolTip,
+                "5 小时额度暂时不可用");
+            UpdateUsageRing(
+                longWindow,
+                LongUsagePercentText,
+                LongUsageArcPath,
+                LongUsageToolTip,
+                "长周期额度暂时不可用");
+            LongUsageLabelText.Text = FormatCompactWindowLabel(longWindow?.WindowDurationMinutes);
         }
         catch
         {
-            UsagePercentText.Text = "--";
-            UsageArcPath.Data = Geometry.Empty;
-            UsageToolTip.Content = "暂时无法读取 Codex 用量";
+            ClearUsageRings();
         }
         finally
         {
             _readingUsage = false;
         }
     }
+
+    private void ClearUsageRings()
+    {
+        UpdateUsageRing(null, FiveHourUsagePercentText, FiveHourUsageArcPath, FiveHourUsageToolTip, "暂时无法读取 Codex 5 小时额度");
+        UpdateUsageRing(null, LongUsagePercentText, LongUsageArcPath, LongUsageToolTip, "暂时无法读取 Codex 长周期额度");
+        LongUsageLabelText.Text = "LONG";
+    }
+
+    private static void UpdateUsageRing(
+        CodexUsageWindow? usageWindow,
+        System.Windows.Controls.TextBlock percentText,
+        System.Windows.Shapes.Path arcPath,
+        System.Windows.Controls.ToolTip toolTip,
+        string unavailableText)
+    {
+        if (usageWindow is null)
+        {
+            percentText.Text = "--";
+            arcPath.Data = Geometry.Empty;
+            toolTip.Content = unavailableText;
+            return;
+        }
+
+        percentText.Text = Math.Round(usageWindow.RemainingPercent)
+            .ToString("0", CultureInfo.InvariantCulture);
+        arcPath.Stroke = new SolidColorBrush(usageWindow.RemainingPercent switch
+        {
+            >= 55 => Color.FromRgb(117, 231, 192),
+            >= 25 => Color.FromRgb(255, 193, 109),
+            _ => Color.FromRgb(255, 105, 145),
+        });
+        arcPath.Data = BuildUsageArc(usageWindow.RemainingPercent);
+        arcPath.BeginAnimation(
+            OpacityProperty,
+            new DoubleAnimation(0.35, 1, TimeSpan.FromMilliseconds(360))
+            {
+                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut },
+            });
+        toolTip.Content = string.Join(
+            Environment.NewLine,
+            usageWindow.Label,
+            $"剩余：{usageWindow.RemainingPercent:0}%",
+            $"重置：{FormatResetTime(usageWindow.ResetsAt)}",
+            "每分钟自动刷新");
+    }
+
+    private static string FormatCompactWindowLabel(int? durationMinutes) => durationMinutes switch
+    {
+        1440 => "1D",
+        10080 => "7D",
+        > 0 when durationMinutes % 1440 == 0 => $"{durationMinutes / 1440}D",
+        > 0 when durationMinutes % 60 == 0 => $"{durationMinutes / 60}H",
+        _ => "LONG",
+    };
 
     private static Geometry BuildUsageArc(double remainingPercent)
     {
@@ -171,19 +234,6 @@ public partial class ThemeQuickSwitchWindow : Window
         return new PathGeometry([figure]);
     }
 
-    private static string BuildUsageToolTip(CodexUsageSnapshot usage)
-    {
-        var lines = new List<string> { "Codex 剩余用量" };
-        foreach (var window in usage.Windows.OrderBy(item => item.WindowDurationMinutes))
-        {
-            lines.Add($"{window.Label}：{window.RemainingPercent:0}%");
-            lines.Add($"重置：{FormatResetTime(window.ResetsAt)}");
-        }
-
-        lines.Add("每分钟自动刷新");
-        return string.Join(Environment.NewLine, lines);
-    }
-
     private static string FormatResetTime(DateTimeOffset? resetAt)
     {
         if (resetAt is null) return "时间未知";
@@ -207,6 +257,25 @@ public partial class ThemeQuickSwitchWindow : Window
     {
         _showHome();
         Close();
+    }
+
+    private void WindowDrag_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        var source = e.OriginalSource as DependencyObject;
+        while (source is not null)
+        {
+            if (source is System.Windows.Controls.Button)
+            {
+                return;
+            }
+
+            source = VisualTreeHelper.GetParent(source);
+        }
+
+        if (e.LeftButton == MouseButtonState.Pressed)
+        {
+            DragMove();
+        }
     }
 
     private void PositionAtTopCenter()
