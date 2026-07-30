@@ -1,0 +1,1078 @@
+/* ==========================================================================
+   Tessalume 旗舰主题模板 1.0
+   可编辑：图片资源、角色文案、颜色变量、边框纹样和主题专属动效。
+   禁止编辑：文件末尾“模板 1.0 冻结几何层”中的尺寸、位置和显隐规则。
+   ========================================================================== */
+
+/* 主题可替换层①：亮色与暗色资源、颜色和字体。 */
+html.__NS__-theme {
+  --__NS__-bg:#f1f3f7;
+  --__NS__-bg-2:#f8f9fb;
+  --__NS__-solid:#fff;
+  --__NS__-panel:rgba(255,255,255,.94);
+  --__NS__-sidebar:#edf0f5;
+  --__NS__-text:#20283a;
+  --__NS__-text-2:#5a6579;
+  --__NS__-text-3:#8791a3;
+  --__NS__-accent:#626fe8;
+  --__NS__-accent-2:#38aabd;
+  --__NS__-gold:#b78a42;
+  --__NS__-line:rgba(80,94,138,.24);
+  --__NS__-line-strong:rgba(98,111,232,.48);
+  --__NS__-shadow:0 18px 48px rgba(41,51,86,.18);
+  --__NS__-hero:var(--cts-asset-hero-light);
+  --__NS__-sidebar-art:var(--cts-asset-sidebar-light);
+  --__NS__-chat-art:var(--cts-asset-chat-light);
+  --__NS__-memory-art:var(--cts-asset-memory-light);
+  --__NS__-display:"Microsoft YaHei UI","Segoe UI",sans-serif;
+  --__NS__-serif:"STKaiti","KaiTi",serif;
+  --__NS__-mono:"Cascadia Code",Consolas,monospace;
+  color-scheme:light;
+}
+
+html.__NS__-theme.electron-dark {
+  --__NS__-bg:#080b16;
+  --__NS__-bg-2:#10162a;
+  --__NS__-solid:#151b31;
+  --__NS__-panel:rgba(16,22,42,.95);
+  --__NS__-sidebar:#0b1020;
+  --__NS__-text:#f2f4ff;
+  --__NS__-text-2:#c1c8dc;
+  --__NS__-text-3:#7e8aa8;
+  --__NS__-accent:#8491ff;
+  --__NS__-accent-2:#56d3df;
+  --__NS__-gold:#d8ad63;
+  --__NS__-line:rgba(113,130,205,.28);
+  --__NS__-line-strong:rgba(132,145,255,.54);
+  --__NS__-shadow:0 20px 58px rgba(0,0,0,.58);
+  --__NS__-hero:var(--cts-asset-hero-dark);
+  --__NS__-sidebar-art:var(--cts-asset-sidebar-dark);
+  --__NS__-chat-art:var(--cts-asset-chat-dark);
+  --__NS__-memory-art:var(--cts-asset-memory-dark);
+  color-scheme:dark;
+}
+
+html.__NS__-theme,
+.__NS__-theme body,
+.__NS__-theme #root {
+  background:var(--__NS__-bg)!important;
+  color:var(--__NS__-text)!important;
+}
+
+.__NS__-theme body {
+  font-family:var(--__NS__-display);
+}
+
+.__NS__-theme {
+  --color-background:var(--__NS__-bg)!important;
+  --color-background-secondary:var(--__NS__-bg-2)!important;
+  --color-background-surface:var(--__NS__-bg)!important;
+  --color-background-panel:var(--__NS__-panel)!important;
+  --color-background-elevated-primary:var(--__NS__-solid)!important;
+  --color-background-elevated-secondary:var(--__NS__-bg-2)!important;
+  --color-border:var(--__NS__-line)!important;
+  --color-text-foreground:var(--__NS__-text)!important;
+  --color-text-foreground-secondary:var(--__NS__-text-2)!important;
+  --color-text-foreground-tertiary:var(--__NS__-text-3)!important;
+  --color-accent-blue:var(--__NS__-accent)!important;
+  --color-text-accent:var(--__NS__-accent-2)!important;
+  --token-main-surface-background:var(--__NS__-bg)!important;
+  --token-sidebar-background:var(--__NS__-sidebar)!important;
+}
+
+.__NS__-dark-only {
+  display:none!important;
+}
+
+.electron-dark .__NS__-light-only {
+  display:none!important;
+}
+
+.electron-dark .__NS__-dark-only {
+  display:initial!important;
+}
+
+/* 主题可替换层②：应用平面、侧栏和首页横幅皮肤。 */
+html.__NS__-theme .__NS__-window-bar {
+  border-bottom:1px solid var(--__NS__-line)!important;
+  background:color-mix(in srgb,var(--__NS__-solid) 94%,transparent)!important;
+  box-shadow:0 4px 22px color-mix(in srgb,var(--__NS__-accent) 10%,transparent);
+  backdrop-filter:blur(20px);
+}
+
+html.__NS__-theme main.__NS__-main {
+  background:
+    radial-gradient(circle at 78% 12%,color-mix(in srgb,var(--__NS__-accent) 12%,transparent),transparent 28%),
+    linear-gradient(145deg,var(--__NS__-bg-2),var(--__NS__-bg))!important;
+}
+
+html.__NS__-theme aside.app-shell-left-panel {
+  isolation:isolate;
+  border-right:1px solid var(--__NS__-line)!important;
+  background:
+    linear-gradient(90deg,color-mix(in srgb,var(--__NS__-sidebar) 98%,transparent),color-mix(in srgb,var(--__NS__-sidebar) 72%,transparent) 30%,transparent 100%),
+    var(--__NS__-sidebar-art) 80% -92px/202% auto no-repeat!important;
+  box-shadow:12px 0 40px color-mix(in srgb,var(--__NS__-accent) 14%,transparent)!important;
+}
+
+html.__NS__-theme aside.app-shell-left-panel > * {
+  position:relative;
+  z-index:1;
+}
+
+html.__NS__-theme aside [data-app-action-sidebar-project-row] {
+  --phase:var(--__NS__-accent);
+  border:1px solid color-mix(in srgb,var(--phase) 45%,var(--__NS__-line))!important;
+  border-radius:18px 3px 18px 3px!important;
+  background:linear-gradient(100deg,color-mix(in srgb,var(--phase) 10%,var(--__NS__-solid)),color-mix(in srgb,var(--__NS__-solid) 76%,transparent))!important;
+  box-shadow:inset 3px 0 var(--phase),0 8px 23px color-mix(in srgb,var(--phase) 12%,transparent)!important;
+}
+
+html.__NS__-theme aside [data-app-action-sidebar-thread-row] {
+  border:1px solid transparent!important;
+  border-left-color:color-mix(in srgb,var(--__NS__-accent) 58%,var(--__NS__-line))!important;
+  border-radius:2px 13px 13px 2px!important;
+  color:var(--__NS__-text-2)!important;
+}
+
+html.__NS__-theme aside [data-app-action-sidebar-thread-row]:hover,
+html.__NS__-theme aside [data-app-action-sidebar-thread-row][aria-current="page"],
+html.__NS__-theme aside [data-app-action-sidebar-thread-active="true"] {
+  color:var(--__NS__-text)!important;
+  border-color:var(--__NS__-line-strong)!important;
+  background:color-mix(in srgb,var(--__NS__-solid) 82%,transparent)!important;
+}
+
+.__NS__-theme .__NS__-home > div:first-child > div:first-child > div:first-child::before {
+  content:"";
+  position:absolute;
+  z-index:0;
+  inset:0;
+  background:
+    linear-gradient(90deg,color-mix(in srgb,var(--__NS__-solid) 78%,transparent),color-mix(in srgb,var(--__NS__-solid) 24%,transparent) 40%,transparent 62%),
+    var(--__NS__-hero) center/cover no-repeat!important;
+  transform:scale(1.008);
+  animation:__NS__-hero-breathe 18s ease-in-out infinite alternate;
+}
+
+.__NS__-theme .__NS__-home > div:first-child > div:first-child > div:first-child::after {
+  content:"";
+  position:absolute;
+  z-index:2;
+  inset:11px;
+  border:1px solid color-mix(in srgb,var(--__NS__-gold) 44%,transparent);
+  border-radius:20px 2px 20px 2px;
+  pointer-events:none;
+}
+
+.__NS__-home .group\/home-suggestions button {
+  border:1px solid var(--__NS__-line)!important;
+  border-radius:18px 3px 18px 3px!important;
+  background:linear-gradient(145deg,color-mix(in srgb,var(--__NS__-solid) 93%,transparent),color-mix(in srgb,var(--__NS__-accent) 7%,var(--__NS__-bg-2)))!important;
+  box-shadow:0 10px 29px color-mix(in srgb,var(--__NS__-accent) 15%,transparent)!important;
+}
+
+/* 主题可替换层③：首页文案、身份牌和角色组件皮肤。 */
+.__NS__-hero-copy {
+  color:var(--__NS__-text);
+}
+
+.__NS__-hero-kicker {
+  display:flex;
+  align-items:center;
+  gap:9px;
+  color:var(--__NS__-accent);
+  font:700 8px/1 var(--__NS__-mono);
+  letter-spacing:.17em;
+}
+
+.__NS__-hero-kicker i {
+  width:10px;
+  height:10px;
+  border:1px solid var(--__NS__-accent-2);
+  border-radius:50%;
+  background:var(--__NS__-accent);
+  box-shadow:0 0 13px var(--__NS__-accent-2);
+  animation:__NS__-pulse 1.9s ease-in-out infinite;
+}
+
+.__NS__-hero-copy h1 {
+  margin:24px 0 13px;
+  color:var(--__NS__-text);
+  font:800 clamp(44px,4.2vw,74px)/1.02 var(--__NS__-serif);
+  letter-spacing:.04em;
+}
+
+.__NS__-hero-copy h1 em {
+  color:var(--__NS__-accent);
+  font-style:normal;
+}
+
+.__NS__-hero-copy > p {
+  max-width:500px;
+  margin:0;
+  color:var(--__NS__-text-2);
+  font-size:clamp(13px,.82vw,16px);
+  line-height:1.55;
+}
+
+.__NS__-hero-motion {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+
+.__NS__-hero-motion i {
+  width:22px;
+  height:22px;
+  border:1px solid var(--__NS__-gold);
+  border-radius:50%;
+  background:radial-gradient(circle,var(--__NS__-solid),var(--__NS__-accent));
+  box-shadow:0 0 12px color-mix(in srgb,var(--__NS__-accent) 30%,transparent);
+  animation:__NS__-pulse calc(1.8s + var(--i)*.12s) ease-in-out infinite;
+}
+
+.__NS__-hero-note {
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.__NS__-hero-note small {
+  color:var(--__NS__-gold);
+  font:700 10px/1 var(--__NS__-serif);
+  letter-spacing:.15em;
+}
+
+.__NS__-hero-note strong {
+  padding-left:11px;
+  border-left:2px solid var(--__NS__-accent);
+  color:var(--__NS__-text);
+  font:700 13px/1 var(--__NS__-serif);
+}
+
+.__NS__-identity {
+  border:1px solid var(--__NS__-line-strong);
+  border-radius:20px 4px 20px 4px;
+  background:color-mix(in srgb,var(--__NS__-solid) 92%,transparent);
+  box-shadow:var(--__NS__-shadow);
+  backdrop-filter:blur(17px);
+}
+
+.__NS__-identity [data-theme-part="identity-emblem"] {
+  border-radius:50%;
+  background:conic-gradient(var(--__NS__-accent),var(--__NS__-gold),var(--__NS__-accent-2),var(--__NS__-accent));
+  box-shadow:inset 0 0 0 7px var(--__NS__-solid),0 0 16px color-mix(in srgb,var(--__NS__-accent) 36%,transparent);
+  animation:__NS__-orbit 15s linear infinite;
+}
+
+.__NS__-identity [data-theme-part="identity-copy"] {
+  display:flex;
+  flex-direction:column;
+}
+
+.__NS__-identity [data-theme-part="identity-copy"] b {
+  color:var(--__NS__-text);
+  font-size:10px;
+}
+
+.__NS__-identity [data-theme-part="identity-copy"] small {
+  margin-top:3px;
+  color:var(--__NS__-text-3);
+  font:700 6px/1 var(--__NS__-mono);
+  letter-spacing:.09em;
+}
+
+.__NS__-identity [data-theme-part="identity-status"] {
+  margin-left:auto;
+  border-radius:50%;
+  background:var(--__NS__-accent-2);
+  box-shadow:0 0 12px var(--__NS__-accent-2);
+  animation:__NS__-pulse 1.7s ease-in-out infinite;
+}
+
+.__NS__-task-card {
+  overflow:hidden;
+  border:1px solid var(--__NS__-line-strong);
+  background:var(--__NS__-panel);
+  box-shadow:0 22px 56px rgba(0,0,0,.29);
+}
+
+.__NS__-task-card [data-theme-part="task-card-art"] {
+  position:absolute;
+  inset:0;
+  background-repeat:no-repeat;
+  background-size:cover;
+  filter:saturate(1.05) contrast(1.03);
+}
+
+.__NS__-task-card-left [data-theme-part="task-card-art"] {
+  background-image:var(--cts-asset-task-left);
+  background-position:50% 18%;
+}
+
+.__NS__-task-card-secondary [data-theme-part="task-card-art"] {
+  background-image:var(--cts-asset-task-right-secondary);
+  background-position:50% 18%;
+}
+
+.__NS__-task-card-primary [data-theme-part="task-card-art"] {
+  background-image:var(--cts-asset-task-right-primary);
+  background-position:50% 18%;
+}
+
+.__NS__-task-card::after {
+  content:"";
+  position:absolute;
+  z-index:1;
+  inset:0;
+  background:linear-gradient(180deg,transparent 53%,rgba(5,8,20,.94));
+}
+
+.__NS__-task-card [data-theme-part="task-card-caption"] {
+  color:#f7f7ff;
+}
+
+.__NS__-task-card [data-theme-part="task-card-caption"] b {
+  font:800 12px/1 var(--__NS__-serif);
+  letter-spacing:.12em;
+}
+
+.__NS__-task-card [data-theme-part="task-card-caption"] small {
+  margin-top:5px;
+  color:#c9d5ff;
+  font:700 6px/1 var(--__NS__-mono);
+  letter-spacing:.1em;
+}
+
+.__NS__-task-card-left {
+  animation:__NS__-card-left 7s ease-in-out infinite;
+}
+
+.__NS__-task-card-secondary {
+  animation:__NS__-card-secondary 6.4s ease-in-out infinite;
+}
+
+.__NS__-task-card-primary {
+  animation:__NS__-card-primary 6.4s ease-in-out infinite;
+}
+
+.__NS__-memory {
+  border:1px solid var(--__NS__-line);
+  border-radius:18px 3px 18px 3px;
+  background:
+    var(--__NS__-memory-art) center top/100% auto no-repeat,
+    color-mix(in srgb,var(--__NS__-solid) 95%,transparent);
+  box-shadow:var(--__NS__-shadow);
+  backdrop-filter:blur(14px);
+}
+
+.__NS__-memory::after {
+  content:"";
+  position:absolute;
+  z-index:0;
+  inset:52px 0 0;
+  background:linear-gradient(180deg,transparent,color-mix(in srgb,var(--__NS__-solid) 98%,transparent) 35%);
+}
+
+.__NS__-memory > * {
+  position:relative;
+  z-index:1;
+}
+
+.__NS__-memory > small {
+  color:var(--__NS__-accent);
+  font:700 6px/1 var(--__NS__-mono);
+  letter-spacing:.09em;
+}
+
+.__NS__-memory > p {
+  color:var(--__NS__-text-2);
+  font-size:8px;
+  line-height:1.55;
+}
+
+.__NS__-memory [data-theme-part="memory-meter"] {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+
+.__NS__-memory [data-theme-part="memory-meter"] i {
+  width:13px;
+  height:13px;
+  border:1px solid var(--__NS__-gold);
+  border-radius:50%;
+  background:linear-gradient(135deg,var(--__NS__-accent),var(--__NS__-gold));
+  box-shadow:0 0 8px color-mix(in srgb,var(--__NS__-accent) 38%,transparent);
+  animation:__NS__-pulse calc(1.3s + var(--i)*.1s) ease-in-out infinite;
+}
+
+/* 主题可替换层④：右侧状态面板与输入框挂件。 */
+.__NS__-sync-panel {
+  border:1px solid color-mix(in srgb,var(--__NS__-accent) 58%,var(--__NS__-gold));
+  border-radius:5px 20px 5px 20px;
+  background:linear-gradient(108deg,color-mix(in srgb,var(--__NS__-solid) 98%,transparent),color-mix(in srgb,var(--__NS__-accent) 8%,var(--__NS__-solid)),color-mix(in srgb,var(--__NS__-gold) 10%,var(--__NS__-solid)));
+  box-shadow:0 13px 34px color-mix(in srgb,var(--__NS__-accent) 22%,transparent);
+}
+
+.__NS__-sync-panel::before {
+  content:"";
+  position:absolute;
+  left:-36%;
+  top:0;
+  width:30%;
+  height:1px;
+  background:linear-gradient(90deg,transparent,var(--__NS__-accent),#fff,var(--__NS__-accent-2),transparent);
+  box-shadow:0 0 11px var(--__NS__-accent);
+  animation:__NS__-scan 5.6s ease-in-out infinite;
+}
+
+.__NS__-sync-copy {
+  display:flex;
+  flex-direction:column;
+}
+
+.__NS__-sync-copy small,
+.__NS__-sync-state small {
+  color:var(--__NS__-text-3);
+  font:700 5.5px/1 var(--__NS__-mono);
+  white-space:nowrap;
+}
+
+.__NS__-sync-copy b {
+  margin-top:6px;
+  color:var(--__NS__-text);
+  font:700 8px/1 var(--__NS__-serif);
+}
+
+.__NS__-sync-copy strong {
+  color:var(--__NS__-accent);
+  font:800 13px/1 var(--__NS__-mono);
+}
+
+.__NS__-sync-copy em {
+  color:var(--__NS__-text-3);
+  font:700 7px/1 var(--__NS__-mono);
+  font-style:normal;
+}
+
+.__NS__-sync-core {
+  display:grid;
+  place-items:center;
+  border:1px solid var(--__NS__-gold);
+  border-radius:50%;
+  background:conic-gradient(var(--__NS__-accent),var(--__NS__-gold),var(--__NS__-accent-2),var(--__NS__-accent));
+  box-shadow:0 0 15px color-mix(in srgb,var(--__NS__-accent) 36%,transparent);
+}
+
+.__NS__-sync-core::before {
+  content:"";
+  position:absolute;
+  inset:5px;
+  border:1px dashed var(--__NS__-solid);
+  border-radius:50%;
+  animation:__NS__-orbit 8s linear infinite;
+}
+
+.__NS__-sync-core b {
+  position:relative;
+  z-index:1;
+  color:#fff;
+  font:800 10px/1 var(--__NS__-serif);
+}
+
+.__NS__-sync-core small {
+  position:absolute;
+  right:3px;
+  bottom:4px;
+  color:#fff;
+  font:700 4px/1 var(--__NS__-serif);
+}
+
+.__NS__-sync-meter {
+  display:flex;
+  flex:1;
+  align-items:center;
+  justify-content:space-between;
+}
+
+.__NS__-sync-meter i {
+  width:3px;
+  height:var(--h);
+  border-radius:999px;
+  background:linear-gradient(var(--__NS__-gold),var(--__NS__-accent),var(--__NS__-accent-2));
+  animation:__NS__-meter calc(1.35s + var(--i)*.035s) ease-in-out calc(var(--i)*-.11s) infinite alternate;
+}
+
+.__NS__-sync-state {
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+}
+
+.__NS__-sync-state b {
+  display:flex;
+  align-items:center;
+  gap:4px;
+  margin-top:7px;
+  color:var(--__NS__-gold);
+  font:800 9px/1 var(--__NS__-serif);
+}
+
+.__NS__-sync-state b i {
+  width:5px;
+  height:5px;
+  border-radius:50%;
+  background:var(--__NS__-accent-2);
+  box-shadow:0 0 8px var(--__NS__-accent-2);
+  animation:__NS__-pulse 2.4s ease-in-out infinite;
+}
+
+.__NS__-composer-accessory {
+  border:1px solid var(--__NS__-line-strong);
+  border-radius:50%;
+  background:radial-gradient(circle,var(--__NS__-solid),var(--__NS__-accent));
+  box-shadow:0 12px 30px color-mix(in srgb,var(--__NS__-accent) 30%,transparent);
+  animation:__NS__-accessory 5.2s ease-in-out infinite;
+}
+
+.__NS__-composer-accessory > i {
+  position:absolute;
+  inset:9px;
+  border:1px dashed var(--__NS__-gold);
+  border-radius:50%;
+  animation:__NS__-orbit 10s linear infinite;
+}
+
+.__NS__-composer-accessory > b {
+  display:grid;
+  height:100%;
+  place-items:center;
+  color:var(--__NS__-text);
+  font:800 24px/1 var(--__NS__-serif);
+}
+
+.__NS__-composer-accessory > small {
+  position:absolute;
+  left:-12px;
+  right:-12px;
+  bottom:-15px;
+  color:var(--__NS__-text-3);
+  font:700 6px/1 var(--__NS__-mono);
+  text-align:center;
+  white-space:nowrap;
+}
+
+/* 主题可替换层⑤：聊天、设置页和原生控件皮肤。 */
+html.__NS__-theme .composer-surface-chrome {
+  color:var(--__NS__-text)!important;
+  border:1px solid var(--__NS__-line-strong)!important;
+  border-radius:24px 4px 24px 4px!important;
+  background:color-mix(in srgb,var(--__NS__-solid) 96%,transparent)!important;
+  box-shadow:var(--__NS__-shadow)!important;
+}
+
+.__NS__-task-header {
+  border:1px solid var(--__NS__-line-strong)!important;
+  border-radius:18px 3px 18px 3px!important;
+  background:color-mix(in srgb,var(--__NS__-solid) 90%,transparent)!important;
+}
+
+.__NS__-message-assistant .__NS__-markdown,
+.__NS__-message-user [data-user-message-bubble="true"],
+.__NS__-message-assistant div:has(> .group\/turn-diff-header) {
+  background:transparent!important;
+  backdrop-filter:none!important;
+}
+
+.__NS__-message-user [data-user-message-bubble="true"] {
+  color:var(--__NS__-text)!important;
+  border:1px solid var(--__NS__-line-strong)!important;
+  border-radius:24px 6px 24px 24px!important;
+}
+
+.__NS__-chat-paper {
+  isolation:isolate;
+  border-left:1px solid color-mix(in srgb,var(--__NS__-accent) 30%,transparent);
+  border-right:1px solid color-mix(in srgb,var(--__NS__-gold) 34%,transparent);
+  background:transparent!important;
+}
+
+.__NS__-chat-paper::before {
+  content:none!important;
+}
+
+html.__NS__-theme.__NS__-is-task main.__NS__-main {
+  position:relative!important;
+  isolation:isolate;
+  background:linear-gradient(145deg,var(--__NS__-bg-2),var(--__NS__-bg))!important;
+}
+
+html.__NS__-theme.electron-dark.__NS__-is-task main.__NS__-main {
+  background:linear-gradient(145deg,var(--__NS__-bg),var(--__NS__-bg-2))!important;
+}
+
+html.__NS__-theme.__NS__-is-task main.__NS__-main::before {
+  content:"";
+  position:absolute;
+  z-index:-2;
+  inset:0;
+  pointer-events:none;
+  background:var(--__NS__-chat-art) center/cover no-repeat;
+}
+
+html.__NS__-theme.__NS__-is-task main.__NS__-main::after {
+  content:"";
+  position:absolute;
+  z-index:-1;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--__NS__-solid) 44%,transparent),color-mix(in srgb,var(--__NS__-solid) 5%,transparent));
+}
+
+html.__NS__-theme.__NS__-is-settings .__NS__-settings-surface {
+  background:transparent!important;
+}
+
+/* 主题可替换层⑥：示例动效。新角色可以完全重写本节。 */
+@keyframes __NS__-pulse {
+  0%,100% { opacity:.55; transform:scale(.9); }
+  50% { opacity:1; transform:scale(1.08); }
+}
+
+@keyframes __NS__-orbit {
+  to { transform:rotate(360deg); }
+}
+
+@keyframes __NS__-hero-breathe {
+  from { transform:scale(1) translate3d(0,0,0); }
+  to { transform:scale(1.008) translate3d(-3px,-2px,0); }
+}
+
+@keyframes __NS__-card-left {
+  0%,100% { transform:translateY(0) rotate(1deg); }
+  50% { transform:translateY(-8px) rotate(-.4deg); }
+}
+
+@keyframes __NS__-card-secondary {
+  0%,100% { transform:translate3d(0,-24px,0) rotate(-1deg); }
+  50% { transform:translate3d(-4px,14px,0) rotate(.8deg); }
+}
+
+@keyframes __NS__-card-primary {
+  0%,100% { transform:translate3d(4px,14px,0) rotate(.8deg); }
+  50% { transform:translate3d(0,-24px,0) rotate(-1deg); }
+}
+
+@keyframes __NS__-scan {
+  0%,12% { left:-36%; opacity:0; }
+  20%,72% { opacity:1; }
+  84%,100% { left:112%; opacity:0; }
+}
+
+@keyframes __NS__-meter {
+  from { height:5px; opacity:.42; }
+  to { height:var(--h); opacity:1; }
+}
+
+@keyframes __NS__-accessory {
+  0%,100% { transform:translate3d(0,1px,0) rotate(-1deg); }
+  50% { transform:translate3d(1px,-5px,0) rotate(1deg); }
+}
+
+@media (prefers-reduced-motion:reduce) {
+  #cts-theme-root[data-cts-template-version="1.0"] * {
+    animation:none!important;
+  }
+}
+
+/* TESSALUME_TEMPLATE_V1_GEOMETRY_START */
+/* 模板 1.0 冻结几何层①：舞台、首页横幅和主文案。 */
+#cts-theme-root[data-cts-template-version="1.0"] [data-theme-stage] {
+  position:fixed;
+  z-index:9;
+  overflow:hidden;
+  pointer-events:none;
+}
+
+#cts-theme-root[data-cts-template-version="1.0"] [data-theme-stage] * {
+  box-sizing:border-box;
+}
+
+.__NS__-theme .__NS__-home {
+  --thread-content-max-width:min(1240px,calc(100cqw - 42px))!important;
+  --__NS__-home-hero-height:clamp(500px,min(calc(100cqh - 126px),calc((100cqw - 70px) * .5628)),840px);
+  overflow-x:hidden!important;
+}
+
+.__NS__-theme .__NS__-home > div:first-child {
+  min-height:100%!important;
+  padding-top:14px!important;
+}
+
+.__NS__-theme .__NS__-home > div:first-child > div:first-child {
+  flex:0 0 calc(var(--__NS__-home-hero-height) + 24px)!important;
+  min-height:calc(var(--__NS__-home-hero-height) + 24px)!important;
+  align-items:flex-start!important;
+  padding-bottom:0!important;
+}
+
+.__NS__-theme .__NS__-home > div:first-child > div:first-child > div:first-child {
+  position:relative!important;
+  isolation:isolate;
+  width:calc(100% - 40px)!important;
+  max-width:none!important;
+  height:var(--__NS__-home-hero-height)!important;
+  min-height:var(--__NS__-home-hero-height)!important;
+  overflow:hidden!important;
+  border-radius:28px 4px 28px 4px!important;
+}
+
+.__NS__-theme .__NS__-home > div:first-child > div:first-child > div:first-child > div:first-child {
+  position:relative;
+  z-index:3;
+  height:100%;
+  padding:0 0 112px 48px;
+  align-items:center!important;
+  justify-content:flex-start!important;
+}
+
+.__NS__-theme .__NS__-home > div:first-child > div:first-child > div:first-child > div:nth-child(2) {
+  z-index:9!important;
+  left:43px!important;
+  right:43px!important;
+  top:calc(100% - 142px)!important;
+  margin-top:0!important;
+}
+
+.__NS__-home .group\/home-suggestions {
+  gap:12px!important;
+}
+
+.__NS__-home .group\/home-suggestions button {
+  min-height:116px;
+  padding:43px 16px 14px!important;
+}
+
+#cts-theme-root[data-cts-template-version="1.0"] [data-theme-role="hero"] {
+  display:none;
+  position:absolute;
+  z-index:14;
+  left:max(5%,76px);
+  top:10%;
+  width:min(46%,780px);
+}
+
+html.__NS__-theme.__NS__-is-home #cts-theme-root [data-theme-role="hero"] {
+  display:block;
+}
+
+#cts-theme-root[data-cts-template-version="1.0"] [data-theme-part="hero-motion"] {
+  width:clamp(326px,20vw,390px);
+  height:42px;
+  gap:clamp(20px,1.25vw,25px);
+  margin-top:clamp(22px,2.4vh,30px);
+  padding:8px 6px 0;
+}
+
+#cts-theme-root[data-cts-template-version="1.0"] [data-theme-part="hero-note"] {
+  margin-top:18px;
+}
+
+/* 模板 1.0 冻结几何层②：顶部身份牌。 */
+#cts-theme-root[data-cts-template-version="1.0"] [data-theme-role="identity"] {
+  display:flex!important;
+  position:absolute;
+  z-index:30;
+  left:50%;
+  top:6px;
+  width:auto;
+  min-width:250px;
+  max-width:min(390px,40vw);
+  height:38px;
+  align-items:center;
+  gap:9px;
+  padding:5px 12px 5px 6px;
+  transform:translateX(-50%);
+  white-space:nowrap;
+}
+
+#cts-theme-root[data-cts-template-version="1.0"] [data-theme-part="identity-emblem"] {
+  flex:0 0 29px;
+  width:29px;
+  height:29px;
+}
+
+#cts-theme-root[data-cts-template-version="1.0"] [data-theme-part="identity-status"] {
+  flex:0 0 7px;
+  width:7px;
+  height:7px;
+}
+
+/* 模板 1.0 冻结几何层③：左侧主卡、记忆卡和右侧双卡。 */
+#cts-theme-root[data-cts-template-version="1.0"] :is(
+  [data-theme-role="task-left"],
+  [data-theme-role="task-right"],
+  [data-theme-role="memory"],
+  [data-theme-role="sync-panel"],
+  [data-theme-role="composer-accessory"]
+) {
+  display:none;
+}
+
+html.__NS__-theme.__NS__-is-task #cts-theme-root :is(
+  [data-theme-role="task-left"],
+  [data-theme-role="task-right"],
+  [data-theme-role="memory"]
+) {
+  display:block;
+}
+
+#cts-theme-root[data-cts-template-version="1.0"] :is(
+  [data-theme-role="task-left"],
+  [data-theme-role="task-right"]
+) {
+  position:absolute;
+  z-index:12;
+}
+
+#cts-theme-root[data-cts-template-version="1.0"] [data-theme-role="task-left"] {
+  left:4px;
+  top:72px;
+  width:146px;
+  height:234px;
+  border-radius:24px 4px 24px 4px;
+}
+
+#cts-theme-root[data-cts-template-version="1.0"] [data-theme-role="task-right"] {
+  bottom:52px;
+  width:188px;
+  height:334px;
+  border-radius:5px 32px 5px 32px;
+}
+
+#cts-theme-root[data-cts-template-version="1.0"] [data-theme-role="task-right"][data-theme-priority="secondary"] {
+  right:218px;
+}
+
+#cts-theme-root[data-cts-template-version="1.0"] [data-theme-role="task-right"][data-theme-priority="primary"] {
+  right:18px;
+}
+
+#cts-theme-root[data-cts-template-version="1.0"] [data-theme-part="task-card-caption"] {
+  position:absolute;
+  z-index:3;
+  left:14px;
+  right:12px;
+  bottom:14px;
+  display:flex;
+  flex-direction:column;
+}
+
+#cts-theme-root[data-cts-template-version="1.0"] [data-theme-role="memory"] {
+  position:absolute;
+  z-index:11;
+  left:4px;
+  top:334px;
+  width:146px;
+  min-height:165px;
+  padding:83px 12px 12px;
+  overflow:hidden;
+}
+
+#cts-theme-root[data-cts-template-version="1.0"] [data-theme-role="memory"] > small {
+  display:block;
+  padding-bottom:6px;
+}
+
+#cts-theme-root[data-cts-template-version="1.0"] [data-theme-role="memory"] > p {
+  margin:9px 0;
+}
+
+html.__NS__-theme.__NS__-has-output #cts-theme-root [data-theme-role="task-right"] {
+  bottom:52px;
+  width:156px;
+  height:278px;
+}
+
+html.__NS__-theme.__NS__-has-output #cts-theme-root [data-theme-role="task-right"][data-theme-priority="secondary"] {
+  right:180px;
+}
+
+html.__NS__-theme.__NS__-has-output #cts-theme-root [data-theme-role="task-right"][data-theme-priority="primary"] {
+  right:12px;
+}
+
+html.__NS__-theme.__NS__-has-output #cts-theme-root [data-theme-part="task-card-caption"] {
+  left:13px;
+  right:10px;
+  bottom:13px;
+}
+
+/* 模板 1.0 冻结几何层④：双卡上方面板与输入框挂件。 */
+html.__NS__-theme.__NS__-is-task #cts-theme-root [data-theme-role="sync-panel"] {
+  display:flex;
+}
+
+#cts-theme-root[data-cts-template-version="1.0"] [data-theme-role="sync-panel"] {
+  position:fixed;
+  z-index:14;
+  width:320px;
+  height:56px;
+  box-sizing:border-box;
+  align-items:center;
+  gap:9px;
+  padding:8px 11px;
+  pointer-events:none;
+  overflow:hidden;
+}
+
+#cts-theme-root[data-cts-template-version="1.0"] [data-theme-part="sync-copy"] {
+  position:relative;
+  z-index:2;
+  min-width:92px;
+}
+
+#cts-theme-root[data-cts-template-version="1.0"] [data-theme-part="sync-core"] {
+  position:relative;
+  z-index:2;
+  flex:0 0 36px;
+  width:36px;
+  height:36px;
+}
+
+#cts-theme-root[data-cts-template-version="1.0"] [data-theme-part="sync-meter"] {
+  position:relative;
+  z-index:2;
+  height:30px;
+}
+
+#cts-theme-root[data-cts-template-version="1.0"] [data-theme-part="sync-state"] {
+  position:relative;
+  z-index:2;
+  min-width:42px;
+}
+
+html.__NS__-theme.__NS__-is-task #cts-theme-root [data-theme-role="composer-accessory"] {
+  display:block;
+}
+
+#cts-theme-root[data-cts-template-version="1.0"] [data-theme-role="composer-accessory"] {
+  position:fixed;
+  z-index:11;
+  width:76px;
+  height:76px;
+  box-sizing:border-box;
+  pointer-events:none;
+}
+
+/* 模板 1.0 冻结几何层⑤：侧栏、标题栏、聊天气泡和输入区。 */
+html.__NS__-theme aside [data-app-action-sidebar-project-row] {
+  height:40px!important;
+  margin:13px 8px 5px!important;
+}
+
+html.__NS__-theme aside [data-app-action-sidebar-thread-row] {
+  min-height:29px!important;
+  margin:1px 8px 1px 25px!important;
+  padding-left:16px!important;
+  padding-right:30px!important;
+}
+
+.__NS__-task-title {
+  padding-right:145px!important;
+}
+
+html.__NS__-theme .__NS__-message-assistant {
+  position:relative!important;
+  padding-left:18px!important;
+  text-align:left!important;
+}
+
+html.__NS__-theme .__NS__-message-assistant .__NS__-markdown {
+  width:auto!important;
+  max-width:min(88%,820px)!important;
+  margin-left:0!important;
+  margin-right:auto!important;
+}
+
+html.__NS__-theme .__NS__-message-user [data-user-message-bubble="true"] {
+  max-width:min(79%,760px)!important;
+  margin-left:auto!important;
+  margin-right:0!important;
+  padding-top:25px!important;
+}
+
+html.__NS__-theme.__NS__-is-task .thread-scroll-container {
+  padding-top:0!important;
+}
+
+html.__NS__-theme.__NS__-is-task .thread-scroll-container > :first-child {
+  padding-top:32px!important;
+}
+
+/* 模板 1.0 冻结几何层⑥：空间不足时只改变尺寸，不改变角色优先级。 */
+@media (max-width:1320px) {
+  #cts-theme-root[data-cts-template-version="1.0"] [data-theme-role="task-right"] {
+    width:138px;
+    height:246px;
+  }
+
+  #cts-theme-root[data-cts-template-version="1.0"] [data-theme-role="task-right"][data-theme-priority="secondary"] {
+    right:160px;
+  }
+
+  #cts-theme-root[data-cts-template-version="1.0"] [data-theme-role="task-right"][data-theme-priority="primary"] {
+    right:12px;
+  }
+}
+
+@media (max-width:920px) {
+  #cts-theme-root[data-cts-template-version="1.0"] [data-theme-role="identity"] {
+    left:auto;
+    right:92px;
+    min-width:0;
+    transform:none;
+  }
+
+  #cts-theme-root[data-cts-template-version="1.0"] [data-theme-part="identity-copy"] {
+    display:none;
+  }
+
+  #cts-theme-root[data-cts-template-version="1.0"] [data-theme-role="hero"] {
+    left:3%;
+    top:13%;
+    width:61%;
+  }
+
+  #cts-theme-root[data-cts-template-version="1.0"] [data-theme-part="hero-motion"] {
+    width:min(260px,92%);
+    gap:18px;
+  }
+}
+
+@media (max-height:720px) {
+  #cts-theme-root[data-cts-template-version="1.0"] [data-theme-role="hero"] {
+    top:8%;
+  }
+
+  #cts-theme-root[data-cts-template-version="1.0"] [data-theme-role="task-left"] {
+    height:170px;
+  }
+
+  #cts-theme-root[data-cts-template-version="1.0"] [data-theme-role="task-right"] {
+    height:230px;
+  }
+}
+
+html.__NS__-theme.cts-code-review-open #cts-theme-root :is(
+  [data-theme-role="task-left"],
+  [data-theme-role="task-right"],
+  [data-theme-role="memory"],
+  [data-theme-role="sync-panel"],
+  [data-theme-role="composer-accessory"]
+) {
+  display:none!important;
+}
+/* TESSALUME_TEMPLATE_V1_GEOMETRY_END */

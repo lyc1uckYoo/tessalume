@@ -769,12 +769,12 @@
                             <Grid>
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="24" /><ColumnDefinition Width="280" /></Grid.ColumnDefinitions>
                                 <StackPanel>
-                                    <TextBlock Text="沉浸式主题 · CSS + JS" Foreground="{DynamicResource Accent}" FontWeight="SemiBold" FontSize="13" />
-                                    <TextBlock Text="角色视觉、组件、动画与交互一次完整交付" Foreground="{DynamicResource PrimaryText}" FontWeight="SemiBold" FontSize="17" Margin="0,12,0,0" />
-                                    <TextBlock Text="主题可使用 CSS、图片与 theme.js 构建完整体验。首次启用或源码变化时，软件都会再次请求信任确认。" TextWrapping="Wrap" Foreground="{DynamicResource MutedText}" FontSize="11" LineHeight="19" Margin="0,8,0,0" />
+                                    <TextBlock Text="旗舰主题模板 1.0 · CSS + JS" Foreground="{DynamicResource Accent}" FontWeight="SemiBold" FontSize="13" />
+                                    <TextBlock Text="统一结构，只替换角色视觉与主题表达" Foreground="{DynamicResource PrimaryText}" FontWeight="SemiBold" FontSize="17" Margin="0,12,0,0" />
+                                    <TextBlock Text="主题沿用固定的横幅、卡片、状态面板、聊天区和输入区结构，只替换已声明的图片、文案、配色、纹样与专属动效。首次启用或源码变化时，软件会重新请求信任确认。" TextWrapping="Wrap" Foreground="{DynamicResource MutedText}" FontSize="11" LineHeight="19" Margin="0,8,0,0" />
                                 </StackPanel>
                                 <Border Grid.Column="2" Background="{DynamicResource SurfaceAlt}" CornerRadius="12" Padding="14">
-                                    <TextBlock Text="manifest.json&#10;theme.css（可选）&#10;theme.js&#10;assets/（可选）" FontFamily="Consolas" Foreground="{DynamicResource PrimaryText}" FontSize="11" LineHeight="19" />
+                                    <TextBlock Text="manifest.json&#10;theme.css&#10;theme.js&#10;assets/" FontFamily="Consolas" Foreground="{DynamicResource PrimaryText}" FontSize="11" LineHeight="19" />
                                 </Border>
                             </Grid>
                         </Border>
@@ -785,19 +785,19 @@
 
                     <StackPanel x:Name="UsageInfoPanel" Visibility="Collapsed" VerticalAlignment="Center">
                         <TextBlock Text="使用说明" Foreground="{DynamicResource PrimaryText}" FontSize="27" FontWeight="Bold" />
-                        <TextBlock Text="从模板开始设计，复制后即可修改并导入本地主题库。" Foreground="{DynamicResource MutedText}" FontSize="12" Margin="1,6,0,20" />
-                        <Border Background="{DynamicResource InfoSurface}" BorderBrush="{DynamicResource InfoBorder}" BorderThickness="1" CornerRadius="14" Padding="18"><TextBlock Text="推荐顺序：先修改 manifest.json 中唯一的 id、名称和作者；再建立亮暗色 CSS 与资源；最后完善 theme.js 的组件、动画和自动清理。" TextWrapping="Wrap" Foreground="{DynamicResource PrimaryText}" FontSize="11" LineHeight="19" /></Border>
+                        <TextBlock Text="从旗舰模板 1.0 开始，复制后只修改主题允许替换的部分。" Foreground="{DynamicResource MutedText}" FontSize="12" Margin="1,6,0,20" />
+                        <Border Background="{DynamicResource InfoSurface}" BorderBrush="{DynamicResource InfoBorder}" BorderThickness="1" CornerRadius="14" Padding="18"><TextBlock Text="推荐顺序：先修改 manifest.json 中唯一的 id、名称和作者；再替换亮暗色图片与角色文案；最后调整配色、纹样和专属动效。不要改变 data-theme-role、data-theme-part、主次优先级或 CSS 末尾的冻结几何块。" TextWrapping="Wrap" Foreground="{DynamicResource PrimaryText}" FontSize="11" LineHeight="19" /></Border>
                         <Border Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="16" Padding="20" Margin="0,18,0,0">
                             <Grid>
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="16" /><ColumnDefinition Width="190" /></Grid.ColumnDefinitions>
                                 <StackPanel>
-                                    <TextBlock Text="沉浸式主题模板" Foreground="{DynamicResource PrimaryText}" FontSize="16" FontWeight="SemiBold" />
-                                    <TextBlock Text="从视觉到交互的完整起点" Foreground="{DynamicResource Accent}" FontSize="11" Margin="0,5,0,0" />
-                                    <TextBlock Text="示范 registerTheme、mount/unmount 生命周期、配置读取与自动清理。请只加入自己信任的代码。" TextWrapping="Wrap" Foreground="{DynamicResource MutedText}" FontSize="11" LineHeight="18" Margin="0,12,0,0" />
+                                    <TextBlock Text="旗舰主题模板 1.0" Foreground="{DynamicResource PrimaryText}" FontSize="16" FontWeight="SemiBold" />
+                                    <TextBlock Text="以「心 · 朝月孤城」为验收结构基准" Foreground="{DynamicResource Accent}" FontSize="11" Margin="0,5,0,0" />
+                                    <TextBlock Text="公共运行时负责路由、注入、清理和自适应显隐；模板冻结组件大小与位置。新主题只保留角色资源、文案、配色和专属动效。" TextWrapping="Wrap" Foreground="{DynamicResource MutedText}" FontSize="11" LineHeight="18" Margin="0,12,0,0" />
                                 </StackPanel>
                                 <StackPanel Grid.Column="2" VerticalAlignment="Center">
-                                    <Button Style="{StaticResource RoundButton}" Tag="advanced-theme" Click="OpenTemplate_Click" Content="打开模板文件夹" />
-                                    <Button Style="{StaticResource RoundButton}" Tag="advanced-theme" Click="CopyTemplate_Click" Content="复制一份开始设计" Margin="0,8,0,0" />
+                                    <Button Style="{StaticResource RoundButton}" Click="OpenTemplate_Click" Content="打开模板文件夹" />
+                                    <Button Style="{StaticResource RoundButton}" Click="CopyTemplate_Click" Content="复制一份开始设计" Margin="0,8,0,0" />
                                 </StackPanel>
                             </Grid>
                         </Border>

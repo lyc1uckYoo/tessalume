@@ -1,0 +1,74 @@
+{
+  "$schema": "../schemas/theme-manifest-v2.schema.json",
+  "schemaVersion": 2,
+  "id": "example.template-v1",
+  "name": "旗舰主题模板 1.0",
+  "version": "1.0",
+  "author": "GitHub username",
+  "description": "基于 Tessalume 旗舰主题模板 1.0 的沉浸式主题。",
+  "engineVersion": 2,
+  "type": "advanced",
+  "capabilities": {
+    "light": true,
+    "dark": true
+  },
+  "entryPoints": {
+    "css": "theme.css",
+    "script": "theme.js"
+  },
+  "previews": {
+    "light": "assets/placeholder.png",
+    "dark": "assets/placeholder.png"
+  },
+  "assets": {
+    "hero-light": "assets/placeholder.svg",
+    "hero-dark": "assets/placeholder.svg",
+    "sidebar-light": "assets/placeholder.svg",
+    "sidebar-dark": "assets/placeholder.svg",
+    "chat-light": "assets/placeholder.svg",
+    "chat-dark": "assets/placeholder.svg",
+    "task-left": "assets/placeholder.svg",
+    "task-right-secondary": "assets/placeholder.svg",
+    "task-right-primary": "assets/placeholder.svg",
+    "memory-light": "assets/placeholder.svg",
+    "memory-dark": "assets/placeholder.svg"
+  },
+  "config": {
+    "title": "旗舰主题模板 1.0",
+    "subtitle": "在这里填写角色主题副标题。",
+    "status": "THEME ONLINE",
+    "kickerLight": "LIGHT FORM · CHARACTER DOMAIN",
+    "kickerDark": "DARK FORM · CHARACTER DOMAIN",
+    "headingLight": "亮色主标题",
+    "headingLightAccent": "亮色强调标题",
+    "headingDark": "暗色主标题",
+    "headingDarkAccent": "暗色强调标题",
+    "motionLabel": "角色主题动态轨道",
+    "noteLabel": "角色印记",
+    "noteLight": "亮色角色状态",
+    "noteDark": "暗色角色状态",
+    "leftCardTitle": "左侧角色形态",
+    "leftCardMeta": "LEFT FORM / 01",
+    "secondaryCardTitle": "右侧次要形态",
+    "secondaryCardMeta": "SECONDARY FORM / 02",
+    "primaryCardTitle": "右侧主要形态",
+    "primaryCardMeta": "PRIMARY FORM / 03",
+    "memoryLabel": "角色记忆档案",
+    "memory": "在这里填写角色记忆文案。",
+    "syncLabel": "角色状态面板",
+    "syncTitle": "主题共鸣",
+    "syncValue": "玖",
+    "syncTotal": "玖",
+    "syncCore": "印",
+    "syncCoreLabel": "核",
+    "syncStateLabel": "当前状态",
+    "syncState": "运行中",
+    "accessorySymbol": "印",
+    "accessoryLabel": "角色挂件",
+    "pinnedSection": "主题置顶",
+    "projectSection": "主题项目"
+  },
+  "compatibility": {
+    "petOverlay": false
+  }
+}

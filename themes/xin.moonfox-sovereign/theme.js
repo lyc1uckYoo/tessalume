@@ -1,34 +1,38 @@
 registerTheme({
   async mount(context) {
-    const { document, window, root, config } = context;
-    const html = document.documentElement;
-    let disposed = false;
-    let timer = 0;
-    const marked = [];
-
-    html.classList.add("xmf-theme");
+    const { root, config } = context;
     root.setAttribute("aria-hidden", "true");
     root.innerHTML = `
-      <div class="xmf-stage">
-        <section class="xmf-hero-copy">
-          <span class="xmf-kicker"><i></i><span class="xmf-light-only">DAWN COURT · MOONHEART SOVEREIGN</span><span class="xmf-dark-only">CRIMSON MOON · FOX DOMAIN</span></span>
-          <h1 class="xmf-light-only">朝月清辉<br><em>照见万心</em></h1>
-          <h1 class="xmf-dark-only">赤月临城<br><em>九尾定岁</em></h1>
+      <!-- 模板 1.0 固定结构①：首页主视觉、顶部身份牌与任务页五个基础组件。 -->
+      <div class="xmf-stage" data-theme-stage>
+        <section class="xmf-hero-copy" data-theme-role="hero" data-theme-part="hero-copy">
+          <span class="xmf-kicker" data-theme-part="hero-kicker"><i></i><span class="xmf-light-only">DAWN COURT · MOONHEART SOVEREIGN</span><span class="xmf-dark-only">CRIMSON MOON · FOX DOMAIN</span></span>
+          <h1 class="xmf-light-only" data-theme-part="hero-title-light">朝月清辉<br><em>照见万心</em></h1>
+          <h1 class="xmf-dark-only" data-theme-part="hero-title-dark">赤月临城<br><em>九尾定岁</em></h1>
           <p>${config.subtitle}</p>
-          <div class="xmf-phases" aria-label="岁序狐火月相">
+          <div class="xmf-phases" data-theme-part="hero-motion" aria-label="岁序狐火月相">
             <i class="xmf-phase-new"></i><i class="xmf-phase-wax"></i><i class="xmf-phase-full"></i><i class="xmf-phase-wane"></i><i class="xmf-phase-eclipse"></i><b></b>
           </div>
-          <div class="xmf-oracle-note"><small>岁序心印</small><strong class="xmf-light-only">人形 · 听念入梦</strong><strong class="xmf-dark-only">狐身 · 巡狩孤城</strong></div>
+          <div class="xmf-oracle-note" data-theme-part="hero-note"><small>岁序心印</small><strong class="xmf-light-only">人形 · 听念入梦</strong><strong class="xmf-dark-only">狐身 · 巡狩孤城</strong></div>
         </section>
-        <div class="xmf-identity"><span></span><div><b>${config.title}</b><small>${config.status}</small></div><i></i></div>
-        <aside class="xmf-task-card xmf-task-card-left"><i></i><div><b>月门 · 谕心</b><small>MOONHEART / ORACLE FORM</small></div></aside>
-        <aside class="xmf-task-card xmf-task-card-right xmf-task-card-human"><i></i><div><b>人形 · 执扇</b><small>SOVEREIGN / HEARTFIRE</small></div></aside>
-        <aside class="xmf-task-card xmf-task-card-right xmf-task-card-fox"><i></i><div><b>本体 · 九尾</b><small>TRUE FORM / MOON FOX</small></div></aside>
-        <aside class="xmf-memory"><small>梦州岁序档案 · X-09</small><p>${config.memory}</p><span>${Array.from({length:7},(_,i)=>`<i style="--n:${i}"></i>`).join("")}</span></aside>
-        <div class="xmf-domain"><i></i><i></i><i></i><b></b><small>MOONHEART DOMAIN</small></div>
+        <div class="xmf-identity" data-theme-role="identity" data-theme-part="identity"><span data-theme-part="identity-emblem"></span><div data-theme-part="identity-copy"><b>${config.title}</b><small>${config.status}</small></div><i data-theme-part="identity-status"></i></div>
+        <aside class="xmf-task-card xmf-task-card-left" data-theme-role="task-left" data-theme-part="task-card-left"><i data-theme-part="task-card-art"></i><div data-theme-part="task-card-caption"><b>月门 · 谕心</b><small>MOONHEART / ORACLE FORM</small></div></aside>
+        <aside class="xmf-task-card xmf-task-card-right xmf-task-card-human" data-theme-role="task-right" data-theme-priority="secondary" data-theme-part="task-card-right-secondary"><i data-theme-part="task-card-art"></i><div data-theme-part="task-card-caption"><b>人形 · 执扇</b><small>SOVEREIGN / HEARTFIRE</small></div></aside>
+        <aside class="xmf-task-card xmf-task-card-right xmf-task-card-fox" data-theme-role="task-right" data-theme-priority="primary" data-theme-part="task-card-right-primary"><i data-theme-part="task-card-art"></i><div data-theme-part="task-card-caption"><b>本体 · 九尾</b><small>TRUE FORM / MOON FOX</small></div></aside>
+        <aside class="xmf-memory" data-theme-role="memory" data-theme-part="memory-card"><small>梦州岁序档案 · X-09</small><p>${config.memory}</p><span data-theme-part="memory-meter">${Array.from({length:7},(_,i)=>`<i style="--n:${i}"></i>`).join("")}</span></aside>
       </div>`;
+    // 模板 1.0 固定结构②：同步面板和输入框挂件必须直属主题根节点，避免被舞台裁切。
     root.insertAdjacentHTML("beforeend", `
-      <div class="xmf-composer-charm">
+      <div class="xmf-heart-covenant" data-theme-role="sync-panel" data-theme-priority="secondary" data-theme-part="sync-panel">
+        <span class="xmf-covenant-copy" data-theme-part="sync-copy">
+          <small>岁序心契 · 心月狐</small>
+          <b>双相归心 <strong>玖</strong><em>/玖</em></b>
+        </span>
+        <span class="xmf-covenant-seal" data-theme-part="sync-core"><i></i><b>心</b><small>月狐</small></span>
+        <span class="xmf-covenant-flames" data-theme-part="sync-meter">${Array.from({length:9},(_,i)=>`<i style="--i:${i};--h:${8 + (i % 5) * 3}px"></i>`).join("")}</span>
+        <span class="xmf-covenant-state" data-theme-part="sync-state"><small>朝月清辉</small><b><i></i>巡城</b></span>
+      </div>
+      <div class="xmf-composer-charm" data-theme-role="composer-accessory" data-theme-part="composer-accessory">
         <svg class="xmf-heart-pendant" viewBox="0 0 96 96" aria-hidden="true">
           <defs>
             <linearGradient id="xmf-pendant-gold" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#84602f"/><stop offset=".4" stop-color="#d8b76d"/><stop offset=".72" stop-color="#fff0b9"/><stop offset="1" stop-color="#a57535"/></linearGradient>
@@ -60,99 +64,30 @@ registerTheme({
         <small>朝月 · 心珰</small>
       </div>`);
 
-    const mark = (node, name) => {
-      if (!node || node.classList.contains(name)) return;
-      node.classList.add(name);
-      marked.push([node, name]);
-    };
-    const findHome = () => {
-      const icon = document.querySelector('[data-testid="home-icon"]');
-      return icon?.closest('[role="main"]') || icon?.closest("main") || null;
-    };
-    const ensure = () => {
-      if (disposed) return;
-      timer = 0;
-      const main = document.querySelector("main.main-surface") || document.querySelector("main");
-      const aside = document.querySelector("aside.app-shell-left-panel");
-      const home = findHome();
-      const stage = root.querySelector(".xmf-stage");
-      const charm = root.querySelector(".xmf-composer-charm");
-      const composer = document.querySelector(".composer-surface-chrome");
-      if (main && stage) {
-        const box = main.getBoundingClientRect();
-        Object.assign(stage.style, { left:`${Math.round(box.left)}px`, top:`${Math.round(box.top)}px`, width:`${Math.round(box.width)}px`, height:`${Math.round(box.height)}px` });
-        if (charm && composer) {
-          const composerBox = composer.getBoundingClientRect();
-          const charmSize = 76;
-          const left = Math.max(box.left + 14, Math.round(composerBox.left - charmSize - 18));
-          const top = Math.max(box.top + 56, Math.min(
-            Math.round(box.bottom - charmSize - 22),
-            Math.round(composerBox.top + (composerBox.height - charmSize) / 2),
-          ));
-          Object.assign(charm.style, { left:`${left}px`, top:`${top}px`, right:"auto", bottom:"auto" });
-        }
-      }
-      html.classList.toggle("xmf-is-home", Boolean(home));
-      html.classList.toggle("xmf-is-task", !home);
-      mark(main,"xmf-main"); mark(aside,"xmf-sidebar"); mark(home,"xmf-home");
-      mark(document.querySelector(".group\\/application-menu-top-bar"),"xmf-window-bar");
-
-      if (aside) {
-        const seals = ["dawn","heart","moon","fox"];
-        let thread = 0;
-        aside.querySelectorAll('[data-sidebar-project-drop-zone="project-icon"]').forEach((icon,index)=>{
-          const heading = icon.parentElement;
-          const row = heading?.closest('[data-app-action-sidebar-project-row]');
-          mark(heading,"xmf-project-heading");
-          if (heading) heading.dataset.xmfIndex = String(index+1).padStart(2,"0");
-          if (row) row.dataset.xmfPhase = seals[index%seals.length];
-        });
-        aside.querySelectorAll('[data-app-action-sidebar-thread-row]').forEach(row=>row.dataset.xmfThread=String(++thread).padStart(2,"0"));
-        aside.querySelectorAll("*").forEach(node=>{
-          const text = node.children.length===0 ? node.textContent?.trim() : "";
-          if (text==="置顶" || text==="项目") {
-            mark(node.parentElement,"xmf-section-label");
-            node.parentElement.dataset.xmfSection = text==="置顶" ? "听念之庭" : "梦州岁序";
-          }
-        });
-      }
-
-      let message = 0;
-      document.querySelectorAll('[class*="_markdownContent_"]').forEach(content=>{
-        mark(content,"xmf-markdown");
-        const unit = content.closest("[data-content-search-unit-key]");
-        const key = unit?.getAttribute("data-content-search-unit-key") || "";
-        if (key.endsWith(":assistant")) { mark(unit,"xmf-message-assistant"); unit.dataset.xmfMessage=String(++message).padStart(2,"0"); }
-        if (key.endsWith(":user")) { mark(unit,"xmf-message-user"); unit.dataset.xmfMessage=String(++message).padStart(2,"0"); }
-      });
-      const chatUnit = document.querySelector(".xmf-message-assistant,.xmf-message-user");
-      mark(chatUnit?.closest('[class*="thread-content-max-width"]'),"xmf-chat-paper");
-      document.querySelectorAll("button").forEach(button=>{
-        const label = button.textContent?.trim();
-        if (label!=="输出" && label!=="来源") return;
-        const section = button.closest("section");
-        mark(section,"xmf-output-section"); mark(section?.querySelector("header"),"xmf-output-header"); mark(section?.parentElement?.parentElement,"xmf-output-panel");
-      });
-      const outputOpen = Array.from(document.querySelectorAll(".xmf-output-panel")).some(panel=>{ const b=panel.getBoundingClientRect(); return b.width>120 && b.height>80; });
-      html.classList.toggle("xmf-has-output",outputOpen);
-      document.querySelectorAll("[data-xmf-card]").forEach(n=>n.removeAttribute("data-xmf-card"));
-      home?.querySelector(".group\\/home-suggestions")?.querySelectorAll("button").forEach((button,index)=>button.dataset.xmfCard=String(index+1).padStart(2,"0"));
-      if (!home) {
-        const header = document.querySelector('[data-testid="app-shell-header-context-menu-surface"]');
-        const title = header?.querySelector("span > span.truncate")?.parentElement;
-        mark(header,"xmf-task-header"); mark(title,"xmf-task-title");
-      }
-    };
-    const schedule = () => { if(disposed)return; if(timer)window.clearTimeout(timer); timer=window.setTimeout(ensure,140); };
-    const cleanup = () => {
-      if(disposed)return true; disposed=true; if(timer)window.clearTimeout(timer);
-      for(const [node,name] of marked){try{node?.classList?.remove(name);}catch{}}
-      try{document.querySelectorAll("*").forEach(n=>Array.from(n.attributes||[]).forEach(a=>{if(a.name.startsWith("data-xmf-"))n.removeAttribute(a.name);}));}catch{}
-      html.classList.remove("xmf-theme","xmf-is-home","xmf-is-task","xmf-has-output"); return true;
-    };
-    context.observe(document.documentElement,{childList:true,subtree:true},schedule);
-    context.on(window,"resize",schedule,{passive:true}); context.interval(ensure,4000);
-    window.__XIN_MOONFOX_CLEANUP__=cleanup; context.addCleanup(cleanup); context.addCleanup(()=>{delete window.__XIN_MOONFOX_CLEANUP__;}); ensure();
+    return context.mountCanonicalTheme({
+      namespace: "xmf",
+      themeClass: "xmf-theme",
+      templateVersion: "1.0",
+      preserveRoot: true,
+      adaptiveLayout: true,
+      sidebar: {
+        palette: ["dawn", "heart", "moon", "fox"],
+        projectTone: "phase",
+        threadIndex: "thread",
+        sections: { "置顶": "听念之庭", "项目": "梦州岁序" },
+      },
+      onEnsure({ main, positionComposerAccessory, positionPanelAboveCards }) {
+        positionComposerAccessory(main, ".xmf-composer-charm");
+        positionPanelAboveCards(
+          main,
+          ".xmf-heart-covenant",
+          [".xmf-task-card-human", ".xmf-task-card-fox"],
+          320,
+          56,
+          40,
+        );
+      },
+    });
   },
-  async unmount(context){return context.window.__XIN_MOONFOX_CLEANUP__?.()??true;}
+  async unmount() {}
 });

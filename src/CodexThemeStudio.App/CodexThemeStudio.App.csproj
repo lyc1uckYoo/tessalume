@@ -27,12 +27,12 @@
     <EmbeddedResource Include="Compatibility\*.js">
       <LogicalName>CodexThemeStudio.Compatibility/%(Filename)%(Extension)</LogicalName>
     </EmbeddedResource>
-    <EmbeddedResource Include="$(BuiltInThemesRoot)\**\*"
-                      Exclude="$(BuiltInThemesRoot)\**\.references\**;$(BuiltInThemesRoot)\.optimizer-cache.json">
+    <EmbeddedResource Include="$(BuiltInThemesRoot)\*\**\*"
+                      Exclude="$(BuiltInThemesRoot)\**\.legacy\**;$(BuiltInThemesRoot)\**\.references\**;$(BuiltInThemesRoot)\**\.sources\**;$(BuiltInThemesRoot)\.optimizer-cache.json">
       <LogicalName>CodexThemeStudio.BuiltInThemes/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
     </EmbeddedResource>
-    <EmbeddedResource Include="..\..\examples\advanced-theme\**\*">
-      <LogicalName>CodexThemeStudio.Templates/advanced-theme/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+    <EmbeddedResource Include="..\..\examples\**\*">
+      <LogicalName>CodexThemeStudio.Templates/theme-template-v1/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
     </EmbeddedResource>
   </ItemGroup>
 

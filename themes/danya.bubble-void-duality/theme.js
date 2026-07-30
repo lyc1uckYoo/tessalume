@@ -1,0 +1,84 @@
+registerTheme({
+  async mount(context) {
+    const { root, config } = context;
+    root.setAttribute("aria-hidden", "true");
+    root.innerHTML = `
+      <div class="dny-stage" data-theme-stage>
+        <section class="dny-hero-copy" data-theme-role="hero">
+          <span class="dny-kicker"><i></i><span class="dny-light-only">HUMAN ANNOTATION · 泡影记录</span><span class="dny-dark-only">VOID ANNOTATION · 幻灭记录</span></span>
+          <h1 class="dny-light-only">把今日装进<br><em>不会破碎的泡泡</em></h1>
+          <h1 class="dny-dark-only">让群星沉入<br><em>无人知晓的寂静</em></h1>
+          <p>${config.subtitle}</p>
+          <div class="dny-domain-line"><span></span><i></i><b></b><i></i><span></span></div>
+          <div class="dny-mode-note dny-light-only"><small>DISGUISE FORM</small><b>温柔的学院观测者</b></div>
+          <div class="dny-mode-note dny-dark-only"><small>ANNIHILATION FORM</small><b>真正的鸣式共鸣者</b></div>
+        </section>
+        <div class="dny-hero-fx dny-hero-fx-light dny-light-only" aria-hidden="true"><span class="dny-stage-orbit"><i></i><i></i><b></b></span><span class="dny-pearl-constellation"><i></i><i></i><i></i><i></i></span><span class="dny-curtain-wave"><i></i><i></i><i></i></span></div>
+        <div class="dny-hero-fx dny-hero-fx-dark dny-dark-only" aria-hidden="true"><span class="dny-event-horizon"><i></i><b></b></span><span class="dny-void-fracture"><i></i><i></i><i></i></span><span class="dny-collapse-trace"><i></i><i></i><i></i><i></i></span></div>
+        <div class="dny-identity" data-theme-role="identity"><span class="dny-avatar"></span><span><b>${config.title}</b><small class="dny-light-only">${config.status}</small><small class="dny-dark-only">VOID FORM · ANNIHILATION SYNC</small></span><i></i></div>
+        <aside class="dny-portrait-card" data-theme-role="task-left"><div class="dny-portrait-art"></div><div><b class="dny-light-only">达妮娅 · 泡影</b><b class="dny-dark-only">达妮娅 · 虚阈</b><small class="dny-light-only">HUMAN DISGUISE / 01</small><small class="dny-dark-only">TRUE VOID FORM / 01</small></div></aside>
+        <aside class="dny-observer" data-theme-role="task-right"><div class="dny-observer-art"></div><div><b class="dny-light-only">达妮娅 · 伪装</b><b class="dny-dark-only">达妮娅 · 真形</b><small class="dny-light-only">BUBBLE DOMAIN ACTIVE</small><small class="dny-dark-only">SILENCE DOMAIN ACTIVE</small></div></aside>
+        <aside class="dny-alt-card" data-theme-role="task-right"><div class="dny-alt-art"></div><div><b class="dny-light-only">伪装 · 观星</b><b class="dny-dark-only">真形 · 湮灭</b><small class="dny-light-only">BUBBLE THEATRE / 02</small><small class="dny-dark-only">ANNIHILATION FIELD / 02</small></div></aside>
+        <aside class="dny-memory" data-theme-role="memory"><small class="dny-light-only">HUMAN MEMORY</small><small class="dny-dark-only">VOID MEMORY</small><p class="dny-light-only">${config.memory}</p><p class="dny-dark-only">所有被观测的星光，终将在寂静虚阈中熄灭。</p><span class="dny-memory-sigil"><svg viewBox="0 0 122 32" aria-hidden="true"><defs><radialGradient id="dny-memory-bubble"><stop offset="0" stop-color="#fff" stop-opacity=".82"/><stop offset=".48" stop-color="#f8c7e4" stop-opacity=".36"/><stop offset=".76" stop-color="#8de8f3" stop-opacity=".2"/><stop offset="1" stop-color="#8a7ce2" stop-opacity=".08"/></radialGradient><radialGradient id="dny-memory-void"><stop offset="0" stop-color="#050817"/><stop offset=".48" stop-color="#151142"/><stop offset=".78" stop-color="#6a32c5"/><stop offset="1" stop-color="#b256e7" stop-opacity=".25"/></radialGradient><linearGradient id="dny-memory-orbit" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f5c570"/><stop offset=".42" stop-color="#ffb8db"/><stop offset=".72" stop-color="#86e6ee"/><stop offset="1" stop-color="#8273dd"/></linearGradient></defs><path class="dny-memory-trace dny-memory-trace-left" d="M2 18h23l7-5h12"/><path class="dny-memory-trace dny-memory-trace-right" d="M120 18H97l-7-5H78"/><g class="dny-memory-orbits"><ellipse cx="61" cy="16" rx="24" ry="9"/><ellipse cx="61" cy="16" rx="11" ry="23" transform="rotate(58 61 16)"/></g><circle class="dny-memory-bubble" cx="61" cy="16" r="12"/><circle class="dny-memory-core" cx="61" cy="16" r="7"/><path class="dny-memory-star" d="M61 5l2.5 7.3L71 16l-7.5 3.7L61 27l-2.5-7.3L51 16l7.5-3.7Z"/><path class="dny-memory-constellation" d="M56 19l3-7 5 3 3-4M59 12l-4-3M64 15l4 4"/><g class="dny-memory-satellites"><circle cx="38" cy="9" r="2.2"/><circle cx="82" cy="24" r="1.8"/><circle cx="88" cy="8" r="1.3"/></g></svg></span></aside>
+        <div class="dny-sync" data-theme-role="sync-panel"><span><small>FORM SYNCHRONIZATION</small><b class="dny-light-only">伪装稳定 · 97.4%</b><b class="dny-dark-only">侵蚀稳定 · 99.8%</b></span><div>${Array.from({length:15},()=>"<i></i>").join("")}</div></div>
+        <div class="dny-weapon-charm" data-theme-role="composer-accessory">
+          <svg class="dny-forged-star dny-forged-star-light dny-light-only" viewBox="0 0 100 100" aria-hidden="true">
+            <defs><linearGradient id="dny-prop-metal" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#a85d88"/><stop offset=".34" stop-color="#f1b8d5"/><stop offset=".68" stop-color="#e8fbff"/><stop offset="1" stop-color="#69bfd5"/></linearGradient><radialGradient id="dny-prop-pearl"><stop stop-color="#fff"/><stop offset=".3" stop-color="#ffd8ea"/><stop offset=".64" stop-color="#8ddbea"/><stop offset="1" stop-color="#9979d8" stop-opacity=".45"/></radialGradient><filter id="dny-prop-glow" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+            <g class="dny-prop-body"><path d="M18 84L55 48" stroke="url(#dny-prop-metal)" stroke-width="7" stroke-linecap="round"/><path d="M17 85L54 48" stroke="#fff" stroke-opacity=".72" stroke-width="1.2"/><path d="M12 89l7-14 9 9-14 7Z" fill="#d98eb5" stroke="#fff0f8"/><path d="M45 52l-13-3 7 12-12 5 15 2" fill="none" stroke="#f1a8cd" stroke-width="2"/></g>
+            <g class="dny-prop-orbits" fill="none" stroke-linecap="round"><ellipse cx="65" cy="37" rx="25" ry="13" transform="rotate(-24 65 37)" stroke="#72d3e4" stroke-width="1.2" stroke-dasharray="15 5 2 5"/><ellipse cx="65" cy="37" rx="14" ry="25" transform="rotate(42 65 37)" stroke="#ef91bf" stroke-width="1" stroke-dasharray="8 5"/></g>
+            <g class="dny-prop-core" filter="url(#dny-prop-glow)"><circle cx="65" cy="37" r="14" fill="url(#dny-prop-pearl)" stroke="#fff" stroke-opacity=".8"/><circle cx="65" cy="37" r="7" fill="none" stroke="#fff" stroke-width="1.2"/><path d="m65 26 2.7 7.8 7.8 2.7-7.8 2.7L65 47l-2.7-7.8-7.8-2.7 7.8-2.7Z" fill="#fff8d9" stroke="#e3ad61" stroke-width=".6"/></g>
+            <g class="dny-prop-bubbles" fill="none" stroke="#fff"><circle cx="40" cy="25" r="5"/><circle cx="84" cy="54" r="4"/><circle cx="83" cy="19" r="2.8"/></g>
+          </svg>
+          <svg class="dny-forged-star dny-forged-star-dark dny-dark-only" viewBox="0 0 100 100" aria-hidden="true">
+            <defs><linearGradient id="dny-void-metal" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#071024"/><stop offset=".42" stop-color="#304a91"/><stop offset=".72" stop-color="#9b69eb"/><stop offset="1" stop-color="#e653a4"/></linearGradient><radialGradient id="dny-void-core"><stop stop-color="#010208"/><stop offset=".48" stop-color="#080d25"/><stop offset=".7" stop-color="#4f45bd"/><stop offset=".9" stop-color="#d44fa2"/><stop offset="1" stop-color="#02040d"/></radialGradient><filter id="dny-void-glow" x="-90%" y="-90%" width="280%" height="280%"><feGaussianBlur stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+            <g class="dny-void-cage"><path d="M12 79 23 48 46 20 79 24 91 47 77 72 43 78 27 93Z" fill="#030713" stroke="url(#dny-void-metal)" stroke-width="2"/><path d="m15 78 15-8m-6-21 13 7m9-35 5 13m28-9-11 13m23 10-15 2m1 22-12-9m-22 15-1 13" stroke="#8f76ea" stroke-width="1.2" stroke-dasharray="4 4"/></g>
+            <g class="dny-void-rings" fill="none" stroke-linecap="round"><ellipse cx="60" cy="48" rx="29" ry="12" transform="rotate(-19 60 48)" stroke="#718cff" stroke-width="1.2" stroke-dasharray="17 7 2 6"/><ellipse cx="60" cy="48" rx="13" ry="29" transform="rotate(47 60 48)" stroke="#e35aa8" stroke-width="1" stroke-dasharray="5 7"/></g>
+            <g class="dny-void-dwarf" filter="url(#dny-void-glow)"><circle cx="60" cy="48" r="16" fill="url(#dny-void-core)"/><circle cx="60" cy="48" r="8" fill="#010208" stroke="#9c7cff"/><path d="M60 34a14 14 0 0 0 0 28c-7-8-7-20 0-28Z" fill="#e35aa8" opacity=".38"/></g>
+            <g class="dny-void-shards" fill="#ab82ff"><path d="m29 27 5 4-7 3Z"/><path d="m84 66 7 2-6 5Z"/><path d="m36 82 4-6 3 7Z"/><circle cx="83" cy="31" r="2"/></g>
+          </svg>
+          <small class="dny-light-only">赝作的矮星 · 泡影布景</small><small class="dny-dark-only">赝作的矮星 · 消解终幕</small>
+        </div>
+        <div class="dny-main-frame"><i></i><i></i><i></i><i></i></div>
+        <div class="dny-orbit-watermark"><i></i><i></i><b></b></div>
+        <div class="dny-task-index"><small class="dny-light-only">BUBBLE OBSERVATORY</small><small class="dny-dark-only">VOID OBSERVATORY</small><b>FIELD / 07</b><span><i></i><i></i><i></i></span></div>
+        <div class="dny-mode-seal"><i></i><b></b><span class="dny-light-only">H</span><span class="dny-dark-only">V</span></div>
+        <div class="dny-bubbles">${Array.from({length:14},(_,i)=>`<i style="--i:${i}"></i>`).join("")}</div>
+      </div>`;
+    root.appendChild(root.querySelector(".dny-sync"));
+    root.appendChild(root.querySelector(".dny-weapon-charm"));
+    const heroEffects = Array.from(root.querySelectorAll(".dny-hero-fx"));
+
+    return context.mountCanonicalTheme({
+      namespace: "dny",
+      themeClass: "dny-theme",
+      preserveRoot: true,
+      sidebar: {
+        palette: ["rose", "bubble", "orbit", "void"],
+        projectTone: "tone",
+        threadTone: "thread-tone",
+        threadIndex: "thread-index",
+        inheritProjectTone: true,
+        expandLabel: "展开显示",
+        sections: { "置顶": "PINNED FIELDS", "项目": "ACTIVE DOMAINS" },
+      },
+      onEnsure({ main, home, stage, positionComposerAccessory, positionPanelAboveCards }) {
+        const homeBanner = home?.querySelector(":scope > div:first-child > div:first-child > div:first-child") || null;
+        const heroHost = homeBanner || stage;
+        if (heroHost) {
+          heroEffects.forEach((effect) => {
+            if (effect.parentElement !== heroHost) heroHost.appendChild(effect);
+          });
+        }
+        positionComposerAccessory(main, ".dny-weapon-charm");
+        positionPanelAboveCards(
+          main,
+          ".dny-sync",
+          [".dny-alt-card", ".dny-observer"],
+          310,
+          48,
+        );
+      },
+    });
+  },
+  async unmount() {}
+});

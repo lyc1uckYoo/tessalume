@@ -17,6 +17,8 @@ namespace CodexThemeStudio.App;
 
 public partial class MainWindow : Window, IAsyncDisposable
 {
+    private const string BuiltInTemplateFolderName = "theme-template-v1";
+
     private enum RightPane
     {
         Themes,
@@ -724,7 +726,7 @@ public partial class MainWindow : Window, IAsyncDisposable
 
     private void OpenTemplate_Click(object sender, RoutedEventArgs e)
     {
-        var path = GetTemplatePath(sender);
+        var path = GetTemplatePath();
         if (!Directory.Exists(path))
         {
             MessageBox.Show("模板文件尚未释放，请重启应用后再试。", "找不到模板", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -736,7 +738,7 @@ public partial class MainWindow : Window, IAsyncDisposable
 
     private void CopyTemplate_Click(object sender, RoutedEventArgs e)
     {
-        var source = GetTemplatePath(sender);
+        var source = GetTemplatePath();
         if (!Directory.Exists(source))
         {
             MessageBox.Show("模板文件尚未释放，请重启应用后再试。", "找不到模板", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -758,10 +760,10 @@ public partial class MainWindow : Window, IAsyncDisposable
         Process.Start(new ProcessStartInfo("explorer.exe", $"\"{destination}\"") { UseShellExecute = true });
     }
 
-    private string GetTemplatePath(object sender) => Path.Combine(
+    private string GetTemplatePath() => Path.Combine(
         _layout.RootDirectory,
         "Templates",
-        (sender as Button)?.Tag?.ToString() ?? "advanced-theme");
+        BuiltInTemplateFolderName);
 
     private static void CopyDirectory(string source, string destination)
     {

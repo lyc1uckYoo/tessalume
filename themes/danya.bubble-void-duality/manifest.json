@@ -1,0 +1,48 @@
+{
+  "$schema": "https://tessalume.local/schemas/theme-manifest-v2.json",
+  "schemaVersion": 2,
+  "id": "danya.bubble-void-duality",
+  "name": "达妮娅 · 泡影虚阈",
+  "version": "1.0",
+  "author": "lyc1uckYoo",
+  "description": "达妮娅双形态旗舰主题。亮色以粉发伪装形态与泡泡剧场为核心，暗色完全切换为银蓝真正形态与寂静虚阈；同步仪表移至右下双卡上方，左下角加入专属音感仪「赝作的矮星」。",
+  "engineVersion": 2,
+  "type": "advanced",
+  "capabilities": {
+    "light": true,
+    "dark": true
+  },
+  "entryPoints": {
+    "css": "theme.css",
+    "script": "theme.js"
+  },
+  "previews": {
+    "light": "assets/hero-light.png",
+    "dark": "assets/hero-dark.png"
+  },
+  "assets": {
+    "hero-light": "assets/hero-light.png",
+    "hero-dark": "assets/hero-dark.png",
+    "chat-light": "assets/chat-light.png",
+    "chat-dark": "assets/chat-dark.png",
+    "portrait-light": "assets/danya-light.png",
+    "portrait-dark": "assets/danya-dark.png",
+    "sidebar-light": "assets/sidebar-light-v3.png",
+    "sidebar-dark": "assets/sidebar-dark-v3.png",
+    "companion-light": "assets/companion-light.png",
+    "companion-dark": "assets/companion-dark.png",
+    "task-alt-light": "assets/task-alt-light.png",
+    "task-alt-dark": "assets/task-alt-dark.png",
+    "memory-light": "assets/memory-light.png",
+    "memory-dark": "assets/memory-dark.png"
+  },
+  "config": {
+    "title": "达妮娅 · 泡影虚阈",
+    "subtitle": "不要看，不要听，然后忘掉吧。",
+    "status": "BUBBLE DOMAIN · HUMAN SYNC",
+    "memory": "那些热闹真切的笑容，让虚假的日常也有了温度。"
+  },
+  "compatibility": {
+    "petOverlay": false
+  }
+}

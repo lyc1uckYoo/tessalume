@@ -176,6 +176,32 @@ if ($localThemeManifests.Count -gt 0) {
 
     & $python $themeOptimizer $sourceThemes --output $optimizedThemes --quality $ThemeImageQuality
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+    # Only direct children of themes/ are publishable packages. Verify the
+    # generated library before embedding it so historical or nested manifests
+    # can never silently enter the executable.
+    $sourceThemeNames = @($localThemeManifests | ForEach-Object { $_.Name } | Sort-Object)
+    $optimizedThemeManifests = @(
+        Get-ChildItem -LiteralPath $optimizedThemes -Filter 'manifest.json' -File -Recurse
+    )
+    $optimizedRootManifests = @(
+        Get-ChildItem -LiteralPath $optimizedThemes -Directory -ErrorAction SilentlyContinue |
+            Where-Object { [IO.File]::Exists((Join-Path $_.FullName 'manifest.json')) }
+    )
+    $nestedManifests = @(
+        $optimizedThemeManifests |
+            Where-Object { $_.Directory.Parent.FullName -ne $optimizedThemes }
+    )
+    $optimizedThemeNames = @($optimizedRootManifests | ForEach-Object { $_.Name } | Sort-Object)
+    $themeSetDifference = @(
+        Compare-Object -ReferenceObject $sourceThemeNames -DifferenceObject $optimizedThemeNames
+    )
+
+    if ($nestedManifests.Count -gt 0 -or $themeSetDifference.Count -gt 0) {
+        $nestedList = @($nestedManifests | ForEach-Object { $_.FullName }) -join ', '
+        $differenceList = @($themeSetDifference | ForEach-Object { "$($_.InputObject) $($_.SideIndicator)" }) -join ', '
+        throw "Optimized theme library does not match direct source packages. Nested: [$nestedList]. Difference: [$differenceList]."
+    }
 }
 else {
     # Public clones intentionally contain no private/local theme packages.

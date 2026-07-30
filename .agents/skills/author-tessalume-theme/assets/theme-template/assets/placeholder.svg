@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#151a36"/>
+      <stop offset=".52" stop-color="#5d68db"/>
+      <stop offset="1" stop-color="#49b9c8"/>
+    </linearGradient>
+    <radialGradient id="glow">
+      <stop stop-color="#ffffff" stop-opacity=".78"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#background)"/>
+  <circle cx="1180" cy="360" r="330" fill="url(#glow)" opacity=".5"/>
+  <path d="M0 770C330 590 590 690 850 530s480-150 750-310v680H0Z" fill="#090d22" opacity=".46"/>
+  <g fill="none" stroke="#fff" opacity=".3">
+    <circle cx="1180" cy="360" r="190"/>
+    <circle cx="1180" cy="360" r="250" stroke-dasharray="18 12"/>
+    <path d="M860 360h640M1180 40v640"/>
+  </g>
+  <text x="96" y="142" fill="#fff" font-family="Segoe UI, sans-serif" font-size="46" font-weight="700">TESSALUME</text>
+  <text x="98" y="196" fill="#dbe0ff" font-family="Segoe UI, sans-serif" font-size="24" letter-spacing="8">FLAGSHIP THEME TEMPLATE 1.0</text>
+  <text x="98" y="745" fill="#fff" font-family="Segoe UI, sans-serif" font-size="28">请替换为角色主题图片</text>
+</svg>

@@ -28,10 +28,11 @@
 
 首次启动时，程序会在 EXE 旁创建 `themes`、`Compatibility` 和 `data` 目录，并把内置主题释放到 `themes/<主题目录>`。以后完善的新主题直接放入该目录即可被本地画廊识别，也会自动参与源码构建，不需要维护硬编码名单。
 
-当前仓库公开两个主题：
+当前仓库公开三套遵循同一注入契约的主题：
 
 - `爱弥斯 · 星海远航`
 - `心 · 朝月孤城`
+- `达妮娅 · 泡影虚阈`
 
 Tessalume 不会修改 WindowsApps、`app.asar` 或 Codex 用户数据。如果 Codex 需要以调试端口重启，程序会先取得用户确认。
 
@@ -51,13 +52,13 @@ powershell -ExecutionPolicy Bypass -File ".\一键构建EXE.ps1"
 4. 增量优化主题图片；
 5. 发布自包含单文件 EXE。
 
-默认产物为 `dist/portable-win-x64/Tessalume.exe`。可使用 `-Configuration`、`-Runtime` 和 `-ThemeImageQuality` 覆盖默认参数；品牌名、SDK 版本、程序集名和输出文件名均从项目配置读取，不在脚本中重复写死。
+默认产物为 `dist/portable-win-x64/Tessalume.exe`。构建只收集 `themes/` 的一级主题目录，以及各主题根清单明确声明的入口、预览和资源；`.sources`、`.references`、`.legacy` 与未声明文件不会进入 EXE。可使用 `-Configuration`、`-Runtime` 和 `-ThemeImageQuality` 覆盖默认参数；品牌名、SDK 版本、程序集名和输出文件名均从项目配置读取，不在脚本中重复写死。
 
 ## 制作主题
 
-从 [沉浸式主题模板](examples/advanced-theme/README.md) 开始，然后在 Tessalume 画廊中导入。主题直接位于 `themes/<主题目录>/`，不使用类型二级目录。
+从 [旗舰主题模板 1.0](examples/README.md) 开始，然后在 Tessalume 画廊中导入。模板直接位于 `examples/` 根目录，不再保留旧的类型子目录；它以已验收的 `心 · 朝月孤城` 为结构基准，冻结首页横幅、左右卡片、状态面板、聊天内容和输入区的尺寸与位置。新主题只替换图片、角色文案、配色、纹样与专属动效，并直接位于 `themes/<主题目录>/`。
 
-完整包规范、生命周期与安全限制见 [THEMING.md](THEMING.md)。
+仓库内旗舰主题统一使用 canonical host：页面注入、路由状态、聊天消息、输出面板、侧栏标记与清理由运行时复用；主题包只替换资源、文案、颜色、角色元素和专属动效。完整包规范、生命周期与安全限制见 [THEMING.md](THEMING.md)，可执行模板与校验流程见 [.agents/skills/author-tessalume-theme](.agents/skills/author-tessalume-theme/SKILL.md)。
 
 ## 项目结构
 
@@ -67,7 +68,8 @@ src/CodexThemeStudio.Core      主题加载、校验、启动与 CDP 核心
 tests/                         无外部测试框架的自动检查
 schemas/                       主题包规范
 themes/<主题目录>/             公开主题源码；新增目录会自动参与构建
-examples/advanced-theme/       开源沉浸式主题模板
+examples/                      可直接运行的旗舰主题模板 1.0
+.agents/skills/                可复用主题创作规范、脚手架与契约校验
 docs/screenshots/              仅包含 Tessalume 软件界面的公开截图
 一键构建EXE.ps1               还原、检查、优化与发布入口
 ```

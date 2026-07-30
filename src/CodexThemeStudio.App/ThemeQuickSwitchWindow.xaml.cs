@@ -64,6 +64,7 @@ public partial class ThemeQuickSwitchWindow : Window
         if (IsLoaded)
         {
             _ = Dispatcher.InvokeAsync(PositionAtTopCenter, DispatcherPriority.Loaded);
+            _ = RefreshColorModeAsync();
         }
         RestoreIconPath.Data = System.Windows.Media.Geometry.Parse(_isDefaultAppearance
             ? "M 17,8 L 20.5,8 L 20.5,4.5 M 20,8 C 18,4 14,2.5 10,3.5 C 5.5,4.5 3,9 4,13.5 C 5,18 9.5,21 14,20 C 17,19.4 19.2,17.5 20.3,15"

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Tessalume Template 1.0"
+  short_description: "Create and validate Tessalume flagship themes"
+  default_prompt: "Use $author-tessalume-theme to create or migrate a Tessalume theme with Flagship Template 1.0."

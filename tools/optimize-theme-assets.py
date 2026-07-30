@@ -17,6 +17,17 @@ def is_private_working_path(path: Path, root: Path) -> bool:
     return any(part.startswith(".") for part in path.relative_to(root).parts)
 
 
+def discover_theme_roots(source_root: Path) -> list[Path]:
+    """Return only publishable theme packages directly below themes/."""
+    return sorted(
+        path
+        for path in source_root.iterdir()
+        if path.is_dir()
+        and not path.name.startswith(".")
+        and (path / "manifest.json").is_file()
+    )
+
+
 def replace_png_references(value: object) -> object:
     if isinstance(value, str):
         return value.replace(".png", ".webp")
@@ -122,6 +133,7 @@ def main() -> None:
     if output_root == source_root or output_root.is_relative_to(source_root):
         raise ValueError("The optimized output must be outside the source theme library.")
     output_root.mkdir(parents=True, exist_ok=True)
+    theme_roots = discover_theme_roots(source_root)
 
     cache_path = output_root / CACHE_FILE_NAME
     old_cache = load_cache(cache_path, args.quality)
@@ -131,12 +143,36 @@ def main() -> None:
     )
 
     manifests: dict[Path, dict[str, object]] = {}
+    declared_sources: set[Path] = set()
     preview_jobs: dict[str, tuple[Path, bool]] = {}
-    for manifest_path in sorted(source_root.rglob("manifest.json")):
-        if is_private_working_path(manifest_path, source_root):
-            continue
+    for theme_root in theme_roots:
+        manifest_path = theme_root / "manifest.json"
         document = json.loads(manifest_path.read_text(encoding="utf-8"))
         manifests[manifest_path] = document
+        declared_sources.add(manifest_path)
+        for section_name in ("entryPoints", "previews", "assets"):
+            section = document.get(section_name)
+            if not isinstance(section, dict):
+                continue
+            for relative in section.values():
+                if not isinstance(relative, str):
+                    continue
+                source = (theme_root / relative).resolve()
+                if not source.is_relative_to(theme_root):
+                    raise ValueError(
+                        f"Declared theme path escapes its package: {manifest_path}: {relative}"
+                    )
+                if is_private_working_path(source, source_root):
+                    raise ValueError(
+                        f"Private working files cannot be published: {manifest_path}: {relative}"
+                    )
+                if source.name == "manifest.json" and source != manifest_path:
+                    raise ValueError(
+                        f"Nested theme manifests are not publishable assets: {source}"
+                    )
+                if not source.is_file():
+                    raise FileNotFoundError(f"Missing declared theme file: {source}")
+                declared_sources.add(source)
         previews = document.get("previews")
         if not isinstance(previews, dict):
             continue
@@ -158,9 +194,7 @@ def main() -> None:
     original_total = 0
     optimized_total = 0
 
-    for source in sorted(source_root.rglob("*.png")):
-        if is_private_working_path(source, source_root):
-            continue
+    for source in sorted(path for path in declared_sources if path.suffix.lower() == ".png"):
         relative = source.relative_to(source_root)
         key = relative.as_posix()
         destination_relative = relative.with_suffix(".webp")
@@ -199,10 +233,9 @@ def main() -> None:
 
     copied_count = 0
     rewritten_count = 0
-    for source in sorted(source_root.rglob("*")):
+    for source in sorted(declared_sources):
         if (
             not source.is_file()
-            or is_private_working_path(source, source_root)
             or source.suffix.lower() == ".png"
         ):
             continue

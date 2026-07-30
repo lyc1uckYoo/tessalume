@@ -5,12 +5,13 @@
 *.suo
 *.user
 *.userosscache
+__pycache__/
+*.py[cod]
 
 # Build and test output
 dist/
 optimized-themes/
 .test-output/
-.build-themes-optimized/
 .qa/
 
 # Local visual QA and working files

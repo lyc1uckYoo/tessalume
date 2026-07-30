@@ -151,7 +151,35 @@ internal static class BuiltInAssetInstaller
     }
 
     private static bool FileMatches(string path, Stream resource)
-        => File.Exists(path) && new FileInfo(path).Length == resource.Length;
+    {
+        if (!File.Exists(path) || new FileInfo(path).Length != resource.Length)
+        {
+            return false;
+        }
+
+        using var file = File.OpenRead(path);
+        Span<byte> fileBuffer = stackalloc byte[8192];
+        Span<byte> resourceBuffer = stackalloc byte[8192];
+        while (true)
+        {
+            var fileRead = file.Read(fileBuffer);
+            var resourceRead = resource.Read(resourceBuffer);
+            if (fileRead != resourceRead)
+            {
+                return false;
+            }
+
+            if (fileRead == 0)
+            {
+                return true;
+            }
+
+            if (!fileBuffer[..fileRead].SequenceEqual(resourceBuffer[..resourceRead]))
+            {
+                return false;
+            }
+        }
+    }
 
     private static void EnsureContained(string root, string path)
     {
