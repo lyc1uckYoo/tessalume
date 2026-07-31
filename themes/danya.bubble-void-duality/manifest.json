@@ -17,8 +17,8 @@
     "script": "theme.js"
   },
   "previews": {
-    "light": "assets/hero-light.png",
-    "dark": "assets/hero-dark.png"
+    "light": "assets/chat-light.png",
+    "dark": "assets/chat-dark.png"
   },
   "assets": {
     "hero-light": "assets/hero-light.png",
