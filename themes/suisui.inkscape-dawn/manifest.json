@@ -1,0 +1,45 @@
+{
+  "$schema": "../../../schemas/theme-manifest-v2.schema.json",
+  "schemaVersion": 2,
+  "id": "suisui.inkscape-dawn",
+  "name": "穗穗 · 朝晖山水卷",
+  "version": "1.0",
+  "author": "lyc1uckYoo",
+  "description": "基于 Tessalume 旗舰主题模板 1.0 的穗穗主题。保留朝晖山河长卷、栖霞饮露扇、重明双卡、昭明记忆水境与青玉流金消息框，并重构中央亮暗聊天场景。",
+  "engineVersion": 2,
+  "type": "advanced",
+  "capabilities": {
+    "light": true,
+    "dark": true
+  },
+  "entryPoints": {
+    "css": "theme.css",
+    "script": "theme.js"
+  },
+  "previews": {
+    "light": "assets/hero-light.png",
+    "dark": "assets/hero-dark.png"
+  },
+  "assets": {
+    "hero-light": "assets/hero-light.png",
+    "hero-dark": "assets/hero-dark.png",
+    "sidebar-light": "assets/sidebar-light.png",
+    "sidebar-dark": "assets/sidebar-dark.png",
+    "chat-light": "assets/chat-light.png",
+    "chat-dark": "assets/chat-dark.png",
+    "task-flight": "assets/task-flight.png",
+    "task-scroll": "assets/task-scroll.png",
+    "task-chongming": "assets/task-chongming.png",
+    "memory-light": "assets/memory-light.png",
+    "memory-dark": "assets/memory-dark.png"
+  },
+  "config": {
+    "title": "穗穗 · 朝晖山水卷",
+    "subtitle": "扇间朝晖入画，水袖舒展千里山河。",
+    "status": "SHANHE REALM · ZHAOMING ONLINE",
+    "memory": "水行有迹，云气无形；一扇开合之间，山河自有回声。"
+  },
+  "compatibility": {
+    "petOverlay": false
+  }
+}

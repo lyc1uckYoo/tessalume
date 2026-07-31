@@ -1,0 +1,49 @@
+{
+  "$schema": "../../../schemas/theme-manifest-v2.schema.json",
+  "schemaVersion": 2,
+  "id": "qingxiao.cloudsword-gate",
+  "name": "清宵 · 云门剑境",
+  "version": "1.0",
+  "author": "lyc1uckYoo",
+  "description": "基于 Tessalume 旗舰主题模板 1.0 的清宵主题。亮色行剑云关，暗色抚弦布阵；完整保留天地弦心剑、万剑归弦、云门剑痕消息框与玉案记忆组件。",
+  "engineVersion": 2,
+  "type": "advanced",
+  "capabilities": {
+    "light": true,
+    "dark": true
+  },
+  "entryPoints": {
+    "css": "theme.css",
+    "script": "theme.js"
+  },
+  "previews": {
+    "light": "assets/hero-light.png",
+    "dark": "assets/hero-dark.png"
+  },
+  "assets": {
+    "hero-light": "assets/hero-light.png",
+    "hero-dark": "assets/hero-dark.png",
+    "sidebar-light": "assets/sidebar-light.png",
+    "sidebar-dark": "assets/sidebar-dark.png",
+    "chat-light": "assets/chat-light.png",
+    "chat-dark": "assets/chat-dark.png",
+    "task-guard": "assets/task-guard.png",
+    "task-draw": "assets/task-draw.png",
+    "task-array": "assets/task-array.png",
+    "hecate-light": "assets/task-draw.png",
+    "hecate-dark": "assets/task-draw.png",
+    "task-qxoolova": "assets/task-guard.png",
+    "task-qxoolova-right": "assets/task-array.png",
+    "memory-light": "assets/memory-light.png",
+    "memory-dark": "assets/memory-dark.png"
+  },
+  "config": {
+    "title": "清宵 · 云门剑境",
+    "subtitle": "剑鸣云关，霜落无声。守一线清宵，也守万里长风。",
+    "status": "CLOUDSWORD GATE · GUARDIAN ONLINE",
+    "memory": "剑意不在锋芒，而在出鞘之前，云海最安静的那一息。"
+  },
+  "compatibility": {
+    "petOverlay": false
+  }
+}
