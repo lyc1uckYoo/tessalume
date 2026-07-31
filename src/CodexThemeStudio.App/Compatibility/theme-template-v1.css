@@ -124,6 +124,50 @@ html.cts-theme-active [data-cts-surface="chat-paper"] :is(div,button):has(> [cla
   box-shadow:none!important;
 }
 
+/* Light-mode readability foundation. Themes provide the artwork-aware values
+   below; the shared layer keeps text opaque and gives the background a quiet
+   reading field without painting the message bubbles themselves. */
+html.cts-theme-active.cts-is-task:not(.electron-dark) [data-cts-surface="main"]::after {
+  background:var(--cts-v1-light-chat-mask,linear-gradient(90deg,rgba(250,252,255,.78),rgba(250,252,255,.48) 48%,rgba(250,252,255,.18) 78%,rgba(250,252,255,.08)))!important;
+}
+
+html.cts-theme-active:not(.electron-dark) [data-cts-message="assistant"] [data-cts-surface="markdown"],
+html.cts-theme-active:not(.electron-dark) [data-cts-message="user"] [data-user-message-bubble="true"] {
+  color:var(--cts-v1-light-text-primary,#14202a)!important;
+  text-shadow:none!important;
+  opacity:1!important;
+}
+
+html.cts-theme-active:not(.electron-dark) [data-cts-message="assistant"] [data-cts-surface="markdown"] :is(p,li,td,th,h1,h2,h3,h4,h5,h6,strong,em,blockquote),
+html.cts-theme-active:not(.electron-dark) [data-cts-message="user"] [data-user-message-bubble="true"] :is(p,li,td,th,h1,h2,h3,h4,h5,h6,strong,em) {
+  color:inherit!important;
+  text-shadow:none!important;
+}
+
+html.cts-theme-active:not(.electron-dark) [data-cts-surface="sidebar"] :is([data-app-action-sidebar-project-row],[data-app-action-sidebar-thread-row]) {
+  color:var(--cts-v1-light-text-primary,#14202a)!important;
+  background:var(--cts-v1-light-sidebar-row,linear-gradient(90deg,rgba(255,255,255,.72),rgba(255,255,255,.34) 72%,transparent))!important;
+  backdrop-filter:none!important;
+  text-shadow:none!important;
+  opacity:1!important;
+}
+
+html.cts-theme-active:not(.electron-dark) [data-cts-surface="sidebar"] :is([data-app-action-sidebar-project-row],[data-app-action-sidebar-thread-row]):is(:hover,[aria-current="page"],[data-sidebar-thread-active="true"]) {
+  background:var(--cts-v1-light-sidebar-row-active,linear-gradient(90deg,rgba(255,255,255,.86),rgba(255,255,255,.56) 72%,transparent))!important;
+}
+
+html.cts-theme-active:not(.electron-dark) [data-cts-surface="sidebar"] :is(button,[role="button"]) {
+  color:var(--cts-v1-light-text-primary,#14202a)!important;
+  text-shadow:none!important;
+  opacity:1!important;
+}
+
+html.cts-theme-active:not(.electron-dark) [data-cts-surface="sidebar"] :is([data-cts-role="section-label"],[class*="section-label"],[class*="expand-label"]) {
+  color:var(--cts-v1-light-text-secondary,#40515d)!important;
+  text-shadow:none!important;
+  opacity:1!important;
+}
+
 /* Stage, home banner and hero copy. */
 #cts-theme-root[data-cts-template-version="1.0"] [data-theme-stage] {
   position:fixed;

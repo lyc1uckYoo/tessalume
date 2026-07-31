@@ -35,6 +35,11 @@
   --ae3-sidebar-art:var(--cts-asset-sidebar-light);
   --ae3-chat-art:var(--cts-asset-chat-light);
   --ae3-memory-art:var(--cts-asset-memory-light);
+  --cts-v1-light-text-primary:#17212a;
+  --cts-v1-light-text-secondary:#465762;
+  --cts-v1-light-chat-mask:linear-gradient(90deg,rgba(255,250,253,.82),rgba(255,250,253,.57) 46%,rgba(255,250,253,.24) 76%,rgba(255,250,253,.10));
+  --cts-v1-light-sidebar-row:linear-gradient(90deg,rgba(255,252,255,.78),rgba(255,252,255,.40) 72%,transparent);
+  --cts-v1-light-sidebar-row-active:linear-gradient(90deg,rgba(255,252,255,.92),rgba(255,252,255,.62) 72%,transparent);
   color-scheme:light;
 }
 
@@ -1906,16 +1911,16 @@ html.ae3-theme.electron-dark .ae3-heart-sigil {
 }
 
 html.ae3-theme:not(.electron-dark) .ae3-chat-paper {
-  --ae3-text:#000;
-  --ae3-text2:#000;
-  --ae3-text3:#000;
-  --color-text-foreground:#000!important;
-  --color-text-foreground-secondary:#000!important;
-  --color-text-foreground-tertiary:#000!important;
+  --ae3-text:var(--cts-v1-light-text-primary);
+  --ae3-text2:var(--cts-v1-light-text-secondary);
+  --ae3-text3:var(--cts-v1-light-text-secondary);
+  --color-text-foreground:var(--cts-v1-light-text-primary)!important;
+  --color-text-foreground-secondary:var(--cts-v1-light-text-secondary)!important;
+  --color-text-foreground-tertiary:var(--cts-v1-light-text-secondary)!important;
 }
 
 html.ae3-theme:not(.electron-dark) .ae3-chat-paper :is(.ae3-markdown,[data-user-message-bubble="true"]) {
-  color:#000!important;
+  color:var(--cts-v1-light-text-primary)!important;
   text-shadow:0 1px 0 rgba(255,255,255,.62);
 }
 
@@ -1924,7 +1929,7 @@ html.ae3-theme:not(.electron-dark) .ae3-chat-paper .ae3-markdown :is(p,li,td,th,
 }
 
 html.ae3-theme:not(.electron-dark) .ae3-chat-paper .ae3-markdown blockquote {
-  color:#000!important;
+  color:var(--cts-v1-light-text-primary)!important;
 }
 
 html.ae3-theme .ae3-message-assistant {

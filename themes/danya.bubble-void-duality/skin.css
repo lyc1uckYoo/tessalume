@@ -41,6 +41,11 @@ html.dny-theme {
   --dny-memory-art:var(--cts-asset-memory-light);
   --dny-font-display:"Microsoft YaHei UI","Segoe UI",sans-serif;
   --dny-font-mono:"Cascadia Code",Consolas,monospace;
+  --cts-v1-light-text-primary:#162a36;
+  --cts-v1-light-text-secondary:#46606d;
+  --cts-v1-light-chat-mask:linear-gradient(90deg,rgba(247,253,255,.84),rgba(247,253,255,.60) 46%,rgba(247,253,255,.28) 76%,rgba(247,253,255,.12));
+  --cts-v1-light-sidebar-row:linear-gradient(90deg,rgba(247,253,255,.80),rgba(247,253,255,.42) 72%,transparent);
+  --cts-v1-light-sidebar-row-active:linear-gradient(90deg,rgba(247,253,255,.94),rgba(247,253,255,.64) 72%,transparent);
   color-scheme:light;
 }
 
@@ -2405,16 +2410,16 @@ html.dny-theme.electron-dark.dny-is-task main.dny-main::after {
 }
 
 html.dny-theme:not(.electron-dark) .dny-chat-paper {
-  --dny-text:#000;
-  --dny-text-2:#000;
-  --dny-text-3:#000;
-  --color-text-foreground:#000!important;
-  --color-text-foreground-secondary:#000!important;
-  --color-text-foreground-tertiary:#000!important;
+  --dny-text:var(--cts-v1-light-text-primary);
+  --dny-text-2:var(--cts-v1-light-text-secondary);
+  --dny-text-3:var(--cts-v1-light-text-secondary);
+  --color-text-foreground:var(--cts-v1-light-text-primary)!important;
+  --color-text-foreground-secondary:var(--cts-v1-light-text-secondary)!important;
+  --color-text-foreground-tertiary:var(--cts-v1-light-text-secondary)!important;
 }
 
 html.dny-theme:not(.electron-dark) .dny-chat-paper :is(.dny-markdown,[data-user-message-bubble="true"]) {
-  color:#000!important;
+  color:var(--cts-v1-light-text-primary)!important;
   text-shadow:0 1px 0 rgba(255,255,255,.62);
 }
 
@@ -2423,7 +2428,7 @@ html.dny-theme:not(.electron-dark) .dny-chat-paper .dny-markdown :is(p,li,td,th,
 }
 
 html.dny-theme:not(.electron-dark) .dny-chat-paper .dny-markdown blockquote {
-  color:#000!important;
+  color:var(--cts-v1-light-text-primary)!important;
 }
 
 html.dny-theme .dny-message-assistant {

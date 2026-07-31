@@ -41,6 +41,11 @@ html.qxo-theme {
   --qxo-display:"Microsoft YaHei UI","Segoe UI",sans-serif;
   --qxo-serif:"STKaiti","KaiTi",serif;
   --qxo-mono:"Cascadia Code",Consolas,monospace;
+  --cts-v1-light-text-primary:#172631;
+  --cts-v1-light-text-secondary:#48616b;
+  --cts-v1-light-chat-mask:linear-gradient(90deg,rgba(248,253,255,.84),rgba(248,253,255,.60) 46%,rgba(248,253,255,.27) 76%,rgba(248,253,255,.11));
+  --cts-v1-light-sidebar-row:linear-gradient(90deg,rgba(248,253,255,.80),rgba(248,253,255,.43) 72%,transparent);
+  --cts-v1-light-sidebar-row-active:linear-gradient(90deg,rgba(248,253,255,.94),rgba(248,253,255,.65) 72%,transparent);
   color-scheme:light;
 }
 
@@ -2832,12 +2837,12 @@ html.qxo-theme.qxo-has-output .qxo-task-companion-right,html.qxo-theme.qxo-has-o
 }
 
 html.qxo-theme:not(.electron-dark) .qxo-chat-paper {
-  --qxo-text:#000;
-  --qxo-text-2:#000;
-  --qxo-text-3:#000;
-  --color-text-foreground:#000!important;
-  --color-text-foreground-secondary:#000!important;
-  --color-text-foreground-tertiary:#000!important;
+  --qxo-text:var(--cts-v1-light-text-primary);
+  --qxo-text-2:var(--cts-v1-light-text-secondary);
+  --qxo-text-3:var(--cts-v1-light-text-secondary);
+  --color-text-foreground:var(--cts-v1-light-text-primary)!important;
+  --color-text-foreground-secondary:var(--cts-v1-light-text-secondary)!important;
+  --color-text-foreground-tertiary:var(--cts-v1-light-text-secondary)!important;
 }
 
 html.qxo-theme.electron-dark .qxo-chat-paper {
@@ -2958,7 +2963,7 @@ html.qxo-theme.electron-dark .qxo-message-user [data-user-message-bubble="true"]
 }
 
 html.qxo-theme:not(.electron-dark) .qxo-chat-paper :is(.qxo-markdown,[data-user-message-bubble="true"]) {
-  color:#000!important;
+  color:var(--cts-v1-light-text-primary)!important;
   text-shadow:0 1px 0 rgba(255,255,255,.62);
 }
 
@@ -2967,7 +2972,7 @@ html.qxo-theme:not(.electron-dark) .qxo-chat-paper .qxo-markdown :is(p,li,td,th,
 }
 
 html.qxo-theme:not(.electron-dark) .qxo-chat-paper .qxo-markdown blockquote {
-  color:#000!important;
+  color:var(--cts-v1-light-text-primary)!important;
 }
 
 html.qxo-theme .qxo-message-assistant,html.qxo-theme .qxo-message-assistant>div,html.qxo-theme .qxo-message-assistant>div>div:not(.qxo-markdown) {

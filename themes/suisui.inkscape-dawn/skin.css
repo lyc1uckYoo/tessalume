@@ -37,6 +37,11 @@ html.sui-theme {
   --sui-display:"Microsoft YaHei UI","Segoe UI",sans-serif;
   --sui-serif:"STKaiti","KaiTi",serif;
   --sui-mono:"Cascadia Code",Consolas,monospace;
+  --cts-v1-light-text-primary:#1a2a2d;
+  --cts-v1-light-text-secondary:#506365;
+  --cts-v1-light-chat-mask:linear-gradient(90deg,rgba(255,254,248,.82),rgba(255,254,248,.57) 46%,rgba(255,254,248,.24) 76%,rgba(255,254,248,.10));
+  --cts-v1-light-sidebar-row:linear-gradient(90deg,rgba(255,254,248,.80),rgba(255,254,248,.43) 72%,transparent);
+  --cts-v1-light-sidebar-row-active:linear-gradient(90deg,rgba(255,254,248,.94),rgba(255,254,248,.64) 72%,transparent);
   color-scheme:light;
 }
 
@@ -1805,12 +1810,12 @@ html.sui-theme.electron-dark .sui-message-user [data-user-message-bubble="true"]
 }
 
 html.sui-theme:not(.electron-dark) .sui-chat-paper {
-  --sui-text:#000;
-  --sui-text-2:#000;
-  --sui-text-3:#000;
-  --color-text-foreground:#000!important;
-  --color-text-foreground-secondary:#000!important;
-  --color-text-foreground-tertiary:#000!important;
+  --sui-text:var(--cts-v1-light-text-primary);
+  --sui-text-2:var(--cts-v1-light-text-secondary);
+  --sui-text-3:var(--cts-v1-light-text-secondary);
+  --color-text-foreground:var(--cts-v1-light-text-primary)!important;
+  --color-text-foreground-secondary:var(--cts-v1-light-text-secondary)!important;
+  --color-text-foreground-tertiary:var(--cts-v1-light-text-secondary)!important;
 }
 
 .sui-theme:not(.electron-dark) aside [data-app-action-sidebar-thread-row] {
@@ -1825,7 +1830,7 @@ html.sui-theme:not(.electron-dark) .sui-chat-paper {
 }
 
 html.sui-theme:not(.electron-dark) .sui-chat-paper :is(.sui-markdown,[data-user-message-bubble="true"]) {
-  color:#000!important;
+  color:var(--cts-v1-light-text-primary)!important;
   text-shadow:0 1px 0 rgba(255,255,255,.62);
 }
 
@@ -1834,7 +1839,7 @@ html.sui-theme:not(.electron-dark) .sui-chat-paper .sui-markdown :is(p,li,td,th,
 }
 
 html.sui-theme:not(.electron-dark) .sui-chat-paper .sui-markdown blockquote {
-  color:#000!important;
+  color:var(--cts-v1-light-text-primary)!important;
 }
 
 html.sui-theme .sui-message-assistant {
