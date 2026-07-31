@@ -339,30 +339,7 @@ html.sk3-theme aside [data-app-action-sidebar-thread-row][aria-current="page"],h
   letter-spacing:.13em;
 }
 
-.sk3-theme .sk3-home {
-  overflow-x:hidden!important;
-}
-
-.sk3-theme .sk3-home>div:first-child {
-  padding-top:14px!important;
-  min-height:100%!important;
-}
-
-.sk3-theme .sk3-home>div:first-child>div:first-child {
-  flex:0 0 526px!important;
-  min-height:526px!important;
-  align-items:flex-start!important;
-  padding-bottom:0!important;
-}
-
 .sk3-theme .sk3-home>div:first-child>div:first-child>div:first-child {
-  position:relative!important;
-  isolation:isolate;
-  width:calc(100% - 40px)!important;
-  max-width:none!important;
-  height:502px!important;
-  min-height:502px!important;
-  overflow:hidden!important;
   border:1px solid color-mix(in srgb,var(--sk3-pink) 46%,var(--sk3-line-cyan))!important;
   border-radius:30px 7px 30px 7px!important;
   background:transparent!important;
@@ -387,29 +364,6 @@ html.sk3-theme aside [data-app-action-sidebar-thread-row][aria-current="page"],h
   border:1px solid color-mix(in srgb,var(--sk3-cyan) 40%,transparent);
   border-radius:22px 4px 22px 4px;
   background:repeating-linear-gradient(90deg,var(--sk3-pink) 0 8px,transparent 8px 18px) top/100% 1px no-repeat,repeating-linear-gradient(90deg,var(--sk3-cyan) 0 8px,transparent 8px 18px) bottom/100% 1px no-repeat;
-}
-
-.sk3-theme .sk3-home>div:first-child>div:first-child>div:first-child>div:first-child {
-  position:relative;
-  z-index:3;
-  height:100%;
-  padding:0 0 112px 48px;
-  align-items:center!important;
-  justify-content:flex-start!important;
-}
-
-.sk3-theme .sk3-home>div:first-child>div:first-child>div:first-child>div:first-child>div:first-child {
-  width:min(400px,38%)!important;
-  opacity:0!important;
-  pointer-events:none!important;
-}
-
-.sk3-theme .sk3-home>div:first-child>div:first-child>div:first-child>div:nth-child(2) {
-  z-index:9!important;
-  left:43px!important;
-  right:43px!important;
-  top:calc(100% - 142px)!important;
-  margin-top:0!important;
 }
 
 .sk3-home .group\/home-suggestions button {

@@ -281,8 +281,39 @@ function cleanRule(node, prefix, used, owned, preserveSelectors = false) {
       !["position", "min-height", "margin", "padding-left", "padding-right"].includes(property.toLowerCase()));
   }
   if (node.selector.includes(`.${prefix}-home`)) {
-    node.declarations = node.declarations.filter(({ property }) =>
-      !["--thread-content-max-width", "--cts-v1-home-hero-height"].includes(property.toLowerCase()));
+    const homeRoot = `.${prefix}-home`;
+    const sharedHomeProperties = new Set();
+    for (const branch of splitSelectors(node.selector)) {
+      const compact = branch.replace(/\s+/g, "");
+      if (compact.endsWith(homeRoot)) {
+        sharedHomeProperties.add("overflow-x");
+      }
+      if (compact.endsWith(`${homeRoot}>div:first-child`)) {
+        ["padding-top", "min-height"].forEach((property) => sharedHomeProperties.add(property));
+      }
+      if (compact.endsWith(`${homeRoot}>div:first-child>div:first-child`)) {
+        ["flex", "min-height", "align-items", "padding-bottom"].forEach((property) => sharedHomeProperties.add(property));
+      }
+      if (!compact.includes("::") && compact.endsWith(`${homeRoot}>div:first-child>div:first-child>div:first-child`)) {
+        ["position", "isolation", "width", "max-width", "height", "min-height", "overflow"].forEach((property) => sharedHomeProperties.add(property));
+      }
+      if (compact.endsWith(`${homeRoot}>div:first-child>div:first-child>div:first-child>div:first-child`)) {
+        ["position", "z-index", "height", "padding", "align-items", "justify-content"].forEach((property) => sharedHomeProperties.add(property));
+      }
+      if (compact.endsWith(`${homeRoot}>div:first-child>div:first-child>div:first-child>div:first-child>div:first-child`)) {
+        ["width", "opacity", "pointer-events"].forEach((property) => sharedHomeProperties.add(property));
+      }
+      if (compact.endsWith(`${homeRoot}>div:first-child>div:first-child>div:first-child>div:nth-child(2)`)) {
+        ["z-index", "left", "right", "top", "margin-top"].forEach((property) => sharedHomeProperties.add(property));
+      }
+    }
+    node.declarations = node.declarations.filter(({ property }) => {
+      const normalized = property.toLowerCase();
+      return !sharedHomeProperties.has(normalized) &&
+        normalized !== "--thread-content-max-width" &&
+        normalized !== "--cts-v1-home-hero-height" &&
+        !normalized.endsWith("home-hero-height");
+    });
   }
   const homeHeroSurface = node.selector.includes(`.${prefix}-home>div:first-child>div:first-child>div:first-child`);
   if (homeHeroSurface && (node.selector.includes("::before") || node.selector.includes("::after"))) {

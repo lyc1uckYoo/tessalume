@@ -724,46 +724,6 @@ html.dny-theme .dny-expand-row {
   text-shadow:0 0 9px var(--dny-primary);
 }
 
-.dny-theme .dny-home {
-  overflow-x:hidden!important;
-}
-
-.dny-theme .dny-home>div:first-child {
-  padding-top:14px!important;
-  min-height:100%!important;
-}
-
-.dny-theme .dny-home>div:first-child>div:first-child {
-  flex:0 0 526px!important;
-  min-height:526px!important;
-  align-items:flex-start!important;
-  padding-bottom:0!important;
-}
-
-.dny-theme .dny-home>div:first-child>div:first-child>div:first-child {
-  position:relative!important;
-  isolation:isolate;
-  width:calc(100% - 40px)!important;
-  max-width:none!important;
-  height:502px!important;
-  min-height:502px!important;
-  background:transparent!important;
-}
-
-.dny-theme .dny-home>div:first-child>div:first-child>div:first-child>div:first-child>div:first-child {
-  width:min(400px,37%)!important;
-  opacity:0!important;
-  pointer-events:none!important;
-}
-
-.dny-theme .dny-home>div:first-child>div:first-child>div:first-child>div:nth-child(2) {
-  z-index:9!important;
-  left:43px!important;
-  right:43px!important;
-  top:calc(100% - 142px)!important;
-  margin-top:0!important;
-}
-
 .dny-hero-copy {
   color:var(--dny-text);
 }
@@ -873,8 +833,6 @@ html.dny-theme .dny-expand-row {
 }
 
 html.dny-theme .dny-home>div:first-child>div:first-child>div:first-child {
-  position:relative!important;
-  overflow:hidden!important;
   border:1px solid var(--dny-line-strong)!important;
   border-radius:28px 8px 28px 8px!important;
   background:transparent!important;
@@ -906,15 +864,6 @@ html.dny-theme.electron-dark .dny-domain-line {
 
 html.dny-theme.electron-dark .dny-mode-note {
   margin-top:8px;
-}
-
-html.dny-theme .dny-home>div:first-child>div:first-child>div:first-child>div:first-child {
-  position:relative;
-  z-index:3;
-  height:100%;
-  padding:0 0 112px 48px;
-  align-items:center!important;
-  justify-content:flex-start!important;
 }
 
 html.dny-theme .dny-home .group\/home-suggestions button {

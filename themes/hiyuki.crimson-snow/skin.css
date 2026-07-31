@@ -337,10 +337,6 @@ html.hy3-theme aside [data-app-action-sidebar-thread-row][aria-current="page"],h
   letter-spacing:.13em;
 }
 
-.hy3-theme .hy3-home {
-  overflow-x:hidden!important;
-}
-
 .hy3-theme .hy3-home>div:first-child>div:first-child>div:first-child {
   border:1px solid color-mix(in srgb,var(--hy3-pink) 46%,var(--hy3-line-cyan))!important;
   background:transparent!important;

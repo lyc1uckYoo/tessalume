@@ -520,6 +520,8 @@ static async Task FlagshipTemplateV1FreezesSharedStructureAsync()
            sharedCss.Contains("top:334px;", StringComparison.Ordinal) &&
            sharedCss.Contains("width:320px;", StringComparison.Ordinal) &&
            sharedCss.Contains("height:56px;", StringComparison.Ordinal) &&
+           sharedCss.Contains("--cts-v1-home-composer-reserve:195px;", StringComparison.Ordinal) &&
+           sharedCss.Contains("calc(100cqh - var(--cts-v1-home-composer-reserve))", StringComparison.Ordinal) &&
            sharedCss.Contains("data-cts-surface=\"chat-paper\"", StringComparison.Ordinal),
         "Runtime-owned Template 1.0 geometry must preserve the accepted Xin layout.");
     Ensure(!templateCss.Contains("[data-theme-role=", StringComparison.Ordinal) &&
@@ -546,7 +548,10 @@ static async Task FlagshipTemplateV1FreezesSharedStructureAsync()
         }
         Ensure(script.Contains("context.renderTemplateV1(", StringComparison.Ordinal) &&
                !script.Contains("data-theme-role=", StringComparison.Ordinal) &&
-               !css.Contains("[data-theme-role=", StringComparison.Ordinal),
+               !css.Contains("[data-theme-role=", StringComparison.Ordinal) &&
+               !css.Contains("home-hero-height", StringComparison.Ordinal) &&
+               !css.Contains("height:502px!important", StringComparison.Ordinal) &&
+               !css.Contains("flex:0 0 526px!important", StringComparison.Ordinal),
             $"{Path.GetFileName(root)} has duplicated runtime-owned Template 1.0 structure.");
     }
 }

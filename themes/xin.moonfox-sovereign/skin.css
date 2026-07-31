@@ -291,35 +291,7 @@ html.xmf-theme aside [data-app-action-sidebar-thread-row][aria-current="page"],h
   letter-spacing:.13em;
 }
 
-.xmf-theme .xmf-home {
-  --xmf-home-hero-height:clamp(
-    500px,
-    min(calc(100cqh - 126px),calc((100cqw - 70px) * .5628)),
-    840px
-  );
-  overflow-x:hidden!important;
-}
-
-.xmf-theme .xmf-home>div:first-child {
-  padding-top:14px!important;
-  min-height:100%!important;
-}
-
-.xmf-theme .xmf-home>div:first-child>div:first-child {
-  flex:0 0 calc(var(--xmf-home-hero-height) + 24px)!important;
-  min-height:calc(var(--xmf-home-hero-height) + 24px)!important;
-  align-items:flex-start!important;
-  padding-bottom:0!important;
-}
-
 .xmf-theme .xmf-home>div:first-child>div:first-child>div:first-child {
-  position:relative!important;
-  isolation:isolate;
-  width:calc(100% - 40px)!important;
-  max-width:none!important;
-  height:var(--xmf-home-hero-height)!important;
-  min-height:var(--xmf-home-hero-height)!important;
-  overflow:hidden!important;
   border:1px solid var(--xmf-line-gold)!important;
   border-radius:28px 4px 28px 4px!important;
   background:transparent!important;
@@ -344,29 +316,6 @@ html.xmf-theme aside [data-app-action-sidebar-thread-row][aria-current="page"],h
   border:1px solid color-mix(in srgb,var(--xmf-gold) 42%,transparent);
   border-radius:20px 2px 20px 2px;
   background:radial-gradient(circle at 18px 18px,transparent 0 8px,var(--xmf-gold) 9px 10px,transparent 11px),radial-gradient(circle at calc(100% - 18px) calc(100% - 18px),transparent 0 8px,var(--xmf-cyan) 9px 10px,transparent 11px);
-}
-
-.xmf-theme .xmf-home>div:first-child>div:first-child>div:first-child>div:first-child {
-  position:relative;
-  z-index:3;
-  height:100%;
-  padding:0 0 112px 48px;
-  align-items:center!important;
-  justify-content:flex-start!important;
-}
-
-.xmf-theme .xmf-home>div:first-child>div:first-child>div:first-child>div:first-child>div:first-child {
-  width:min(400px,38%)!important;
-  opacity:0!important;
-  pointer-events:none!important;
-}
-
-.xmf-theme .xmf-home>div:first-child>div:first-child>div:first-child>div:nth-child(2) {
-  z-index:9!important;
-  left:43px!important;
-  right:43px!important;
-  top:calc(100% - 142px)!important;
-  margin-top:0!important;
 }
 
 .xmf-home .group\/home-suggestions button {
@@ -1062,7 +1011,7 @@ html.xmf-theme aside.app-shell-left-panel {
 }
 
 html.xmf-theme.electron-dark aside.app-shell-left-panel {
-  background:linear-gradient(90deg,rgba(8,6,7,.99) 0%,rgba(8,6,7,.82) 28%,rgba(8,6,7,.15) 54%,transparent 100%),linear-gradient(180deg,rgba(8,6,7,.95),rgba(8,6,7,.15) 23%,transparent 67%,rgba(8,6,7,.93)),var(--xmf-sidebar-art) 85% -96px/196% auto no-repeat!important;
+  background:linear-gradient(90deg,rgba(8,6,7,.99) 0%,rgba(8,6,7,.82) 28%,rgba(8,6,7,.15) 54%,transparent 100%),linear-gradient(180deg,rgba(8,6,7,.95),rgba(8,6,7,.15) 23%,transparent 67%,rgba(8,6,7,.93)),var(--xmf-sidebar-art) 92% -145px/222% auto no-repeat!important;
   box-shadow:12px 0 40px rgba(0,0,0,.60),inset -1px 0 rgba(228,64,75,.15)!important;
 }
 
@@ -1141,6 +1090,106 @@ html.xmf-theme.electron-dark .composer-surface-chrome {
 .xmf-theme .composer-surface-chrome::after {
   border-top-color:var(--xmf-blue);
   box-shadow:0 -2px 12px color-mix(in srgb,var(--xmf-blue) 45%,transparent);
+}
+
+/* Composer controls: moonheart seals, crescent readout and heart-jade send core. */
+html.xmf-theme {
+  --xmf-composer-control:linear-gradient(145deg,rgba(255,252,246,.90),rgba(244,228,218,.78));
+  --xmf-composer-control-strong:linear-gradient(135deg,rgba(181,43,53,.13),rgba(189,139,63,.16));
+  --xmf-composer-control-line:rgba(166,63,68,.34);
+  --xmf-composer-control-glow:rgba(151,55,59,.16);
+}
+
+html.xmf-theme.electron-dark {
+  --xmf-composer-control:linear-gradient(145deg,rgba(73,25,34,.74),rgba(27,15,20,.90));
+  --xmf-composer-control-strong:linear-gradient(135deg,rgba(116,22,40,.88),rgba(47,21,26,.94));
+  --xmf-composer-control-line:rgba(225,78,88,.38);
+  --xmf-composer-control-glow:rgba(240,68,79,.22);
+}
+
+.xmf-theme .composer-surface-chrome [class*="_footer_"] {
+  position:relative;
+  z-index:2;
+}
+
+.xmf-theme .composer-surface-chrome [class*="_footer_"] button {
+  position:relative;
+  border-color:var(--xmf-composer-control-line)!important;
+  transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease,filter .18s ease!important;
+}
+
+.xmf-theme .composer-surface-chrome [class*="_footer_"] button:hover {
+  transform:translateY(-1px);
+  border-color:color-mix(in srgb,var(--xmf-gold) 68%,var(--xmf-blue))!important;
+  filter:brightness(1.07);
+}
+
+.xmf-theme .composer-surface-chrome button[aria-label*="添加"] {
+  color:var(--xmf-blue)!important;
+  background:radial-gradient(circle at 68% 28%,color-mix(in srgb,var(--xmf-gold) 42%,transparent) 0 9%,transparent 11%),var(--xmf-composer-control)!important;
+  border-color:color-mix(in srgb,var(--xmf-gold) 58%,var(--xmf-blue))!important;
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--xmf-gold) 16%,transparent),0 4px 13px var(--xmf-composer-control-glow)!important;
+}
+
+.xmf-theme .composer-surface-chrome button:has([class*="_labelXs_"]) {
+  color:var(--xmf-gold)!important;
+  background:var(--xmf-composer-control-strong)!important;
+  border-color:color-mix(in srgb,var(--xmf-gold) 58%,var(--xmf-blue))!important;
+  box-shadow:inset 0 1px color-mix(in srgb,var(--xmf-gold) 32%,transparent),0 4px 15px var(--xmf-composer-control-glow)!important;
+}
+
+.xmf-theme .composer-surface-chrome button:has([class*="_labelXs_"]) :is(svg,[class*="_labelXs_"]) {
+  color:var(--xmf-gold)!important;
+  -webkit-text-fill-color:currentColor!important;
+}
+
+.xmf-theme .composer-surface-chrome :is([role="img"][aria-label*="上下文"],[role="img"][aria-label*="%"]):has(svg) {
+  color:var(--xmf-gold)!important;
+  background:conic-gradient(from 215deg,var(--xmf-blue),var(--xmf-gold),var(--xmf-blue));
+  border:1px solid color-mix(in srgb,var(--xmf-gold) 58%,transparent);
+  border-radius:50%;
+  box-shadow:0 0 12px var(--xmf-composer-control-glow),inset 0 0 0 2px color-mix(in srgb,var(--xmf-solid) 82%,transparent);
+}
+
+.xmf-theme .composer-surface-chrome :is([role="img"][aria-label*="上下文"],[role="img"][aria-label*="%"]):has(svg) svg {
+  color:var(--xmf-solid)!important;
+  transform:scale(.76);
+}
+
+.xmf-theme .composer-surface-chrome button:has([class*="_ModelPickerTrigger"]) {
+  color:var(--xmf-text)!important;
+  background:var(--xmf-composer-control)!important;
+  border-color:var(--xmf-composer-control-line)!important;
+  box-shadow:inset 0 1px color-mix(in srgb,var(--xmf-gold) 28%,transparent),0 4px 14px var(--xmf-composer-control-glow)!important;
+}
+
+.xmf-theme .composer-surface-chrome button:has([class*="_ModelPickerTrigger"]) [class*="ModelText"] {
+  color:var(--xmf-text)!important;
+  -webkit-text-fill-color:currentColor!important;
+  font-weight:650;
+}
+
+.xmf-theme .composer-surface-chrome button:has([class*="_ModelPickerTrigger"]) :is([class*="EffortLabel"],svg) {
+  color:var(--xmf-gold)!important;
+  -webkit-text-fill-color:currentColor!important;
+}
+
+.xmf-theme .composer-surface-chrome button[aria-label="听写"] {
+  color:var(--xmf-cyan)!important;
+  background:radial-gradient(circle at 50% 42%,color-mix(in srgb,var(--xmf-cyan) 20%,transparent),transparent 64%),var(--xmf-composer-control)!important;
+  border-color:color-mix(in srgb,var(--xmf-cyan) 48%,var(--xmf-gold))!important;
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--xmf-cyan) 13%,transparent),0 4px 13px color-mix(in srgb,var(--xmf-cyan) 18%,transparent)!important;
+}
+
+.xmf-theme .composer-surface-chrome :is(button[aria-label="停止"],button[aria-label*="发送"],button[aria-label="听写"] + button,button[class~="bg-token-foreground"]) {
+  color:#fff8e7!important;
+  background:radial-gradient(circle at 34% 27%,#ffaaa1 0 7%,transparent 9%),linear-gradient(145deg,#f04a56,#a51f39 58%,#541424)!important;
+  border:1px solid color-mix(in srgb,var(--xmf-gold) 76%,#fff)!important;
+  box-shadow:0 0 0 2px color-mix(in srgb,var(--xmf-blue) 13%,transparent),0 6px 18px color-mix(in srgb,var(--xmf-blue) 42%,transparent),inset 0 1px rgba(255,255,255,.38)!important;
+}
+
+.xmf-theme .composer-surface-chrome :is(button[aria-label="停止"],button[aria-label*="发送"],button[aria-label="听写"] + button,button[class~="bg-token-foreground"]) svg {
+  color:#fff8e7!important;
 }
 
 .xmf-task-card-right {

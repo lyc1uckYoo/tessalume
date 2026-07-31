@@ -274,30 +274,7 @@ html.sui-theme aside [data-app-action-sidebar-thread-row][aria-current="page"],h
   letter-spacing:.14em;
 }
 
-.sui-theme .sui-home {
-  overflow-x:hidden!important;
-}
-
-.sui-theme .sui-home>div:first-child {
-  padding-top:14px!important;
-  min-height:100%!important;
-}
-
-.sui-theme .sui-home>div:first-child>div:first-child {
-  flex:0 0 526px!important;
-  min-height:526px!important;
-  align-items:flex-start!important;
-  padding-bottom:0!important;
-}
-
 .sui-theme .sui-home>div:first-child>div:first-child>div:first-child {
-  position:relative!important;
-  isolation:isolate;
-  width:calc(100% - 40px)!important;
-  max-width:none!important;
-  height:502px!important;
-  min-height:502px!important;
-  overflow:hidden!important;
   border:1px solid var(--sui-line-gold)!important;
   border-radius:4px 30px 4px 30px!important;
   background:transparent!important;
@@ -323,29 +300,6 @@ html.sui-theme aside [data-app-action-sidebar-thread-row][aria-current="page"],h
   border:1px solid color-mix(in srgb,var(--sui-gold) 42%,transparent);
   border-radius:2px 23px 2px 23px;
   background:linear-gradient(90deg,var(--sui-gold),transparent) left top/76px 1px no-repeat,linear-gradient(180deg,var(--sui-jade),transparent) left top/1px 76px no-repeat,linear-gradient(270deg,var(--sui-jade),transparent) right bottom/76px 1px no-repeat,linear-gradient(0deg,var(--sui-gold),transparent) right bottom/1px 76px no-repeat;
-}
-
-.sui-theme .sui-home>div:first-child>div:first-child>div:first-child>div:first-child {
-  position:relative;
-  z-index:3;
-  height:100%;
-  padding:0 0 112px 48px;
-  align-items:center!important;
-  justify-content:flex-start!important;
-}
-
-.sui-theme .sui-home>div:first-child>div:first-child>div:first-child>div:first-child>div:first-child {
-  width:min(400px,38%)!important;
-  opacity:0!important;
-  pointer-events:none!important;
-}
-
-.sui-theme .sui-home>div:first-child>div:first-child>div:first-child>div:nth-child(2) {
-  z-index:9!important;
-  left:43px!important;
-  right:43px!important;
-  top:calc(100% - 142px)!important;
-  margin-top:0!important;
 }
 
 .sui-home .group\/home-suggestions button {

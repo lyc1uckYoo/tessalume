@@ -309,12 +309,6 @@ html.xyl-theme aside [data-app-action-sidebar-thread-row][aria-current="page"],h
   background:radial-gradient(circle at 18px 18px,transparent 0 8px,var(--xyl-gold) 9px 10px,transparent 11px),radial-gradient(circle at calc(100% - 18px) calc(100% - 18px),transparent 0 8px,var(--xyl-cyan) 9px 10px,transparent 11px);
 }
 
-.xyl-theme .xyl-home>div:first-child>div:first-child>div:first-child>div:first-child>div:first-child {
-  width:min(400px,38%)!important;
-  opacity:0!important;
-  pointer-events:none!important;
-}
-
 .xyl-home .group\/home-suggestions button {
   text-align:left!important;
   border:1px solid var(--xyl-line)!important;

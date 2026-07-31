@@ -28,6 +28,10 @@ FORBIDDEN_SKIN_PATTERNS = (
     "TESSALUME_TEMPLATE_V1_GEOMETRY",
     "[data-theme-role=",
     "[data-theme-stage]",
+    "home-hero-height",
+    "height:502px!important",
+    "flex:0 0 526px!important",
+    "top:calc(100% - 142px)!important",
 )
 
 

@@ -299,30 +299,7 @@ html.ae3-theme aside [data-app-action-sidebar-thread-row][aria-current="page"],h
   letter-spacing:.13em;
 }
 
-.ae3-theme .ae3-home {
-  overflow-x:hidden!important;
-}
-
-.ae3-theme .ae3-home>div:first-child {
-  padding-top:14px!important;
-  min-height:100%!important;
-}
-
-.ae3-theme .ae3-home>div:first-child>div:first-child {
-  flex:0 0 526px!important;
-  min-height:526px!important;
-  align-items:flex-start!important;
-  padding-bottom:0!important;
-}
-
 .ae3-theme .ae3-home>div:first-child>div:first-child>div:first-child {
-  position:relative!important;
-  isolation:isolate;
-  width:calc(100% - 40px)!important;
-  max-width:none!important;
-  height:502px!important;
-  min-height:502px!important;
-  overflow:hidden!important;
   border:1px solid color-mix(in srgb,var(--ae3-pink) 58%,var(--ae3-line-cyan))!important;
   border-radius:30px 7px 30px 7px!important;
   background:#f7eaf3!important;
