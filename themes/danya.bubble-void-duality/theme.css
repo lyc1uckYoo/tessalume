@@ -634,6 +634,47 @@ html.dny-theme .composer-surface-chrome {
   backdrop-filter:none!important;
 }
 
+.dny-message-assistant .dny-markdown {
+  position:relative;
+  overflow:hidden;
+  padding:20px 24px 32px!important;
+  border:1px solid color-mix(in srgb,var(--dny-accent-2) 54%,var(--dny-line))!important;
+  border-left:3px solid var(--dny-accent-2)!important;
+  border-radius:5px 20px 20px 20px!important;
+  box-shadow:
+    0 12px 32px color-mix(in srgb,var(--dny-accent-2) 13%,transparent),
+    inset 0 0 0 1px color-mix(in srgb,var(--dny-solid) 42%,transparent)!important;
+}
+
+.dny-message-assistant .dny-markdown::before {
+  content:"RESPONSE / " attr(data-dny-message);
+  position:absolute;
+  left:20px;
+  top:8px;
+  color:var(--dny-accent-2);
+  font:700 6px/1 var(--dny-mono);
+  letter-spacing:.12em;
+}
+
+.dny-message-assistant .dny-markdown::after {
+  content:"BUBBLE THEATRE  ◇  VOID RECORD";
+  position:absolute;
+  right:18px;
+  bottom:9px;
+  color:var(--dny-text-3);
+  font:700 6px/1 var(--dny-mono);
+  letter-spacing:.1em;
+}
+
+.electron-dark .dny-message-assistant .dny-markdown {
+  border-color:rgba(113,140,255,.42)!important;
+  border-left-color:var(--dny-accent)!important;
+  box-shadow:
+    0 14px 36px rgba(0,0,0,.38),
+    inset 0 0 0 1px rgba(220,86,170,.08),
+    inset 3px 0 18px rgba(113,140,255,.08)!important;
+}
+
 .dny-message-user [data-user-message-bubble="true"] {
   color:var(--dny-text)!important;
   border:1px solid var(--dny-line-strong)!important;
