@@ -1,0 +1,45 @@
+{
+  "$schema": "../../../schemas/theme-manifest-v2.schema.json",
+  "schemaVersion": 2,
+  "id": "shorekeeper.tethys-reverie",
+  "name": "守岸人 · 泰缇斯回响",
+  "version": "1.0",
+  "author": "lyc1uckYoo",
+  "description": "基于 Tessalume 旗舰主题模板 1.0 的守岸人主题。亮色进入镜海晨曦与文明守望，暗色潜入概率之海与泰缇斯核心；完整保留潮汐演算、双卡交替与专武「星序协响」动效。",
+  "engineVersion": 2,
+  "type": "advanced",
+  "capabilities": {
+    "light": true,
+    "dark": true
+  },
+  "entryPoints": {
+    "css": "theme.css",
+    "script": "theme.js"
+  },
+  "previews": {
+    "light": "assets/hero-light.png",
+    "dark": "assets/hero-dark.png"
+  },
+  "assets": {
+    "hero-light": "assets/hero-light.png",
+    "hero-dark": "assets/hero-dark.png",
+    "sidebar-light": "assets/sidebar-light.png",
+    "sidebar-dark": "assets/sidebar-dark.png",
+    "chat-light": "assets/chat-light.png",
+    "chat-dark": "assets/chat-dark.png",
+    "task-echo": "assets/task-echo.png",
+    "task-butterfly": "assets/task-butterfly.png",
+    "task-tethys": "assets/task-tethys.png",
+    "memory-light": "assets/memory-light.png",
+    "memory-dark": "assets/memory-dark.png"
+  },
+  "config": {
+    "title": "守岸人 · 泰缇斯回响",
+    "subtitle": "静默之中，让文明沿着海岸延续；每一次回响，都是存在的证明。",
+    "status": "BLACK SHORES · TETHYS LINK ONLINE",
+    "memory": "她在概率之海记录每一次潮汐，把未被遗忘的文明送回岸边。"
+  },
+  "compatibility": {
+    "petOverlay": false
+  }
+}

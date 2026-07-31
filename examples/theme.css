@@ -586,6 +586,13 @@ html.example-theme .composer-surface-chrome {
   backdrop-filter:none!important;
 }
 
+.example-message-assistant .example-markdown {
+  color:var(--example-text)!important;
+  border:1px solid var(--example-line-strong)!important;
+  border-left:3px solid var(--example-accent-2)!important;
+  border-radius:5px 20px 20px 20px!important;
+}
+
 .example-message-user [data-user-message-bubble="true"] {
   color:var(--example-text)!important;
   border:1px solid var(--example-line-strong)!important;

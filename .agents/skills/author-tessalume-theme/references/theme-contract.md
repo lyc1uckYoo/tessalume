@@ -14,10 +14,13 @@ The theme package owns:
 - manifest metadata and declared local assets;
 - light/dark color variables and artwork selection;
 - markup inside `#cts-theme-root`;
-- character-specific cards, copy, symbols, and CSS-only animation;
+- character-specific home effects, sidebar art, cards, message frames, memory
+  display, sync instrument, composer accessory, internal SVG, copy, symbols,
+  and CSS-only animation;
 - only the small `onEnsure` callback needed to position or reparent theme-owned elements.
 
 Do not move runtime-owned work back into a theme.
+Do not move character-owned visual identity into a generic template skin.
 
 Flagship Template 1.0 additionally freezes shared DOM parts, sizes, positions,
 alignment and adaptive priorities. Read
@@ -47,6 +50,33 @@ Forbidden in theme packages:
 - background artwork on `.*-chat-paper::before`;
 - remote assets, network fetching, or undeclared files;
 - hard-coded local paths, usernames, repository paths, build output paths, or ports.
+
+## Existing-theme migration invariant
+
+Before changing an existing theme, use its current working source or Git
+revision as a visual baseline. Inventory these surfaces separately:
+
+1. home banner artwork and home-only effects;
+2. sidebar light/dark artwork, crop and readability layers;
+3. stable light/dark task background;
+4. assistant and user message frames;
+5. left portrait, secondary right portrait and primary right portrait;
+6. memory card and its meter/sigil;
+7. sync panel and its internal instrument;
+8. composer accessory, including every light/dark SVG form;
+9. all referenced `--cts-asset-*` variables;
+10. all theme-owned `@keyframes`.
+
+Template migration means annotating and repositioning this identity, not
+rebuilding it from the template sample. Prefer adding semantic attributes to
+the existing DOM and preserving class names. If a legacy class, SVG group,
+asset variable or keyframe disappears, treat it as a suspected regression
+until the user explicitly requested that removal.
+
+Legacy CSS may contain `!important` positions, sizes or `display` rules that
+override the later frozen geometry even when the frozen block itself is byte
+correct. Remove those geometry declarations while retaining visual
+properties, pseudo-elements and animation names.
 
 ## Required semantic roles
 
@@ -111,6 +141,11 @@ blanket override will stretch or displace those native surfaces.
 
 The chat paper may keep borders and shadows, but its background remains transparent. This prevents black flashes when React replaces the conversation subtree.
 
+Transparency applies to the message fill, not to the message identity. Both
+assistant and user messages keep a visible border, directional accent or
+equivalent theme-specific frame. Edited-file summaries and diff containers may
+also be transparent, but their state text and boundaries remain legible.
+
 ## Manifest and package rules
 
 - `schemaVersion`: `2`
@@ -119,6 +154,9 @@ The chat paper may keep borders and shadows, but its background remains transpar
 - version for this repository: `"1.0"`
 - author for official themes: the repository owner's GitHub name
 - every asset and preview must be relative, declared, present, and inside the package
+- every `var(--cts-asset-<name>)` reference in CSS must map to a manifest asset
+  key `<name>`; when preserving legacy CSS, keep its old asset keys as aliases
+  or deliberately rename every CSS reference
 - only direct children of `themes/` are publishable packages; the build embeds only files declared by the root manifest
 - keep design sources and historical alternates under ignored `.sources/`, `.references/`, or `.legacy/`
 - do not publish theme-local changelogs or process notes
@@ -133,8 +171,18 @@ For every theme change:
 4. Verify every declared asset exists.
 5. Run `validate_theme_contract.py`.
 6. For Template 1.0, run `sync_template_geometry.py --check`.
-7. Compare source and portable package files when portable output exists.
-8. Recalculate portable trust fingerprints.
-9. When possible, apply the theme to a running Codex target and navigate task → task → home → task in both light and dark mode.
+7. For an existing-theme migration, run `audit_migration_preservation.py`
+   against the unmodified baseline and review every reported loss.
+8. Run the repository-root `一键构建EXE.ps1`. The build owns portable
+   synchronization, optimized assets and trust fingerprints.
+9. Reapply the current source or current build to Codex before visual
+   inspection. Verify a change-specific DOM node, asset or computed style to
+   prove the running page is not an older injected payload.
+10. Navigate task → task → home → task in both light and dark mode when visual
+    QA is in scope. Check sidebar clarity, chat composition, assistant/user
+    frames, all three cards, memory, sync panel and the correct light/dark
+    accessory.
 
-For runtime changes, also build Release and run the core test suite.
+Do not hand-copy files into portable output or hand-edit trust fingerprints.
+For runtime, C#, XAML or build-script changes, also run the tests relevant to
+that code in addition to the complete build.

@@ -586,6 +586,13 @@ html.__NS__-theme .composer-surface-chrome {
   backdrop-filter:none!important;
 }
 
+.__NS__-message-assistant .__NS__-markdown {
+  color:var(--__NS__-text)!important;
+  border:1px solid var(--__NS__-line-strong)!important;
+  border-left:3px solid var(--__NS__-accent-2)!important;
+  border-radius:5px 20px 20px 20px!important;
+}
+
 .__NS__-message-user [data-user-message-bubble="true"] {
   color:var(--__NS__-text)!important;
   border:1px solid var(--__NS__-line-strong)!important;

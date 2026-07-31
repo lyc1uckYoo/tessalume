@@ -1,65 +1,92 @@
 ---
 name: author-tessalume-theme
-description: Create, migrate, refactor, or validate Tessalume advanced themes with Flagship Template 1.0, canonical injection, frozen shared geometry, adaptive widget visibility, stable light/dark backgrounds, portable synchronization, and trust fingerprints. Use whenever working under themes/, changing the examples/ Template 1.0 package or theme runtime, or developing a new Tessalume theme package.
+description: Create, migrate, refactor, redraw, or validate Tessalume advanced themes with Flagship Template 1.0 while preserving each character theme's original visual identity, light/dark artwork, message frames, SVG components, and signature animation. Use whenever working under themes/, changing the examples/ Template 1.0 package, editing theme runtime behavior, or preparing Tessalume theme builds and visual QA.
 ---
 
 # Author Tessalume themes
 
-Use Flagship Template 1.0 and the canonical host. Do not implement route
-observers, Codex DOM marking, cleanup, debounce, or shared geometry inside an
-individual theme.
+Use Flagship Template 1.0 for shared structure and geometry. Preserve the
+theme's character-specific skin and motion. Never interpret “match the
+template” as permission to replace original art direction, internal SVG,
+component identity, or keyframes with the template examples.
+
+## Required reading
+
+1. Read [references/theme-contract.md](references/theme-contract.md).
+2. Read [references/template-v1.md](references/template-v1.md) for every
+   Template 1.0 task.
 
 ## Workflow
 
-1. Read [references/theme-contract.md](references/theme-contract.md).
-2. For Template 1.0 work, also read
-   [references/template-v1.md](references/template-v1.md).
-3. Start new themes with `scripts/scaffold_theme.py`; do not copy a published
-   character theme.
-4. Preserve every `data-theme-role`, `data-theme-part`, priority and frozen
-   geometry rule. Change only local assets, copy, color tokens, visual skin and
-   character-specific CSS animation.
+1. Inspect repository instructions and the complete working tree before edits.
+2. Choose the correct path:
+   - New theme: run `scripts/scaffold_theme.py`; do not copy a published theme.
+   - Existing theme migration: keep the original package as the visual
+     baseline. Inventory its home, sidebar, chat background, assistant/user
+     frames, left card, both right cards, memory, sync panel, composer
+     accessory, light/dark variants, asset variables, SVG and keyframes.
+3. For a migration, run `scripts/audit_migration_preservation.py` against the
+   unmodified Git baseline. Add `data-theme-role`, `data-theme-part` and
+   priority attributes to the existing DOM wherever possible. Do not replace
+   the original inner markup with the template sample components.
+4. Preserve every role, part, priority and frozen geometry rule. Change only
+   declared assets, copy, color tokens, visual skin and character-specific
+   animation. Remove only theme-owned lifecycle code and geometry declarations
+   that conflict with the canonical host.
 5. Call `context.mountCanonicalTheme(...)` exactly once with
-   `templateVersion: "1.0"` and `adaptiveLayout: true`.
-6. Paint chat artwork on the stable themed `main`; never paint it on the
-   replaceable chat-content pseudo-element.
-7. Run `scripts/sync_template_geometry.py --check` and
-   `scripts/validate_theme_contract.py` for every Template 1.0 theme.
-8. Sync changed package files to
-   `dist/portable-win-x64/themes/<directory>/` only when that portable
-   directory exists, then update its trusted fingerprint.
-9. For runtime, C#, XAML, or build-script changes, build and run relevant
-   tests. For theme-only changes, do not build unless the user requests it.
-10. Never push without explicit permission for the current task.
+   `templateVersion: "1.0"`, `preserveRoot: true` and
+   `adaptiveLayout: true`. Use both canonical positioning helpers with the
+   Template 1.0 dimensions.
+6. Paint chat artwork on the isolated themed `main`. Keep message-container
+   fills transparent when artwork exists, but retain visible assistant and user
+   borders or equivalent directional frames.
+7. Redraw only the assets the user requested. Preserve character identity,
+   distinct light/dark forms and region-specific composition; do not reuse a
+   generic pose or decoration from another theme.
+8. Before building, run the preservation audit for migrations, then run the
+   geometry and contract checks for every theme:
+
+   ```powershell
+   python .agents/skills/author-tessalume-theme/scripts/audit_migration_preservation.py `
+     --repo-root . --baseline-ref HEAD themes/<theme>
+
+   python .agents/skills/author-tessalume-theme/scripts/sync_template_geometry.py `
+     --check themes/<theme>
+
+   python .agents/skills/author-tessalume-theme/scripts/validate_theme_contract.py `
+     --repo-root . themes/<theme>
+   ```
+
+   Treat lost baseline keyframes/assets, undeclared asset variables, geometry
+   overrides, contract errors and frozen-geometry differences as blocking.
+9. Run the repository-root `一键构建EXE.ps1` after every theme, template,
+   runtime or asset change. Let the build fully replace
+   `dist/portable-win-x64`, optimized assets and trust fingerprints. Never
+   hand-sync or merge portable output.
+10. For visual QA, reapply the current source or current build to the running
+    Codex page before inspecting it. Confirm a change-specific DOM or computed
+    style signal so an older injected payload cannot be mistaken for the new
+    build. Check home and task views in both light and dark mode; keep only the
+    final critical screenshots unless diagnosis needs more.
+11. Distinguish static validation, build validation and actual runtime visual
+    validation in the handoff. If the user chooses to inspect visually, state
+    that boundary.
+12. Never push without explicit permission in the current task. Before a
+    permitted push, inspect the full status and include exactly the scope the
+    user authorized.
 
 ## Reusable resources
 
-- Use `assets/theme-template/` as the only canonical Template 1.0 package
-  skeleton.
-- Run:
+- `assets/theme-template/` is the only canonical skeleton for new themes.
+- `scripts/sync_template_geometry.py` owns the frozen CSS tail.
+- `scripts/validate_theme_contract.py` validates structure, assets, geometry
+  conflicts and portable synchronization after the build.
+- `scripts/audit_migration_preservation.py` compares an existing theme with its
+  Git baseline so lost SVG-related classes, asset variables and keyframes are
+  visible before commit.
+- Use `scripts/sync_template_example.py` only when the repository-owned example
+  must be regenerated from the template asset.
 
-```powershell
-python .agents/skills/author-tessalume-theme/scripts/scaffold_theme.py `
-  --repo-root . --directory my-theme --id creator.my-theme `
-  --name "English Name" --author "github-user" --namespace abc
-```
-
-- Validate:
-
-```powershell
-python .agents/skills/author-tessalume-theme/scripts/sync_template_geometry.py `
-  --check themes/my-theme
-
-python .agents/skills/author-tessalume-theme/scripts/validate_theme_contract.py `
-  --repo-root . --author lyc1uckYoo `
-  themes/xin.moonfox-sovereign `
-  themes/aemeath-star-voyage `
-  themes/danya.bubble-void-duality
-```
-
-Use `scripts/sync_template_example.py` only when the repository-owned example
-must be regenerated from the template asset.
-
-Treat any contract or geometry error as blocking. Theme-specific visual
-differences never justify moving sizes, positions, visibility, route logic, or
-cleanup back into theme-owned code.
+Theme-specific visual differences never justify changing shared sizes,
+positions, adaptive priorities, route logic or cleanup. Shared geometry never
+justifies erasing theme-specific visual identity.

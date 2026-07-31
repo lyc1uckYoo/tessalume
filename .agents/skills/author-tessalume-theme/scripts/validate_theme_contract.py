@@ -47,6 +47,20 @@ TEMPLATE_V1_PARTS = (
 
 GEOMETRY_START = "/* TESSALUME_TEMPLATE_V1_GEOMETRY_START */"
 GEOMETRY_END = "/* TESSALUME_TEMPLATE_V1_GEOMETRY_END */"
+ASSET_VARIABLE_RE = re.compile(r"--cts-asset-([A-Za-z0-9][A-Za-z0-9._-]*)")
+CSS_RULE_RE = re.compile(r"([^{}]+)\{([^{}]*)\}")
+ROLE_TAG_RE = re.compile(r'<[^>]*data-theme-role="[^"]+"[^>]*>', re.DOTALL)
+CLASS_ATTRIBUTE_RE = re.compile(r'class="([^"]+)"')
+IMPORTANT_GEOMETRY_RE = re.compile(
+    r"(?:^|;)\s*"
+    r"(position|inset|left|right|top|bottom|"
+    r"width|height|min-width|max-width|min-height|max-height|"
+    r"margin(?:-(?:left|right|top|bottom))?|"
+    r"padding(?:-(?:left|right|top|bottom))?|gap|"
+    r"align-items|justify-content)"
+    r"\s*:[^;{}]*!important",
+    re.IGNORECASE,
+)
 
 
 def geometry_block(css: str) -> tuple[str | None, str]:
@@ -68,6 +82,50 @@ def canonical_geometry(namespace: str) -> str:
     if block is None:
         raise ValueError("canonical Template 1.0 geometry block is missing")
     return block.replace("__NS__", namespace)
+
+
+def css_rules(css: str) -> list[tuple[str, str]]:
+    return [
+        (match.group(1).strip(), match.group(2))
+        for match in CSS_RULE_RE.finditer(css)
+    ]
+
+
+def role_classes(script: str) -> set[str]:
+    classes: set[str] = set()
+    for tag in ROLE_TAG_RE.findall(script):
+        match = CLASS_ATTRIBUTE_RE.search(tag)
+        if match:
+            classes.update(match.group(1).split())
+    return classes
+
+
+def selector_targets_role_node(selector: str, classes: set[str]) -> bool:
+    if "[data-theme-role=" in selector:
+        return True
+    for item in selector.split(","):
+        item = item.strip()
+        for class_name in classes:
+            for match in re.finditer(
+                rf"\.{re.escape(class_name)}(?![A-Za-z0-9_-])", item
+            ):
+                tail = item[match.end():]
+                if not tail or (
+                    not tail[0].isspace()
+                    and not re.search(r"\s|[>+~]", tail)
+                ):
+                    return True
+    return False
+
+
+def matching_rule_bodies(
+    rules: list[tuple[str, str]], *selector_fragments: str
+) -> str:
+    return "\n".join(
+        body
+        for selector, body in rules
+        if all(fragment in selector for fragment in selector_fragments)
+    )
 
 
 def validate_theme(repo_root: Path, theme: Path, expected_author: str | None) -> list[str]:
@@ -129,6 +187,13 @@ def validate_theme(repo_root: Path, theme: Path, expected_author: str | None) ->
         errors.append(f"{label}: canonical namespace is missing or invalid")
     else:
         namespace = match.group(1)
+        declared_assets = set((manifest.get("assets") or {}).keys())
+        missing_asset_variables = set(ASSET_VARIABLE_RE.findall(css)) - declared_assets
+        if missing_asset_variables:
+            errors.append(
+                f"{label}: CSS references undeclared asset variables: "
+                + ", ".join(sorted(missing_asset_variables))
+            )
         stable_light = f"html.{namespace}-theme.{namespace}-is-task main.{namespace}-main"
         stable_dark = f"html.{namespace}-theme.electron-dark.{namespace}-is-task main.{namespace}-main"
         if stable_light not in css or stable_dark not in css:
@@ -192,6 +257,23 @@ def validate_theme(repo_root: Path, theme: Path, expected_author: str | None) ->
                     errors.append(
                         f"{label}: Template 1.0 must use {helper}"
                     )
+            if not re.search(
+                r"positionComposerAccessory\s*\(\s*main\s*,",
+                script,
+                re.DOTALL,
+            ):
+                errors.append(
+                    f"{label}: composer accessory must be positioned from main"
+                )
+            if not re.search(
+                r"positionPanelAboveCards\s*\(\s*main\s*,.*?,.*?,"
+                r"\s*320\s*,\s*56\s*,\s*40\s*,?\s*\)",
+                script,
+                re.DOTALL,
+            ):
+                errors.append(
+                    f"{label}: Template 1.0 sync panel must use 320, 56, 40"
+                )
             try:
                 block, tail = geometry_block(css)
                 expected = canonical_geometry(namespace)
@@ -206,6 +288,50 @@ def validate_theme(repo_root: Path, theme: Path, expected_author: str | None) ->
             except (OSError, ValueError) as exc:
                 errors.append(f"{label}: invalid Template 1.0 geometry: {exc}")
 
+            skin_css = css.split(GEOMETRY_START, 1)[0]
+            rules = css_rules(skin_css)
+            theme_role_classes = role_classes(script)
+            for selector, body in rules:
+                if not selector_targets_role_node(selector, theme_role_classes):
+                    continue
+                for geometry_match in IMPORTANT_GEOMETRY_RE.finditer(body):
+                    errors.append(
+                        f"{label}: theme skin uses !important "
+                        f"{geometry_match.group(1)} on a Template 1.0 role: "
+                        f"{selector}"
+                    )
+
+            assistant = matching_rule_bodies(
+                rules,
+                f".{namespace}-message-assistant",
+                f".{namespace}-markdown",
+            )
+            user = matching_rule_bodies(
+                rules,
+                f".{namespace}-message-user",
+                '[data-user-message-bubble="true"]',
+            )
+            for message_name, message_css in (
+                ("assistant", assistant),
+                ("user", user),
+            ):
+                if not re.search(
+                    r"background\s*:\s*transparent\s*!important",
+                    message_css,
+                    re.IGNORECASE,
+                ):
+                    errors.append(
+                        f"{label}: {message_name} message fill must be transparent"
+                    )
+                if not re.search(
+                    r"\bborder(?:-[a-z]+)?\s*:",
+                    message_css,
+                    re.IGNORECASE,
+                ):
+                    errors.append(
+                        f"{label}: {message_name} message frame is missing"
+                    )
+
     if css.count("{") != css.count("}"):
         errors.append(f"{label}: CSS braces are unbalanced")
 
@@ -214,7 +340,12 @@ def validate_theme(repo_root: Path, theme: Path, expected_author: str | None) ->
         for name in ("theme.js", "theme.css"):
             source_file = theme / name
             portable_file = portable / name
-            if not portable_file.is_file() or source_file.read_bytes() != portable_file.read_bytes():
+            if not portable_file.is_file():
+                errors.append(f"{label}: portable {name} is not synchronized")
+                continue
+            source_text = source_file.read_text(encoding="utf-8").replace("\r\n", "\n")
+            portable_text = portable_file.read_text(encoding="utf-8").replace("\r\n", "\n")
+            if source_text != portable_text:
                 errors.append(f"{label}: portable {name} is not synchronized")
         try:
             portable_manifest = json.loads((portable / "manifest.json").read_text(encoding="utf-8"))
