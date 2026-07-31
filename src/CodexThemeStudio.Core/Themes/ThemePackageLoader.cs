@@ -219,6 +219,13 @@ public sealed partial class ThemePackageLoader
         {
             validation.AddError("manifest.type.invalid", "Only advanced themes are supported.");
         }
+
+        if (manifest.Template is not null && !manifest.UsesSharedTemplateV1)
+        {
+            validation.AddError(
+                "manifest.template.unsupported",
+                "Shared themes must declare template id 'flagship', version '1.0', and style 'shared'.");
+        }
     }
 
     private static string? ValidatePreview(

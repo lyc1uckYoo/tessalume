@@ -15,6 +15,16 @@
     "description": { "type": "string", "maxLength": 500 },
     "engineVersion": { "const": 2 },
     "type": { "const": "advanced" },
+    "template": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version", "style"],
+      "properties": {
+        "id": { "const": "flagship" },
+        "version": { "const": "1.0" },
+        "style": { "const": "shared" }
+      }
+    },
     "capabilities": {
       "type": "object",
       "additionalProperties": false,

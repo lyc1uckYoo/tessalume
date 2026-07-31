@@ -8,12 +8,17 @@
   "description": "基于 Tessalume 旗舰主题模板 1.0 的清宵主题。亮色行剑云关，暗色抚弦布阵；完整保留天地弦心剑、万剑归弦、云门剑痕消息框与玉案记忆组件。",
   "engineVersion": 2,
   "type": "advanced",
+  "template": {
+    "id": "flagship",
+    "version": "1.0",
+    "style": "shared"
+  },
   "capabilities": {
     "light": true,
     "dark": true
   },
   "entryPoints": {
-    "css": "theme.css",
+    "css": "skin.css",
     "script": "theme.js"
   },
   "previews": {
@@ -27,13 +32,9 @@
     "sidebar-dark": "assets/sidebar-dark.png",
     "chat-light": "assets/chat-light.png",
     "chat-dark": "assets/chat-dark.png",
-    "task-guard": "assets/task-guard.png",
-    "task-draw": "assets/task-draw.png",
-    "task-array": "assets/task-array.png",
-    "hecate-light": "assets/task-draw.png",
-    "hecate-dark": "assets/task-draw.png",
-    "task-qxoolova": "assets/task-guard.png",
-    "task-qxoolova-right": "assets/task-array.png",
+    "task-left": "assets/task-left.png",
+    "task-right-secondary": "assets/task-right-secondary.png",
+    "task-right-primary": "assets/task-right-primary.png",
     "memory-light": "assets/memory-light.png",
     "memory-dark": "assets/memory-dark.png"
   },

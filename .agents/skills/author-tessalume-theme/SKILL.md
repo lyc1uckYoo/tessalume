@@ -29,7 +29,7 @@ component identity, or keyframes with the template examples.
    unmodified Git baseline. Add `data-theme-role`, `data-theme-part` and
    priority attributes to the existing DOM wherever possible. Do not replace
    the original inner markup with the template sample components.
-4. Preserve every role, part, priority and frozen geometry rule. Change only
+4. Preserve every role, part, priority and runtime-owned shared geometry. Change only
    declared assets, copy, color tokens, visual skin and character-specific
    animation. Remove only theme-owned lifecycle code and geometry declarations
    that conflict with the canonical host.
@@ -58,7 +58,7 @@ component identity, or keyframes with the template examples.
    ```
 
    Treat lost baseline keyframes/assets, undeclared asset variables, geometry
-   overrides, contract errors and frozen-geometry differences as blocking.
+   overrides, contract errors and shared-geometry isolation failures as blocking.
 9. Run the repository-root `一键构建EXE.ps1` after every theme, template,
    runtime or asset change. Let the build fully replace
    `dist/portable-win-x64`, optimized assets and trust fingerprints. Never
@@ -78,7 +78,7 @@ component identity, or keyframes with the template examples.
 ## Reusable resources
 
 - `assets/theme-template/` is the only canonical skeleton for new themes.
-- `scripts/sync_template_geometry.py` owns the frozen CSS tail.
+- `scripts/sync_template_geometry.py` validates the runtime-owned shared geometry and rejects theme-local geometry.
 - `scripts/validate_theme_contract.py` validates structure, assets, geometry
   conflicts and portable synchronization after the build.
 - `scripts/audit_migration_preservation.py` compares an existing theme with its

@@ -241,11 +241,11 @@ static async Task RuntimeRemovesNativeComposerFadeAsync()
     var payload = await BuildPayloadAsync(repositoryRoot, package);
     Ensure(payload.Contains("from-token-main-surface-primary", StringComparison.Ordinal),
         "The runtime must neutralize Codex's native bottom composer fade for every active theme.");
-    Ensure(payload.Contains("background: transparent !important", StringComparison.Ordinal),
+    Ensure(payload.Contains("background:transparent!important", StringComparison.Ordinal),
         "The native composer fade override must remain transparent.");
     Ensure(payload.Contains(":has(.composer-surface-chrome) .sticky.bottom-0", StringComparison.Ordinal),
         "The runtime must keep the sticky composer visible on Codex home layout changes.");
-    Ensure(payload.Contains("min-height: 64px !important", StringComparison.Ordinal),
+    Ensure(payload.Contains("min-height:64px!important", StringComparison.Ordinal),
         "The composer surface must keep a visible minimum hit area.");
     Ensure(payload.Contains("cts-code-review-open", StringComparison.Ordinal),
         "The runtime must track Codex's code-review diff state.");
@@ -305,7 +305,6 @@ static async Task RuntimeDecoratesTaskSurfacesBeforeDeferredRepairAsync()
         "Compatibility",
         "theme-runtime-v2.js");
     var runtime = await File.ReadAllTextAsync(runtimePath);
-
     const string criticalSignature = "const decorateTaskCriticalSurfaces = (mutations) => {";
     const string sharedSignature = "const decorateSharedSurfaces = (main, aside, home) => {";
     var criticalStart = runtime.IndexOf(criticalSignature, StringComparison.Ordinal);
@@ -359,6 +358,12 @@ static async Task RuntimeDecoratesTaskSurfacesBeforeDeferredRepairAsync()
 static async Task PublishedThemesUseCanonicalInjectionContractAsync()
 {
     var repositoryRoot = FindRepositoryRoot();
+    var sharedCss = await File.ReadAllTextAsync(Path.Combine(
+        repositoryRoot,
+        "src",
+        "CodexThemeStudio.App",
+        "Compatibility",
+        "theme-template-v1.css"));
     var runtimePath = Path.Combine(
         repositoryRoot,
         "src",
@@ -368,6 +373,10 @@ static async Task PublishedThemesUseCanonicalInjectionContractAsync()
     var runtime = await File.ReadAllTextAsync(runtimePath);
     Ensure(runtime.Contains("mountCanonicalTheme", StringComparison.Ordinal),
         "The open runtime must expose the canonical theme host.");
+    Ensure(runtime.Contains("renderTemplateV1", StringComparison.Ordinal) &&
+           runtime.Contains("appendDecorations", StringComparison.Ordinal) &&
+           runtime.Contains("data-cts-surface", StringComparison.Ordinal),
+        "The open runtime must own Template 1.0 outer DOM and generic surface markers.");
     Ensure(runtime.Contains("syncRouteState();", StringComparison.Ordinal),
         "The canonical host must synchronize route state before its debounced repair.");
 
@@ -376,45 +385,62 @@ static async Task PublishedThemesUseCanonicalInjectionContractAsync()
         (Directory: "xin.moonfox-sovereign", Namespace: "xmf"),
         (Directory: "aemeath-star-voyage", Namespace: "ae3"),
         (Directory: "danya.bubble-void-duality", Namespace: "dny"),
+        (Directory: "qingxiao.cloudsword-gate", Namespace: "qxo"),
     };
     foreach (var (directory, themeNamespace) in themes)
     {
         var themeRoot = Path.Combine(repositoryRoot, "themes", directory);
         var script = await File.ReadAllTextAsync(Path.Combine(themeRoot, "theme.js"));
-        var css = await File.ReadAllTextAsync(Path.Combine(themeRoot, "theme.css"));
+        var css = await File.ReadAllTextAsync(Path.Combine(themeRoot, "skin.css"));
         Ensure(script.Contains("context.mountCanonicalTheme(", StringComparison.Ordinal),
             $"{directory} must use the canonical theme host.");
+        Ensure(script.Contains("context.renderTemplateV1(", StringComparison.Ordinal),
+            $"{directory} must use the shared Template 1.0 renderer.");
         Ensure(!script.Contains("context.observe(", StringComparison.Ordinal) &&
                !script.Contains("MutationObserver", StringComparison.Ordinal),
             $"{directory} must not own route observers.");
-        Ensure(script.Contains("data-theme-stage", StringComparison.Ordinal),
-            $"{directory} must expose the canonical stage role.");
-        foreach (var role in new[] { "hero", "identity", "task-left", "task-right", "memory", "composer-accessory" })
-        {
-            Ensure(script.Contains($"data-theme-role=\"{role}\"", StringComparison.Ordinal),
-                $"{directory} is missing canonical role {role}.");
-        }
-        Ensure(css.Contains("chat-paper::before{content:none!important}", StringComparison.Ordinal),
-            $"{directory} must not paint chat art on a replaceable chat-paper pseudo-element.");
+        Ensure(!script.Contains("data-theme-role=", StringComparison.Ordinal) &&
+               !script.Contains("data-theme-stage", StringComparison.Ordinal),
+            $"{directory} must not duplicate runtime-owned outer roles.");
+        Ensure(!css.Contains("TESSALUME_TEMPLATE_V1_", StringComparison.Ordinal) &&
+               !css.Contains("[data-theme-role=", StringComparison.Ordinal),
+            $"{directory} skin must not duplicate shared surfaces or geometry.");
         Ensure(css.Contains("-is-task main.", StringComparison.Ordinal) &&
                css.Contains("-chat-art)", StringComparison.Ordinal),
             $"{directory} must paint chat art on the stable task main.");
         Ensure(!css.Contains($"main.{themeNamespace}-main>*{{position:relative", StringComparison.Ordinal),
             $"{directory} must not override every direct main child; doing so breaks Codex fixed headers.");
-        Ensure(css.Contains("z-index:-2", StringComparison.Ordinal) &&
-               css.Contains("z-index:-1", StringComparison.Ordinal),
-            $"{directory} must stack artwork behind native Codex layout without repositioning native children.");
+        Ensure(!css.Contains($"main.{themeNamespace}-main::before {{\n  content:\"\";\n  position:", StringComparison.Ordinal) &&
+               !css.Contains($"main.{themeNamespace}-main::after {{\n  content:\"\";\n  position:", StringComparison.Ordinal) &&
+               sharedCss.Contains("[data-cts-surface=\"main\"]::before { z-index:-2; }", StringComparison.Ordinal) &&
+               sharedCss.Contains("[data-cts-surface=\"main\"]::after { z-index:-1; }", StringComparison.Ordinal),
+            $"{directory} must inherit task-canvas stacking from the shared template stylesheet.");
+        if (directory == "aemeath-star-voyage")
+        {
+            Ensure(script.Contains("stageDecorations:", StringComparison.Ordinal) &&
+                   script.Contains("ae3-orbit", StringComparison.Ordinal),
+                "Aemeath's character-specific stage orbit must survive shared-DOM migration.");
+        }
+        if (directory == "danya.bubble-void-duality")
+        {
+            Ensure(script.Contains("stageDecorations:", StringComparison.Ordinal) &&
+                   script.Contains("dny-hero-fx", StringComparison.Ordinal) &&
+                   script.Contains("dny-main-frame", StringComparison.Ordinal),
+                "Danya's light/dark stage effects must survive shared-DOM migration.");
+        }
+        if (directory == "qingxiao.cloudsword-gate")
+        {
+            Ensure(script.Contains("stageDecorations:", StringComparison.Ordinal) &&
+                   script.Contains("qxo-banner-fx", StringComparison.Ordinal),
+                "Qingxiao's sword-array banner must survive shared-DOM migration.");
+        }
         if (directory == "xin.moonfox-sovereign")
         {
             Ensure(script.Contains("adaptiveLayout: true", StringComparison.Ordinal),
                 "The flagship candidate must opt into geometry-based task widget visibility.");
-            Ensure(script.Contains("data-theme-priority=\"primary\"", StringComparison.Ordinal) &&
-                   script.Contains("data-theme-priority=\"secondary\"", StringComparison.Ordinal),
-                "The flagship candidate must declare which right task card survives reduced layouts.");
-            Ensure(css.Contains("--xmf-home-hero-height", StringComparison.Ordinal) &&
-                   css.Contains("100cqh", StringComparison.Ordinal) &&
-                   css.Contains("100cqw", StringComparison.Ordinal),
-                "The flagship candidate home hero must respond to both available height and width.");
+            Ensure(script.Contains("taskSecondary:", StringComparison.Ordinal) &&
+                   script.Contains("taskPrimary:", StringComparison.Ordinal),
+                "The flagship candidate must fill both canonical right-card slots.");
             Ensure(!css.Contains("height:502px!important", StringComparison.Ordinal) &&
                    !css.Contains("min-height:502px!important", StringComparison.Ordinal),
                 "The flagship candidate home hero must not regress to its fixed-height crop.");
@@ -435,7 +461,13 @@ static async Task FlagshipTemplateV1FreezesSharedStructureAsync()
         "author-tessalume-theme");
     var templateRoot = Path.Combine(skillRoot, "assets", "theme-template");
     var templateScript = await File.ReadAllTextAsync(Path.Combine(templateRoot, "theme.js"));
-    var templateCss = await File.ReadAllTextAsync(Path.Combine(templateRoot, "theme.css"));
+    var templateCss = await File.ReadAllTextAsync(Path.Combine(templateRoot, "skin.css"));
+    var sharedCss = await File.ReadAllTextAsync(Path.Combine(
+        repositoryRoot,
+        "src",
+        "CodexThemeStudio.App",
+        "Compatibility",
+        "theme-template-v1.css"));
     var templateManifest = await File.ReadAllTextAsync(Path.Combine(templateRoot, "manifest.json"));
     var validator = await File.ReadAllTextAsync(
         Path.Combine(skillRoot, "scripts", "validate_theme_contract.py"));
@@ -444,57 +476,38 @@ static async Task FlagshipTemplateV1FreezesSharedStructureAsync()
     var exampleSync = await File.ReadAllTextAsync(
         Path.Combine(skillRoot, "scripts", "sync_template_example.py"));
 
-    const string geometryStart = "/* TESSALUME_TEMPLATE_V1_GEOMETRY_START */";
-    const string geometryEnd = "/* TESSALUME_TEMPLATE_V1_GEOMETRY_END */";
-    static string ExtractGeometry(string css, string startMarker, string endMarker)
-    {
-        var start = css.IndexOf(startMarker, StringComparison.Ordinal);
-        var end = css.IndexOf(endMarker, StringComparison.Ordinal);
-        Ensure(start >= 0 && end > start, "Template 1.0 geometry markers are missing.");
-        end += endMarker.Length;
-        Ensure(string.IsNullOrWhiteSpace(css[end..]),
-            "The frozen Template 1.0 geometry must be the final CSS section.");
-        return css[start..end].ReplaceLineEndings("\n");
-    }
-
     Ensure(templateScript.Contains("templateVersion: \"1.0\"", StringComparison.Ordinal) &&
-           templateScript.Contains("adaptiveLayout: true", StringComparison.Ordinal),
+           templateScript.Contains("adaptiveLayout: true", StringComparison.Ordinal) &&
+           templateScript.Contains("context.renderTemplateV1(", StringComparison.Ordinal),
         "The reusable template must opt into Template 1.0 and adaptive layout.");
     Ensure(templateManifest.Contains("\"version\": \"1.0\"", StringComparison.Ordinal) &&
+           templateManifest.Contains("\"style\": \"shared\"", StringComparison.Ordinal) &&
            templateManifest.Contains("assets/placeholder.svg", StringComparison.Ordinal),
         "The reusable template must be valid before custom artwork is added.");
-    Ensure(validator.Contains("TEMPLATE_V1_PARTS", StringComparison.Ordinal) &&
-           validator.Contains("canonical_geometry", StringComparison.Ordinal) &&
+    Ensure(validator.Contains("REQUIRED_SLOTS", StringComparison.Ordinal) &&
+           validator.Contains("skin.css", StringComparison.Ordinal) &&
            geometrySync.Contains("--check", StringComparison.Ordinal) &&
            exampleSync.Contains("repo_root / \"examples\"", StringComparison.Ordinal) &&
            !Directory.Exists(Path.Combine(repositoryRoot, "examples", "advanced-theme")),
-        "The authoring skill must validate structure parts and frozen geometry.");
+        "The authoring skill must validate shared structure and skin isolation.");
 
     var requiredParts = new[]
     {
-        "hero-copy",
         "hero-kicker",
         "hero-title-light",
         "hero-title-dark",
         "hero-motion",
         "hero-note",
-        "identity",
         "identity-emblem",
         "identity-copy",
         "identity-status",
-        "task-card-left",
-        "task-card-right-secondary",
-        "task-card-right-primary",
         "task-card-art",
         "task-card-caption",
-        "memory-card",
         "memory-meter",
-        "sync-panel",
         "sync-copy",
         "sync-core",
         "sync-meter",
         "sync-state",
-        "composer-accessory",
     };
     foreach (var part in requiredParts)
     {
@@ -502,13 +515,16 @@ static async Task FlagshipTemplateV1FreezesSharedStructureAsync()
             $"The reusable template is missing structure part {part}.");
     }
 
-    var canonicalGeometry = ExtractGeometry(templateCss, geometryStart, geometryEnd);
-    Ensure(canonicalGeometry.Contains("width:146px;", StringComparison.Ordinal) &&
-           canonicalGeometry.Contains("height:234px;", StringComparison.Ordinal) &&
-           canonicalGeometry.Contains("top:334px;", StringComparison.Ordinal) &&
-           canonicalGeometry.Contains("width:320px;", StringComparison.Ordinal) &&
-           canonicalGeometry.Contains("height:56px;", StringComparison.Ordinal),
-        "Template 1.0 geometry must preserve the accepted Xin layout.");
+    Ensure(sharedCss.Contains("width:146px;", StringComparison.Ordinal) &&
+           sharedCss.Contains("height:234px;", StringComparison.Ordinal) &&
+           sharedCss.Contains("top:334px;", StringComparison.Ordinal) &&
+           sharedCss.Contains("width:320px;", StringComparison.Ordinal) &&
+           sharedCss.Contains("height:56px;", StringComparison.Ordinal) &&
+           sharedCss.Contains("data-cts-surface=\"chat-paper\"", StringComparison.Ordinal),
+        "Runtime-owned Template 1.0 geometry must preserve the accepted Xin layout.");
+    Ensure(!templateCss.Contains("[data-theme-role=", StringComparison.Ordinal) &&
+           !templateCss.Contains("TESSALUME_TEMPLATE_V1_", StringComparison.Ordinal),
+        "The reusable skin must not contain shared geometry.");
 
     var implementations = new[]
     {
@@ -518,7 +534,7 @@ static async Task FlagshipTemplateV1FreezesSharedStructureAsync()
     foreach (var (root, themeNamespace) in implementations)
     {
         var script = await File.ReadAllTextAsync(Path.Combine(root, "theme.js"));
-        var css = await File.ReadAllTextAsync(Path.Combine(root, "theme.css"));
+        var css = await File.ReadAllTextAsync(Path.Combine(root, "skin.css"));
         Ensure(script.Contains("templateVersion: \"1.0\"", StringComparison.Ordinal),
             $"{Path.GetFileName(root)} must declare Template 1.0.");
         Ensure(!script.Contains('\0'),
@@ -528,10 +544,10 @@ static async Task FlagshipTemplateV1FreezesSharedStructureAsync()
             Ensure(script.Contains($"data-theme-part=\"{part}\"", StringComparison.Ordinal),
                 $"{Path.GetFileName(root)} is missing Template 1.0 part {part}.");
         }
-        var expected = canonicalGeometry.Replace("__NS__", themeNamespace, StringComparison.Ordinal);
-        var actual = ExtractGeometry(css, geometryStart, geometryEnd);
-        Ensure(string.Equals(expected, actual, StringComparison.Ordinal),
-            $"{Path.GetFileName(root)} has drifted from frozen Template 1.0 geometry.");
+        Ensure(script.Contains("context.renderTemplateV1(", StringComparison.Ordinal) &&
+               !script.Contains("data-theme-role=", StringComparison.Ordinal) &&
+               !css.Contains("[data-theme-role=", StringComparison.Ordinal),
+            $"{Path.GetFileName(root)} has duplicated runtime-owned Template 1.0 structure.");
     }
 }
 
@@ -591,11 +607,20 @@ static async Task OpenAdvancedTemplateLoadsAndFingerprintsAsync()
     var payload = await BuildPayloadAsync(repositoryRoot, package);
     var first = await ThemeFingerprintCalculator.CalculateAsync(package);
     var second = await ThemeFingerprintCalculator.CalculateAsync(package);
+    var sharedTemplatePath = Path.Combine(
+        repositoryRoot,
+        "src",
+        "CodexThemeStudio.App",
+        "Compatibility",
+        ThemePayloadBuilder.SharedTemplateStyleFileName);
+    var effective = await ThemeFingerprintCalculator.CalculateEffectiveAsync(package, sharedTemplatePath);
     Ensure(package.IsAdvanced, "Advanced template must require script trust.");
     Ensure(package.Manifest.Id == "example.template-v1",
         "The root example package must be the Flagship Template 1.0 example.");
     Ensure(payload.Contains("registerTheme", StringComparison.Ordinal), "Advanced lifecycle is missing.");
     Ensure(first.Length == 64 && first == second, "Theme fingerprint must be stable SHA-256.");
+    Ensure(effective.Length == 64 && effective != first,
+        "Shared themes must include the runtime template stylesheet in their effective fingerprint.");
 }
 
 static async Task AdvancedImportAndTrustFollowFingerprintAsync()
@@ -613,7 +638,13 @@ static async Task AdvancedImportAndTrustFollowFingerprintAsync()
         Ensure(File.Exists(scriptPath), "Advanced script was not imported.");
 
         Directory.CreateDirectory(trustData);
-        using var trustStore = new ThemeTrustStore(trustData);
+        var sharedTemplatePath = Path.Combine(
+            repositoryRoot,
+            "src",
+            "CodexThemeStudio.App",
+            "Compatibility",
+            ThemePayloadBuilder.SharedTemplateStyleFileName);
+        using var trustStore = new ThemeTrustStore(trustData, sharedTemplatePath);
         Ensure(!await trustStore.IsTrustedAsync(imported), "Advanced theme must start untrusted.");
         await trustStore.TrustAsync(imported);
         Ensure(await trustStore.IsTrustedAsync(imported), "Trusted fingerprint was not remembered.");
@@ -748,10 +779,18 @@ static async Task<int> ApplyPackageRuntimeAsync(int port, string packagePath)
 
 static async Task<int> TrustPackageAsync(string dataPath, string packagePath)
 {
+    var repositoryRoot = FindRepositoryRoot();
     var package = (await new ThemePackageLoader().LoadAsync(packagePath)).Package
         ?? throw new InvalidOperationException("The requested theme package could not be loaded.");
     Directory.CreateDirectory(dataPath);
-    using var trustStore = new ThemeTrustStore(dataPath);
+    using var trustStore = new ThemeTrustStore(
+        dataPath,
+        Path.Combine(
+            repositoryRoot,
+            "src",
+            "CodexThemeStudio.App",
+            "Compatibility",
+            ThemePayloadBuilder.SharedTemplateStyleFileName));
     await trustStore.TrustAsync(package);
     Console.WriteLine($"Theme trusted for local diagnostics: {package.Manifest.Id}");
     return 0;

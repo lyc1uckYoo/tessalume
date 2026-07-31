@@ -8,12 +8,17 @@
   "description": "以梦州岁主心月狐的人形与白狐本体、朝月孤城、朝月心珰及红玉岁序结界为核心的重磅旗舰主题。亮色为白玉云宫，暗色为赤月黑城，任务页采用双角色卡交替动效。",
   "engineVersion": 2,
   "type": "advanced",
+  "template": {
+    "id": "flagship",
+    "version": "1.0",
+    "style": "shared"
+  },
   "capabilities": {
     "light": true,
     "dark": true
   },
   "entryPoints": {
-    "css": "theme.css",
+    "css": "skin.css",
     "script": "theme.js"
   },
   "previews": {
@@ -27,9 +32,9 @@
     "sidebar-dark": "assets/sidebar-dark.png",
     "chat-light": "assets/chat-light.png",
     "chat-dark": "assets/chat-dark.png",
-    "task-oracle": "assets/task-oracle.png",
-    "task-human": "assets/task-human.png",
-    "task-fox": "assets/task-fox.png",
+    "task-left": "assets/task-left.png",
+    "task-right-secondary": "assets/task-right-secondary.png",
+    "task-right-primary": "assets/task-right-primary.png",
     "memory-light": "assets/memory-light.png",
     "memory-dark": "assets/memory-dark.png"
   },

@@ -1,6 +1,7 @@
 (async () => {
   const RUNTIME_KEY = "__CODEX_THEME_STUDIO_RUNTIME__";
   const themeId = __CTS_THEME_ID_JSON__;
+  const templateCssText = __CTS_TEMPLATE_CSS_JSON__;
   const cssText = __CTS_CSS_JSON__;
   const scriptText = __CTS_SCRIPT_JSON__;
   const stagedAssetDataUrls = window.__CODEX_THEME_STUDIO_STAGED_ASSETS__;
@@ -29,66 +30,7 @@
   const style = document.createElement("style");
   style.id = "cts-theme-style";
   style.dataset.themeId = themeId;
-  // Codex updates can change the home page's generated DOM shape. Several
-  // early Studio themes styled that old shape directly, which can push or clip
-  // the new-task composer. Keep the composer visible without changing the
-  // themed home hero geometry.
-  const compatibilityFixes = `
-html.cts-theme-active .sticky.bottom-0:has(.composer-surface-chrome) [class*="from-token-main-surface-primary"] {
-  background: transparent !important;
-}
-html.cts-theme-active :is(main,[role="main"]):has(.composer-surface-chrome) {
-  overflow-x: hidden !important;
-}
-html.cts-theme-active :is(main,[role="main"]):has(.composer-surface-chrome) .sticky.bottom-0 {
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  z-index: 80 !important;
-  pointer-events: auto !important;
-}
-html.cts-theme-active .composer-surface-chrome {
-  display: flex !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  min-height: 64px !important;
-  position: relative !important;
-  z-index: 81 !important;
-  pointer-events: auto !important;
-}
-html.cts-theme-active .composer-surface-chrome :is(textarea,input,[contenteditable="true"]) {
-  display: revert !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  pointer-events: auto !important;
-}
-html.cts-theme-active [role="main"]:has(.composer-surface-chrome) :has(> .group\\/title),
-html.cts-theme-active [role="main"]:has(.composer-surface-chrome) .group\\/title,
-html.cts-theme-active [role="main"]:has(.composer-surface-chrome) :has(> .group\\/home-suggestions),
-html.cts-theme-active [role="main"]:has(.composer-surface-chrome) .group\\/home-suggestions {
-  display: none !important;
-}
-html.cts-theme-active #cts-theme-root [data-cts-auto-hidden] {
-  transition: opacity .18s ease, visibility 0s linear 0s !important;
-}
-html.cts-theme-active #cts-theme-root [data-cts-auto-hidden="true"] {
-  opacity: 0 !important;
-  visibility: hidden !important;
-  pointer-events: none !important;
-  animation-play-state: paused !important;
-  transition: opacity .14s ease, visibility 0s linear .14s !important;
-}
-html.cts-theme-active #cts-theme-root [data-cts-side-panel-overlay="true"] {
-  transition: opacity .18s ease, visibility .18s ease, transform .18s ease !important;
-}
-html.cts-theme-active.cts-code-review-open #cts-theme-root [data-cts-side-panel-overlay="true"] {
-  opacity: 0 !important;
-  visibility: hidden !important;
-  pointer-events: none !important;
-  transform: translateX(24px) scale(.96) !important;
-  transition: opacity .18s ease, visibility .18s ease, transform .18s ease !important;
-}`;
-  style.textContent = `${cssText}\n${compatibilityFixes}`;
+  style.textContent = `${templateCssText}\n${cssText}`;
   (document.head || document.documentElement).appendChild(style);
 
   const root = document.createElement("div");
@@ -141,6 +83,70 @@ html.cts-theme-active.cts-code-review-open #cts-theme-root [data-cts-side-panel-
 
   document.documentElement.classList.add("cts-theme-active", `cts-theme-${safeThemeId}`);
 
+  const renderTemplateV1 = (spec) => {
+    if (!spec || typeof spec !== "object") {
+      throw new TypeError("renderTemplateV1 expects a slot specification");
+    }
+    const createSlot = (slotName, role, part, priority, defaultTag) => {
+      const slot = spec[slotName];
+      if (!slot || typeof slot !== "object") {
+        throw new TypeError(`Template 1.0 requires the ${slotName} slot`);
+      }
+      const tagName = String(slot.tag || defaultTag);
+      if (!/^[a-z][a-z0-9-]*$/i.test(tagName)) {
+        throw new TypeError(`Invalid Template 1.0 slot tag: ${tagName}`);
+      }
+      const element = document.createElement(tagName);
+      if (slot.className) element.className = String(slot.className);
+      element.setAttribute("data-theme-role", role);
+      element.setAttribute("data-theme-part", part);
+      if (priority) element.setAttribute("data-theme-priority", priority);
+      for (const [name, value] of Object.entries(slot.attributes || {})) {
+        if (/^(?:class|data-theme-(?:role|part|priority))$/i.test(name)) continue;
+        element.setAttribute(name, String(value));
+      }
+      element.innerHTML = String(slot.html || "");
+      return element;
+    };
+    const appendDecorations = (parent, html) => {
+      if (!html) return;
+      const template = document.createElement("template");
+      template.innerHTML = String(html);
+      parent.append(...template.content.childNodes);
+    };
+
+    const stage = document.createElement("div");
+    stage.className = String(spec.stageClass || "");
+    stage.setAttribute("data-theme-stage", "");
+    const hero = createSlot("hero", "hero", "hero-copy", null, "section");
+    const identity = createSlot("identity", "identity", "identity", null, "div");
+    const taskLeft = createSlot("taskLeft", "task-left", "task-card-left", null, "aside");
+    const taskSecondary = createSlot(
+      "taskSecondary", "task-right", "task-card-right-secondary", "secondary", "aside");
+    const taskPrimary = createSlot(
+      "taskPrimary", "task-right", "task-card-right-primary", "primary", "aside");
+    const memory = createSlot("memory", "memory", "memory-card", null, "aside");
+    const syncPanel = createSlot("syncPanel", "sync-panel", "sync-panel", "secondary", "section");
+    const composerAccessory = createSlot(
+      "composerAccessory", "composer-accessory", "composer-accessory", null, "div");
+    stage.append(hero, identity, taskLeft, taskSecondary, taskPrimary, memory);
+    appendDecorations(stage, spec.stageDecorations);
+    root.replaceChildren(stage);
+    appendDecorations(root, spec.rootDecorations);
+    root.append(syncPanel, composerAccessory);
+    return Object.freeze({
+      stage,
+      hero,
+      identity,
+      taskLeft,
+      taskSecondary,
+      taskPrimary,
+      memory,
+      syncPanel,
+      composerAccessory,
+    });
+  };
+
   let context;
   const mountCanonicalTheme = (spec) => {
     if (!spec || typeof spec !== "object") {
@@ -160,6 +166,7 @@ html.cts-theme-active.cts-code-review-open #cts-theme-root [data-cts-side-panel-
 
     const html = document.documentElement;
     const marked = [];
+    const surfaced = [];
     let themeDisposed = false;
     let ensureTimer = 0;
     let layoutResizeObserver = null;
@@ -231,6 +238,22 @@ html.cts-theme-active.cts-code-review-open #cts-theme-root [data-cts-side-panel-
       marked.push([node, className]);
       return node;
     };
+    const markSurface = (node, surface) => {
+      if (!node) return node;
+      const previous = node.getAttribute("data-cts-surface");
+      if (previous === surface) return node;
+      node.setAttribute("data-cts-surface", surface);
+      surfaced.push([node, previous]);
+      return node;
+    };
+    const markMessage = (node, role) => {
+      if (!node) return node;
+      const previous = node.getAttribute("data-cts-message");
+      if (previous === role) return node;
+      node.setAttribute("data-cts-message", role);
+      surfaced.push([node, previous, "data-cts-message"]);
+      return node;
+    };
     const setData = (node, name, value) => {
       if (!node) return;
       node.setAttribute(dataName(name), String(value));
@@ -257,6 +280,9 @@ html.cts-theme-active.cts-code-review-open #cts-theme-root [data-cts-side-panel-
       html.classList.toggle(roleClass("is-home"), isHome);
       html.classList.toggle(roleClass("is-task"), !isHome);
       html.classList.toggle(roleClass("is-settings"), Boolean(settingsSurface));
+      html.classList.toggle("cts-is-home", isHome);
+      html.classList.toggle("cts-is-task", !isHome);
+      html.classList.toggle("cts-is-settings", Boolean(settingsSurface));
       return home;
     };
     const findStage = () =>
@@ -539,12 +565,21 @@ html.cts-theme-active.cts-code-review-open #cts-theme-root [data-cts-side-panel-
     const decorateMarkdownSurface = (content) => {
       if (!content?.isConnected) return null;
       mark(content, roleClass("markdown"));
+      markSurface(content, "markdown");
       const unit = content.closest("[data-content-search-unit-key]");
       const key = unit?.getAttribute("data-content-search-unit-key") || "";
-      if (key.endsWith(":assistant")) mark(unit, roleClass("message-assistant"));
-      if (key.endsWith(":user")) mark(unit, roleClass("message-user"));
+      if (key.endsWith(":assistant")) {
+        mark(unit, roleClass("message-assistant"));
+        markMessage(unit, "assistant");
+      }
+      if (key.endsWith(":user")) {
+        mark(unit, roleClass("message-user"));
+        markMessage(unit, "user");
+      }
       if (key.endsWith(":assistant") || key.endsWith(":user")) {
-        mark(unit.closest('[class*="thread-content-max-width"]'), roleClass("chat-paper"));
+        const paper = unit.closest('[class*="thread-content-max-width"]');
+        mark(paper, roleClass("chat-paper"));
+        markSurface(paper, "chat-paper");
         return unit;
       }
       return null;
@@ -555,6 +590,8 @@ html.cts-theme-active.cts-code-review-open #cts-theme-root [data-cts-side-panel-
         const title = header.querySelector("span > span.truncate")?.parentElement;
         mark(header, roleClass("task-header"));
         mark(title, roleClass("task-title"));
+        markSurface(header, "task-header");
+        markSurface(title, "task-title");
       });
     };
     const decorateTaskCriticalSurfaces = (mutations) => {
@@ -592,7 +629,13 @@ html.cts-theme-active.cts-code-review-open #cts-theme-root [data-cts-side-panel-
       mark(main, roleClass("main"));
       mark(aside, roleClass("sidebar"));
       mark(home, roleClass("home"));
-      mark(document.querySelector(".group\\/application-menu-top-bar"), roleClass("window-bar"));
+      const windowBar = document.querySelector(".group\\/application-menu-top-bar");
+      mark(windowBar, roleClass("window-bar"));
+      markSurface(main, "main");
+      markSurface(aside, "sidebar");
+      markSurface(home, "home");
+      markSurface(windowBar, "window-bar");
+      markSurface(document.querySelector(".composer-surface-chrome"), "composer");
 
       let messageIndex = 0;
       document.querySelectorAll('[class*="_markdownContent_"]').forEach((content) => {
@@ -609,12 +652,16 @@ html.cts-theme-active.cts-code-review-open #cts-theme-root [data-cts-side-panel-
         mark(section, roleClass("output-section"));
         mark(section?.querySelector("header"), roleClass("output-header"));
         mark(section?.parentElement?.parentElement, roleClass("output-panel"));
+        markSurface(section, "output-section");
+        markSurface(section?.querySelector("header"), "output-header");
+        markSurface(section?.parentElement?.parentElement, "output-panel");
       });
       const outputOpen = Array.from(document.querySelectorAll(`.${roleClass("output-panel")}`)).some((panel) => {
         const box = panel.getBoundingClientRect();
         return box.width > 120 && box.height > 80;
       });
       html.classList.toggle(roleClass("has-output"), outputOpen);
+      html.classList.toggle("cts-has-output", outputOpen);
 
       document.querySelectorAll(`[${dataName("card")}]`).forEach((node) => node.removeAttribute(dataName("card")));
       home?.querySelector(".group\\/home-suggestions")?.querySelectorAll("button").forEach((button, index) => {
@@ -671,6 +718,12 @@ html.cts-theme-active.cts-code-review-open #cts-theme-root [data-cts-side-panel-
       for (const [node, className] of marked) {
         try { node?.classList?.remove(className); } catch { }
       }
+      for (const [node, previous, attribute = "data-cts-surface"] of surfaced) {
+        try {
+          if (previous == null) node?.removeAttribute?.(attribute);
+          else node?.setAttribute?.(attribute, previous);
+        } catch { }
+      }
       try {
         document.querySelectorAll("*").forEach((node) => {
           for (const attribute of Array.from(node.attributes || [])) {
@@ -684,6 +737,10 @@ html.cts-theme-active.cts-code-review-open #cts-theme-root [data-cts-side-panel-
         roleClass("is-task"),
         roleClass("is-settings"),
         roleClass("has-output"),
+        "cts-is-home",
+        "cts-is-task",
+        "cts-is-settings",
+        "cts-has-output",
       );
       root.removeAttribute("data-cts-template-version");
       return true;
@@ -721,6 +778,7 @@ html.cts-theme-active.cts-code-review-open #cts-theme-root [data-cts-side-panel-
     },
     assets: Object.freeze({ ...assetDataUrls }),
     assetDataUrl,
+    renderTemplateV1,
     mountCanonicalTheme,
     addCleanup,
     on(target, eventName, listener, options) {

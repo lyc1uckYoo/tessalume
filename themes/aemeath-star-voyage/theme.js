@@ -4,35 +4,25 @@ registerTheme({
     root.setAttribute("aria-hidden", "true");
     // 模板 1.0 固定结构①：首页主视觉、顶部身份牌与任务页五个基础组件。
     // 可替换爱弥斯专属文案、图片与内部动效，但不得改变 data-theme-role / data-theme-part。
-    root.innerHTML = `
-      <div class="ae3-stage" data-theme-stage>
-        <section class="ae3-hero-copy" data-theme-role="hero" data-theme-part="hero-copy">
-          <span class="ae3-kicker" data-theme-part="hero-kicker"><i></i><span class="ae3-light-only">STARTORCH · DEPARTURE GATE 07</span><span class="ae3-dark-only">TUNNELER · CORE LINK RA2362-G</span></span>
+    context.renderTemplateV1({
+        stageClass: "ae3-stage",
+        stageDecorations: `<div class="ae3-orbit"><i></i><i></i><i></i><b></b><small>GHOST FREQUENCY</small></div>`,
+        hero: { tag: "section", className: "ae3-hero-copy", html: `<span class="ae3-kicker" data-theme-part="hero-kicker"><i></i><span class="ae3-light-only">STARTORCH · DEPARTURE GATE 07</span><span class="ae3-dark-only">TUNNELER · CORE LINK RA2362-G</span></span>
           <h1 class="ae3-light-only" data-theme-part="hero-title-light">把告别折成<br><em>新的航标</em></h1>
           <h1 class="ae3-dark-only" data-theme-part="hero-title-dark">越过深空<br><em>回应星海</em></h1>
           <p>${config.subtitle}</p>
           <div class="ae3-route" data-theme-part="hero-motion" aria-label="远航信标轨迹"><i></i><i></i><i></i><i></i><b></b></div>
-          <div class="ae3-mode" data-theme-part="hero-note"><small class="ae3-light-only">晨航模式</small><small class="ae3-dark-only">兵装链接</small><strong class="ae3-light-only">纸飞机已进入远航轨道</strong><strong class="ae3-dark-only">隧者核心同步完成</strong></div>
-        </section>
-        <!-- 模板 1.0 固定结构②：身份牌、左侧主卡、右侧双卡和记忆卡。 -->
-        <div class="ae3-identity" data-theme-role="identity" data-theme-part="identity"><span data-theme-part="identity-emblem"><i></i></span><div data-theme-part="identity-copy"><b>${config.title}</b><small>${config.status}</small></div><em data-theme-part="identity-status"></em></div>
-        <aside class="ae3-task-card ae3-task-left" data-theme-role="task-left" data-theme-part="task-card-left"><i data-theme-part="task-card-art"></i><div data-theme-part="task-card-caption"><b>星讯 · 留声</b><small>FAREWELL SIGNAL / 01</small></div></aside>
-        <aside class="ae3-task-card ae3-task-right ae3-task-voyage" data-theme-role="task-right" data-theme-priority="secondary" data-theme-part="task-card-right-secondary"><i data-theme-part="task-card-art"></i><div data-theme-part="task-card-caption"><b>晨光 · 远航</b><small>VOYAGE ROUTE / 02</small></div></aside>
-        <aside class="ae3-task-card ae3-task-right ae3-task-tunneler" data-theme-role="task-right" data-theme-priority="primary" data-theme-part="task-card-right-primary"><i data-theme-part="task-card-art"></i><div data-theme-part="task-card-caption"><b>隧者 · 同调</b><small>CORE LINK / 03</small></div></aside>
-        <aside class="ae3-memory" data-theme-role="memory" data-theme-part="memory-card"><small>RA2362-G · 航行记忆</small><p>${config.memory}</p><span class="ae3-heart-resonator" data-theme-part="memory-meter"><svg class="ae3-heart-sigil" viewBox="0 0 122 38" aria-label="爱弥斯信号心印" role="img"><defs><linearGradient id="ae3-sigil-shell" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffffff"/><stop offset=".28" stop-color="#bff7ff"/><stop offset=".58" stop-color="#ff9dca"/><stop offset="1" stop-color="#b33799"/></linearGradient><linearGradient id="ae3-sigil-wave" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#76e8f3"/><stop offset=".5" stop-color="#fff7ff"/><stop offset="1" stop-color="#ff62ad"/></linearGradient><radialGradient id="ae3-sigil-core"><stop stop-color="#fffaff"/><stop offset=".32" stop-color="#ffb9da"/><stop offset=".72" stop-color="#ff559f"/><stop offset="1" stop-color="#6f235f"/></radialGradient></defs><path class="ae3-sigil-shell" d="M61 34L39 20l-2-9 7-7 10 2 7 7 7-7 10-2 7 7-2 9Z"/><path class="ae3-sigil-core" d="M61 28L48 18l1-6 6-2 6 6 6-6 6 2 1 6Z"/><path class="ae3-sigil-wave" d="M45 18h8l3-5 5 11 4-7h12"/><path class="ae3-sigil-scan" d="M39 10l8-4m28 0 8 4M43 25l8 5m20 0 8-5"/><path class="ae3-sigil-glint" d="M51 12l3 2-4 5-2-4Z"/></svg></span></aside>
-        <div class="ae3-orbit"><i></i><i></i><i></i><b></b><small>GHOST FREQUENCY</small></div>
-      </div>`;
-
-    // 模板 1.0 固定结构③：同步面板和输入框挂件直属主题根节点，避免被舞台裁切。
-    root.insertAdjacentHTML("beforeend", `
-        <div class="ae3-link-sync" data-theme-role="sync-panel" data-theme-priority="secondary" data-theme-part="sync-panel">
-          <span class="ae3-sync-copy" data-theme-part="sync-copy"><small>EXOSTRIDER LINK · RA2362-G</small><b>同步率 <strong>200</strong><em>/ 200</em></b></span>
+          <div class="ae3-mode" data-theme-part="hero-note"><small class="ae3-light-only">晨航模式</small><small class="ae3-dark-only">兵装链接</small><strong class="ae3-light-only">纸飞机已进入远航轨道</strong><strong class="ae3-dark-only">隧者核心同步完成</strong></div>` },
+        identity: { tag: "div", className: "ae3-identity", html: `<span data-theme-part="identity-emblem"><i></i></span><div data-theme-part="identity-copy"><b>${config.title}</b><small>${config.status}</small></div><em data-theme-part="identity-status"></em>` },
+        taskLeft: { tag: "aside", className: "ae3-task-card ae3-task-left", html: `<i data-theme-part="task-card-art"></i><div data-theme-part="task-card-caption"><b>星讯 · 留声</b><small>FAREWELL SIGNAL / 01</small></div>` },
+        taskSecondary: { tag: "aside", className: "ae3-task-card ae3-task-right ae3-task-voyage", html: `<i data-theme-part="task-card-art"></i><div data-theme-part="task-card-caption"><b>晨光 · 远航</b><small>VOYAGE ROUTE / 02</small></div>` },
+        taskPrimary: { tag: "aside", className: "ae3-task-card ae3-task-right ae3-task-tunneler", html: `<i data-theme-part="task-card-art"></i><div data-theme-part="task-card-caption"><b>隧者 · 同调</b><small>CORE LINK / 03</small></div>` },
+        memory: { tag: "aside", className: "ae3-memory", html: `<small>RA2362-G · 航行记忆</small><p>${config.memory}</p><span class="ae3-heart-resonator" data-theme-part="memory-meter"><svg class="ae3-heart-sigil" viewBox="0 0 122 38" aria-label="爱弥斯信号心印" role="img"><defs><linearGradient id="ae3-sigil-shell" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffffff"/><stop offset=".28" stop-color="#bff7ff"/><stop offset=".58" stop-color="#ff9dca"/><stop offset="1" stop-color="#b33799"/></linearGradient><linearGradient id="ae3-sigil-wave" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#76e8f3"/><stop offset=".5" stop-color="#fff7ff"/><stop offset="1" stop-color="#ff62ad"/></linearGradient><radialGradient id="ae3-sigil-core"><stop stop-color="#fffaff"/><stop offset=".32" stop-color="#ffb9da"/><stop offset=".72" stop-color="#ff559f"/><stop offset="1" stop-color="#6f235f"/></radialGradient></defs><path class="ae3-sigil-shell" d="M61 34L39 20l-2-9 7-7 10 2 7 7 7-7 10-2 7 7-2 9Z"/><path class="ae3-sigil-core" d="M61 28L48 18l1-6 6-2 6 6 6-6 6 2 1 6Z"/><path class="ae3-sigil-wave" d="M45 18h8l3-5 5 11 4-7h12"/><path class="ae3-sigil-scan" d="M39 10l8-4m28 0 8 4M43 25l8 5m20 0 8-5"/><path class="ae3-sigil-glint" d="M51 12l3 2-4 5-2-4Z"/></svg></span>` },
+        syncPanel: { tag: "div", className: "ae3-link-sync", html: `<span class="ae3-sync-copy" data-theme-part="sync-copy"><small>EXOSTRIDER LINK · RA2362-G</small><b>同步率 <strong>200</strong><em>/ 200</em></b></span>
           <span class="ae3-sync-core" data-theme-part="sync-core"><i></i><b>4</b><small>/4</small></span>
           <span class="ae3-sync-spectrum" data-theme-part="sync-meter">${Array.from({length:20},(_,i)=>`<i style="--i:${i};--h:${6 + (i % 5) * 4}px"></i>`).join("")}</span>
-          <span class="ae3-sync-glow" data-theme-part="sync-state"><small>流溢辉光</small><b>600</b></span>
-        </div>
-        <div class="ae3-weapon-charm" data-theme-role="composer-accessory" data-theme-part="composer-accessory">
-          <svg class="ae3-everbright-polestar" viewBox="0 0 100 100" aria-hidden="true">
+          <span class="ae3-sync-glow" data-theme-part="sync-state"><small>流溢辉光</small><b>600</b></span>` },
+        composerAccessory: { tag: "div", className: "ae3-weapon-charm", html: `<svg class="ae3-everbright-polestar" viewBox="0 0 100 100" aria-hidden="true">
             <defs>
               <linearGradient id="ae3-polestar-white" x1="0" y1="1" x2="1" y2="0">
                 <stop offset="0" stop-color="#334866"/><stop offset=".34" stop-color="#9cbdd0"/>
@@ -78,8 +68,8 @@ registerTheme({
               <path d="M58 15l1 2.2l2.2 1l-2.2 1l-1 2.2l-1-2.2l-2.2-1l2.2-1Z"/>
             </g>
           </svg>
-          <small>永远的启明星 · 极星长航</small>
-        </div>`);
+          <small>永远的启明星 · 极星长航</small>` },
+      });
 
     return context.mountCanonicalTheme({
       namespace: "ae3",

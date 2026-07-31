@@ -8,12 +8,17 @@
   "description": "基于 Tessalume 旗舰主题模板 1.0 的沉浸式主题。",
   "engineVersion": 2,
   "type": "advanced",
+  "template": {
+    "id": "flagship",
+    "version": "1.0",
+    "style": "shared"
+  },
   "capabilities": {
     "light": true,
     "dark": true
   },
   "entryPoints": {
-    "css": "theme.css",
+    "css": "skin.css",
     "script": "theme.js"
   },
   "previews": {

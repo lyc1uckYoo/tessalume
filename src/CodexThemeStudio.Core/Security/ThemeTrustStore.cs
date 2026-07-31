@@ -4,7 +4,7 @@ using CodexThemeStudio.Core.Themes;
 
 namespace CodexThemeStudio.Core.Security;
 
-public sealed class ThemeTrustStore(string dataDirectory) : IDisposable
+public sealed class ThemeTrustStore(string dataDirectory, string? sharedTemplatePath = null) : IDisposable
 {
     private readonly string _path = Path.Combine(dataDirectory, "trusted-themes.json");
     private readonly SemaphoreSlim _lock = new(1, 1);
@@ -17,7 +17,7 @@ public sealed class ThemeTrustStore(string dataDirectory) : IDisposable
             return true;
         }
 
-        var fingerprint = await ThemeFingerprintCalculator.CalculateAsync(package, cancellationToken);
+        var fingerprint = await CalculateFingerprintAsync(package, cancellationToken);
         await _lock.WaitAsync(cancellationToken);
         try
         {
@@ -38,7 +38,7 @@ public sealed class ThemeTrustStore(string dataDirectory) : IDisposable
             return;
         }
 
-        var fingerprint = await ThemeFingerprintCalculator.CalculateAsync(package, cancellationToken);
+        var fingerprint = await CalculateFingerprintAsync(package, cancellationToken);
         await _lock.WaitAsync(cancellationToken);
         try
         {
@@ -79,6 +79,27 @@ public sealed class ThemeTrustStore(string dataDirectory) : IDisposable
         {
             return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
+    }
+
+    private Task<string> CalculateFingerprintAsync(
+        ThemePackage package,
+        CancellationToken cancellationToken)
+    {
+        if (!package.Manifest.UsesSharedTemplateV1)
+        {
+            return ThemeFingerprintCalculator.CalculateAsync(package, cancellationToken);
+        }
+
+        if (string.IsNullOrWhiteSpace(sharedTemplatePath) || !File.Exists(sharedTemplatePath))
+        {
+            throw new InvalidOperationException(
+                "The shared Template 1.0 stylesheet is required to trust this theme.");
+        }
+
+        return ThemeFingerprintCalculator.CalculateEffectiveAsync(
+            package,
+            sharedTemplatePath,
+            cancellationToken);
     }
 
     public void Dispose() => _lock.Dispose();

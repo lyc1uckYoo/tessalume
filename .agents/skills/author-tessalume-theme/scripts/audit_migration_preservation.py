@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import subprocess
 import sys
@@ -13,6 +14,7 @@ from pathlib import Path
 KEYFRAME_RE = re.compile(r"@(?:-webkit-)?keyframes\s+([A-Za-z_][\w-]*)")
 ASSET_RE = re.compile(r"--cts-asset-([A-Za-z0-9][A-Za-z0-9._-]*)")
 CLASS_ATTRIBUTE_RE = re.compile(r'class\s*=\s*"([^"]+)"')
+CLASS_NAME_RE = re.compile(r'(?:className|stageClass)\s*:\s*"([^"]+)"')
 CLASS_TOKEN_RE = re.compile(r"[A-Za-z_][A-Za-z0-9_-]*")
 
 
@@ -42,6 +44,8 @@ def asset_variables(css: str) -> set[str]:
 def markup_classes(script: str) -> set[str]:
     classes: set[str] = set()
     for value in CLASS_ATTRIBUTE_RE.findall(script):
+        classes.update(CLASS_TOKEN_RE.findall(value))
+    for value in CLASS_NAME_RE.findall(script):
         classes.update(CLASS_TOKEN_RE.findall(value))
     return classes
 
@@ -75,13 +79,19 @@ def main() -> int:
         parser.error("theme must be inside --repo-root")
 
     try:
+        baseline_manifest = json.loads(git_text(
+            repo_root, args.baseline_ref, relative_theme / "manifest.json"
+        ))
         baseline_css = git_text(
-            repo_root, args.baseline_ref, relative_theme / "theme.css"
+            repo_root,
+            args.baseline_ref,
+            relative_theme / baseline_manifest["entryPoints"]["css"],
         )
         baseline_script = git_text(
             repo_root, args.baseline_ref, relative_theme / "theme.js"
         )
-        current_css = (theme / "theme.css").read_text(encoding="utf-8")
+        current_manifest = json.loads((theme / "manifest.json").read_text(encoding="utf-8"))
+        current_css = (theme / current_manifest["entryPoints"]["css"]).read_text(encoding="utf-8")
         current_script = (theme / "theme.js").read_text(encoding="utf-8")
     except (OSError, ValueError) as exc:
         print(f"ERROR {theme.name}: {exc}", file=sys.stderr)

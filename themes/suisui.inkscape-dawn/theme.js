@@ -2,17 +2,9 @@ registerTheme({
   async mount(context) {
     const { root, config } = context;
     root.setAttribute("aria-hidden", "true");
-    root.innerHTML = `
-      <div class="sui-stage" data-theme-stage>
-        <section class="sui-hero-copy" data-theme-role="hero" data-theme-part="hero-copy">
-          <span class="sui-kicker" data-theme-part="hero-kicker"><i></i><span class="sui-light-only">朝晖开卷 · ZHAOMING ARCHIVE</span><span class="sui-dark-only">月映山河 · SHANHE NIGHT</span></span>
-          <h1 class="sui-light-only" data-theme-part="hero-title-light">扇开千里<br><em>朝光落山河</em></h1>
-          <h1 class="sui-dark-only" data-theme-part="hero-title-dark">月沉黛岭<br><em>水境照云天</em></h1>
-          <p>${config.subtitle}</p>
-          <div class="sui-river" data-theme-part="hero-motion"><i></i><i></i><i></i><b></b></div>
-          <div class="sui-verse" data-theme-part="hero-note"><small>山河水境</small><strong class="sui-light-only">霞铺万顷欲流金</strong><strong class="sui-dark-only">一桁秋山共我吟</strong></div>
-        </section>
-        <div class="sui-banner-fx" aria-hidden="true">
+    context.renderTemplateV1({
+        stageClass: "sui-stage",
+        stageDecorations: `<div class="sui-banner-fx" aria-hidden="true">
           <svg viewBox="0 0 560 210">
             <g class="sui-banner-mountains" fill="none" stroke-linecap="round" stroke-linejoin="round">
               <path d="M8 155C54 141 71 99 105 118c22 12 31 43 64 23 33-20 43-71 80-45 24 17 30 56 70 50"/>
@@ -37,23 +29,20 @@ registerTheme({
             </g>
           </svg>
           <small><b>栖霞饮露</b><i></i>山河水境 · SHANHE FLOW</small>
-        </div>
-        <div class="sui-identity" data-theme-role="identity" data-theme-part="identity">
-          <span data-theme-part="identity-emblem"></span>
+        </div>`,
+        hero: { tag: "section", className: "sui-hero-copy", html: `<span class="sui-kicker" data-theme-part="hero-kicker"><i></i><span class="sui-light-only">朝晖开卷 · ZHAOMING ARCHIVE</span><span class="sui-dark-only">月映山河 · SHANHE NIGHT</span></span>
+          <h1 class="sui-light-only" data-theme-part="hero-title-light">扇开千里<br><em>朝光落山河</em></h1>
+          <h1 class="sui-dark-only" data-theme-part="hero-title-dark">月沉黛岭<br><em>水境照云天</em></h1>
+          <p>${config.subtitle}</p>
+          <div class="sui-river" data-theme-part="hero-motion"><i></i><i></i><i></i><b></b></div>
+          <div class="sui-verse" data-theme-part="hero-note"><small>山河水境</small><strong class="sui-light-only">霞铺万顷欲流金</strong><strong class="sui-dark-only">一桁秋山共我吟</strong></div>` },
+        identity: { tag: "div", className: "sui-identity", html: `<span data-theme-part="identity-emblem"></span>
           <div data-theme-part="identity-copy"><b>${config.title}</b><small>${config.status}</small></div>
-          <i data-theme-part="identity-status"></i>
-        </div>
-        <aside class="sui-task-card sui-task-card-left" data-theme-role="task-left" data-theme-part="task-card-left">
-          <i data-theme-part="task-card-art"></i><div data-theme-part="task-card-caption"><b>仙游碧落</b><small>FLYING IMMORTAL / 01</small></div>
-        </aside>
-        <aside class="sui-task-card sui-task-card-right sui-task-card-human" data-theme-role="task-right" data-theme-priority="secondary" data-theme-part="task-card-right-secondary">
-          <i data-theme-part="task-card-art"></i><div data-theme-part="task-card-caption"><b>穗穗 · 水扇</b><small>SHANHE REALM / SUISUI</small></div>
-        </aside>
-        <aside class="sui-task-card sui-task-card-right sui-task-card-bird" data-theme-role="task-right" data-theme-priority="primary" data-theme-part="task-card-right-primary">
-          <i data-theme-part="task-card-art"></i><div data-theme-part="task-card-caption"><b>重明 · 朝晖</b><small>DOUBLE SIGHT / CHONGMING</small></div>
-        </aside>
-        <aside class="sui-memory" data-theme-role="memory" data-theme-part="memory-card">
-          <small>昭明案牍 · WATER FAN MEMORY</small>
+          <i data-theme-part="identity-status"></i>` },
+        taskLeft: { tag: "aside", className: "sui-task-card sui-task-card-left", html: `<i data-theme-part="task-card-art"></i><div data-theme-part="task-card-caption"><b>仙游碧落</b><small>FLYING IMMORTAL / 01</small></div>` },
+        taskSecondary: { tag: "aside", className: "sui-task-card sui-task-card-right sui-task-card-human", html: `<i data-theme-part="task-card-art"></i><div data-theme-part="task-card-caption"><b>穗穗 · 水扇</b><small>SHANHE REALM / SUISUI</small></div>` },
+        taskPrimary: { tag: "aside", className: "sui-task-card sui-task-card-right sui-task-card-bird", html: `<i data-theme-part="task-card-art"></i><div data-theme-part="task-card-caption"><b>重明 · 朝晖</b><small>DOUBLE SIGHT / CHONGMING</small></div>` },
+        memory: { tag: "aside", className: "sui-memory", html: `<small>昭明案牍 · WATER FAN MEMORY</small>
           <p>${config.memory}</p>
           <span class="sui-memory-realm" data-theme-part="memory-meter">
             <svg viewBox="0 0 122 34" aria-hidden="true">
@@ -61,11 +50,8 @@ registerTheme({
               <g class="sui-memory-fan"><path d="m92 27-13-15q13-11 34-3Z"/><path d="m92 27-13-15m13 15-5-20m5 20 4-22m-4 22 13-20m-13 20 21-18" fill="none"/></g>
               <circle class="sui-memory-dew" cx="8" cy="25" r="2.4"/>
             </svg>
-          </span>
-        </aside>
-      </div>
-      <div class="sui-shanhe-sync" data-theme-role="sync-panel" data-theme-priority="secondary" data-theme-part="sync-panel" aria-hidden="true">
-        <span class="sui-sync-copy" data-theme-part="sync-copy"><small>栖霞饮露 · QIXIA</small><b>山河水境 <strong>千里</strong><em> / FLOW</em></b></span>
+          </span>` },
+        syncPanel: { tag: "div", className: "sui-shanhe-sync", html: `<span class="sui-sync-copy" data-theme-part="sync-copy"><small>栖霞饮露 · QIXIA</small><b>山河水境 <strong>千里</strong><em> / FLOW</em></b></span>
         <span class="sui-sync-core" data-theme-part="sync-core">
           <svg class="sui-sync-scroll" viewBox="0 0 128 56">
             <g class="sui-sync-mountains" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M2 37 21 23l12 10 17-23 22 29 17-16 19 14"/><path d="M1 43c31-12 48 9 76 0 24-8 39 5 50-1"/></g>
@@ -75,10 +61,8 @@ registerTheme({
           </svg>
         </span>
         <span class="sui-mist" data-theme-part="sync-meter">${Array.from({ length: 7 }, (_, i) => `<i style="--n:${i}"></i>`).join("")}</span>
-        <span class="sui-sync-state" data-theme-part="sync-state"><small>昭明商会</small><b><i></i>入画</b></span>
-      </div>
-      <div class="sui-seal" data-theme-role="composer-accessory" data-theme-part="composer-accessory">
-        <svg class="sui-dew-fan" viewBox="0 0 100 100" aria-hidden="true">
+        <span class="sui-sync-state" data-theme-part="sync-state"><small>昭明商会</small><b><i></i>入画</b></span>` },
+        composerAccessory: { tag: "div", className: "sui-seal", html: `<svg class="sui-dew-fan" viewBox="0 0 100 100" aria-hidden="true">
           <defs>
             <linearGradient id="sui-fan-jade" x1="0" y1="1" x2="1" y2="0"><stop stop-color="var(--sui-blue)"/><stop offset=".42" stop-color="var(--sui-jade)"/><stop offset=".78" stop-color="var(--sui-jade-bright)"/><stop offset="1" stop-color="#f7fff1"/></linearGradient>
             <linearGradient id="sui-fan-gold" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#9d7330"/><stop offset=".55" stop-color="var(--sui-gold)"/><stop offset="1" stop-color="#fff0af"/></linearGradient>
@@ -98,8 +82,8 @@ registerTheme({
           <g class="sui-fan-handle" filter="url(#sui-fan-glow)"><circle cx="49" cy="72" r="5" fill="#f9f5dc" stroke="var(--sui-gold)" stroke-width="2"/><path d="M49 77L45 91M49 77L55 90" stroke="url(#sui-fan-gold)" stroke-width="2" stroke-linecap="round"/><path d="M45 91Q50 87 55 90" fill="none" stroke="var(--sui-red)" stroke-width="2"/></g>
           <g class="sui-fan-dew" fill="url(#sui-dew-drop)" filter="url(#sui-fan-glow)"><path d="M24 30C24 30 19 37 19 40A5 5 0 0 0 29 40C29 37 24 30 24 30Z"/><path d="M75 31C75 31 71 37 71 40A4 4 0 0 0 79 40C79 37 75 31 75 31Z"/><circle cx="64" cy="13" r="2.1"/></g>
         </svg>
-        <small>栖霞 · 饮露</small>
-      </div>`;
+        <small>栖霞 · 饮露</small>` },
+      });
 
     return context.mountCanonicalTheme({
       namespace: "sui",

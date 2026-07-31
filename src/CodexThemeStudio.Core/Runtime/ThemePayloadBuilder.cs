@@ -6,6 +6,7 @@ namespace CodexThemeStudio.Core.Runtime;
 public sealed class ThemePayloadBuilder(IReadOnlyDictionary<string, string> runtimeAdapters)
 {
     public const string OpenRuntimeAdapterKey = "$runtime-v2";
+    public const string SharedTemplateStyleFileName = "theme-template-v1.css";
 
     public async Task<string> BuildAsync(ThemePackage package, CancellationToken cancellationToken = default) =>
         await BuildThemeAsync(package, embedAssets: true, cancellationToken);
@@ -26,6 +27,17 @@ public sealed class ThemePayloadBuilder(IReadOnlyDictionary<string, string> runt
         }
 
         var runtime = await File.ReadAllTextAsync(runtimePath, cancellationToken);
+        var templateStylePath = Path.Combine(
+            Path.GetDirectoryName(runtimePath)
+                ?? throw new InvalidOperationException("The schema v2 runtime path has no parent directory."),
+            SharedTemplateStyleFileName);
+        if (package.Manifest.UsesSharedTemplateV1 && !File.Exists(templateStylePath))
+        {
+            throw new InvalidOperationException("The shared Template 1.0 stylesheet is not installed.");
+        }
+        var templateCss = package.Manifest.UsesSharedTemplateV1
+            ? await File.ReadAllTextAsync(templateStylePath, cancellationToken)
+            : string.Empty;
         var css = package.CssPath is null
             ? string.Empty
             : await File.ReadAllTextAsync(package.CssPath, cancellationToken);
@@ -41,9 +53,15 @@ public sealed class ThemePayloadBuilder(IReadOnlyDictionary<string, string> runt
             }
         }
 
-        var fingerprint = await ThemeFingerprintCalculator.CalculateAsync(package, cancellationToken);
+        var fingerprint = package.Manifest.UsesSharedTemplateV1
+            ? await ThemeFingerprintCalculator.CalculateEffectiveAsync(
+                package,
+                templateStylePath,
+                cancellationToken)
+            : await ThemeFingerprintCalculator.CalculateAsync(package, cancellationToken);
         var payload = runtime
             .Replace("__CTS_THEME_ID_JSON__", JsonSerializer.Serialize(package.Manifest.Id), StringComparison.Ordinal)
+            .Replace("__CTS_TEMPLATE_CSS_JSON__", JsonSerializer.Serialize(templateCss), StringComparison.Ordinal)
             .Replace("__CTS_CSS_JSON__", JsonSerializer.Serialize(css), StringComparison.Ordinal)
             .Replace("__CTS_SCRIPT_JSON__", JsonSerializer.Serialize(script), StringComparison.Ordinal)
             .Replace("__CTS_ASSETS_JSON__", JsonSerializer.Serialize(assets), StringComparison.Ordinal)

@@ -8,12 +8,17 @@
   "description": "基于 Tessalume 旗舰主题模板 1.0 的绯雪双形态主题。亮色以常世身、晨雪与守愿居合构成，暗色以冰蓝预求身、镜面时停与归刃展开；任务页保留愿望档案、常世/预求双卡，并加入专属预求铃阵与迅刀「灼霜」动效。",
   "engineVersion": 2,
   "type": "advanced",
+  "template": {
+    "id": "flagship",
+    "version": "1.0",
+    "style": "shared"
+  },
   "capabilities": {
     "light": true,
     "dark": true
   },
   "entryPoints": {
-    "css": "theme.css",
+    "css": "skin.css",
     "script": "theme.js"
   },
   "previews": {
@@ -27,9 +32,9 @@
     "sidebar-dark": "assets/sidebar-dark.png",
     "chat-light": "assets/chat-light.png",
     "chat-dark": "assets/chat-dark.png",
-    "task-vow": "assets/task-vow.png",
-    "task-present": "assets/task-present.png",
-    "task-foreclaimed": "assets/task-foreclaimed.png",
+    "task-left": "assets/task-left.png",
+    "task-right-secondary": "assets/task-right-secondary.png",
+    "task-right-primary": "assets/task-right-primary.png",
     "memory-light": "assets/memory-light.png",
     "memory-dark": "assets/memory-dark.png"
   },

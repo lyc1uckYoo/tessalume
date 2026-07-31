@@ -8,12 +8,17 @@
   "description": "基于 Tessalume 旗舰主题模板 1.0 的达妮娅双形态主题。亮色进入泡泡剧场与粉发伪装形态，暗色切换至银蓝真形与寂静虚阈；共享统一结构、冻结几何和自适应优先级。",
   "engineVersion": 2,
   "type": "advanced",
+  "template": {
+    "id": "flagship",
+    "version": "1.0",
+    "style": "shared"
+  },
   "capabilities": {
     "light": true,
     "dark": true
   },
   "entryPoints": {
-    "css": "theme.css",
+    "css": "skin.css",
     "script": "theme.js"
   },
   "previews": {
@@ -23,22 +28,16 @@
   "assets": {
     "hero-light": "assets/hero-light.png",
     "hero-dark": "assets/hero-dark.png",
-    "sidebar-light": "assets/sidebar-light-v3.png",
-    "sidebar-dark": "assets/sidebar-dark-v3.png",
+    "sidebar-light": "assets/sidebar-light.png",
+    "sidebar-dark": "assets/sidebar-dark.png",
     "chat-light": "assets/chat-light.png",
     "chat-dark": "assets/chat-dark.png",
-    "task-left": "assets/danya-light.png",
-    "task-left-dark": "assets/danya-dark.png",
-    "task-right-secondary": "assets/companion-light.png",
-    "task-right-secondary-dark": "assets/companion-dark.png",
-    "task-right-primary": "assets/task-alt-light.png",
-    "task-right-primary-dark": "assets/task-alt-dark.png",
-    "portrait-light": "assets/danya-light.png",
-    "portrait-dark": "assets/danya-dark.png",
-    "companion-light": "assets/companion-light.png",
-    "companion-dark": "assets/companion-dark.png",
-    "task-alt-light": "assets/task-alt-light.png",
-    "task-alt-dark": "assets/task-alt-dark.png",
+    "task-left": "assets/task-left.png",
+    "task-left-dark": "assets/task-left-dark.png",
+    "task-right-secondary": "assets/task-right-secondary.png",
+    "task-right-secondary-dark": "assets/task-right-secondary-dark.png",
+    "task-right-primary": "assets/task-right-primary.png",
+    "task-right-primary-dark": "assets/task-right-primary-dark.png",
     "memory-light": "assets/memory-light.png",
     "memory-dark": "assets/memory-dark.png"
   },

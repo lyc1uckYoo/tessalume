@@ -28,7 +28,7 @@ def main() -> int:
     example_root = repo_root / "examples"
     example_root.mkdir(parents=True, exist_ok=True)
 
-    for name in ("manifest.json", "theme.js", "theme.css"):
+    for name in ("manifest.json", "theme.js", "skin.css"):
         text = (template_root / name).read_text(encoding="utf-8")
         for token, value in TOKENS.items():
             text = text.replace(token, value)

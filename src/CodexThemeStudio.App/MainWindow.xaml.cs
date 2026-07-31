@@ -59,7 +59,12 @@ public partial class MainWindow : Window, IAsyncDisposable
     {
         _stateStore = new StudioStateStore(_layout.DataDirectory);
         _preferencesStore = new UiPreferencesStore(_layout.DataDirectory);
-        _trustStore = new ThemeTrustStore(_layout.DataDirectory);
+        _trustStore = new ThemeTrustStore(
+            _layout.DataDirectory,
+            Path.Combine(
+                _layout.RootDirectory,
+                "Compatibility",
+                ThemePayloadBuilder.SharedTemplateStyleFileName));
         _launcher = new CodexPackageLauncher(_launcherDiscovery);
         _runtime = new ThemeRuntime(
             new LoopbackCdpDiscovery(),

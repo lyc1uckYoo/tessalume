@@ -29,6 +29,16 @@ public sealed record ThemeManifest
     [JsonPropertyName("type")]
     public string Type { get; init; } = "advanced";
 
+    [JsonPropertyName("template")]
+    public ThemeTemplate? Template { get; init; }
+
+    [JsonIgnore]
+    public bool UsesSharedTemplateV1 =>
+        Template is { } template &&
+        string.Equals(template.Id, "flagship", StringComparison.OrdinalIgnoreCase) &&
+        string.Equals(template.Version, "1.0", StringComparison.OrdinalIgnoreCase) &&
+        string.Equals(template.Style, "shared", StringComparison.OrdinalIgnoreCase);
+
     [JsonPropertyName("capabilities")]
     public ThemeCapabilities Capabilities { get; init; } = new();
 
@@ -46,6 +56,18 @@ public sealed record ThemeManifest
 
     [JsonPropertyName("compatibility")]
     public ThemeCompatibility Compatibility { get; init; } = new();
+}
+
+public sealed record ThemeTemplate
+{
+    [JsonPropertyName("id")]
+    public string Id { get; init; } = string.Empty;
+
+    [JsonPropertyName("version")]
+    public string Version { get; init; } = string.Empty;
+
+    [JsonPropertyName("style")]
+    public string Style { get; init; } = string.Empty;
 }
 
 public sealed record ThemeCompatibility

@@ -55,7 +55,7 @@ def main() -> int:
     print(f"Created {destination}")
     print("Template version: 1.0")
     print("Replace placeholder assets, copy and theme-specific animation only.")
-    print("Keep the frozen geometry block unchanged, then run the geometry and contract checks.")
+    print("Keep skin.css free of shared geometry, then run the geometry and contract checks.")
     print("Finish by running the repository-root 一键构建EXE.ps1; do not hand-sync portable output.")
     return 0
 

@@ -26,11 +26,11 @@ python .agents/skills/author-tessalume-theme/scripts/scaffold_theme.py `
 1. 替换 `assets/placeholder.svg`，并在 `manifest.json` 中为亮暗横幅、侧栏、
    聊天背景、记忆卡和三张角色卡分别声明资源。
 2. 修改 `manifest.json` 的角色文案。
-3. 在 `theme.css` 的冻结几何块之前修改配色、图片裁切、角色纹样和动效。
+3. 在 `skin.css` 的固定章节中修改配色、图片裁切、角色纹样和动效；公共结构与几何由运行时共享模板提供。
 4. 不要改动 `data-theme-role`、`data-theme-part`、主次优先级或
    `templateVersion: "1.0"`。
 5. 不要编辑 CSS 最末尾的
-   `TESSALUME_TEMPLATE_V1_GEOMETRY_START/END` 区域。
+5. ??? `skin.css` ????????????????????? `theme-template-v1.css` ???
 
 ## 校验
 

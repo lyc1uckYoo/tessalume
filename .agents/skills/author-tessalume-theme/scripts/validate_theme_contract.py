@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the canonical Tessalume theme contract."""
+"""Validate shared Template 1.0 themes and their isolated skin contract."""
 
 from __future__ import annotations
 
@@ -10,159 +10,113 @@ import sys
 from pathlib import Path
 
 
-REQUIRED_ROLES = (
-    "hero",
-    "identity",
-    "task-left",
-    "task-right",
-    "memory",
-    "composer-accessory",
+BASE_ASSETS = (
+    "hero-light", "hero-dark", "sidebar-light", "sidebar-dark", "chat-light", "chat-dark",
+    "task-left", "task-right-secondary", "task-right-primary", "memory-light", "memory-dark",
 )
-
-TEMPLATE_V1_PARTS = (
-    "hero-copy",
-    "hero-kicker",
-    "hero-title-light",
-    "hero-title-dark",
-    "hero-motion",
-    "hero-note",
-    "identity",
-    "identity-emblem",
-    "identity-copy",
-    "identity-status",
-    "task-card-left",
-    "task-card-right-secondary",
-    "task-card-right-primary",
-    "task-card-art",
-    "task-card-caption",
-    "memory-card",
-    "memory-meter",
-    "sync-panel",
-    "sync-copy",
-    "sync-core",
-    "sync-meter",
-    "sync-state",
-    "composer-accessory",
+OPTIONAL_DARK_TASK_ASSETS = (
+    "task-left-dark", "task-right-secondary-dark", "task-right-primary-dark",
 )
-
-GEOMETRY_START = "/* TESSALUME_TEMPLATE_V1_GEOMETRY_START */"
-GEOMETRY_END = "/* TESSALUME_TEMPLATE_V1_GEOMETRY_END */"
-SURFACE_START = "/* TESSALUME_TEMPLATE_V1_SURFACE_START */"
-SURFACE_END = "/* TESSALUME_TEMPLATE_V1_SURFACE_END */"
+REQUIRED_SLOTS = (
+    "stageClass", "hero", "identity", "taskLeft", "taskSecondary", "taskPrimary",
+    "memory", "syncPanel", "composerAccessory",
+)
+REQUIRED_INNER_PARTS = (
+    "hero-kicker", "hero-title-light", "hero-title-dark", "hero-motion", "hero-note",
+    "identity-emblem", "identity-copy", "identity-status", "task-card-art",
+    "task-card-caption", "memory-meter", "sync-copy", "sync-core", "sync-meter", "sync-state",
+)
+SECTION_TITLES = (
+    "01 Light and dark tokens", "02 App and native planes", "03 Sidebar skin",
+    "04 Home skin", "05 Identity skin", "06 Task-card skin", "07 Memory skin",
+    "08 Sync-panel skin", "09 Message and output frames", "10 Composer skin",
+    "11 Character components", "12 Theme-only media behavior", "13 Character keyframes",
+)
 ASSET_VARIABLE_RE = re.compile(r"--cts-asset-([A-Za-z0-9][A-Za-z0-9._-]*)")
 CSS_RULE_RE = re.compile(r"([^{}]+)\{([^{}]*)\}")
-ROLE_TAG_RE = re.compile(r'<[^>]*data-theme-role="[^"]+"[^>]*>', re.DOTALL)
-CLASS_ATTRIBUTE_RE = re.compile(r'class="([^"]+)"')
-IMPORTANT_GEOMETRY_RE = re.compile(
-    r"(?:^|;)\s*"
-    r"(position|inset|left|right|top|bottom|"
-    r"width|height|min-width|max-width|min-height|max-height|"
-    r"margin(?:-(?:left|right|top|bottom))?|"
-    r"padding(?:-(?:left|right|top|bottom))?|gap|"
-    r"align-items|justify-content)"
-    r"\s*:[^;{}]*!important",
+KEYFRAME_RE = re.compile(r"@keyframes\s+([A-Za-z_][\w-]*)")
+CLASS_NAME_RE = re.compile(r'(?:className|stageClass)\s*:\s*"([^"]+)"')
+GEOMETRY_PROPERTY_RE = re.compile(
+    r"(?:^|;)\s*(position|inset|left|right|top|bottom|width|height|min-width|max-width|"
+    r"min-height|max-height|display|z-index|box-sizing|overflow-x|flex|"
+    r"align-items|justify-content|gap|margin(?:-(?:left|right|top|bottom))?|"
+    r"padding(?:-(?:left|right|top|bottom))?|pointer-events|white-space)\s*:",
     re.IGNORECASE,
+)
+LEGACY_TOKENS = (
+    "TESSALUME_TEMPLATE_V1_SURFACE", "TESSALUME_TEMPLATE_V1_GEOMETRY",
+    "Moonheart Fox sovereign", "Requiem Stage",
 )
 
 
-def geometry_block(css: str) -> tuple[str | None, str]:
-    if GEOMETRY_START not in css and GEOMETRY_END not in css:
-        return None, ""
-    if GEOMETRY_START not in css or GEOMETRY_END not in css:
-        raise ValueError("geometry block has only one boundary marker")
-    start = css.index(GEOMETRY_START)
-    end = css.index(GEOMETRY_END, start) + len(GEOMETRY_END)
-    return css[start:end], css[end:]
+def css_entry(theme: Path, manifest: dict) -> Path:
+    relative = (manifest.get("entryPoints") or {}).get("css")
+    if relative != "skin.css":
+        raise ValueError('entryPoints.css must be "skin.css"')
+    return theme / relative
 
 
-def canonical_geometry(namespace: str) -> str:
-    skill_root = Path(__file__).resolve().parents[1]
-    template_css = (
-        skill_root / "assets" / "theme-template" / "theme.css"
-    ).read_text(encoding="utf-8")
-    block, _ = geometry_block(template_css)
-    if block is None:
-        raise ValueError("canonical Template 1.0 geometry block is missing")
-    return block.replace("__NS__", namespace)
+def duplicate_selectors(css: str) -> list[str]:
+    duplicates: list[str] = []
+    contexts: list[str] = []
+    rule_depths: list[int] = []
+    seen: set[tuple[tuple[str, ...], str]] = set()
+    depth = 0
+    for raw_line in css.splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("/*"):
+            continue
+        if line.endswith("{"):
+            header = line[:-1].strip()
+            if header.startswith("@media") or header.startswith("@keyframes"):
+                contexts.append(header)
+                rule_depths.append(depth)
+            elif not re.fullmatch(r"(?:from|to|[\d\s%,.]+)", header):
+                key = (tuple(contexts), header)
+                if key in seen:
+                    duplicates.append(header)
+                seen.add(key)
+            depth += 1
+        depth -= line.count("}")
+        while rule_depths and depth <= rule_depths[-1]:
+            rule_depths.pop()
+            contexts.pop()
+    return duplicates
 
 
-def delimited_block(css: str, start_marker: str, end_marker: str) -> tuple[str | None, int]:
-    if start_marker not in css and end_marker not in css:
-        return None, -1
-    if start_marker not in css or end_marker not in css:
-        raise ValueError(f"block has only one boundary marker: {start_marker}")
-    start = css.index(start_marker)
-    end = css.index(end_marker, start) + len(end_marker)
-    return css[start:end], end
-
-
-def canonical_surface(namespace: str) -> str:
-    skill_root = Path(__file__).resolve().parents[1]
-    template_css = (
-        skill_root / "assets" / "theme-template" / "theme.css"
-    ).read_text(encoding="utf-8")
-    block, _ = delimited_block(template_css, SURFACE_START, SURFACE_END)
-    if block is None:
-        raise ValueError("canonical Template 1.0 surface block is missing")
-    return block.replace("__NS__", namespace)
-
-
-def css_rules(css: str) -> list[tuple[str, str]]:
-    return [
-        (match.group(1).strip(), match.group(2))
-        for match in CSS_RULE_RE.finditer(css)
-    ]
-
-
-def role_classes(script: str) -> set[str]:
-    classes: set[str] = set()
-    for tag in ROLE_TAG_RE.findall(script):
-        match = CLASS_ATTRIBUTE_RE.search(tag)
-        if match:
-            classes.update(match.group(1).split())
-    return classes
-
-
-def selector_targets_role_node(selector: str, classes: set[str]) -> bool:
-    if "[data-theme-role=" in selector:
+def selector_targets_outer(selector: str, outer_classes: set[str]) -> bool:
+    if "[data-theme-role=" in selector or "[data-theme-stage]" in selector:
         return True
-    for item in selector.split(","):
-        item = item.strip()
-        for class_name in classes:
-            for match in re.finditer(
-                rf"\.{re.escape(class_name)}(?![A-Za-z0-9_-])", item
+    for branch in selector.split(","):
+        branch = branch.strip()
+        if "::" in branch:
+            continue
+        for class_name in outer_classes:
+            match = re.search(rf"\.{re.escape(class_name)}(?![A-Za-z0-9_-])", branch)
+            if match and re.fullmatch(
+                r"(?:\[[^\]]+\]|:[A-Za-z-]+(?:\([^)]*\))?)*",
+                branch[match.end():],
             ):
-                tail = item[match.end():]
-                if not tail or (
-                    not tail[0].isspace()
-                    and not re.search(r"\s|[>+~]", tail)
-                ):
-                    return True
+                return True
     return False
 
 
-def matching_rule_bodies(
-    rules: list[tuple[str, str]], *selector_fragments: str
-) -> str:
-    return "\n".join(
-        body
-        for selector, body in rules
-        if all(fragment in selector for fragment in selector_fragments)
-    )
-
-
-def validate_theme(repo_root: Path, theme: Path, expected_author: str | None) -> list[str]:
+def validate_theme(
+    repo_root: Path,
+    theme: Path,
+    expected_author: str | None,
+    check_portable: bool,
+) -> list[str]:
     errors: list[str] = []
     theme = theme.resolve()
     label = theme.name
-    manifest_path = theme / "manifest.json"
-    script_path = theme / "theme.js"
-    css_path = theme / "theme.css"
-
     try:
-        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
-        return [f"{label}: invalid manifest.json: {exc}"]
+        manifest = json.loads((theme / "manifest.json").read_text(encoding="utf-8"))
+        script = (theme / "theme.js").read_text(encoding="utf-8")
+        skin_path = css_entry(theme, manifest)
+        css = skin_path.read_text(encoding="utf-8")
+    except (OSError, ValueError, json.JSONDecodeError) as exc:
+        return [f"{label}: {exc}"]
 
     if manifest.get("version") != "1.0":
         errors.append(f'{label}: manifest version must be "1.0"')
@@ -172,221 +126,146 @@ def validate_theme(repo_root: Path, theme: Path, expected_author: str | None) ->
         errors.append(f"{label}: schemaVersion and engineVersion must both be 2")
     if manifest.get("type") != "advanced":
         errors.append(f'{label}: manifest type must be "advanced"')
+    if manifest.get("template") != {"id": "flagship", "version": "1.0", "style": "shared"}:
+        errors.append(f"{label}: shared Template 1.0 declaration is missing or invalid")
 
-    declared_paths: list[str] = []
-    declared_paths.extend((manifest.get("entryPoints") or {}).values())
-    declared_paths.extend((manifest.get("previews") or {}).values())
-    declared_paths.extend((manifest.get("assets") or {}).values())
-    for relative in declared_paths:
+    declared_assets = manifest.get("assets") or {}
+    missing_keys = set(BASE_ASSETS) - set(declared_assets)
+    unknown_keys = set(declared_assets) - set(BASE_ASSETS) - set(OPTIONAL_DARK_TASK_ASSETS)
+    if missing_keys:
+        errors.append(f"{label}: missing standard assets: {', '.join(sorted(missing_keys))}")
+    if unknown_keys:
+        errors.append(f"{label}: nonstandard asset keys: {', '.join(sorted(unknown_keys))}")
+    for key, relative in declared_assets.items():
         candidate = (theme / relative).resolve()
         try:
             candidate.relative_to(theme)
         except ValueError:
-            errors.append(f"{label}: path escapes theme package: {relative}")
+            errors.append(f"{label}: asset escapes package: {relative}")
             continue
         if not candidate.is_file():
-            errors.append(f"{label}: declared file is missing: {relative}")
+            errors.append(f"{label}: missing asset: {relative}")
+        if candidate.stem != key:
+            errors.append(f"{label}: asset filename must match its slot: {key} -> {relative}")
 
-    try:
-        script = script_path.read_text(encoding="utf-8")
-        css = css_path.read_text(encoding="utf-8")
-    except OSError as exc:
-        return errors + [f"{label}: cannot read entry points: {exc}"]
+    for relative in (manifest.get("entryPoints") or {}).values():
+        if not (theme / relative).is_file():
+            errors.append(f"{label}: missing entry point: {relative}")
 
-    calls = script.count("context.mountCanonicalTheme(")
-    if calls != 1:
-        errors.append(f"{label}: theme.js must call context.mountCanonicalTheme exactly once (found {calls})")
-    if "data-theme-stage" not in script:
-        errors.append(f"{label}: missing data-theme-stage")
-    for role in REQUIRED_ROLES:
-        if f'data-theme-role="{role}"' not in script:
-            errors.append(f"{label}: missing semantic role {role}")
-    for forbidden in ("MutationObserver", "context.observe(", "setInterval(", "context.interval("):
+    if script.count("context.renderTemplateV1(") != 1:
+        errors.append(f"{label}: theme.js must call context.renderTemplateV1 exactly once")
+    if script.count("context.mountCanonicalTheme(") != 1:
+        errors.append(f"{label}: theme.js must call context.mountCanonicalTheme exactly once")
+    for slot in REQUIRED_SLOTS:
+        if not re.search(rf"\b{re.escape(slot)}\s*:", script):
+            errors.append(f"{label}: missing Template 1.0 slot {slot}")
+    for part in REQUIRED_INNER_PARTS:
+        if f'data-theme-part="{part}"' not in script:
+            errors.append(f"{label}: missing Template 1.0 inner part {part}")
+    for forbidden in (
+        "root.innerHTML", "insertAdjacentHTML", "data-theme-role=", "data-theme-stage",
+        "MutationObserver", "context.observe(", "setInterval(", "context.interval(",
+    ):
         if forbidden in script:
-            errors.append(f"{label}: lifecycle code is forbidden in theme.js: {forbidden}")
+            errors.append(f"{label}: forbidden theme-owned structure/lifecycle code: {forbidden}")
+    for required in (
+        'templateVersion: "1.0"', "adaptiveLayout: true", "preserveRoot: true",
+        "positionComposerAccessory", "positionPanelAboveCards",
+    ):
+        if required not in script:
+            errors.append(f"{label}: missing canonical runtime declaration: {required}")
+    if not re.search(
+        r"positionPanelAboveCards\s*\(\s*main\s*,.*?,.*?,\s*320\s*,\s*56\s*,\s*40\s*,?\s*\)",
+        script,
+        re.DOTALL,
+    ):
+        errors.append(f"{label}: sync panel must use canonical 320, 56, 40 positioning")
 
-    match = re.search(r'namespace:\s*"([a-z][a-z0-9]*)"', script)
-    if not match:
-        errors.append(f"{label}: canonical namespace is missing or invalid")
+    namespace_match = re.search(r'namespace:\s*"([a-z][a-z0-9]*)"', script)
+    if not namespace_match:
+        errors.append(f"{label}: canonical namespace is missing")
     else:
-        namespace = match.group(1)
-        declared_assets = set((manifest.get("assets") or {}).keys())
-        missing_asset_variables = set(ASSET_VARIABLE_RE.findall(css)) - declared_assets
-        if missing_asset_variables:
-            errors.append(
-                f"{label}: CSS references undeclared asset variables: "
-                + ", ".join(sorted(missing_asset_variables))
-            )
+        namespace = namespace_match.group(1)
+        asset_refs = set(ASSET_VARIABLE_RE.findall(css))
+        undeclared = asset_refs - set(declared_assets)
+        unused = set(declared_assets) - asset_refs
+        if undeclared:
+            errors.append(f"{label}: undeclared asset variables: {', '.join(sorted(undeclared))}")
+        if unused:
+            errors.append(f"{label}: declared assets are unused: {', '.join(sorted(unused))}")
         stable_light = f"html.{namespace}-theme.{namespace}-is-task main.{namespace}-main"
         stable_dark = f"html.{namespace}-theme.electron-dark.{namespace}-is-task main.{namespace}-main"
         if stable_light not in css or stable_dark not in css:
-            errors.append(f"{label}: light/dark task backgrounds must target the stable themed main")
+            errors.append(f"{label}: stable light/dark task artwork selectors are missing")
         if f"--{namespace}-chat-art" not in css:
-            errors.append(f"{label}: chat artwork variable is missing")
-        if not re.search(
-            rf"\.{re.escape(namespace)}-chat-paper::before\s*\{{\s*content\s*:\s*none\s*!important",
-            css,
-        ):
-            errors.append(f"{label}: chat-paper pseudo-element must be disabled")
-        if re.search(
-            r"main[^{}]*>\s*\*\s*\{[^{}]*position\s*:\s*relative",
-            css,
-            re.IGNORECASE,
-        ):
-            errors.append(
-                f"{label}: must not reposition every direct main child; "
-                "this breaks Codex fixed headers"
-            )
-        if "z-index:-2" not in css or "z-index:-1" not in css:
-            errors.append(
-                f"{label}: stable artwork and readability layers must use "
-                "negative z-index values"
-            )
-
-        template_v1 = bool(
-            re.search(r'templateVersion:\s*"1\.0"', script)
-        )
-        if "templateVersion:" in script and not template_v1:
-            errors.append(f'{label}: only templateVersion "1.0" is supported')
-        if template_v1:
-            if "adaptiveLayout: true" not in script:
-                errors.append(f"{label}: Template 1.0 requires adaptiveLayout: true")
-            if script.count('data-theme-role="task-right"') != 2:
-                errors.append(
-                    f"{label}: Template 1.0 requires exactly two task-right cards"
+            errors.append(f"{label}: chat artwork token is missing")
+        for selector, body in CSS_RULE_RE.findall(css):
+            normalized_selector = selector.strip()
+            properties = {
+                match.group(1).lower()
+                for match in re.finditer(r"(?:^|;)\s*([\w-]+)\s*:", body)
+            }
+            if f"main.{namespace}-main::before" in normalized_selector or f"main.{namespace}-main::after" in normalized_selector:
+                shared = properties & {"content", "position", "inset", "z-index", "pointer-events", "isolation"}
+                if shared:
+                    errors.append(
+                        f"{label}: skin owns shared task-canvas structure on {normalized_selector}: "
+                        f"{', '.join(sorted(shared))}"
+                    )
+            owns_transparent_fill = (
+                f".{namespace}-chat-paper" in normalized_selector or
+                (
+                    f".{namespace}-message-assistant" in normalized_selector and
+                    f".{namespace}-markdown" in normalized_selector
+                ) or
+                (
+                    f".{namespace}-message-user" in normalized_selector and
+                    (f".{namespace}-markdown" in normalized_selector or "data-user-message-bubble" in normalized_selector)
                 )
-            for priority in ("primary", "secondary"):
-                if script.count(f'data-theme-priority="{priority}"') < 1:
-                    errors.append(
-                        f"{label}: Template 1.0 is missing {priority} priority"
-                    )
-            sync_tag = re.search(
-                r"<[^>]+data-theme-role=\"sync-panel\"[^>]*>",
-                script,
             )
-            if not sync_tag:
-                errors.append(f"{label}: Template 1.0 requires one sync-panel")
-            elif 'data-theme-priority="secondary"' not in sync_tag.group(0):
+            shared_fill = properties & {
+                "background", "background-color", "background-image", "backdrop-filter",
+                "-webkit-backdrop-filter",
+            }
+            if owns_transparent_fill and shared_fill:
                 errors.append(
-                    f"{label}: Template 1.0 sync-panel must use secondary priority"
+                    f"{label}: skin owns shared transparent fill on {normalized_selector}: "
+                    f"{', '.join(sorted(shared_fill))}"
                 )
-            for part in TEMPLATE_V1_PARTS:
-                if f'data-theme-part="{part}"' not in script:
-                    errors.append(
-                        f"{label}: Template 1.0 is missing structure part {part}"
-                    )
-            for helper in ("positionComposerAccessory", "positionPanelAboveCards"):
-                if helper not in script:
-                    errors.append(
-                        f"{label}: Template 1.0 must use {helper}"
-                    )
-            if not re.search(
-                r"positionComposerAccessory\s*\(\s*main\s*,",
-                script,
-                re.DOTALL,
-            ):
-                errors.append(
-                    f"{label}: composer accessory must be positioned from main"
-                )
-            if not re.search(
-                r"positionPanelAboveCards\s*\(\s*main\s*,.*?,.*?,"
-                r"\s*320\s*,\s*56\s*,\s*40\s*,?\s*\)",
-                script,
-                re.DOTALL,
-            ):
-                errors.append(
-                    f"{label}: Template 1.0 sync panel must use 320, 56, 40"
-                )
-            try:
-                surface, surface_end = delimited_block(css, SURFACE_START, SURFACE_END)
-                expected_surface = canonical_surface(namespace)
-                if surface != expected_surface:
-                    errors.append(
-                        f"{label}: public surface block differs from Template 1.0"
-                    )
-                elif css[surface_end:css.index(GEOMETRY_START)].strip():
-                    errors.append(
-                        f"{label}: public surface block must be immediately before frozen geometry"
-                    )
-                block, tail = geometry_block(css)
-                expected = canonical_geometry(namespace)
-                if block != expected:
-                    errors.append(
-                        f"{label}: frozen geometry differs from Template 1.0"
-                    )
-                if tail.strip():
-                    errors.append(
-                        f"{label}: CSS exists after the frozen Template 1.0 geometry"
-                    )
-            except (OSError, ValueError) as exc:
-                errors.append(f"{label}: invalid Template 1.0 geometry: {exc}")
 
-            skin_css = css.split(GEOMETRY_START, 1)[0]
-            rules = css_rules(skin_css)
-            theme_role_classes = role_classes(script)
-            for selector, body in rules:
-                if not selector_targets_role_node(selector, theme_role_classes):
-                    continue
-                for geometry_match in IMPORTANT_GEOMETRY_RE.finditer(body):
-                    errors.append(
-                        f"{label}: theme skin uses !important "
-                        f"{geometry_match.group(1)} on a Template 1.0 role: "
-                        f"{selector}"
-                    )
-
-            assistant = matching_rule_bodies(
-                rules,
-                f".{namespace}-message-assistant",
-                f".{namespace}-markdown",
-            )
-            user = matching_rule_bodies(
-                rules,
-                f".{namespace}-message-user",
-                '[data-user-message-bubble="true"]',
-            )
-            for message_name, message_css in (
-                ("assistant", assistant),
-                ("user", user),
-            ):
-                if not re.search(
-                    r"background\s*:\s*transparent\s*!important",
-                    message_css,
-                    re.IGNORECASE,
-                ):
-                    errors.append(
-                        f"{label}: {message_name} message fill must be transparent"
-                    )
-                if not re.search(
-                    r"\bborder(?:-[a-z]+)?\s*:",
-                    message_css,
-                    re.IGNORECASE,
-                ):
-                    errors.append(
-                        f"{label}: {message_name} message frame is missing"
-                    )
-
+    for token in LEGACY_TOKENS:
+        if token in css or token in script:
+            errors.append(f"{label}: legacy token remains: {token}")
+    if "[data-theme-role=" in css or "[data-theme-stage]" in css:
+        errors.append(f"{label}: skin.css contains runtime-owned semantic geometry")
     if css.count("{") != css.count("}"):
         errors.append(f"{label}: CSS braces are unbalanced")
 
+    section_positions = [css.find(f"/* {title} */") for title in SECTION_TITLES]
+    if any(position < 0 for position in section_positions):
+        missing = [title for title, position in zip(SECTION_TITLES, section_positions) if position < 0]
+        errors.append(f"{label}: missing canonical skin sections: {', '.join(missing)}")
+    elif section_positions != sorted(section_positions):
+        errors.append(f"{label}: canonical skin sections are out of order")
+
+    outer_classes: set[str] = set()
+    for value in CLASS_NAME_RE.findall(script):
+        outer_classes.update(value.split())
+    for selector, body in CSS_RULE_RE.findall(css):
+        if selector_targets_outer(selector.strip(), outer_classes):
+            match = GEOMETRY_PROPERTY_RE.search(body)
+            if match:
+                errors.append(f"{label}: skin owns {match.group(1)} on shared outer slot: {selector.strip()}")
+
     portable = repo_root / "dist" / "portable-win-x64" / "themes" / theme.name
-    if portable.is_dir():
-        for name in ("theme.js", "theme.css"):
-            source_file = theme / name
-            portable_file = portable / name
-            if not portable_file.is_file():
+    if check_portable and portable.is_dir():
+        for name in ("theme.js", manifest["entryPoints"]["css"]):
+            source = theme / name
+            target = portable / name
+            if not target.is_file():
                 errors.append(f"{label}: portable {name} is not synchronized")
-                continue
-            source_text = source_file.read_text(encoding="utf-8").replace("\r\n", "\n")
-            portable_text = portable_file.read_text(encoding="utf-8").replace("\r\n", "\n")
-            if source_text != portable_text:
+            elif source.read_text(encoding="utf-8").replace("\r\n", "\n") != target.read_text(encoding="utf-8").replace("\r\n", "\n"):
                 errors.append(f"{label}: portable {name} is not synchronized")
-        try:
-            portable_manifest = json.loads((portable / "manifest.json").read_text(encoding="utf-8"))
-            for field in ("id", "version", "author"):
-                if portable_manifest.get(field) != manifest.get(field):
-                    errors.append(f"{label}: portable manifest {field} is not synchronized")
-        except (OSError, json.JSONDecodeError) as exc:
-            errors.append(f"{label}: invalid portable manifest.json: {exc}")
 
     return errors
 
@@ -396,11 +275,16 @@ def main() -> int:
     parser.add_argument("themes", nargs="+", type=Path)
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument("--author")
+    parser.add_argument("--check-portable", action="store_true")
     args = parser.parse_args()
-
     errors: list[str] = []
     for theme in args.themes:
-        errors.extend(validate_theme(args.repo_root.resolve(), theme, args.author))
+        errors.extend(validate_theme(
+            args.repo_root.resolve(),
+            theme,
+            args.author,
+            args.check_portable,
+        ))
     if errors:
         print("\n".join(f"ERROR {error}" for error in errors), file=sys.stderr)
         return 1

@@ -74,9 +74,9 @@ asset variable or keyframe disappears, treat it as a suspected regression
 until the user explicitly requested that removal.
 
 Legacy CSS may contain `!important` positions, sizes or `display` rules that
-override the later frozen geometry even when the frozen block itself is byte
-correct. Remove those geometry declarations while retaining visual
-properties, pseudo-elements and animation names.
+override the runtime-owned geometry in `theme-template-v1.css`. Remove those
+outer-slot declarations while retaining visual properties, pseudo-elements
+and animation names.
 
 ## Required semantic roles
 

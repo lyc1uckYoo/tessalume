@@ -55,16 +55,10 @@
 
 ## 冻结几何
 
-`theme.css` 最末尾由以下标记包围：
-
-```css
-/* TESSALUME_TEMPLATE_V1_GEOMETRY_START */
-/* ... */
-/* TESSALUME_TEMPLATE_V1_GEOMETRY_END */
-```
-
-这段必须保持为文件最后一段，不能手工修改，也不能在其后追加 CSS。使用
-`scripts/sync_template_geometry.py` 刷新或检查。
+Template 1.0 的几何和公共表面现在只存在于运行时共享的
+`theme-template-v1.css`。主题包中的 `skin.css` 不得包含几何块、公共表面块、
+`data-theme-role` 布局选择器或主题私有响应式布局。使用
+`scripts/sync_template_geometry.py --check` 检查共享几何以及皮肤隔离。
 
 | 区域 | 模板 1.0 几何 |
 |---|---|
@@ -89,7 +83,7 @@
 
 - `manifest.json` 中的主题名称、作者、文案和本地资源映射；
 - 亮色/暗色横幅、侧栏、聊天、记忆卡和三张角色图；
-- `theme.css` 冻结几何块之前的颜色变量、图片裁切、边框、纹样和阴影；
+- `skin.css` 固定章节中的颜色变量、图片裁切、边框、纹样和阴影；
 - `hero-motion`、`memory-meter`、`sync-*` 和 `composer-accessory` 的内部
   元素外观及关键帧；
 - 卡片内部标题和角色状态文案。
@@ -99,7 +93,7 @@
 不能修改：
 
 - `data-theme-role`、`data-theme-part`、主次优先级和节点归属；
-- 冻结几何块；
+- 运行时共享几何和公共表面；
 - `mountCanonicalTheme`、`adaptiveLayout` 或两个公共定位函数；
 - 聊天背景的稳定 `main::before` 注入方式；
 - 运行时观察器、路由判断和清理逻辑。
@@ -121,7 +115,7 @@
 
 1. 用 `scripts/scaffold_theme.py` 新建主题。
 2. 替换占位图片、示例内部组件、关键帧和 `manifest.json` 文案。
-3. 只编辑冻结几何块之前的主题皮肤与动效。
+3. 只编辑 `skin.css` 的主题变量、角色皮肤与专属动效。
 
 ### 旧主题迁移
 
@@ -138,7 +132,7 @@
    同一规则中的颜色、边框、滤镜、伪元素或 `animation`。
 6. 核对 CSS 中每个 `--cts-asset-*` 都有 manifest 键。保留旧变量别名通常
    比一次性重命名整套角色皮肤更安全。
-7. 运行保留审计，再同步冻结几何：
+7. 运行保留审计，再检查共享几何和皮肤隔离：
 
    ```powershell
    python .agents/skills/author-tessalume-theme/scripts/audit_migration_preservation.py `

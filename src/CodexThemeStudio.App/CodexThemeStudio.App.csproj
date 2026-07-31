@@ -27,6 +27,9 @@
     <EmbeddedResource Include="Compatibility\*.js">
       <LogicalName>CodexThemeStudio.Compatibility/%(Filename)%(Extension)</LogicalName>
     </EmbeddedResource>
+    <EmbeddedResource Include="Compatibility\*.css">
+      <LogicalName>CodexThemeStudio.Compatibility/%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
     <EmbeddedResource Include="$(BuiltInThemesRoot)\*\**\*"
                       Exclude="$(BuiltInThemesRoot)\**\.legacy\**;$(BuiltInThemesRoot)\**\.references\**;$(BuiltInThemesRoot)\**\.sources\**;$(BuiltInThemesRoot)\.optimizer-cache.json">
       <LogicalName>CodexThemeStudio.BuiltInThemes/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>

@@ -2,17 +2,9 @@ registerTheme({
   async mount(context) {
     const { root, config } = context;
     root.setAttribute("aria-hidden", "true");
-    root.innerHTML = `
-      <div class="qxo-stage" data-theme-stage>
-        <section class="qxo-hero-copy" data-theme-role="hero" data-theme-part="hero-copy">
-          <span class="qxo-kicker" data-theme-part="hero-kicker"><i></i><span class="qxo-light-only">FIRST FROST · CLOUD GATE</span><span class="qxo-dark-only">MOON VIGIL · SWORD ARRAY</span></span>
-          <h1 class="qxo-light-only" data-theme-part="hero-title-light">云门初霁<br><em>一剑照清宵</em></h1>
-          <h1 class="qxo-dark-only" data-theme-part="hero-title-dark">月悬天关<br><em>万剑听霜鸣</em></h1>
-          <p>${config.subtitle}</p>
-          <div class="qxo-score" data-theme-part="hero-motion"><i></i><i></i><i></i><i></i><i></i><b></b></div>
-          <div class="qxo-cue" data-theme-part="hero-note"><small>HEARTSWORD</small><strong class="qxo-light-only">心剑出鞘 · 云门开</strong><strong class="qxo-dark-only">万剑归弦 · 月轮定</strong></div>
-        </section>
-        <div class="qxo-banner-fx" aria-hidden="true">
+    context.renderTemplateV1({
+        stageClass: "qxo-stage",
+        stageDecorations: `<div class="qxo-banner-fx" aria-hidden="true">
           <svg viewBox="0 0 560 220">
             <defs>
               <linearGradient id="qxo-banner-blade" x1="0" y1="0" x2="1" y2="1">
@@ -48,17 +40,19 @@ registerTheme({
             </g>
           </svg>
           <small><b>天地弦心剑</b><i></i>万剑归弦 · HEARTSWORD ARRAY</small>
-        </div>
-        <div class="qxo-identity" data-theme-role="identity" data-theme-part="identity"><span data-theme-part="identity-emblem"></span><div data-theme-part="identity-copy"><b>${config.title}</b><small>${config.status}</small></div><i data-theme-part="identity-status"></i></div>
-        <aside class="qxo-task-companion qxo-task-companion-left" data-theme-role="task-left" data-theme-part="task-card-left"><i data-theme-part="task-card-art"></i><div class="qxo-task-companion-caption" data-theme-part="task-card-caption"><b>清宵 · 镇玄</b><small>HEARTSWORD / VIGIL</small></div></aside>
-        <aside class="qxo-task-companion qxo-task-companion-right" data-theme-role="task-right" data-theme-priority="secondary" data-theme-part="task-card-right-secondary"><i data-theme-part="task-card-art"></i><div class="qxo-task-companion-caption" data-theme-part="task-card-caption"><b>清宵 · 御剑</b><small>SWORD ARRAY / COMMAND</small></div><span></span></aside>
-        <aside class="qxo-hecate" data-theme-role="task-right" data-theme-priority="primary" data-theme-part="task-card-right-primary"><div class="qxo-hecate-art" data-theme-part="task-card-art"></div><div data-theme-part="task-card-caption"><b>清宵 · 出鞘</b><small class="qxo-light-only">CLOUD GATE GUARDIAN</small><small class="qxo-dark-only">MOONLIT SWORD VIGIL</small></div><span></span></aside>
-        <aside class="qxo-memory" data-theme-role="memory" data-theme-part="memory-card"><small>JADE DESK / SWORD MEMORY</small><p>${config.memory}</p><span class="qxo-memory-array" data-theme-part="memory-meter"><svg viewBox="0 0 122 38" aria-hidden="true"><g class="qxo-memory-cloud" fill="none" stroke-linecap="round"><path d="M2 29c18-11 28 4 45-2 17-7 26 4 42 3 14-1 20-9 31-13"/><path d="M15 34c17-6 28 3 43-1 20-6 34 5 52-3"/></g><g class="qxo-memory-side-swords"><path d="m22 12 4 11-3 5-4-4-2-10z"/><path d="m39 5 5 13-3 5-5-4-3-12z"/><path d="m83 5-3 12-5 4-3-5 5-13z"/><path d="m100 12-2 10-4 4-3-5 4-11z"/></g><g class="qxo-memory-core"><path d="m61 2 6 23-6 8-6-8z"/><path d="M50 25q11-6 22 0l-4 4q-7-3-14 0Z"/><path d="M61 28v8"/></g><g class="qxo-memory-seal" fill="none"><ellipse cx="61" cy="21" rx="29" ry="13"/><path d="m61 12 8 8-8 8-8-8z"/></g></svg></span></aside>
-      </div>`;
-
-    root.insertAdjacentHTML("beforeend", `
-      <div class="qxo-xianxin-sync" data-theme-role="sync-panel" data-theme-priority="secondary" data-theme-part="sync-panel">
-        <span class="qxo-xianxin-copy" data-theme-part="sync-copy"><small>天地弦心剑 · XIANXIN</small><b>弦凝剑意 <strong>10,000</strong><em> / READY</em></b></span>
+        </div>`,
+        hero: { tag: "section", className: "qxo-hero-copy", html: `<span class="qxo-kicker" data-theme-part="hero-kicker"><i></i><span class="qxo-light-only">FIRST FROST · CLOUD GATE</span><span class="qxo-dark-only">MOON VIGIL · SWORD ARRAY</span></span>
+          <h1 class="qxo-light-only" data-theme-part="hero-title-light">云门初霁<br><em>一剑照清宵</em></h1>
+          <h1 class="qxo-dark-only" data-theme-part="hero-title-dark">月悬天关<br><em>万剑听霜鸣</em></h1>
+          <p>${config.subtitle}</p>
+          <div class="qxo-score" data-theme-part="hero-motion"><i></i><i></i><i></i><i></i><i></i><b></b></div>
+          <div class="qxo-cue" data-theme-part="hero-note"><small>HEARTSWORD</small><strong class="qxo-light-only">心剑出鞘 · 云门开</strong><strong class="qxo-dark-only">万剑归弦 · 月轮定</strong></div>` },
+        identity: { tag: "div", className: "qxo-identity", html: `<span data-theme-part="identity-emblem"></span><div data-theme-part="identity-copy"><b>${config.title}</b><small>${config.status}</small></div><i data-theme-part="identity-status"></i>` },
+        taskLeft: { tag: "aside", className: "qxo-task-companion qxo-task-companion-left", html: `<i data-theme-part="task-card-art"></i><div class="qxo-task-companion-caption" data-theme-part="task-card-caption"><b>清宵 · 镇玄</b><small>HEARTSWORD / VIGIL</small></div>` },
+        taskSecondary: { tag: "aside", className: "qxo-task-companion qxo-task-companion-right", html: `<i data-theme-part="task-card-art"></i><div class="qxo-task-companion-caption" data-theme-part="task-card-caption"><b>清宵 · 御剑</b><small>SWORD ARRAY / COMMAND</small></div><span></span>` },
+        taskPrimary: { tag: "aside", className: "qxo-hecate", html: `<div class="qxo-hecate-art" data-theme-part="task-card-art"></div><div data-theme-part="task-card-caption"><b>清宵 · 出鞘</b><small class="qxo-light-only">CLOUD GATE GUARDIAN</small><small class="qxo-dark-only">MOONLIT SWORD VIGIL</small></div><span></span>` },
+        memory: { tag: "aside", className: "qxo-memory", html: `<small>JADE DESK / SWORD MEMORY</small><p>${config.memory}</p><span class="qxo-memory-array" data-theme-part="memory-meter"><svg viewBox="0 0 122 38" aria-hidden="true"><g class="qxo-memory-cloud" fill="none" stroke-linecap="round"><path d="M2 29c18-11 28 4 45-2 17-7 26 4 42 3 14-1 20-9 31-13"/><path d="M15 34c17-6 28 3 43-1 20-6 34 5 52-3"/></g><g class="qxo-memory-side-swords"><path d="m22 12 4 11-3 5-4-4-2-10z"/><path d="m39 5 5 13-3 5-5-4-3-12z"/><path d="m83 5-3 12-5 4-3-5 5-13z"/><path d="m100 12-2 10-4 4-3-5 4-11z"/></g><g class="qxo-memory-core"><path d="m61 2 6 23-6 8-6-8z"/><path d="M50 25q11-6 22 0l-4 4q-7-3-14 0Z"/><path d="M61 28v8"/></g><g class="qxo-memory-seal" fill="none"><ellipse cx="61" cy="21" rx="29" ry="13"/><path d="m61 12 8 8-8 8-8-8z"/></g></svg></span>` },
+        syncPanel: { tag: "div", className: "qxo-xianxin-sync", html: `<span class="qxo-xianxin-copy" data-theme-part="sync-copy"><small>天地弦心剑 · XIANXIN</small><b>弦凝剑意 <strong>10,000</strong><em> / READY</em></b></span>
         <span class="qxo-xianxin-core" data-theme-part="sync-core">
           <svg viewBox="0 0 108 48" aria-hidden="true">
             <g class="qxo-xianxin-strings" fill="none"><path d="M2 13Q54 2 106 13"/><path d="M2 24Q54 13 106 24"/><path d="M2 35Q54 24 106 35"/></g>
@@ -70,10 +64,8 @@ registerTheme({
           <small>弦化万剑</small>
         </span>
         <span class="qxo-xianxin-meter" data-theme-part="sync-meter">${Array.from({ length: 9 }, (_, i) => `<i style="--i:${i};--h:${8 + (i % 5) * 3}px"></i>`).join("")}</span>
-        <span class="qxo-xianxin-state" data-theme-part="sync-state"><small>镇玄司骑</small><b><i></i>荡煞</b></span>
-      </div>
-      <div class="qxo-tempo" data-theme-role="composer-accessory" data-theme-part="composer-accessory">
-        <svg class="qxo-sword-totem" viewBox="0 0 120 90" aria-hidden="true">
+        <span class="qxo-xianxin-state" data-theme-part="sync-state"><small>镇玄司骑</small><b><i></i>荡煞</b></span>` },
+        composerAccessory: { tag: "div", className: "qxo-tempo", html: `<svg class="qxo-sword-totem" viewBox="0 0 120 90" aria-hidden="true">
           <defs>
             <linearGradient id="qxo-sword-fill" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f8ffff"/><stop offset=".32" stop-color="var(--qxo-green)"/><stop offset=".72" stop-color="#5e9ed5"/><stop offset="1" stop-color="#435993"/></linearGradient>
             <filter id="qxo-sword-glow"><feGaussianBlur stdDeviation="1.7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
@@ -91,8 +83,8 @@ registerTheme({
           </g>
           <g class="qxo-sword-runes" fill="none" stroke="var(--qxo-green)" opacity=".66"><path d="M25 68Q60 82 95 68"/><path d="M32 72Q60 63 88 72" stroke-dasharray="3 5"/></g>
         </svg>
-        <small>万剑 · 归弦</small>
-      </div>`);
+        <small>万剑 · 归弦</small>` },
+      });
 
     return context.mountCanonicalTheme({
       namespace: "qxo",

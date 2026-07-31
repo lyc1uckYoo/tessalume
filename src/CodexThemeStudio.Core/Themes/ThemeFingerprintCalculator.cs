@@ -32,4 +32,22 @@ public static class ThemeFingerprintCalculator
 
         return Convert.ToHexString(hash.GetHashAndReset()).ToLowerInvariant();
     }
+
+    public static async Task<string> CalculateEffectiveAsync(
+        ThemePackage package,
+        string sharedTemplatePath,
+        CancellationToken cancellationToken = default)
+    {
+        var packageFingerprint = await CalculateAsync(package, cancellationToken);
+        using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        hash.AppendData(Encoding.UTF8.GetBytes($"package\0{packageFingerprint}\0shared.template-v1\0"));
+        var buffer = new byte[64 * 1024];
+        await using var stream = File.OpenRead(sharedTemplatePath);
+        int bytesRead;
+        while ((bytesRead = await stream.ReadAsync(buffer, cancellationToken)) > 0)
+        {
+            hash.AppendData(buffer.AsSpan(0, bytesRead));
+        }
+        return Convert.ToHexString(hash.GetHashAndReset()).ToLowerInvariant();
+    }
 }

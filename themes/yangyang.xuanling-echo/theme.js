@@ -2,32 +2,24 @@ registerTheme({
   async mount(context) {
     const { root, config } = context;
     root.setAttribute("aria-hidden", "true");
-    root.innerHTML = `
-      <div class="xyl-stage" data-theme-stage>
-        <section class="xyl-hero-copy" data-theme-role="hero" data-theme-part="hero-copy">
-          <span class="xyl-kicker" data-theme-part="hero-kicker"><i></i><span class="xyl-light-only">XUANFANG DAWN · AZURE PLUME</span><span class="xyl-dark-only">SILENT NIGHT · HAVOC PLUME</span></span>
+    context.renderTemplateV1({
+        stageClass: "xyl-stage",
+        hero: { tag: "section", className: "xyl-hero-copy", html: `<span class="xyl-kicker" data-theme-part="hero-kicker"><i></i><span class="xyl-light-only">XUANFANG DAWN · AZURE PLUME</span><span class="xyl-dark-only">SILENT NIGHT · HAVOC PLUME</span></span>
           <h1 class="xyl-light-only" data-theme-part="hero-title-light">清风骀荡<br><em>苍翎响远音</em></h1>
           <h1 class="xyl-dark-only" data-theme-part="hero-title-dark">裁羽寂万音<br><em>此剑为守护</em></h1>
           <p>${config.subtitle}</p>
           <div class="xyl-phases" data-theme-part="hero-motion" aria-label="苍翎六音风轨"><i style="--xyl-feather:0"></i><i style="--xyl-feather:1"></i><i style="--xyl-feather:2"></i><i style="--xyl-feather:3"></i><i style="--xyl-feather:4"></i><i style="--xyl-feather:5"></i><b></b></div>
-          <div class="xyl-oracle-note" data-theme-part="hero-note"><small>苍翎六音</small><strong class="xyl-light-only">苍剑式 · 听风而行</strong><strong class="xyl-dark-only">羽剑式 · 万籁俱寂</strong></div>
-        </section>
-        <div class="xyl-identity" data-theme-role="identity" data-theme-part="identity"><span data-theme-part="identity-emblem"></span><div data-theme-part="identity-copy"><b>${config.title}</b><small>${config.status}</small></div><i data-theme-part="identity-status"></i></div>
-        <aside class="xyl-task-card xyl-task-card-left" data-theme-role="task-left" data-theme-part="task-card-left"><i data-theme-part="task-card-art"></i><div data-theme-part="task-card-caption"><b>苍翎 · 执剑</b><small>AZURE FORM / GUARDIAN</small></div></aside>
-        <aside class="xyl-task-card xyl-task-card-right xyl-task-card-human" data-theme-role="task-right" data-theme-priority="secondary" data-theme-part="task-card-right-secondary"><i data-theme-part="task-card-art"></i><div data-theme-part="task-card-caption"><b>秧秧 · 羽剑</b><small>HEAVY STRIKE / HAVOC</small></div></aside>
-        <aside class="xyl-task-card xyl-task-card-right xyl-task-card-fox" data-theme-role="task-right" data-theme-priority="primary" data-theme-part="task-card-right-primary"><i data-theme-part="task-card-art"></i><div data-theme-part="task-card-caption"><b>玄翎 · 归风</b><small>PLUME ECHO / XUANLING</small></div></aside>
-        <aside class="xyl-memory" data-theme-role="memory" data-theme-part="memory-card"><small>祀声档案 · RA2710-G</small><p>${config.memory}</p><span data-theme-part="memory-meter">${Array.from({ length: 6 }, (_, i) => `<i style="--n:${i}"></i>`).join("")}</span></aside>
-      </div>`;
-
-    root.insertAdjacentHTML("beforeend", `
-      <div class="xyl-domain xyl-plume-resonance" data-theme-role="sync-panel" data-theme-priority="secondary" data-theme-part="sync-panel">
-        <span class="xyl-resonance-copy" data-theme-part="sync-copy"><small>湮灭共鸣 · 玄翎六音</small><b>裁羽式 <strong>VI</strong><em>/VI</em></b></span>
+          <div class="xyl-oracle-note" data-theme-part="hero-note"><small>苍翎六音</small><strong class="xyl-light-only">苍剑式 · 听风而行</strong><strong class="xyl-dark-only">羽剑式 · 万籁俱寂</strong></div>` },
+        identity: { tag: "div", className: "xyl-identity", html: `<span data-theme-part="identity-emblem"></span><div data-theme-part="identity-copy"><b>${config.title}</b><small>${config.status}</small></div><i data-theme-part="identity-status"></i>` },
+        taskLeft: { tag: "aside", className: "xyl-task-card xyl-task-card-left", html: `<i data-theme-part="task-card-art"></i><div data-theme-part="task-card-caption"><b>苍翎 · 执剑</b><small>AZURE FORM / GUARDIAN</small></div>` },
+        taskSecondary: { tag: "aside", className: "xyl-task-card xyl-task-card-right xyl-task-card-human", html: `<i data-theme-part="task-card-art"></i><div data-theme-part="task-card-caption"><b>秧秧 · 羽剑</b><small>HEAVY STRIKE / HAVOC</small></div>` },
+        taskPrimary: { tag: "aside", className: "xyl-task-card xyl-task-card-right xyl-task-card-fox", html: `<i data-theme-part="task-card-art"></i><div data-theme-part="task-card-caption"><b>玄翎 · 归风</b><small>PLUME ECHO / XUANLING</small></div>` },
+        memory: { tag: "aside", className: "xyl-memory", html: `<small>祀声档案 · RA2710-G</small><p>${config.memory}</p><span data-theme-part="memory-meter">${Array.from({ length: 6 }, (_, i) => `<i style="--n:${i}"></i>`).join("")}</span>` },
+        syncPanel: { tag: "div", className: "xyl-domain xyl-plume-resonance", html: `<span class="xyl-resonance-copy" data-theme-part="sync-copy"><small>湮灭共鸣 · 玄翎六音</small><b>裁羽式 <strong>VI</strong><em>/VI</em></b></span>
         <span class="xyl-resonance-core" data-theme-part="sync-core"><i></i><i></i><i></i><b>翎</b><small>湮灭</small></span>
         <span class="xyl-resonance-meter" data-theme-part="sync-meter">${Array.from({ length: 6 }, (_, i) => `<i style="--i:${i};--h:${12 + ((i * 7) % 17)}px"></i>`).join("")}</span>
-        <span class="xyl-resonance-state" data-theme-part="sync-state"><small>迅刀</small><b><i></i>归风</b></span>
-      </div>
-      <div class="xyl-composer-charm" data-theme-role="composer-accessory" data-theme-part="composer-accessory">
-        <svg class="xyl-plume-blade" viewBox="0 0 100 100" aria-hidden="true">
+        <span class="xyl-resonance-state" data-theme-part="sync-state"><small>迅刀</small><b><i></i>归风</b></span>` },
+        composerAccessory: { tag: "div", className: "xyl-composer-charm", html: `<svg class="xyl-plume-blade" viewBox="0 0 100 100" aria-hidden="true">
           <defs>
             <linearGradient id="xyl-plume-steel" x1="0" y1="1" x2="1" y2="0"><stop stop-color="var(--xyl-indigo)"/><stop offset=".42" stop-color="var(--xyl-blue)"/><stop offset=".76" stop-color="var(--xyl-cyan)"/><stop offset="1" stop-color="#f5ffff"/></linearGradient>
             <linearGradient id="xyl-plume-gold" x1="0" y1="1" x2="1" y2="0"><stop stop-color="var(--xyl-blue)"/><stop offset=".6" stop-color="var(--xyl-gold)"/><stop offset="1" stop-color="#fff4bd"/></linearGradient>
@@ -53,8 +45,8 @@ registerTheme({
           </g>
           <g class="xyl-plume-motes" fill="var(--xyl-cyan)"><circle cx="17" cy="49" r="1.7"/><circle cx="80" cy="48" r="1.3"/><circle cx="68" cy="78" r="1.5"/><circle cx="91" cy="58" r="1"/></g>
         </svg>
-        <small>苍剑 ⇄ 羽剑</small>
-      </div>`);
+        <small>苍剑 ⇄ 羽剑</small>` },
+      });
 
     return context.mountCanonicalTheme({
       namespace: "xyl",

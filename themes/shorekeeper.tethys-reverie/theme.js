@@ -2,32 +2,24 @@ registerTheme({
   async mount(context) {
     const { root, config } = context;
     root.setAttribute("aria-hidden", "true");
-    root.innerHTML = `
-      <div class="sk3-stage" data-theme-stage>
-        <section class="sk3-hero-copy" data-theme-role="hero" data-theme-part="hero-copy">
-          <span class="sk3-kicker" data-theme-part="hero-kicker"><i></i><span class="sk3-light-only">BLACK SHORES · COASTLINE 01</span><span class="sk3-dark-only">TETHYS · PROBABILITY SEA</span></span>
+    context.renderTemplateV1({
+        stageClass: "sk3-stage",
+        hero: { tag: "section", className: "sk3-hero-copy", html: `<span class="sk3-kicker" data-theme-part="hero-kicker"><i></i><span class="sk3-light-only">BLACK SHORES · COASTLINE 01</span><span class="sk3-dark-only">TETHYS · PROBABILITY SEA</span></span>
           <h1 class="sk3-light-only" data-theme-part="hero-title-light">守望静海<br><em>让文明靠岸</em></h1>
           <h1 class="sk3-dark-only" data-theme-part="hero-title-dark">溯回星潮<br><em>聆听万千回响</em></h1>
           <p>${config.subtitle}</p>
           <div class="sk3-tide" data-theme-part="hero-motion"><i></i><i></i><i></i><i></i><b></b></div>
-          <div class="sk3-mode" data-theme-part="hero-note"><small class="sk3-light-only">海岸守望</small><small class="sk3-dark-only">泰缇斯演算</small><strong class="sk3-light-only">镜海潮汐已抵达观测岸线</strong><strong class="sk3-dark-only">概率之海同步完成</strong></div>
-        </section>
-        <div class="sk3-identity" data-theme-role="identity" data-theme-part="identity"><span data-theme-part="identity-emblem"><i></i><b></b></span><div data-theme-part="identity-copy"><b>${config.title}</b><small>${config.status}</small></div><em data-theme-part="identity-status"></em></div>
-        <aside class="sk3-task-card sk3-task-left" data-theme-role="task-left" data-theme-part="task-card-left"><i data-theme-part="task-card-art"></i><div data-theme-part="task-card-caption"><b>文明 · 留声</b><small>ARCHIVE ECHO / 01</small></div></aside>
-        <aside class="sk3-task-card sk3-task-right sk3-task-butterfly" data-theme-role="task-right" data-theme-priority="secondary" data-theme-part="task-card-right-secondary"><i data-theme-part="task-card-art"></i><div data-theme-part="task-card-caption"><b>镜海 · 蝶渡</b><small>RESONANCE TIDE / 02</small></div></aside>
-        <aside class="sk3-task-card sk3-task-right sk3-task-tethys" data-theme-role="task-right" data-theme-priority="primary" data-theme-part="task-card-right-primary"><i data-theme-part="task-card-art"></i><div data-theme-part="task-card-caption"><b>泰缇斯 · 溯算</b><small>CORE COMPUTE / 03</small></div></aside>
-        <aside class="sk3-memory" data-theme-role="memory" data-theme-part="memory-card"><small>TETHYS · 潮汐记忆</small><p>${config.memory}</p><span data-theme-part="memory-meter">${Array.from({length:7},(_,i)=>`<i style="--n:${i}"></i>`).join("")}</span></aside>
-      </div>`;
-
-    root.insertAdjacentHTML("beforeend", `
-        <div class="sk3-link-sync" data-theme-role="sync-panel" data-theme-priority="secondary" data-theme-part="sync-panel">
-          <span class="sk3-sync-copy" data-theme-part="sync-copy"><small>TETHYS · PROBABILITY SEA</small><b>潮汐同步 <strong>97</strong><em>/ 100</em></b></span>
+          <div class="sk3-mode" data-theme-part="hero-note"><small class="sk3-light-only">海岸守望</small><small class="sk3-dark-only">泰缇斯演算</small><strong class="sk3-light-only">镜海潮汐已抵达观测岸线</strong><strong class="sk3-dark-only">概率之海同步完成</strong></div>` },
+        identity: { tag: "div", className: "sk3-identity", html: `<span data-theme-part="identity-emblem"><i></i><b></b></span><div data-theme-part="identity-copy"><b>${config.title}</b><small>${config.status}</small></div><em data-theme-part="identity-status"></em>` },
+        taskLeft: { tag: "aside", className: "sk3-task-card sk3-task-left", html: `<i data-theme-part="task-card-art"></i><div data-theme-part="task-card-caption"><b>文明 · 留声</b><small>ARCHIVE ECHO / 01</small></div>` },
+        taskSecondary: { tag: "aside", className: "sk3-task-card sk3-task-right sk3-task-butterfly", html: `<i data-theme-part="task-card-art"></i><div data-theme-part="task-card-caption"><b>镜海 · 蝶渡</b><small>RESONANCE TIDE / 02</small></div>` },
+        taskPrimary: { tag: "aside", className: "sk3-task-card sk3-task-right sk3-task-tethys", html: `<i data-theme-part="task-card-art"></i><div data-theme-part="task-card-caption"><b>泰缇斯 · 溯算</b><small>CORE COMPUTE / 03</small></div>` },
+        memory: { tag: "aside", className: "sk3-memory", html: `<small>TETHYS · 潮汐记忆</small><p>${config.memory}</p><span data-theme-part="memory-meter">${Array.from({length:7},(_,i)=>`<i style="--n:${i}"></i>`).join("")}</span>` },
+        syncPanel: { tag: "div", className: "sk3-link-sync", html: `<span class="sk3-sync-copy" data-theme-part="sync-copy"><small>TETHYS · PROBABILITY SEA</small><b>潮汐同步 <strong>97</strong><em>/ 100</em></b></span>
           <span class="sk3-orbit" data-theme-part="sync-core"><i></i><i></i><i></i><b></b><small>SONATA OF SHORES</small></span>
           <span class="sk3-sync-spectrum" data-theme-part="sync-meter">${Array.from({length:18},(_,i)=>`<i style="--i:${i};--h:${6 + (i % 5) * 4}px"></i>`).join("")}</span>
-          <span class="sk3-sync-state" data-theme-part="sync-state"><small>BLACK SHORES</small><b>共鸣</b></span>
-        </div>
-        <div class="sk3-weapon-charm" data-theme-role="composer-accessory" data-theme-part="composer-accessory">
-          <svg class="sk3-stellar-symphony" viewBox="0 0 100 100" aria-hidden="true">
+          <span class="sk3-sync-state" data-theme-part="sync-state"><small>BLACK SHORES</small><b>共鸣</b></span>` },
+        composerAccessory: { tag: "div", className: "sk3-weapon-charm", html: `<svg class="sk3-stellar-symphony" viewBox="0 0 100 100" aria-hidden="true">
             <defs>
               <linearGradient id="sk3-wing-silver" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#6d91ba"/><stop offset=".42" stop-color="#d8f3ff"/><stop offset=".72" stop-color="#fff"/><stop offset="1" stop-color="var(--sk3-violet)"/></linearGradient>
               <linearGradient id="sk3-wing-blue" x1="0" y1="1" x2="1" y2="0"><stop stop-color="var(--sk3-blue)"/><stop offset=".48" stop-color="var(--sk3-cyan)"/><stop offset="1" stop-color="#eaffff"/></linearGradient>
@@ -68,8 +60,8 @@ registerTheme({
               <circle cx="24" cy="14" r="1.3"/><circle cx="79" cy="17" r="1.1"/><circle cx="14" cy="65" r="1"/>
             </g>
           </svg>
-          <small>星序 · 协响</small>
-        </div>`);
+          <small>星序 · 协响</small>` },
+      });
 
     return context.mountCanonicalTheme({
       namespace: "sk3",

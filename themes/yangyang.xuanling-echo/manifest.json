@@ -8,12 +8,17 @@
   "description": "以秧秧·玄翎、玄方机关山水、苍翎六音、苍剑式与羽剑式为核心的国风旗舰主题。亮色温柔清雅，暗色化为裁羽寂万音的玄方夜战，任务页采用秧秧与玄翎鸟双卡反向风轨动效，输入框左侧以玄翎羽剑的凝聚与散羽表现剑式流转。",
   "engineVersion": 2,
   "type": "advanced",
+  "template": {
+    "id": "flagship",
+    "version": "1.0",
+    "style": "shared"
+  },
   "capabilities": {
     "light": true,
     "dark": true
   },
   "entryPoints": {
-    "css": "theme.css",
+    "css": "skin.css",
     "script": "theme.js"
   },
   "previews": {
@@ -23,13 +28,13 @@
   "assets": {
     "hero-light": "assets/hero-light.png",
     "hero-dark": "assets/hero-dark.png",
-    "chat-light": "assets/chat-light.png",
-    "chat-dark": "assets/chat-dark.png",
     "sidebar-light": "assets/sidebar-light.png",
     "sidebar-dark": "assets/sidebar-dark.png",
-    "task-sword": "assets/task-sword.png",
-    "task-yangyang": "assets/task-yangyang.png",
-    "task-bird": "assets/task-bird.png",
+    "chat-light": "assets/chat-light.png",
+    "chat-dark": "assets/chat-dark.png",
+    "task-left": "assets/task-left.png",
+    "task-right-secondary": "assets/task-right-secondary.png",
+    "task-right-primary": "assets/task-right-primary.png",
     "memory-light": "assets/memory-light.png",
     "memory-dark": "assets/memory-dark.png"
   },
