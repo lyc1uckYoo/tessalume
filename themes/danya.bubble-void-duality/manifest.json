@@ -17,8 +17,8 @@
     "script": "theme.js"
   },
   "previews": {
-    "light": "assets/chat-light.png",
-    "dark": "assets/chat-dark.png"
+    "light": "assets/hero-light.png",
+    "dark": "assets/hero-dark.png"
   },
   "assets": {
     "hero-light": "assets/hero-light.png",
@@ -75,7 +75,8 @@
     "accessorySymbol": "星",
     "accessoryLabel": "赝作的矮星",
     "pinnedSection": "泡影置顶",
-    "projectSection": "虚阈档案"
+    "projectSection": "虚阈档案",
+    "previewFocusX": "right"
   },
   "compatibility": {
     "petOverlay": false

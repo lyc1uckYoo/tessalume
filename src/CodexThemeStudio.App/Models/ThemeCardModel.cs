@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -31,6 +32,7 @@ internal sealed class ThemeCardModel : INotifyPropertyChanged
         IsValid = item.Validation.IsValid;
         SupportsLight = item.Package?.Manifest.Capabilities.Light == true;
         SupportsDark = item.Package?.Manifest.Capabilities.Dark == true;
+        PreviewAlignmentX = ResolvePreviewAlignment(item.Package?.Manifest.Config);
         if (loadPreview)
         {
             _lightPreview = CreatePreview(item.Package?.PreviewLightPath);
@@ -69,6 +71,8 @@ internal sealed class ThemeCardModel : INotifyPropertyChanged
     public string TypeLabel => $"{(IsBuiltIn ? "BUILT-IN" : "LOCAL")} · THEME";
 
     public bool HasPreview => Preview is not null;
+
+    public AlignmentX PreviewAlignmentX { get; }
 
     public string? ThemeId => CatalogItem.Package?.Manifest.Id;
 
@@ -171,6 +175,24 @@ internal sealed class ThemeCardModel : INotifyPropertyChanged
             // Unsupported or damaged previews simply fall back to the generated card artwork.
             return null;
         }
+    }
+
+    private static AlignmentX ResolvePreviewAlignment(
+        Dictionary<string, JsonElement>? config)
+    {
+        if (config is null ||
+            !config.TryGetValue("previewFocusX", out var value) ||
+            value.ValueKind != JsonValueKind.String)
+        {
+            return AlignmentX.Center;
+        }
+
+        return value.GetString()?.Trim().ToLowerInvariant() switch
+        {
+            "left" => AlignmentX.Left,
+            "right" => AlignmentX.Right,
+            _ => AlignmentX.Center,
+        };
     }
 
     private static (Brush Background, Brush Accent, Brush Panel) CreateFallbackPalette(string id)

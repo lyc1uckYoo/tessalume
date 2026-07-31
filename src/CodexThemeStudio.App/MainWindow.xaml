@@ -571,7 +571,13 @@
                                                 SizeChanged="RoundedCard_SizeChanged">
                                             <Grid>
                                                 <Grid x:Name="PreviewArea" Background="{DynamicResource AdvancedPreview}">
-                                                    <Image x:Name="PreviewImage" Source="{Binding Preview}" Stretch="UniformToFill" />
+                                                    <Rectangle x:Name="PreviewImage">
+                                                        <Rectangle.Fill>
+                                                            <ImageBrush ImageSource="{Binding Preview}"
+                                                                        Stretch="UniformToFill"
+                                                                        AlignmentX="{Binding PreviewAlignmentX}" />
+                                                        </Rectangle.Fill>
+                                                    </Rectangle>
                                                     <Grid x:Name="FallbackPreview" Background="{Binding FallbackBackground}">
                                                         <Ellipse Width="230" Height="230" Fill="{Binding FallbackAccent}" Opacity="0.13" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-115,-55,0" />
                                                         <Ellipse Width="170" Height="170" Fill="{Binding FallbackAccent}" Opacity="0.10" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="-60,0,0,-96" />
