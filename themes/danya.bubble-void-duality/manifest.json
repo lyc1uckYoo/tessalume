@@ -33,6 +33,12 @@
     "task-right-secondary-dark": "assets/companion-dark.png",
     "task-right-primary": "assets/task-alt-light.png",
     "task-right-primary-dark": "assets/task-alt-dark.png",
+    "portrait-light": "assets/danya-light.png",
+    "portrait-dark": "assets/danya-dark.png",
+    "companion-light": "assets/companion-light.png",
+    "companion-dark": "assets/companion-dark.png",
+    "task-alt-light": "assets/task-alt-light.png",
+    "task-alt-dark": "assets/task-alt-dark.png",
     "memory-light": "assets/memory-light.png",
     "memory-dark": "assets/memory-dark.png"
   },
