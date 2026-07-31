@@ -55,7 +55,7 @@ html.xyl-theme aside [data-app-action-sidebar-thread-row]:hover{color:var(--xyl-
 
 /* Native task surfaces */
 .xyl-task-header{position:relative!important;border:1px solid var(--xyl-line-gold)!important;border-radius:18px 3px 18px 3px!important;background:linear-gradient(90deg,color-mix(in srgb,var(--xyl-blue) 12%,var(--xyl-solid)),color-mix(in srgb,var(--xyl-solid) 80%,transparent))!important;box-shadow:0 7px 21px color-mix(in srgb,var(--xyl-blue) 13%,transparent)!important}.xyl-task-title{position:relative}.xyl-task-title::after{content:"LUNAR ORACLE 路 PHASE 03";position:absolute;right:9px;top:50%;transform:translateY(-50%);color:var(--xyl-text-3);font:700 6px/1 var(--xyl-mono);letter-spacing:.1em;white-space:nowrap}
-.xyl-message-assistant .xyl-markdown{position:relative;overflow:hidden;padding:20px 38px 38px!important;border:1px solid var(--xyl-line)!important;border-radius:3px 23px 3px 23px!important;background:linear-gradient(145deg,color-mix(in srgb,var(--xyl-solid) 89%,transparent),color-mix(in srgb,var(--xyl-blue) 5%,var(--xyl-panel)))!important;box-shadow:inset 3px 0 color-mix(in srgb,var(--xyl-cyan) 65%,transparent),0 12px 33px color-mix(in srgb,var(--xyl-blue) 9%,transparent)!important}.xyl-message-assistant .xyl-markdown::before{content:"谐声演算 · " attr(data-xyl-message);position:absolute;left:20px;top:8px;color:var(--xyl-blue);font:700 6px/1 var(--xyl-mono);letter-spacing:.12em}.xyl-message-assistant .xyl-markdown::after{content:"AZURE PLUME  ◇  SIX ECHOES  ◇  XUANLING";position:absolute;left:20px;right:20px;bottom:10px;padding-top:5px;border-top:1px solid var(--xyl-line-gold);color:var(--xyl-text-3);font:700 6px/1 var(--xyl-mono);letter-spacing:.13em;text-align:right}
+.xyl-message-assistant .xyl-markdown{position:relative;overflow:hidden;padding:20px 38px 38px!important;border:1px solid var(--xyl-line)!important;border-radius:3px 23px 3px 23px!important;box-shadow:inset 3px 0 color-mix(in srgb,var(--xyl-cyan) 65%,transparent),0 12px 33px color-mix(in srgb,var(--xyl-blue) 9%,transparent)!important}.xyl-message-assistant .xyl-markdown::before{content:"谐声演算 · " attr(data-xyl-message);position:absolute;left:20px;top:8px;color:var(--xyl-blue);font:700 6px/1 var(--xyl-mono);letter-spacing:.12em}.xyl-message-assistant .xyl-markdown::after{content:"AZURE PLUME  ◇  SIX ECHOES  ◇  XUANLING";position:absolute;left:20px;right:20px;bottom:10px;padding-top:5px;border-top:1px solid var(--xyl-line-gold);color:var(--xyl-text-3);font:700 6px/1 var(--xyl-mono);letter-spacing:.13em;text-align:right}
 .xyl-output-panel{border-color:var(--xyl-line)!important}.xyl-output-section{border:1px solid var(--xyl-line)!important;border-radius:18px 3px 18px 3px!important;background:color-mix(in srgb,var(--xyl-panel) 92%,transparent)!important;box-shadow:0 10px 29px rgba(0,0,0,.11)!important}.xyl-output-header{position:relative!important;background:linear-gradient(90deg,color-mix(in srgb,var(--xyl-blue) 10%,var(--xyl-panel)),color-mix(in srgb,var(--xyl-gold) 7%,var(--xyl-panel)))!important}.xyl-output-header::after{content:"璋曠ず缁撴灉";position:static;align-self:center;margin-left:auto!important;margin-right:10px;padding:3px 7px;border:1px solid var(--xyl-line-gold);border-radius:999px;color:var(--xyl-gold);font:700 6px/1 var(--xyl-serif);letter-spacing:.12em}
 
 /* Composer 鈥?crescent instrument, fully legible */
@@ -174,12 +174,7 @@ html.xyl-theme .xyl-message-user [data-user-message-bubble="true"]{
   position:relative;isolation:isolate;overflow:hidden;max-width:min(79%,760px)!important;
   color:var(--xyl-text)!important;border:1px solid color-mix(in srgb,var(--xyl-cyan) 48%,var(--xyl-line-gold))!important;
   border-radius:23px 5px 23px 23px!important;
-  background:
-    radial-gradient(circle at 92% 18%,color-mix(in srgb,var(--xyl-cyan) 18%,transparent) 0 2px,transparent 3px),
-    repeating-linear-gradient(155deg,transparent 0 19px,color-mix(in srgb,var(--xyl-blue) 4%,transparent) 20px 21px),
-    linear-gradient(135deg,color-mix(in srgb,var(--xyl-cyan) 10%,var(--xyl-solid)),color-mix(in srgb,var(--xyl-gold) 8%,var(--xyl-bg-2)))!important;
   box-shadow:inset -3px 0 color-mix(in srgb,var(--xyl-blue) 56%,transparent),0 12px 31px rgba(38,81,108,.15)!important;
-  backdrop-filter:blur(14px)
 }
 html.xyl-theme .xyl-message-user [data-user-message-bubble="true"]::before{
   content:"";position:absolute;z-index:-1;right:13px;top:10px;width:34px;height:12px;
@@ -193,10 +188,6 @@ html.xyl-theme .xyl-message-user [data-user-message-bubble="true"]::after{
 }
 html.xyl-theme.electron-dark .xyl-message-user [data-user-message-bubble="true"]{
   color:#f1f7ff!important;border-color:rgba(81,199,229,.46)!important;
-  background:
-    radial-gradient(circle at 92% 18%,rgba(86,211,236,.22) 0 2px,transparent 3px),
-    repeating-linear-gradient(155deg,transparent 0 19px,rgba(91,137,218,.055) 20px 21px),
-    linear-gradient(135deg,rgba(17,39,70,.98),rgba(8,20,40,.98))!important;
   box-shadow:inset -3px 0 rgba(85,151,232,.72),0 14px 36px rgba(0,0,0,.42),0 0 24px rgba(68,173,219,.08)!important
 }
 
@@ -243,12 +234,7 @@ html.xyl-theme.electron-dark .xyl-phases i,html.xyl-theme.electron-dark .xyl-mem
 .xyl-chat-paper{position:relative!important;isolation:isolate;border-left:1px solid color-mix(in srgb,var(--xyl-gold) 22%,transparent);border-right:1px solid color-mix(in srgb,var(--xyl-cyan) 28%,transparent);background:transparent!important;box-shadow:0 0 58px rgba(44,82,106,.11),inset 16px 0 32px rgba(255,255,255,.09),inset -16px 0 32px rgba(49,174,202,.04)}
 html.xyl-theme:not(.electron-dark) .xyl-chat-paper{--xyl-text:#0b1e2e;--xyl-text-2:#304b5b;--xyl-text-3:#496879}
 .xyl-chat-paper::before{content:none!important}
-.electron-dark .xyl-chat-paper{border-left-color:rgba(210,175,104,.18);border-right-color:rgba(90,215,239,.22);background:rgba(7,13,30,.40)!important;box-shadow:0 0 64px rgba(0,0,0,.42),inset 16px 0 34px rgba(7,13,30,.18),inset -16px 0 34px rgba(87,157,225,.04)}
-html.xyl-theme:not(.electron-dark) .xyl-message-assistant .xyl-markdown,html.xyl-theme.electron-dark .xyl-message-assistant .xyl-markdown{background:transparent!important;backdrop-filter:none!important}
-html.xyl-theme:not(.electron-dark) .xyl-message-user [data-user-message-bubble="true"],html.xyl-theme.electron-dark .xyl-message-user [data-user-message-bubble="true"]{background:transparent!important;backdrop-filter:none!important}
-html.xyl-theme .xyl-message-user [data-user-message-bubble="true"]::after{background:transparent!important}
-html.xyl-theme .xyl-message-assistant div:has(> .group\/turn-diff-header),html.xyl-theme.electron-dark .xyl-message-assistant div:has(> .group\/turn-diff-header){background:transparent!important;backdrop-filter:none!important;box-shadow:none!important}
-html.xyl-theme .xyl-message-assistant div:has(> .group\/turn-diff-header) button[class*="bg-token-main-surface-primary"]{background:transparent!important;backdrop-filter:none!important}
+.electron-dark .xyl-chat-paper{border-left-color:rgba(210,175,104,.18);border-right-color:rgba(90,215,239,.22);background:transparent!important;box-shadow:0 0 64px rgba(0,0,0,.42),inset 16px 0 34px rgba(7,13,30,.18),inset -16px 0 34px rgba(87,157,225,.04)}
 
 /* Light chat readability: preserve theme accents while strengthening prose over artwork. */
 html.xyl-theme:not(.electron-dark) .xyl-chat-paper{--xyl-text:#000;--xyl-text-2:#000;--xyl-text-3:#000;--color-text-foreground:#000!important;--color-text-foreground-secondary:#000!important;--color-text-foreground-tertiary:#000!important}
@@ -257,7 +243,6 @@ html.xyl-theme:not(.electron-dark) .xyl-chat-paper .xyl-markdown :is(p,li,td,th,
 html.xyl-theme:not(.electron-dark) .xyl-chat-paper .xyl-markdown blockquote{color:#000!important}
 /* Danya-style role layout; preserve this theme's existing bubble visuals. */
 html.xyl-theme .xyl-message-assistant{border-left:2px solid color-mix(in srgb,var(--xyl-cyan) 68%,transparent)!important}
-html.xyl-theme.electron-dark .xyl-chat-paper{background:transparent!important}
 
 /* Template 1.0 migration: stable centered chat art, portrait-forward sidebar and Xuanling resonance panel. */
 html.xyl-theme.xyl-is-task main.xyl-main{
@@ -292,8 +277,8 @@ html.xyl-theme.xyl-is-task main.xyl-main::after{
 }
 html.xyl-theme.electron-dark.xyl-is-task main.xyl-main::after{
   background:
-    linear-gradient(180deg,rgba(3,8,20,.22),transparent 24%,transparent 75%,rgba(3,8,20,.24)),
-    linear-gradient(90deg,rgba(4,10,24,.30),rgba(4,10,24,.09) 39%,rgba(4,10,24,.06) 62%,rgba(4,10,24,.24));
+    linear-gradient(180deg,rgba(3,8,20,.10),transparent 24%,transparent 75%,rgba(3,8,20,.12)),
+    linear-gradient(90deg,rgba(4,10,24,.56),rgba(4,10,24,.38) 54%,rgba(4,10,24,.18) 78%,rgba(4,10,24,.06));
 }
 
 html.xyl-theme aside.app-shell-left-panel{
@@ -393,6 +378,24 @@ html.xyl-theme.electron-dark .xyl-plume-resonance{background:linear-gradient(112
 @keyframes xyl-resonance-wave{0%,100%{opacity:.34;transform:translateY(3px) rotate(-36deg) scale(.78)}50%{opacity:1;transform:translateY(-3px) rotate(-18deg) scale(1.12)}}
 @keyframes xyl-resonance-spark{0%,100%{opacity:.38;transform:scale(.72)}50%{opacity:1;transform:scale(1.18)}}
 @media(prefers-reduced-motion:reduce){.xyl-plume-resonance::before,.xyl-resonance-core>i,.xyl-resonance-meter>i,.xyl-resonance-state b>i{animation:none!important}}
+
+/* TESSALUME_TEMPLATE_V1_SURFACE_START */
+/* ① Stable task canvas. Theme artwork and overlays stay in the skin declarations above. */
+html.xyl-theme.xyl-is-task main.xyl-main{position:relative!important;isolation:isolate}
+/* ② Chat paper never owns artwork or an opaque fill. */
+html.xyl-theme .xyl-chat-paper{background:transparent!important;background-color:transparent!important;background-image:none!important}
+html.xyl-theme .xyl-chat-paper::before{content:none!important;display:none!important;background:none!important}
+/* ③ Assistant frame: clear fill, visible theme border and markings. */
+html.xyl-theme .xyl-message-assistant .xyl-markdown{background:transparent!important;background-color:transparent!important;background-image:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+/* ④ User frame: clear fill, visible theme border and directional tail. */
+html.xyl-theme .xyl-message-user [data-user-message-bubble="true"],html.xyl-theme.electron-dark .xyl-message-user [data-user-message-bubble="true"]{background:transparent!important;background-color:transparent!important;background-image:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+html.xyl-theme .xyl-message-user [data-user-message-bubble="true"]::after{background:transparent!important;background-color:transparent!important;background-image:none!important}
+/* ⑤ Turn diff summary: only its icon and action button may keep native fills. */
+html.xyl-theme .xyl-chat-paper :is(div,button):has(> [class~="group/turn-diff-header"]),
+html.xyl-theme .xyl-chat-paper :is(div,button)[class*="bg-token-dropdown-background"]:has([class~="group/turn-diff-header"]){background:transparent!important;background-color:transparent!important;background-image:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;box-shadow:none!important}
+html.xyl-theme .xyl-chat-paper :is(div,button):has(> [class~="group/turn-diff-header"]) button[class*="bg-token-main-surface-primary"]{background:transparent!important;background-color:transparent!important;background-image:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+/* ⑥ Composer skin stays theme-specific; its structure and geometry are frozen below. */
+/* TESSALUME_TEMPLATE_V1_SURFACE_END */
 
 /* TESSALUME_TEMPLATE_V1_GEOMETRY_START */
 /* 模板 1.0 冻结几何层①：舞台、首页横幅和主文案。 */

@@ -47,6 +47,8 @@ TEMPLATE_V1_PARTS = (
 
 GEOMETRY_START = "/* TESSALUME_TEMPLATE_V1_GEOMETRY_START */"
 GEOMETRY_END = "/* TESSALUME_TEMPLATE_V1_GEOMETRY_END */"
+SURFACE_START = "/* TESSALUME_TEMPLATE_V1_SURFACE_START */"
+SURFACE_END = "/* TESSALUME_TEMPLATE_V1_SURFACE_END */"
 ASSET_VARIABLE_RE = re.compile(r"--cts-asset-([A-Za-z0-9][A-Za-z0-9._-]*)")
 CSS_RULE_RE = re.compile(r"([^{}]+)\{([^{}]*)\}")
 ROLE_TAG_RE = re.compile(r'<[^>]*data-theme-role="[^"]+"[^>]*>', re.DOTALL)
@@ -81,6 +83,27 @@ def canonical_geometry(namespace: str) -> str:
     block, _ = geometry_block(template_css)
     if block is None:
         raise ValueError("canonical Template 1.0 geometry block is missing")
+    return block.replace("__NS__", namespace)
+
+
+def delimited_block(css: str, start_marker: str, end_marker: str) -> tuple[str | None, int]:
+    if start_marker not in css and end_marker not in css:
+        return None, -1
+    if start_marker not in css or end_marker not in css:
+        raise ValueError(f"block has only one boundary marker: {start_marker}")
+    start = css.index(start_marker)
+    end = css.index(end_marker, start) + len(end_marker)
+    return css[start:end], end
+
+
+def canonical_surface(namespace: str) -> str:
+    skill_root = Path(__file__).resolve().parents[1]
+    template_css = (
+        skill_root / "assets" / "theme-template" / "theme.css"
+    ).read_text(encoding="utf-8")
+    block, _ = delimited_block(template_css, SURFACE_START, SURFACE_END)
+    if block is None:
+        raise ValueError("canonical Template 1.0 surface block is missing")
     return block.replace("__NS__", namespace)
 
 
@@ -275,6 +298,16 @@ def validate_theme(repo_root: Path, theme: Path, expected_author: str | None) ->
                     f"{label}: Template 1.0 sync panel must use 320, 56, 40"
                 )
             try:
+                surface, surface_end = delimited_block(css, SURFACE_START, SURFACE_END)
+                expected_surface = canonical_surface(namespace)
+                if surface != expected_surface:
+                    errors.append(
+                        f"{label}: public surface block differs from Template 1.0"
+                    )
+                elif css[surface_end:css.index(GEOMETRY_START)].strip():
+                    errors.append(
+                        f"{label}: public surface block must be immediately before frozen geometry"
+                    )
                 block, tail = geometry_block(css)
                 expected = canonical_geometry(namespace)
                 if block != expected:

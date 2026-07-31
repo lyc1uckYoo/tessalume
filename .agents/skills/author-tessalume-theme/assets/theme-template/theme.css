@@ -694,6 +694,24 @@ html.__NS__-theme.__NS__-is-settings .__NS__-settings-surface {
   }
 }
 
+/* TESSALUME_TEMPLATE_V1_SURFACE_START */
+/* ① Stable task canvas. Theme artwork and overlays stay in the skin declarations above. */
+html.__NS__-theme.__NS__-is-task main.__NS__-main{position:relative!important;isolation:isolate}
+/* ② Chat paper never owns artwork or an opaque fill. */
+html.__NS__-theme .__NS__-chat-paper{background:transparent!important;background-color:transparent!important;background-image:none!important}
+html.__NS__-theme .__NS__-chat-paper::before{content:none!important;display:none!important;background:none!important}
+/* ③ Assistant frame: clear fill, visible theme border and markings. */
+html.__NS__-theme .__NS__-message-assistant .__NS__-markdown{background:transparent!important;background-color:transparent!important;background-image:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+/* ④ User frame: clear fill, visible theme border and directional tail. */
+html.__NS__-theme .__NS__-message-user [data-user-message-bubble="true"],html.__NS__-theme.electron-dark .__NS__-message-user [data-user-message-bubble="true"]{background:transparent!important;background-color:transparent!important;background-image:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+html.__NS__-theme .__NS__-message-user [data-user-message-bubble="true"]::after{background:transparent!important;background-color:transparent!important;background-image:none!important}
+/* ⑤ Turn diff summary: only its icon and action button may keep native fills. */
+html.__NS__-theme .__NS__-chat-paper :is(div,button):has(> [class~="group/turn-diff-header"]),
+html.__NS__-theme .__NS__-chat-paper :is(div,button)[class*="bg-token-dropdown-background"]:has([class~="group/turn-diff-header"]){background:transparent!important;background-color:transparent!important;background-image:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;box-shadow:none!important}
+html.__NS__-theme .__NS__-chat-paper :is(div,button):has(> [class~="group/turn-diff-header"]) button[class*="bg-token-main-surface-primary"]{background:transparent!important;background-color:transparent!important;background-image:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+/* ⑥ Composer skin stays theme-specific; its structure and geometry are frozen below. */
+/* TESSALUME_TEMPLATE_V1_SURFACE_END */
+
 /* TESSALUME_TEMPLATE_V1_GEOMETRY_START */
 /* 模板 1.0 冻结几何层①：舞台、首页横幅和主文案。 */
 #cts-theme-root[data-cts-template-version="1.0"] [data-theme-stage] {

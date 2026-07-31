@@ -27,15 +27,15 @@ html.sk3-theme.sk3-is-task main.sk3-main{position:relative!important;isolation:i
 html.sk3-theme.electron-dark.sk3-is-task main.sk3-main{background:linear-gradient(145deg,#050d1c,#091830 58%,#071226)!important}
 html.sk3-theme.sk3-is-task main.sk3-main::before{content:"";position:absolute;z-index:-2;inset:0;pointer-events:none;background:var(--sk3-chat-art) center center/cover no-repeat}
 html.sk3-theme.sk3-is-task main.sk3-main::after{content:"";position:absolute;z-index:-1;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(245,251,253,.12),rgba(245,251,253,.06) 62%,rgba(230,243,248,.14))}
-html.sk3-theme.electron-dark.sk3-is-task main.sk3-main::after{background:linear-gradient(180deg,rgba(4,12,28,.16),rgba(4,12,28,.08) 60%,rgba(4,12,28,.22))}
+html.sk3-theme.electron-dark.sk3-is-task main.sk3-main::after{background:linear-gradient(90deg,rgba(4,12,28,.56),rgba(4,12,28,.38) 54%,rgba(4,12,28,.18) 78%,rgba(4,12,28,.06))}
 html.sk3-theme main.sk3-main>header.app-header-tint{background:color-mix(in srgb,var(--sk3-solid) 91%,transparent)!important;border-bottom:1px solid var(--sk3-line)!important;backdrop-filter:blur(18px)}
 html.sk3-theme :is(button,[role="button"],input,textarea,[contenteditable="true"]){accent-color:var(--sk3-pink)}
 
 /* Sidebar art and hierarchy */
 html.sk3-theme aside.app-shell-left-panel{position:relative;isolation:isolate;border-right:1px solid var(--sk3-line)!important;background:linear-gradient(90deg,rgba(232,242,248,.90) 0%,rgba(232,242,248,.58) 30%,rgba(232,242,248,.10) 62%,transparent 88%),linear-gradient(180deg,rgba(239,247,251,.50),rgba(239,247,251,.04) 23%,transparent 70%,rgba(222,237,245,.58)),var(--sk3-sidebar)!important;box-shadow:14px 0 42px rgba(43,107,143,.19),inset -1px 0 rgba(255,255,255,.76)!important}
 html.sk3-theme.electron-dark aside.app-shell-left-panel{background:linear-gradient(90deg,rgba(4,13,29,.96) 0%,rgba(4,13,29,.66) 30%,rgba(4,13,29,.08) 62%,transparent 88%),linear-gradient(180deg,rgba(5,15,32,.68),rgba(5,15,32,.06) 23%,transparent 68%,rgba(4,13,29,.70)),var(--sk3-sidebar)!important;box-shadow:14px 0 46px rgba(0,3,14,.70),inset -1px 0 rgba(88,219,240,.16)!important}
-html.sk3-theme aside.app-shell-left-panel::after{content:"";position:absolute;z-index:0;inset:0;pointer-events:none;background:var(--sk3-sidebar-art) 79% -92px/202% auto no-repeat;opacity:.96;filter:brightness(.98) saturate(1.08) contrast(1.03)}
-html.sk3-theme.electron-dark aside.app-shell-left-panel::after{background-position:80% -92px;background-size:202% auto;opacity:.99;filter:brightness(1.18) saturate(1.12) contrast(1.05)}
+html.sk3-theme aside.app-shell-left-panel::after{content:"";position:absolute;z-index:0;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(232,242,248,.72) 0%,rgba(232,242,248,.36) 27%,rgba(232,242,248,.03) 55%,transparent 78%),linear-gradient(180deg,rgba(239,247,251,.52),transparent 20%,transparent 70%,rgba(222,237,245,.72)),var(--sk3-sidebar-art) 79% -92px/202% auto no-repeat;opacity:1;filter:none}
+html.sk3-theme.electron-dark aside.app-shell-left-panel::after{background:linear-gradient(90deg,rgba(4,13,29,.99) 0%,rgba(4,13,29,.82) 28%,rgba(4,13,29,.15) 54%,transparent 100%),linear-gradient(180deg,rgba(4,13,29,.95),rgba(4,13,29,.15) 23%,transparent 67%,rgba(4,13,29,.93)),var(--sk3-sidebar-art) 80% -92px/202% auto no-repeat;opacity:1;filter:none}
 html.sk3-theme aside.app-shell-left-panel>*{position:relative;z-index:1}
 html.sk3-theme aside.app-shell-left-panel button{background:transparent!important}
 html.sk3-theme aside.app-shell-left-panel::before{content:"BLACK SHORES · TETHYS";position:absolute;z-index:2;right:-54px;top:164px;transform:rotate(90deg);color:color-mix(in srgb,var(--sk3-cyan) 76%,transparent);font:700 6px/1 "Cascadia Code",Consolas,monospace;letter-spacing:.22em}
@@ -118,7 +118,7 @@ html.sk3-theme aside [data-app-action-sidebar-thread-row][aria-current="page"],h
 /* Task title, conversation roles and Markdown */
 .sk3-task-header{position:relative!important;border:1px solid color-mix(in srgb,var(--sk3-pink) 45%,var(--sk3-line-cyan))!important;border-radius:19px 5px 19px 5px!important;background:linear-gradient(90deg,color-mix(in srgb,var(--sk3-pink) 11%,var(--sk3-solid)),color-mix(in srgb,var(--sk3-solid) 82%,transparent),color-mix(in srgb,var(--sk3-cyan) 8%,var(--sk3-solid)))!important;box-shadow:0 7px 22px color-mix(in srgb,var(--sk3-pink) 13%,transparent)!important}
 .sk3-task-title{position:relative;padding-right:155px!important}.sk3-task-title::after{content:"TETHYS LOG · SHORE 01";position:absolute;right:9px;top:50%;transform:translateY(-50%);color:var(--sk3-text3);font:700 6px/1 "Cascadia Code",Consolas,monospace;letter-spacing:.1em;white-space:nowrap}
-.sk3-message-assistant .sk3-markdown{position:relative;overflow:hidden;padding:20px 38px 38px!important;border:1px solid var(--sk3-line)!important;border-radius:24px 6px 24px 6px!important;background:linear-gradient(145deg,color-mix(in srgb,var(--sk3-solid) 92%,transparent),color-mix(in srgb,var(--sk3-cyan) 6%,var(--sk3-panel)),color-mix(in srgb,var(--sk3-pink) 3%,var(--sk3-panel)))!important;box-shadow:inset 3px 0 color-mix(in srgb,var(--sk3-cyan) 68%,transparent),0 13px 35px color-mix(in srgb,var(--sk3-pink) 10%,transparent)!important}
+.sk3-message-assistant .sk3-markdown{position:relative;overflow:hidden;padding:20px 38px 38px!important;border:1px solid var(--sk3-line)!important;border-radius:24px 6px 24px 6px!important;box-shadow:inset 3px 0 color-mix(in srgb,var(--sk3-cyan) 68%,transparent),0 13px 35px color-mix(in srgb,var(--sk3-pink) 10%,transparent)!important}
 .sk3-message-assistant .sk3-markdown::before{content:"潮声回传 · " attr(data-sk3-message);position:absolute;left:20px;top:8px;color:var(--sk3-pink);font:700 6px/1 "Cascadia Code",Consolas,monospace;letter-spacing:.12em}
 .sk3-message-assistant .sk3-markdown::after{content:"TIDE  ◇  ECHO  ◇  MEMORY  ◇  SHORE";position:absolute;right:17px;bottom:9px;color:var(--sk3-text3);font:700 6px/1 "Cascadia Code",Consolas,monospace;letter-spacing:.11em}
 .sk3-is-task .sk3-message-assistant .sk3-markdown{margin-left:148px!important}
@@ -139,10 +139,6 @@ html.sk3-theme.sk3-is-task .thread-scroll-container{padding-top:0!important}
 html.sk3-theme.sk3-is-task .thread-scroll-container>:first-child{padding-top:32px!important}
 .sk3-theme:not(.electron-dark) aside [data-app-action-sidebar-thread-row]{background:linear-gradient(90deg,rgba(232,242,248,.66),rgba(232,242,248,.34) 72%,transparent)!important;backdrop-filter:blur(5px)}
 .electron-dark .sk3-chat-paper{border-left-color:rgba(88,219,240,.21);border-right-color:rgba(174,140,255,.20);background:transparent!important;box-shadow:0 0 70px rgba(0,0,0,.48),inset 18px 0 40px rgba(4,12,28,.18),inset -18px 0 40px rgba(88,219,240,.04)}
-html.sk3-theme .sk3-message-assistant .sk3-markdown{background:transparent!important;backdrop-filter:none!important}
-html.sk3-theme .sk3-message-user .sk3-markdown{background:transparent!important;background-color:transparent!important;background-image:none!important;backdrop-filter:none!important}
-html.sk3-theme .sk3-message-assistant div:has(> .group\/turn-diff-header),html.sk3-theme.electron-dark .sk3-message-assistant div:has(> .group\/turn-diff-header){background:transparent!important;backdrop-filter:none!important;box-shadow:none!important}
-html.sk3-theme .sk3-message-assistant div:has(> .group\/turn-diff-header) button[class*="bg-token-main-surface-primary"]{background:transparent!important;backdrop-filter:none!important}
 html.sk3-theme:not(.electron-dark) .sk3-chat-paper{--sk3-text:#000;--sk3-text2:#000;--sk3-text3:#000;--color-text-foreground:#000!important;--color-text-foreground-secondary:#000!important;--color-text-foreground-tertiary:#000!important}
 html.sk3-theme:not(.electron-dark) .sk3-chat-paper :is(.sk3-markdown,[data-user-message-bubble="true"]){color:#000!important;text-shadow:0 1px 0 rgba(255,255,255,.68)}
 html.sk3-theme:not(.electron-dark) .sk3-chat-paper .sk3-markdown :is(p,li,td,th,h1,h2,h3,h4,h5,h6,strong,em){color:inherit!important}
@@ -160,8 +156,6 @@ html.sk3-theme.electron-dark .composer-surface-chrome{color:#eefaff!important;ba
 .sk3-theme .composer-surface-chrome :is(textarea,input,[contenteditable="true"]){color:var(--sk3-text)!important;-webkit-text-fill-color:var(--sk3-text)!important}.sk3-theme:not(.electron-dark) .composer-surface-chrome :is(textarea,input)::placeholder,.sk3-theme:not(.electron-dark) .composer-surface-chrome [contenteditable="true"]:empty::before{color:#6b8395!important;-webkit-text-fill-color:#6b8395!important}.sk3-theme.electron-dark .composer-surface-chrome :is(textarea,input)::placeholder,.sk3-theme.electron-dark .composer-surface-chrome [contenteditable="true"]:empty::before{color:#a9c6d6!important;-webkit-text-fill-color:#a9c6d6!important}
 .sk3-theme .composer-surface-chrome button:last-child{color:#fff!important;background:linear-gradient(145deg,var(--sk3-pink),var(--sk3-violet),var(--sk3-cyan))!important;border-radius:13px!important;box-shadow:0 6px 18px color-mix(in srgb,var(--sk3-pink) 36%,transparent)!important}
 html.sk3-theme [class*="_homeUtilityBar_"]{background:linear-gradient(100deg,color-mix(in srgb,var(--sk3-pink) 7%,var(--sk3-solid)),color-mix(in srgb,var(--sk3-cyan) 7%,var(--sk3-solid)))!important;border:1px solid var(--sk3-line)!important;color:var(--sk3-text)!important;box-shadow:0 10px 30px color-mix(in srgb,var(--sk3-pink) 10%,transparent)!important}
-html.sk3-theme [class*="bg-token-dropdown-background"]:not(.composer-surface-chrome){background:color-mix(in srgb,var(--sk3-solid) 97%,transparent)!important;color:var(--sk3-text)!important}
-html.sk3-theme.electron-dark [class*="bg-token-dropdown-background"]:not(.composer-surface-chrome){background:#121a31!important;color:#f8f1fb!important}
 html.sk3-theme .sk3-output-panel{overflow:hidden;border:1px solid var(--sk3-line)!important;border-radius:24px 6px 24px 6px!important;background:color-mix(in srgb,var(--sk3-solid) 97%,transparent)!important;color:var(--sk3-text)!important;box-shadow:0 16px 43px color-mix(in srgb,var(--sk3-pink) 13%,transparent)!important}
 html.sk3-theme .sk3-output-panel *{color:inherit}html.sk3-theme .sk3-output-panel header{background:linear-gradient(90deg,color-mix(in srgb,var(--sk3-pink) 9%,var(--sk3-solid)),color-mix(in srgb,var(--sk3-cyan) 7%,var(--sk3-solid)))!important;color:var(--sk3-text2)!important}
 .sk3-has-output .sk3-task-right{width:156px;height:278px;bottom:52px}.sk3-has-output .sk3-task-butterfly{right:180px}.sk3-has-output .sk3-task-tethys{right:12px}
@@ -204,6 +198,24 @@ html.sk3-theme .sk3-output-panel *{color:inherit}html.sk3-theme .sk3-output-pane
 @keyframes sk3-symphony-core{0%,100%{transform:scale(.82) rotate(0);opacity:.72}50%{transform:scale(1.12) rotate(45deg);opacity:1}}
 @keyframes sk3-symphony-wave{to{stroke-dashoffset:-26}}
 @keyframes sk3-symphony-mote{0%,100%{transform:translate3d(0,3px,0) scale(.72);opacity:.28}50%{transform:translate3d(0,-5px,0) scale(1.12);opacity:1}}
+
+/* TESSALUME_TEMPLATE_V1_SURFACE_START */
+/* ① Stable task canvas. Theme artwork and overlays stay in the skin declarations above. */
+html.sk3-theme.sk3-is-task main.sk3-main{position:relative!important;isolation:isolate}
+/* ② Chat paper never owns artwork or an opaque fill. */
+html.sk3-theme .sk3-chat-paper{background:transparent!important;background-color:transparent!important;background-image:none!important}
+html.sk3-theme .sk3-chat-paper::before{content:none!important;display:none!important;background:none!important}
+/* ③ Assistant frame: clear fill, visible theme border and markings. */
+html.sk3-theme .sk3-message-assistant .sk3-markdown{background:transparent!important;background-color:transparent!important;background-image:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+/* ④ User frame: clear fill, visible theme border and directional tail. */
+html.sk3-theme .sk3-message-user [data-user-message-bubble="true"],html.sk3-theme.electron-dark .sk3-message-user [data-user-message-bubble="true"]{background:transparent!important;background-color:transparent!important;background-image:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+html.sk3-theme .sk3-message-user [data-user-message-bubble="true"]::after{background:transparent!important;background-color:transparent!important;background-image:none!important}
+/* ⑤ Turn diff summary: only its icon and action button may keep native fills. */
+html.sk3-theme .sk3-chat-paper :is(div,button):has(> [class~="group/turn-diff-header"]),
+html.sk3-theme .sk3-chat-paper :is(div,button)[class*="bg-token-dropdown-background"]:has([class~="group/turn-diff-header"]){background:transparent!important;background-color:transparent!important;background-image:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;box-shadow:none!important}
+html.sk3-theme .sk3-chat-paper :is(div,button):has(> [class~="group/turn-diff-header"]) button[class*="bg-token-main-surface-primary"]{background:transparent!important;background-color:transparent!important;background-image:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+/* ⑥ Composer skin stays theme-specific; its structure and geometry are frozen below. */
+/* TESSALUME_TEMPLATE_V1_SURFACE_END */
 
 /* TESSALUME_TEMPLATE_V1_GEOMETRY_START */
 /* 模板 1.0 冻结几何层①：舞台、首页横幅和主文案。 */

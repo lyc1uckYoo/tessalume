@@ -86,7 +86,7 @@ html.xmf-theme aside [data-app-action-sidebar-thread-row]:hover{color:var(--xmf-
 
 /* Native task surfaces */
 .xmf-task-header{position:relative!important;border:1px solid var(--xmf-line-gold)!important;border-radius:18px 3px 18px 3px!important;background:linear-gradient(90deg,color-mix(in srgb,var(--xmf-blue) 12%,var(--xmf-solid)),color-mix(in srgb,var(--xmf-solid) 80%,transparent))!important;box-shadow:0 7px 21px color-mix(in srgb,var(--xmf-blue) 13%,transparent)!important}.xmf-task-title{position:relative;padding-right:145px!important}.xmf-task-title::after{content:"LUNAR ORACLE 路 PHASE 03";position:absolute;right:9px;top:50%;transform:translateY(-50%);color:var(--xmf-text-3);font:700 6px/1 var(--xmf-mono);letter-spacing:.1em;white-space:nowrap}
-.xmf-message-assistant .xmf-markdown{position:relative;overflow:hidden;padding:20px 38px 38px!important;border:1px solid var(--xmf-line)!important;border-radius:3px 23px 3px 23px!important;background:linear-gradient(145deg,color-mix(in srgb,var(--xmf-solid) 89%,transparent),color-mix(in srgb,var(--xmf-blue) 5%,var(--xmf-panel)))!important;box-shadow:inset 3px 0 color-mix(in srgb,var(--xmf-cyan) 65%,transparent),0 12px 33px color-mix(in srgb,var(--xmf-blue) 9%,transparent)!important}.xmf-message-assistant .xmf-markdown::before{content:"璋曠ず婕旂畻 路 " attr(data-xmf-message);position:absolute;left:20px;top:8px;color:var(--xmf-blue);font:700 6px/1 var(--xmf-mono);letter-spacing:.12em}.xmf-message-assistant .xmf-markdown::after{content:"NEW MOON  鈼? HALF MOON  鈼? FULL MOON";position:absolute;left:20px;right:20px;bottom:10px;padding-top:5px;border-top:1px solid var(--xmf-line-gold);color:var(--xmf-text-3);font:700 6px/1 var(--xmf-mono);letter-spacing:.13em;text-align:right}.xmf-is-task .xmf-message-assistant .xmf-markdown{margin-left:148px!important}
+.xmf-message-assistant .xmf-markdown{position:relative;overflow:hidden;padding:20px 38px 38px!important;border:1px solid var(--xmf-line)!important;border-radius:3px 23px 3px 23px!important;box-shadow:inset 3px 0 color-mix(in srgb,var(--xmf-cyan) 65%,transparent),0 12px 33px color-mix(in srgb,var(--xmf-blue) 9%,transparent)!important}.xmf-message-assistant .xmf-markdown::before{content:"璋曠ず婕旂畻 路 " attr(data-xmf-message);position:absolute;left:20px;top:8px;color:var(--xmf-blue);font:700 6px/1 var(--xmf-mono);letter-spacing:.12em}.xmf-message-assistant .xmf-markdown::after{content:"NEW MOON  鈼? HALF MOON  鈼? FULL MOON";position:absolute;left:20px;right:20px;bottom:10px;padding-top:5px;border-top:1px solid var(--xmf-line-gold);color:var(--xmf-text-3);font:700 6px/1 var(--xmf-mono);letter-spacing:.13em;text-align:right}.xmf-is-task .xmf-message-assistant .xmf-markdown{margin-left:148px!important}
 .xmf-output-panel{border-color:var(--xmf-line)!important}.xmf-output-section{border:1px solid var(--xmf-line)!important;border-radius:18px 3px 18px 3px!important;background:color-mix(in srgb,var(--xmf-panel) 92%,transparent)!important;box-shadow:0 10px 29px rgba(0,0,0,.11)!important}.xmf-output-header{position:relative!important;background:linear-gradient(90deg,color-mix(in srgb,var(--xmf-blue) 10%,var(--xmf-panel)),color-mix(in srgb,var(--xmf-gold) 7%,var(--xmf-panel)))!important}.xmf-output-header::after{content:"璋曠ず缁撴灉";position:static;align-self:center;margin-left:auto!important;margin-right:10px;padding:3px 7px;border:1px solid var(--xmf-line-gold);border-radius:999px;color:var(--xmf-gold);font:700 6px/1 var(--xmf-serif);letter-spacing:.12em}
 
 /* Composer 鈥?crescent instrument, fully legible */
@@ -211,13 +211,7 @@ html.xmf-theme .xmf-message-user [data-user-message-bubble="true"]{
   position:relative;isolation:isolate;overflow:visible;max-width:min(79%,760px)!important;padding-top:25px!important;
   color:var(--xmf-text)!important;border:1px solid color-mix(in srgb,var(--xmf-blue) 50%,var(--xmf-line-gold))!important;
   border-radius:24px 6px 24px 24px!important;
-  background:
-    radial-gradient(circle at 91% 24%,color-mix(in srgb,var(--xmf-gold) 25%,transparent) 0 2px,transparent 3px),
-    radial-gradient(ellipse at 14% 115%,color-mix(in srgb,var(--xmf-blue) 10%,transparent) 0 34%,transparent 35%),
-    repeating-linear-gradient(155deg,transparent 0 20px,color-mix(in srgb,var(--xmf-blue) 4%,transparent) 21px 22px),
-    linear-gradient(135deg,color-mix(in srgb,var(--xmf-blue) 8%,var(--xmf-solid)),color-mix(in srgb,var(--xmf-gold) 9%,var(--xmf-bg-2)))!important;
   box-shadow:inset -3px 0 color-mix(in srgb,var(--xmf-blue) 58%,transparent),0 12px 32px rgba(103,40,45,.18)!important;
-  backdrop-filter:blur(14px)
 }
 html.xmf-theme .xmf-message-user [data-user-message-bubble="true"]::before{
   content:"◇  心  ·  月  ·  狐  ◇";position:absolute;z-index:1;left:18px;right:18px;top:8px;height:12px;
@@ -227,15 +221,10 @@ html.xmf-theme .xmf-message-user [data-user-message-bubble="true"]::before{
 html.xmf-theme .xmf-message-user [data-user-message-bubble="true"]::after{
   content:"";position:absolute;z-index:-1;right:-8px;bottom:12px;width:23px;height:23px;
   border-right:1px solid color-mix(in srgb,var(--xmf-blue) 58%,var(--xmf-line-gold));border-bottom:1px solid color-mix(in srgb,var(--xmf-blue) 58%,var(--xmf-line-gold));
-  border-radius:0 0 18px 0;background:linear-gradient(135deg,transparent 47%,color-mix(in srgb,var(--xmf-gold) 9%,var(--xmf-bg-2)) 49%);transform:skewX(-18deg) rotate(5deg)
+  border-radius:0 0 18px 0;transform:skewX(-18deg) rotate(5deg)
 }
 html.xmf-theme.electron-dark .xmf-message-user [data-user-message-bubble="true"]{
   color:#fff2ed!important;border-color:rgba(238,69,81,.52)!important;
-  background:
-    radial-gradient(circle at 91% 24%,rgba(215,170,94,.26) 0 2px,transparent 3px),
-    radial-gradient(ellipse at 14% 115%,rgba(240,68,79,.11) 0 34%,transparent 35%),
-    repeating-linear-gradient(155deg,transparent 0 20px,rgba(232,62,76,.06) 21px 22px),
-    linear-gradient(135deg,rgba(42,17,24,.98),rgba(21,10,14,.98))!important;
   box-shadow:inset -3px 0 rgba(240,68,79,.58),0 14px 36px rgba(0,0,0,.42)!important
 }
 
@@ -264,15 +253,6 @@ html.xmf-theme.electron-dark.xmf-is-settings main.xmf-main::after{
 }
 .xmf-theme:not(.electron-dark) aside [data-app-action-sidebar-thread-row]{background:linear-gradient(90deg,rgba(255,250,243,.64),rgba(255,250,243,.34) 72%,transparent)!important;backdrop-filter:blur(5px)}
 .electron-dark .xmf-chat-paper{border-left-color:rgba(240,68,79,.22);border-right-color:rgba(215,170,94,.24);background:transparent!important;box-shadow:0 0 68px rgba(0,0,0,.55),inset 18px 0 38px rgba(10,6,8,.26),inset -18px 0 38px rgba(215,170,94,.05)}
-
-/* 2.1.3: fully clear message surfaces expose the chat artwork */
-html.xmf-theme .xmf-message-assistant .xmf-markdown{background:transparent!important;backdrop-filter:none!important}
-html.xmf-theme .xmf-message-user [data-user-message-bubble="true"]{background:transparent!important;backdrop-filter:none!important}
-
-/* 2.1.4: let the moonheart artwork continue through turn diff cards */
-html.xmf-theme .xmf-message-assistant div:has(> .group\/turn-diff-header){background:transparent!important;backdrop-filter:none!important;box-shadow:none!important}
-html.xmf-theme.electron-dark .xmf-message-assistant div:has(> .group\/turn-diff-header){background:transparent!important;backdrop-filter:none!important;box-shadow:none!important}
-html.xmf-theme .xmf-message-assistant div:has(> .group\/turn-diff-header) button[class*="bg-token-main-surface-primary"]{background:transparent!important;backdrop-filter:none!important}
 
 /* Responsive home copy scales with the same composition instead of remaining
    window-sized inside a much taller full-screen banner. */
@@ -322,19 +302,23 @@ html.xmf-theme .xmf-message-assistant{position:relative!important;padding-left:1
 html.xmf-theme .xmf-message-assistant .xmf-markdown{width:auto!important;max-width:min(88%,820px)!important;margin-left:0!important;margin-right:auto!important}
 html.xmf-theme .xmf-message-user [data-user-message-bubble="true"]{margin-left:auto!important;margin-right:0!important}
 
-/* 2.1.5: the sender bubble is a clear moonheart frame in both color modes. */
-html.xmf-theme:not(.electron-dark) .xmf-message-user [data-user-message-bubble="true"],
-html.xmf-theme.electron-dark .xmf-message-user [data-user-message-bubble="true"]{
-  background:transparent!important;
-  background-color:transparent!important;
-  background-image:none!important;
-  backdrop-filter:none!important;
-}
-html.xmf-theme .xmf-message-user [data-user-message-bubble="true"]::after{
-  background:transparent!important;
-  background-color:transparent!important;
-  background-image:none!important;
-}
+/* TESSALUME_TEMPLATE_V1_SURFACE_START */
+/* ① Stable task canvas. Theme artwork and overlays stay in the skin declarations above. */
+html.xmf-theme.xmf-is-task main.xmf-main{position:relative!important;isolation:isolate}
+/* ② Chat paper never owns artwork or an opaque fill. */
+html.xmf-theme .xmf-chat-paper{background:transparent!important;background-color:transparent!important;background-image:none!important}
+html.xmf-theme .xmf-chat-paper::before{content:none!important;display:none!important;background:none!important}
+/* ③ Assistant frame: clear fill, visible theme border and markings. */
+html.xmf-theme .xmf-message-assistant .xmf-markdown{background:transparent!important;background-color:transparent!important;background-image:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+/* ④ User frame: clear fill, visible theme border and directional tail. */
+html.xmf-theme .xmf-message-user [data-user-message-bubble="true"],html.xmf-theme.electron-dark .xmf-message-user [data-user-message-bubble="true"]{background:transparent!important;background-color:transparent!important;background-image:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+html.xmf-theme .xmf-message-user [data-user-message-bubble="true"]::after{background:transparent!important;background-color:transparent!important;background-image:none!important}
+/* ⑤ Turn diff summary: only its icon and action button may keep native fills. */
+html.xmf-theme .xmf-chat-paper :is(div,button):has(> [class~="group/turn-diff-header"]),
+html.xmf-theme .xmf-chat-paper :is(div,button)[class*="bg-token-dropdown-background"]:has([class~="group/turn-diff-header"]){background:transparent!important;background-color:transparent!important;background-image:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;box-shadow:none!important}
+html.xmf-theme .xmf-chat-paper :is(div,button):has(> [class~="group/turn-diff-header"]) button[class*="bg-token-main-surface-primary"]{background:transparent!important;background-color:transparent!important;background-image:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+/* ⑥ Composer skin stays theme-specific; its structure and geometry are frozen below. */
+/* TESSALUME_TEMPLATE_V1_SURFACE_END */
 
 /* TESSALUME_TEMPLATE_V1_GEOMETRY_START */
 /* 模板 1.0 冻结几何层①：舞台、首页横幅和主文案。 */
