@@ -24,7 +24,7 @@ Do not move character-owned visual identity into a generic template skin.
 
 Flagship Template 1.0 additionally freezes shared DOM parts, sizes, positions,
 alignment and adaptive priorities. Read
-[template-v1.md](template-v1.md) before creating or migrating a flagship theme.
+[template-v1.md](template-v1.md) before creating a flagship theme.
 
 ## Required lifecycle shape
 
@@ -51,32 +51,18 @@ Forbidden in theme packages:
 - remote assets, network fetching, or undeclared files;
 - hard-coded local paths, usernames, repository paths, build output paths, or ports.
 
-## Existing-theme migration invariant
+## New-theme production invariant
 
-Before changing an existing theme, use its current working source or Git
-revision as a visual baseline. Inventory these surfaces separately:
+Every publishable package starts from `assets/theme-template/` and replaces its
+entire draft visual layer. The starter's circles, scan line, sample copy,
+placeholder assets and generic keyframes demonstrate DOM ownership only; they
+are not an acceptable first version of a character theme.
 
-1. home banner artwork and home-only effects;
-2. sidebar light/dark artwork, crop and readability layers;
-3. stable light/dark task background;
-4. assistant and user message frames;
-5. left portrait, secondary right portrait and primary right portrait;
-6. memory card and its meter/sigil;
-7. sync panel and its internal instrument;
-8. composer accessory, including every light/dark SVG form;
-9. all referenced `--tessalume-asset-*` variables;
-10. all theme-owned `@keyframes`.
-
-Template migration means annotating and repositioning this identity, not
-rebuilding it from the template sample. Prefer adding semantic attributes to
-the existing DOM and preserving class names. If a legacy class, SVG group,
-asset variable or keyframe disappears, treat it as a suspected regression
-until the user explicitly requested that removal.
-
-Legacy CSS may contain `!important` positions, sizes or `display` rules that
-override the runtime-owned geometry in `theme-template-v1.css`. Remove those
-outer-slot declarations while retaining visual properties, pseudo-elements
-and animation names.
+Before coding, complete the character research gate and eleven-slot art matrix
+in [flagship-completeness.md](flagship-completeness.md). Before building,
+complete every native and theme-owned visual surface in that checklist. Treat
+missing deep selectors, generic starter components and unresolved draft markers
+as contract failures, not later polish.
 
 ## Required semantic roles
 
@@ -171,17 +157,16 @@ For every theme change:
 4. Verify every declared asset exists.
 5. Run `validate_theme_contract.py`.
 6. For Template 1.0, run `sync_template_geometry.py --check`.
-7. For an existing-theme migration, run `audit_migration_preservation.py`
-   against the unmodified baseline and review every reported loss.
+7. Complete the blocking first-pass audit in
+   [flagship-completeness.md](flagship-completeness.md).
 8. Run the repository-root `一键构建EXE.ps1`. The build owns portable
    synchronization, optimized assets and trust fingerprints.
 9. Reapply the current source or current build to Codex before visual
    inspection. Verify a change-specific DOM node, asset or computed style to
    prove the running page is not an older injected payload.
 10. Navigate task → task → home → task in both light and dark mode when visual
-    QA is in scope. Check sidebar clarity, chat composition, assistant/user
-    frames, all three cards, memory, sync panel and the correct light/dark
-    accessory.
+    QA is in scope. Check every item in the flagship runtime QA matrix,
+    including deep environment-panel and composer-footer states.
 
 Do not hand-copy files into portable output or hand-edit trust fingerprints.
 For runtime, C#, XAML or build-script changes, also run the tests relevant to

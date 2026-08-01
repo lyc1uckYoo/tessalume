@@ -54,9 +54,10 @@ def main() -> int:
 
     print(f"Created {destination}")
     print("Template version: 1.0")
-    print("Replace placeholder assets, copy and theme-specific animation only.")
-    print("Keep skin.css free of shared geometry, then run the geometry and contract checks.")
-    print("Finish by running the repository-root 一键构建EXE.ps1; do not hand-sync portable output.")
+    print("Complete character research and the eleven-slot art matrix before accepting assets.")
+    print("Replace every placeholder, data-theme-draft marker, sample component and keyframe.")
+    print("Complete the flagship visual-coverage checklist; keep skin.css free of shared geometry.")
+    print("Run geometry and contract checks, then the repository-root 一键构建EXE.ps1.")
     return 0
 
 

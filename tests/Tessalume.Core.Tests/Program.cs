@@ -656,13 +656,21 @@ static async Task FlagshipTemplateV1FreezesSharedStructureAsync()
 
     Ensure(templateScript.Contains("templateVersion: \"1.0\"", StringComparison.Ordinal) &&
            templateScript.Contains("adaptiveLayout: true", StringComparison.Ordinal) &&
-           templateScript.Contains("context.renderTemplateV1(", StringComparison.Ordinal),
+           templateScript.Contains("context.renderTemplateV1(", StringComparison.Ordinal) &&
+           templateScript.Contains("data-theme-draft=", StringComparison.Ordinal),
         "The reusable template must opt into Template 1.0 and adaptive layout.");
     Ensure(templateManifest.Contains("\"version\": \"1.0\"", StringComparison.Ordinal) &&
            templateManifest.Contains("\"style\": \"shared\"", StringComparison.Ordinal) &&
+           templateManifest.Contains("\"qualityGate\": \"flagship-complete-1\"", StringComparison.Ordinal) &&
            templateManifest.Contains("assets/placeholder.svg", StringComparison.Ordinal),
         "The reusable template must be valid before custom artwork is added.");
     Ensure(validator.Contains("REQUIRED_SLOTS", StringComparison.Ordinal) &&
+           validator.Contains("DRAFT_TOKENS", StringComparison.Ordinal) &&
+           validator.Contains("flagship visual coverage missing", StringComparison.Ordinal) &&
+           templateCss.Contains("aside.app-shell-left-panel::after", StringComparison.Ordinal) &&
+           templateCss.Contains("-task-title", StringComparison.Ordinal) &&
+           templateCss.Contains("thread-summary-panel-item-button", StringComparison.Ordinal) &&
+           templateCss.Contains("_footer_", StringComparison.Ordinal) &&
            validator.Contains("skin.css", StringComparison.Ordinal) &&
            geometrySync.Contains("--check", StringComparison.Ordinal) &&
            exampleSync.Contains("repo_root / \"examples\"", StringComparison.Ordinal) &&

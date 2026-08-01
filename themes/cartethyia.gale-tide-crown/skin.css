@@ -1,0 +1,1892 @@
+/* 01 Light and dark tokens */
+/* 01 亮暗令牌：卡提希娅的晴空珍珠与芙露德莉斯的黑潮晶蓝。 */
+html.cthy-theme {
+  --cthy-bg:#edf6ff;
+  --cthy-bg-2:#f8fbff;
+  --cthy-solid:#ffffff;
+  --cthy-panel:rgba(249,252,255,.91);
+  --cthy-sidebar:#e8f3ff;
+  --cthy-text:#101622;
+  --cthy-text-2:#31445e;
+  --cthy-text-3:#647b99;
+  --cthy-blue:#2868c7;
+  --cthy-cyan:#67b9ee;
+  --cthy-iris:#4a74dd;
+  --cthy-gold:#b88c42;
+  --cthy-thorn:#173f85;
+  --cthy-line:rgba(48,101,167,.26);
+  --cthy-line-strong:rgba(42,105,197,.52);
+  --cthy-shadow:0 18px 48px rgba(39,86,144,.2);
+  --cthy-control:linear-gradient(145deg,rgba(255,255,255,.94),rgba(225,240,255,.88));
+  --cthy-control-strong:linear-gradient(135deg,rgba(69,130,216,.18),rgba(226,194,123,.2));
+  --cthy-control-line:rgba(55,116,194,.4);
+  --cthy-control-glow:rgba(41,111,200,.18);
+  --cthy-hero:var(--tessalume-asset-hero-light);
+  --cthy-sidebar-art:var(--tessalume-asset-sidebar-light);
+  --cthy-chat-art:var(--tessalume-asset-chat-light);
+  --cthy-memory-art:var(--tessalume-asset-memory-light);
+  --cthy-display:"Microsoft YaHei UI","Segoe UI",sans-serif;
+  --cthy-serif:"STKaiti","KaiTi",serif;
+  --cthy-mono:"Cascadia Code",Consolas,monospace;
+  color-scheme:light;
+}
+
+html.cthy-theme.electron-dark {
+  --cthy-bg:#050a18;
+  --cthy-bg-2:#0a1630;
+  --cthy-solid:#101d39;
+  --cthy-panel:rgba(7,15,34,.9);
+  --cthy-sidebar:#071126;
+  --cthy-text:#f1f7ff;
+  --cthy-text-2:#c7d9ee;
+  --cthy-text-3:#829bbd;
+  --cthy-blue:#72b5ff;
+  --cthy-cyan:#83dcff;
+  --cthy-iris:#6f86ff;
+  --cthy-gold:#d4c18d;
+  --cthy-thorn:#3d69d8;
+  --cthy-line:rgba(112,164,231,.28);
+  --cthy-line-strong:rgba(102,174,255,.58);
+  --cthy-shadow:0 22px 60px rgba(0,0,0,.62);
+  --cthy-control:linear-gradient(145deg,rgba(25,48,91,.9),rgba(8,20,48,.94));
+  --cthy-control-strong:linear-gradient(135deg,rgba(48,93,181,.9),rgba(37,27,83,.94));
+  --cthy-control-line:rgba(109,177,255,.46);
+  --cthy-control-glow:rgba(73,150,255,.26);
+  --cthy-hero:var(--tessalume-asset-hero-dark);
+  --cthy-sidebar-art:var(--tessalume-asset-sidebar-dark);
+  --cthy-chat-art:var(--tessalume-asset-chat-dark);
+  --cthy-memory-art:var(--tessalume-asset-memory-dark);
+  color-scheme:dark;
+}
+
+html.cthy-theme:not(.electron-dark) .cthy-dark-only,
+html.cthy-theme.electron-dark .cthy-light-only {
+  display:none!important;
+}
+
+html.cthy-theme:not(.electron-dark) .cthy-light-only,
+html.cthy-theme.electron-dark .cthy-dark-only {
+  visibility:visible!important;
+}
+
+.cthy-theme {
+  --color-background:var(--cthy-bg)!important;
+  --color-background-secondary:var(--cthy-bg-2)!important;
+  --color-background-surface:var(--cthy-bg)!important;
+  --color-background-panel:var(--cthy-panel)!important;
+  --color-background-elevated-primary:var(--cthy-solid)!important;
+  --color-background-elevated-secondary:var(--cthy-bg-2)!important;
+  --color-border:var(--cthy-line)!important;
+  --color-text-foreground:var(--cthy-text)!important;
+  --color-text-foreground-secondary:var(--cthy-text-2)!important;
+  --color-text-foreground-tertiary:var(--cthy-text-3)!important;
+  --color-accent-blue:var(--cthy-blue)!important;
+  --color-text-accent:var(--cthy-iris)!important;
+  --token-main-surface-background:var(--cthy-bg)!important;
+  --token-sidebar-background:var(--cthy-sidebar)!important;
+}
+
+/* 02 App and native planes */
+/* 02 应用与原生平面：稳定聊天画布、窗口底色和明暗左栏角色场景。 */
+html.cthy-theme,.cthy-theme body,.cthy-theme #root {
+  color:var(--cthy-text)!important;
+  background:var(--cthy-bg)!important;
+}
+
+.cthy-theme body {
+  font-family:var(--cthy-display);
+}
+
+html.cthy-theme main.cthy-main {
+  background:radial-gradient(circle at 76% 9%,color-mix(in srgb,var(--cthy-cyan) 14%,transparent),transparent 28%),linear-gradient(145deg,var(--cthy-bg-2),var(--cthy-bg))!important;
+}
+
+html.cthy-theme aside.app-shell-left-panel {
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  color:var(--cthy-text)!important;
+  border-right:1px solid var(--cthy-line)!important;
+  background:linear-gradient(145deg,#f2f8ff,#dfedfb 58%,#d8e9fa)!important;
+  box-shadow:14px 0 42px color-mix(in srgb,var(--cthy-blue) 18%,transparent),inset -1px 0 rgba(255,255,255,.7)!important;
+}
+
+html.cthy-theme.electron-dark aside.app-shell-left-panel {
+  background:linear-gradient(145deg,#040a18,#091a36 58%,#071126)!important;
+  box-shadow:14px 0 44px rgba(0,0,0,.58),inset -1px 0 rgba(112,181,255,.14)!important;
+}
+
+html.cthy-theme aside.app-shell-left-panel>* {
+  position:relative;
+  z-index:1;
+}
+
+html.cthy-theme aside.app-shell-left-panel::before {
+  content:"GALE CROWN · AVINOLEUM";
+  position:absolute;
+  z-index:2;
+  right:-58px;
+  top:178px;
+  transform:rotate(90deg);
+  color:color-mix(in srgb,var(--cthy-gold) 76%,transparent);
+  font:700 6px/1 var(--cthy-mono);
+  letter-spacing:.2em;
+  pointer-events:none;
+}
+
+html.cthy-theme aside.app-shell-left-panel::after {
+  content:"";
+  position:absolute;
+  z-index:0;
+  inset:0;
+  pointer-events:none;
+  background:var(--cthy-sidebar-art) 40% -148px/312% auto no-repeat;
+  opacity:.98;
+  filter:brightness(1.02) saturate(1.04) contrast(1.02);
+}
+
+html.cthy-theme.electron-dark aside.app-shell-left-panel::after {
+  background:var(--cthy-sidebar-art) 52% -200px/355% auto no-repeat;
+  opacity:.98;
+  filter:brightness(.88) saturate(.94) contrast(1.07);
+}
+
+html.cthy-theme.cthy-is-task main.cthy-main {
+  background:linear-gradient(145deg,var(--cthy-bg-2),var(--cthy-bg))!important;
+}
+
+html.cthy-theme.electron-dark.cthy-is-task main.cthy-main {
+  background:linear-gradient(145deg,#030817,#091830)!important;
+}
+
+html.cthy-theme.cthy-is-task main.cthy-main::before {
+  background:var(--cthy-chat-art) center center/cover no-repeat;
+  filter:saturate(1.04) contrast(1.02);
+}
+
+html.cthy-theme.electron-dark.cthy-is-task main.cthy-main::before {
+  filter:brightness(.66) saturate(.88) contrast(1.08);
+}
+
+html.cthy-theme.cthy-is-task main.cthy-main::after {
+  background:linear-gradient(90deg,color-mix(in srgb,var(--cthy-solid) 28%,transparent),transparent 25%,transparent 75%,color-mix(in srgb,var(--cthy-solid) 23%,transparent)),linear-gradient(180deg,color-mix(in srgb,var(--cthy-bg) 12%,transparent),transparent 27%,transparent 72%,color-mix(in srgb,var(--cthy-bg) 22%,transparent));
+}
+
+html.cthy-theme.electron-dark.cthy-is-task main.cthy-main::after {
+  background:radial-gradient(ellipse at 50% 45%,rgba(2,7,18,.03) 0 18%,rgba(2,7,18,.12) 42%,rgba(2,7,18,.28) 76%,rgba(2,7,18,.45)),linear-gradient(90deg,rgba(2,7,18,.58),rgba(2,7,18,.2) 28%,rgba(2,7,18,.08) 46%,rgba(2,7,18,.08) 54%,rgba(2,7,18,.19) 72%,rgba(2,7,18,.56)),linear-gradient(180deg,rgba(2,7,18,.34),transparent 25%,transparent 68%,rgba(2,7,18,.5));
+}
+
+html.cthy-theme.cthy-is-settings .cthy-settings-surface {
+  background:transparent!important;
+}
+
+/* 03 Sidebar skin */
+/* 03 左栏皮肤：双形态人物场景、风潮分区、项目铭牌与会话剑痕。 */
+html.cthy-theme aside [data-app-action-sidebar-project-row][data-cthy-phase="gale"] {
+  --phase:var(--cthy-cyan);
+}
+
+html.cthy-theme aside [data-app-action-sidebar-project-row][data-cthy-phase="iris"] {
+  --phase:var(--cthy-iris);
+}
+
+html.cthy-theme aside [data-app-action-sidebar-project-row][data-cthy-phase="tide"] {
+  --phase:var(--cthy-blue);
+}
+
+html.cthy-theme aside [data-app-action-sidebar-project-row][data-cthy-phase="crown"] {
+  --phase:var(--cthy-gold);
+}
+
+html.cthy-theme aside [data-app-action-sidebar-project-row] {
+  --phase:var(--cthy-blue);
+  color:var(--cthy-text)!important;
+  border:1px solid color-mix(in srgb,var(--phase) 48%,var(--cthy-line))!important;
+  border-radius:17px 3px 17px 3px!important;
+  background:linear-gradient(102deg,color-mix(in srgb,var(--phase) 14%,var(--cthy-solid)),color-mix(in srgb,var(--cthy-solid) 78%,transparent))!important;
+  box-shadow:inset 3px 0 var(--phase),0 8px 24px color-mix(in srgb,var(--phase) 16%,transparent),inset 0 1px rgba(255,255,255,.38)!important;
+  backdrop-filter:blur(12px);
+}
+
+html.cthy-theme.electron-dark aside [data-app-action-sidebar-project-row] {
+  background:linear-gradient(102deg,color-mix(in srgb,var(--phase) 17%,rgba(7,18,42,.92)),rgba(8,20,45,.72))!important;
+  box-shadow:inset 3px 0 var(--phase),0 9px 25px rgba(0,0,0,.32),inset 0 1px rgba(255,255,255,.06)!important;
+}
+
+.cthy-project-heading {
+  position:relative;
+  padding-right:54px!important;
+  color:var(--cthy-text)!important;
+  font-weight:750!important;
+  letter-spacing:.012em;
+}
+
+.cthy-project-heading::before {
+  content:"";
+  position:absolute;
+  right:29px;
+  top:50%;
+  width:14px;
+  height:14px;
+  transform:translateY(-50%) rotate(45deg);
+  border:1px solid var(--phase);
+  border-radius:50% 7px 50% 7px;
+  background:radial-gradient(circle,var(--cthy-solid) 0 18%,var(--phase) 22% 38%,transparent 42%);
+  box-shadow:0 0 10px color-mix(in srgb,var(--phase) 42%,transparent);
+}
+
+.cthy-project-heading::after {
+  content:attr(data-cthy-index);
+  position:absolute;
+  right:8px;
+  top:50%;
+  transform:translateY(-50%);
+  color:var(--cthy-text-3);
+  font:700 6px/1 var(--cthy-mono);
+}
+
+html.cthy-theme aside [data-app-action-sidebar-thread-row] {
+  position:relative;
+  padding-right:30px!important;
+  color:var(--cthy-text-2)!important;
+  border:1px solid transparent!important;
+  border-left-color:color-mix(in srgb,var(--cthy-iris) 70%,var(--cthy-line))!important;
+  border-radius:2px 13px 13px 2px!important;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--cthy-solid) 70%,transparent),color-mix(in srgb,var(--cthy-solid) 34%,transparent) 74%,transparent)!important;
+  text-shadow:0 1px 3px color-mix(in srgb,var(--cthy-solid) 78%,transparent);
+  backdrop-filter:blur(7px);
+}
+
+html.cthy-theme.electron-dark aside [data-app-action-sidebar-thread-row] {
+  color:var(--cthy-text-2)!important;
+  background:linear-gradient(90deg,rgba(8,21,48,.78),rgba(8,21,48,.36) 74%,transparent)!important;
+  text-shadow:0 1px 4px #000;
+}
+
+html.cthy-theme aside [data-app-action-sidebar-thread-row]::before {
+  content:"";
+  position:absolute;
+  left:-4px;
+  top:50%;
+  width:7px;
+  height:7px;
+  transform:translateY(-50%) rotate(45deg);
+  border:1px solid var(--cthy-cyan);
+  border-radius:50% 2px 50% 2px;
+  background:var(--cthy-sidebar);
+  box-shadow:0 0 9px color-mix(in srgb,var(--cthy-cyan) 48%,transparent);
+}
+
+html.cthy-theme aside [data-app-action-sidebar-thread-row]::after {
+  content:attr(data-cthy-thread);
+  position:absolute;
+  right:8px;
+  top:50%;
+  transform:translateY(-50%);
+  color:var(--cthy-text-3);
+  font:700 6px/1 var(--cthy-mono);
+}
+
+html.cthy-theme aside [data-app-action-sidebar-thread-row]:hover,html.cthy-theme aside [data-app-action-sidebar-thread-row][aria-current="page"],html.cthy-theme aside [data-app-action-sidebar-thread-active="true"] {
+  color:var(--cthy-text)!important;
+  border-color:var(--cthy-line-strong)!important;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--cthy-cyan) 16%,var(--cthy-solid)),color-mix(in srgb,var(--cthy-solid) 76%,transparent),transparent)!important;
+  box-shadow:inset 3px 0 var(--cthy-blue),0 5px 18px color-mix(in srgb,var(--cthy-blue) 16%,transparent)!important;
+}
+
+html.cthy-theme.electron-dark aside [data-app-action-sidebar-thread-row]:hover,
+html.cthy-theme.electron-dark aside [data-app-action-sidebar-thread-row][aria-current="page"],
+html.cthy-theme.electron-dark aside [data-app-action-sidebar-thread-active="true"] {
+  background:linear-gradient(90deg,rgba(27,70,126,.84),rgba(15,35,73,.68),transparent)!important;
+  box-shadow:inset 3px 0 var(--cthy-cyan),0 6px 20px rgba(0,0,0,.38)!important;
+}
+
+.cthy-section-label::after {
+  content:attr(data-cthy-section);
+  margin-left:auto;
+  color:color-mix(in srgb,var(--cthy-gold) 80%,var(--cthy-text-3));
+  font:700 7px/1 var(--cthy-serif);
+  letter-spacing:.13em;
+}
+
+html.cthy-theme [data-tessalume-surface="sidebar"] nav>div:first-child {
+  margin:0 6px 3px!important;
+  padding:2px 2px 5px!important;
+  border-bottom:1px solid color-mix(in srgb,var(--cthy-gold) 31%,transparent)!important;
+}
+
+html.cthy-theme [data-tessalume-surface="sidebar"] nav>div:first-child button {
+  color:var(--cthy-text)!important;
+}
+
+html.cthy-theme [data-tessalume-surface="sidebar"] nav>div:first-child>div:nth-child(2) .sidebar-item:hover {
+  background:linear-gradient(90deg,color-mix(in srgb,var(--cthy-blue) 12%,transparent),transparent 74%)!important;
+  box-shadow:inset 2px 0 var(--cthy-cyan)!important;
+}
+
+html.cthy-theme aside :is(button,a) {
+  text-shadow:0 1px 0 color-mix(in srgb,var(--cthy-solid) 72%,transparent);
+}
+
+html.cthy-theme.electron-dark aside :is(button,a) {
+  text-shadow:0 1px 3px rgba(0,0,0,.62);
+}
+
+/* 04 Home skin */
+/* 04 首页皮肤：右侧角色横幅、风潮双冕、三剑轨迹和形态文案。 */
+.cthy-theme .cthy-home>div:first-child>div:first-child>div:first-child::before {
+  content:"";
+  background:linear-gradient(90deg,color-mix(in srgb,var(--cthy-solid) 83%,transparent),color-mix(in srgb,var(--cthy-solid) 34%,transparent) 39%,transparent 61%),var(--cthy-hero) center/cover no-repeat!important;
+  transform:scale(1.006);
+  animation:cthy-hero-drift 19s ease-in-out infinite alternate;
+}
+
+.cthy-theme.electron-dark .cthy-home>div:first-child>div:first-child>div:first-child::before {
+  background:linear-gradient(90deg,rgba(4,9,23,.88),rgba(4,9,23,.37) 40%,transparent 62%),var(--cthy-hero) center/cover no-repeat!important;
+}
+
+.cthy-theme .cthy-home>div:first-child>div:first-child>div:first-child::after {
+  content:"";
+  border:1px solid color-mix(in srgb,var(--cthy-gold) 45%,var(--cthy-line));
+  border-radius:22px 3px 22px 3px;
+  background:linear-gradient(135deg,transparent 0 48%,color-mix(in srgb,var(--cthy-cyan) 16%,transparent) 49% 50%,transparent 51%);
+  box-shadow:inset 0 0 38px color-mix(in srgb,var(--cthy-blue) 8%,transparent);
+  animation:cthy-banner-lattice 7.2s ease-in-out infinite;
+}
+
+.cthy-home .group\/home-suggestions button {
+  color:var(--cthy-text)!important;
+  border:1px solid var(--cthy-line)!important;
+  border-radius:18px 3px 18px 3px!important;
+  background:linear-gradient(145deg,color-mix(in srgb,var(--cthy-solid) 94%,transparent),color-mix(in srgb,var(--cthy-cyan) 9%,var(--cthy-bg-2)))!important;
+  box-shadow:0 10px 28px color-mix(in srgb,var(--cthy-blue) 16%,transparent),inset 3px 0 color-mix(in srgb,var(--cthy-gold) 72%,transparent)!important;
+}
+
+.cthy-hero-copy {
+  color:var(--cthy-text);
+}
+
+.cthy-kicker {
+  color:var(--cthy-blue);
+  font:700 8px/1 var(--cthy-mono);
+  letter-spacing:.17em;
+}
+
+.cthy-kicker i {
+  border:1px solid var(--cthy-cyan);
+  border-radius:50%;
+  background:var(--cthy-blue);
+  box-shadow:0 0 14px var(--cthy-cyan);
+  animation:cthy-status 1.9s ease-in-out infinite;
+}
+
+.cthy-hero-copy h1 {
+  margin:23px 0 13px;
+  color:var(--cthy-text);
+  font:800 clamp(43px,4.15vw,73px)/1.02 var(--cthy-serif);
+  letter-spacing:.035em;
+  text-shadow:0 4px 24px color-mix(in srgb,var(--cthy-solid) 74%,transparent);
+}
+
+.cthy-theme.electron-dark .cthy-hero-copy h1 {
+  text-shadow:0 4px 28px rgba(0,0,0,.7),0 0 20px color-mix(in srgb,var(--cthy-blue) 22%,transparent);
+}
+
+.cthy-hero-copy h1 em {
+  color:var(--cthy-blue);
+  background:linear-gradient(105deg,var(--cthy-blue) 0 32%,var(--cthy-cyan) 44%,var(--cthy-gold) 53%,var(--cthy-blue) 67% 100%);
+  background-size:240% 100%;
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
+  font-style:normal;
+  animation:cthy-title-shimmer 8s ease-in-out infinite;
+}
+
+.cthy-theme.electron-dark .cthy-hero-copy h1 em {
+  color:var(--cthy-cyan);
+}
+
+.cthy-hero-copy>p {
+  max-width:510px;
+  margin:0;
+  color:var(--cthy-text-2);
+  font-size:clamp(13px,.82vw,16px);
+  line-height:1.6;
+}
+
+.cthy-gale-crown {
+  isolation:isolate;
+  overflow:visible;
+  filter:drop-shadow(0 0 12px color-mix(in srgb,var(--cthy-blue) 28%,transparent));
+  animation:cthy-crown-breathe 6.8s ease-in-out infinite;
+}
+
+.cthy-home-form {
+  position:absolute;
+  inset:-6px -34px;
+  display:none!important;
+  pointer-events:none;
+}
+
+html.cthy-theme:not(.electron-dark) .cthy-home-form-light,
+html.cthy-theme.electron-dark .cthy-home-form-dark {
+  display:block!important;
+}
+
+.cthy-home-form svg {
+  width:100%;
+  height:100%;
+  overflow:visible;
+}
+
+.cthy-home-currents {
+  stroke:color-mix(in srgb,var(--cthy-blue) 68%,var(--cthy-cyan));
+  stroke-width:1.15;
+  stroke-dasharray:58 17;
+  opacity:.7;
+  animation:cthy-home-current 8.5s linear infinite;
+}
+
+.cthy-home-currents path:nth-child(2) {
+  stroke:color-mix(in srgb,var(--cthy-gold) 58%,var(--cthy-cyan));
+  stroke-width:.75;
+  animation-delay:-2.7s;
+}
+
+.cthy-home-currents path:nth-child(3) {
+  stroke-width:.55;
+  opacity:.5;
+  animation-delay:-5.1s;
+}
+
+.cthy-home-day-orbits {
+  stroke:color-mix(in srgb,var(--cthy-blue) 64%,var(--cthy-gold));
+  stroke-width:.65;
+  transform-origin:150px 38px;
+  animation:cthy-home-orbit 12s linear infinite;
+}
+
+.cthy-home-triad path,
+.cthy-home-night-triad path {
+  transform-box:fill-box;
+  transform-origin:center;
+  animation:cthy-home-blade-unseal 4.8s ease-in-out calc(var(--i)*-.24s) infinite;
+}
+
+.cthy-home-day-guard {
+  stroke-width:1.2;
+  stroke-dasharray:48 9;
+  animation:cthy-home-guard 6.4s linear infinite;
+}
+
+.cthy-home-motes>* {
+  transform-box:fill-box;
+  transform-origin:center;
+  animation:cthy-home-mote calc(4.4s + var(--i)*.55s) ease-in-out calc(var(--i)*-.8s) infinite alternate;
+}
+
+.cthy-home-night-tide {
+  stroke:color-mix(in srgb,var(--cthy-cyan) 62%,var(--cthy-iris));
+  stroke-width:1.2;
+  stroke-dasharray:64 19;
+  opacity:.78;
+  animation:cthy-home-night-current 7.2s linear infinite;
+}
+
+.cthy-home-night-tide path:nth-child(2) {
+  stroke:color-mix(in srgb,var(--cthy-iris) 68%,var(--cthy-gold));
+  stroke-width:.7;
+  animation-delay:-2.2s;
+}
+
+.cthy-home-night-tide path:nth-child(3) {
+  stroke-width:.55;
+  opacity:.48;
+  animation-delay:-4.5s;
+}
+
+.cthy-home-thorn-halo {
+  stroke-width:.85;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  transform-origin:150px 37px;
+  animation:cthy-home-thorn-orbit 15s linear infinite;
+}
+
+.cthy-home-night-gems>* {
+  transform-box:fill-box;
+  transform-origin:center;
+  animation:cthy-home-night-gem calc(2.8s + var(--i)*.5s) ease-in-out calc(var(--i)*-.65s) infinite;
+}
+
+.cthy-form-note small {
+  color:var(--cthy-gold);
+  font:700 9px/1 var(--cthy-mono);
+  letter-spacing:.15em;
+}
+
+.cthy-form-note strong {
+  color:var(--cthy-text);
+  border-left:2px solid var(--cthy-blue);
+  font:700 13px/1 var(--cthy-serif);
+}
+
+/* 05 Identity skin */
+/* 05 身份组件皮肤：双冕荆棘徽记与风潮在线状态。 */
+html.cthy-theme .cthy-window-bar {
+  border-bottom:1px solid var(--cthy-line)!important;
+  background:color-mix(in srgb,var(--cthy-solid) 91%,transparent)!important;
+  box-shadow:0 4px 22px color-mix(in srgb,var(--cthy-blue) 12%,transparent);
+  backdrop-filter:blur(20px);
+}
+
+.cthy-identity {
+  border:1px solid color-mix(in srgb,var(--cthy-blue) 62%,var(--cthy-gold));
+  border-radius:19px 4px 19px 4px;
+  background:linear-gradient(105deg,color-mix(in srgb,var(--cthy-solid) 96%,transparent),color-mix(in srgb,var(--cthy-cyan) 10%,var(--cthy-solid)));
+  box-shadow:var(--cthy-shadow),inset 0 0 18px color-mix(in srgb,var(--cthy-cyan) 8%,transparent);
+  backdrop-filter:blur(17px);
+}
+
+.cthy-identity [data-theme-part="identity-emblem"] {
+  border-radius:50%;
+  background:conic-gradient(from 20deg,var(--cthy-blue),var(--cthy-cyan),var(--cthy-gold),var(--cthy-blue));
+  box-shadow:inset 0 0 0 4px var(--cthy-solid),0 0 14px color-mix(in srgb,var(--cthy-blue) 40%,transparent);
+  animation:cthy-emblem-breathe 3.8s ease-in-out infinite;
+}
+
+.cthy-identity [data-theme-part="identity-emblem"] svg {
+  width:100%;
+  height:100%;
+  fill:none;
+  stroke:var(--cthy-solid);
+  stroke-width:1.6;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+
+.cthy-identity [data-theme-part="identity-copy"] {
+  display:flex;
+  flex-direction:column;
+}
+
+.cthy-identity [data-theme-part="identity-copy"] b {
+  color:var(--cthy-text);
+  font-size:10px;
+}
+
+.cthy-identity [data-theme-part="identity-copy"] small {
+  margin-top:3px;
+  color:var(--cthy-text-3);
+  font:700 6px/1 var(--cthy-mono);
+  letter-spacing:.08em;
+}
+
+.cthy-identity [data-theme-part="identity-status"] {
+  border:1px solid color-mix(in srgb,var(--cthy-cyan) 70%,#fff);
+  border-radius:50%;
+  background:var(--cthy-cyan);
+  box-shadow:0 0 13px var(--cthy-cyan);
+  animation:cthy-status 1.75s ease-in-out infinite;
+}
+
+/* 06 Task-card skin */
+/* 06 任务卡皮肤：卡提希娅游风、逆潮与芙露德莉斯加冕三幅独立构图。 */
+.cthy-task-card {
+  overflow:hidden;
+  border:1px solid color-mix(in srgb,var(--cthy-blue) 58%,var(--cthy-gold));
+  background:var(--cthy-panel);
+  box-shadow:0 22px 56px rgba(3,15,38,.34),inset 0 0 20px color-mix(in srgb,var(--cthy-cyan) 8%,transparent);
+}
+
+.cthy-task-card [data-theme-part="task-card-art"] {
+  position:absolute;
+  inset:0;
+  background-repeat:no-repeat;
+  background-size:cover;
+  filter:saturate(1.05) contrast(1.03);
+  transition:filter .4s ease;
+}
+
+.cthy-task-card:hover [data-theme-part="task-card-art"] {
+  filter:saturate(1.12) contrast(1.06) brightness(1.04);
+}
+
+.cthy-task-left [data-theme-part="task-card-art"] {
+  background-image:var(--tessalume-asset-task-left);
+  background-position:50% 18%;
+}
+
+.cthy-task-cartethyia [data-theme-part="task-card-art"] {
+  background-image:var(--tessalume-asset-task-right-secondary);
+  background-position:50% 20%;
+}
+
+.cthy-task-fleurdelys [data-theme-part="task-card-art"] {
+  background-image:var(--tessalume-asset-task-right-primary);
+  background-position:50% 14%;
+}
+
+.cthy-task-card::before {
+  content:"";
+  position:absolute;
+  z-index:2;
+  inset:5px;
+  pointer-events:none;
+  border:1px solid color-mix(in srgb,var(--cthy-cyan) 44%,transparent);
+  clip-path:polygon(0 0,28% 0,31% 2px,69% 2px,72% 0,100% 0,100% 100%,72% 100%,69% calc(100% - 2px),31% calc(100% - 2px),28% 100%,0 100%);
+}
+
+.cthy-task-card::after {
+  content:"";
+  position:absolute;
+  z-index:1;
+  inset:0;
+  background:linear-gradient(180deg,transparent 49%,rgba(3,10,24,.18) 62%,rgba(3,9,23,.96));
+}
+
+.cthy-task-fleurdelys {
+  border-color:color-mix(in srgb,var(--cthy-iris) 70%,var(--cthy-cyan));
+  box-shadow:0 22px 58px rgba(4,13,44,.5),0 0 22px color-mix(in srgb,var(--cthy-iris) 20%,transparent);
+}
+
+.cthy-task-card [data-theme-part="task-card-caption"] {
+  color:#f7fbff;
+  text-shadow:0 2px 8px rgba(0,0,0,.78);
+}
+
+.cthy-task-card [data-theme-part="task-card-caption"] b {
+  font:800 12px/1 var(--cthy-serif);
+  letter-spacing:.11em;
+}
+
+.cthy-task-card [data-theme-part="task-card-caption"] small {
+  margin-top:5px;
+  color:#bcdcff;
+  font:700 6px/1 var(--cthy-mono);
+  letter-spacing:.09em;
+}
+
+.cthy-task-left {
+  animation:cthy-card-left 7.6s ease-in-out infinite;
+}
+
+.cthy-task-cartethyia {
+  animation:cthy-card-gale 6.2s ease-in-out infinite;
+}
+
+.cthy-task-fleurdelys {
+  animation:cthy-card-tide 7.1s ease-in-out infinite;
+}
+
+/* 07 Memory skin */
+/* 07 记忆组件皮肤：亮色银蓝冠冕与暗色黑潮荆棘的同一段记忆。 */
+.cthy-memory {
+  overflow:hidden;
+  border:1px solid color-mix(in srgb,var(--cthy-blue) 52%,var(--cthy-gold));
+  border-radius:18px 3px 18px 3px;
+  background:var(--cthy-memory-art) center top/cover no-repeat,color-mix(in srgb,var(--cthy-solid) 95%,transparent);
+  box-shadow:var(--cthy-shadow);
+  backdrop-filter:blur(14px);
+}
+
+.cthy-memory::after {
+  content:"";
+  position:absolute;
+  z-index:0;
+  inset:42px 0 0;
+  background:linear-gradient(180deg,transparent,color-mix(in srgb,var(--cthy-solid) 91%,transparent) 33%,color-mix(in srgb,var(--cthy-solid) 98%,transparent));
+}
+
+.cthy-theme.electron-dark .cthy-memory::after {
+  background:linear-gradient(180deg,transparent,rgba(5,12,29,.8) 35%,rgba(5,12,29,.97));
+}
+
+.cthy-memory>* {
+  position:relative;
+  z-index:1;
+}
+
+.cthy-memory>small {
+  color:var(--cthy-blue);
+  font:700 6px/1 var(--cthy-mono);
+  letter-spacing:.08em;
+}
+
+.cthy-memory>p {
+  color:var(--cthy-text-2);
+  font-size:8px;
+  line-height:1.6;
+}
+
+.cthy-memory-crown {
+  display:block;
+  filter:drop-shadow(0 0 7px color-mix(in srgb,var(--cthy-blue) 32%,transparent));
+}
+
+.cthy-memory-crown svg {
+  width:100%;
+  height:100%;
+  overflow:visible;
+  fill:none;
+  stroke:var(--cthy-blue);
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+
+.cthy-memory-tide {
+  stroke-width:1.2;
+  stroke-dasharray:8 5;
+  animation:cthy-memory-tide 7s linear infinite;
+}
+
+.cthy-memory-thorn {
+  stroke:var(--cthy-gold);
+  stroke-width:1.1;
+}
+
+.cthy-memory-blade {
+  fill:var(--cthy-cyan);
+  stroke:var(--cthy-solid);
+  stroke-width:.8;
+}
+
+.cthy-memory-crown circle {
+  fill:var(--cthy-iris);
+  stroke:none;
+  animation:cthy-memory-pulse calc(1.5s + var(--i)*.11s) ease-in-out calc(var(--i)*-.13s) infinite;
+}
+
+/* 08 Sync-panel skin */
+/* 08 同步面板皮肤：三柄剑影、风潮核心与逐段共鸣频谱。 */
+.cthy-triad-panel {
+  isolation:isolate;
+  overflow:hidden;
+  border:1px solid color-mix(in srgb,var(--cthy-blue) 62%,var(--cthy-gold));
+  border-radius:5px 20px 5px 20px;
+  color:var(--cthy-text);
+  background:radial-gradient(circle at 48% 50%,color-mix(in srgb,var(--cthy-cyan) 13%,transparent),transparent 28%),linear-gradient(108deg,color-mix(in srgb,var(--cthy-solid) 98%,transparent),color-mix(in srgb,var(--cthy-cyan) 10%,var(--cthy-solid)) 49%,color-mix(in srgb,var(--cthy-gold) 11%,var(--cthy-solid)));
+  box-shadow:0 0 0 1px color-mix(in srgb,var(--cthy-cyan) 10%,transparent),0 15px 38px color-mix(in srgb,var(--cthy-blue) 25%,transparent),inset 0 1px rgba(255,255,255,.64);
+  backdrop-filter:blur(17px);
+}
+
+html.cthy-theme.electron-dark .cthy-triad-panel {
+  border-color:color-mix(in srgb,var(--cthy-cyan) 60%,var(--cthy-iris));
+  background:radial-gradient(circle at 48% 50%,rgba(70,142,255,.18),transparent 28%),linear-gradient(108deg,rgba(6,18,44,.98),rgba(12,39,79,.97) 49%,rgba(30,21,64,.96));
+  box-shadow:0 0 0 1px rgba(119,199,255,.1),0 18px 42px rgba(0,0,0,.56),inset 0 0 24px rgba(89,177,255,.07);
+}
+
+.cthy-triad-panel::before {
+  content:"";
+  position:absolute;
+  z-index:0;
+  left:-34%;
+  top:0;
+  width:30%;
+  height:100%;
+  background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--cthy-blue) 18%,transparent),color-mix(in srgb,#fff 42%,transparent),color-mix(in srgb,var(--cthy-gold) 20%,transparent),transparent);
+  transform:skewX(-17deg);
+  animation:cthy-sync-scan 6.8s ease-in-out infinite;
+}
+
+.cthy-triad-panel::after {
+  content:"";
+  position:absolute;
+  z-index:0;
+  inset:4px;
+  border:1px solid color-mix(in srgb,var(--cthy-gold) 19%,transparent);
+  border-radius:3px 16px 3px 16px;
+  background:linear-gradient(90deg,var(--cthy-cyan),transparent 22%,transparent 78%,var(--cthy-gold)) top/100% 1px no-repeat;
+  pointer-events:none;
+}
+
+.cthy-triad-copy {
+  position:relative;
+  z-index:2;
+  display:flex;
+  flex:0 0 106px;
+  min-width:106px!important;
+  flex-direction:column;
+  white-space:nowrap;
+}
+
+.cthy-triad-copy small,.cthy-triad-state small {
+  color:var(--cthy-text-3);
+  font:700 5.3px/1 var(--cthy-mono);
+  letter-spacing:.065em;
+}
+
+.cthy-triad-copy b {
+  margin-top:6px;
+  color:var(--cthy-text);
+  font:750 8.5px/1 var(--cthy-serif);
+  letter-spacing:.05em;
+}
+
+.cthy-triad-copy strong {
+  color:var(--cthy-blue);
+  font:850 13px/1 var(--cthy-mono);
+  text-shadow:0 0 9px color-mix(in srgb,var(--cthy-blue) 54%,transparent);
+}
+
+.cthy-triad-copy em {
+  color:var(--cthy-text-3);
+  font:700 7px/1 var(--cthy-mono);
+  font-style:normal;
+}
+
+.cthy-triad-core {
+  position:relative;
+  z-index:2;
+  display:grid;
+  flex:0 0 44px;
+  width:44px;
+  height:44px;
+  place-items:center;
+  border:1px solid color-mix(in srgb,var(--cthy-cyan) 62%,var(--cthy-gold));
+  border-radius:50% 8px 50% 8px;
+  background:radial-gradient(circle at 38% 31%,#fff 0 4%,color-mix(in srgb,var(--cthy-cyan) 27%,var(--cthy-solid)) 7% 25%,color-mix(in srgb,var(--cthy-blue) 58%,var(--cthy-iris)) 64%,color-mix(in srgb,var(--cthy-solid) 85%,var(--cthy-iris)));
+  box-shadow:0 0 17px color-mix(in srgb,var(--cthy-blue) 42%,transparent),inset 0 0 10px color-mix(in srgb,var(--cthy-gold) 14%,transparent);
+}
+
+.cthy-triad-core svg {
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  overflow:visible;
+}
+
+.cthy-sync-halo {
+  stroke:color-mix(in srgb,var(--cthy-cyan) 76%,var(--cthy-gold));
+  stroke-width:.7;
+  transform-origin:24px 24px;
+  animation:cthy-triad-orbit 10s linear infinite;
+}
+
+.cthy-sync-blades {
+  fill:color-mix(in srgb,var(--cthy-blue) 74%,var(--cthy-cyan));
+  stroke:color-mix(in srgb,#fff 68%,var(--cthy-cyan));
+  stroke-width:.45;
+}
+
+.cthy-sync-blades path {
+  transform-box:fill-box;
+  transform-origin:center;
+  animation:cthy-sync-blade 3.6s ease-in-out calc(var(--i)*-.22s) infinite;
+}
+
+.cthy-sync-gem {
+  fill:var(--cthy-gold);
+  stroke:#fff;
+  stroke-width:.55;
+  filter:drop-shadow(0 0 4px var(--cthy-gold));
+  animation:cthy-sync-gem 2.2s ease-in-out infinite;
+}
+
+.cthy-triad-core>b,.cthy-triad-core>small {
+  position:relative;
+  z-index:1;
+  color:#fff;
+  text-shadow:0 1px 5px rgba(0,0,0,.72);
+}
+
+.cthy-triad-core>b {
+  margin-top:17px;
+  font:850 7px/1 var(--cthy-mono);
+}
+
+.cthy-triad-core>small {
+  margin-top:-2px;
+  font:700 3.7px/1 var(--cthy-serif);
+}
+
+.cthy-triad-meter {
+  position:relative;
+  z-index:2;
+  display:flex;
+  flex:1;
+  align-items:flex-end;
+  justify-content:center;
+  gap:2px;
+  min-width:62px;
+  height:31px;
+}
+
+.cthy-triad-meter::before {
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:2px;
+  height:1px;
+  background:linear-gradient(90deg,transparent,var(--cthy-cyan),var(--cthy-gold),transparent);
+  opacity:.55;
+}
+
+.cthy-triad-meter i {
+  display:block;
+  width:4px;
+  height:var(--h);
+  clip-path:polygon(50% 0,100% 25%,72% 100%,28% 100%,0 25%);
+  background:linear-gradient(var(--cthy-gold),var(--cthy-cyan),var(--cthy-blue));
+  box-shadow:0 0 5px color-mix(in srgb,var(--cthy-cyan) 30%,transparent);
+  transform-origin:bottom;
+  animation:cthy-meter calc(1.3s + var(--i)*.035s) ease-in-out calc(var(--i)*-.11s) infinite alternate;
+}
+
+.cthy-triad-meter i b {
+  display:block;
+  width:100%;
+  height:35%;
+  border-radius:inherit;
+  background:#fff;
+  opacity:.58;
+}
+
+.cthy-triad-state b {
+  display:flex;
+  align-items:center;
+  margin-top:7px;
+  color:var(--cthy-gold);
+  font:800 9px/1 var(--cthy-serif);
+  letter-spacing:.08em;
+}
+
+.cthy-triad-state b i {
+  display:inline-block;
+  width:6px;
+  height:6px;
+  margin-right:5px;
+  border-radius:50%;
+  background:var(--cthy-cyan);
+  box-shadow:0 0 8px var(--cthy-cyan);
+  animation:cthy-status 2.2s ease-in-out infinite;
+}
+
+.cthy-triad-state {
+  position:relative;
+  z-index:2;
+  display:flex;
+  flex:0 0 43px;
+  min-width:43px!important;
+  flex-direction:column;
+  align-items:flex-end;
+  white-space:nowrap;
+}
+
+/* 09 Message and output frames */
+/* 09 消息与输出框架：透明填充保留中央人物，双形态边框保持方向辨识。 */
+html.cthy-theme:not(.electron-dark) .cthy-chat-paper {
+  --cthy-text:var(--tessalume-v1-light-text-primary);
+  --cthy-text-2:var(--tessalume-v1-light-text-secondary);
+  --color-text-foreground:var(--tessalume-v1-light-text-primary)!important;
+  --color-text-foreground-secondary:var(--tessalume-v1-light-text-secondary)!important;
+}
+
+html.cthy-theme .cthy-task-header {
+  position:relative!important;
+  overflow:hidden!important;
+  border:1px solid color-mix(in srgb,var(--cthy-blue) 62%,var(--cthy-gold))!important;
+  border-radius:18px 3px 18px 3px!important;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--cthy-solid) 96%,transparent),color-mix(in srgb,var(--cthy-cyan) 11%,var(--cthy-solid)) 70%,color-mix(in srgb,var(--cthy-gold) 10%,transparent))!important;
+  box-shadow:0 10px 30px color-mix(in srgb,var(--cthy-blue) 14%,transparent),inset 0 1px rgba(255,255,255,.62)!important;
+  backdrop-filter:blur(16px);
+}
+
+html.cthy-theme .cthy-task-header::after {
+  content:"";
+  position:absolute;
+  left:12px;
+  right:12px;
+  bottom:0;
+  height:1px;
+  background:linear-gradient(90deg,transparent,var(--cthy-cyan),var(--cthy-gold),transparent);
+  opacity:.8;
+  pointer-events:none;
+}
+
+html.cthy-theme .cthy-task-title[data-tessalume-surface="task-title"],
+html.cthy-theme .cthy-task-title {
+  position:relative!important;
+  display:flex!important;
+  align-items:center!important;
+  min-height:32px!important;
+  box-sizing:border-box!important;
+  width:max-content!important;
+  max-width:min(500px,50vw)!important;
+  padding:5px 108px 5px 10px!important;
+  border:1px solid color-mix(in srgb,var(--cthy-blue) 58%,var(--cthy-gold))!important;
+  border-radius:16px 3px 16px 3px!important;
+  color:var(--cthy-text)!important;
+  background:linear-gradient(100deg,color-mix(in srgb,var(--cthy-cyan) 13%,var(--cthy-solid)),color-mix(in srgb,var(--cthy-gold) 9%,transparent))!important;
+  box-shadow:inset 3px 0 var(--cthy-blue),0 6px 20px color-mix(in srgb,var(--cthy-blue) 18%,transparent)!important;
+}
+
+html.cthy-theme .cthy-task-title>span {
+  flex:0 1 auto!important;
+  min-width:0;
+}
+
+html.cthy-theme .cthy-task-title button.truncate {
+  max-width:100%!important;
+  overflow:hidden!important;
+  border:0!important;
+  color:var(--cthy-text)!important;
+  background:none!important;
+  font-weight:680!important;
+  letter-spacing:.012em;
+  text-shadow:0 1px rgba(255,255,255,.54);
+}
+
+html.cthy-theme .cthy-task-title svg {
+  flex:0 0 auto;
+  color:var(--cthy-blue)!important;
+  filter:drop-shadow(0 0 6px color-mix(in srgb,var(--cthy-cyan) 42%,transparent));
+}
+
+html.cthy-theme .cthy-task-title::after {
+  content:"GALE BLADE / III";
+  position:absolute;
+  right:12px;
+  top:50%;
+  transform:translateY(-50%);
+  color:color-mix(in srgb,var(--cthy-gold) 82%,var(--cthy-text-3));
+  font:700 7px/1 var(--cthy-mono);
+  letter-spacing:.11em;
+  white-space:nowrap;
+  pointer-events:none;
+}
+
+html.cthy-theme.electron-dark .cthy-task-header {
+  background:linear-gradient(90deg,rgba(7,18,43,.98),rgba(13,35,75,.96) 70%,rgba(25,20,54,.96))!important;
+  box-shadow:0 10px 30px rgba(0,0,0,.48),inset 0 1px rgba(255,255,255,.07)!important;
+}
+
+html.cthy-theme.electron-dark .cthy-task-title button.truncate {
+  text-shadow:0 1px 4px #000;
+}
+
+html.cthy-theme.electron-dark .cthy-task-title::after {
+  content:"BLACK TIDE / III";
+  color:color-mix(in srgb,var(--cthy-cyan) 80%,var(--cthy-gold));
+}
+
+html.cthy-theme .cthy-message-assistant {
+  position:relative!important;
+  padding-left:18px!important;
+  border-left:2px solid color-mix(in srgb,var(--cthy-cyan) 68%,transparent)!important;
+  text-align:left!important;
+}
+
+.cthy-message-assistant .cthy-markdown {
+  position:relative;
+  overflow:hidden;
+  width:auto!important;
+  max-width:min(88%,820px)!important;
+  margin-left:0!important;
+  margin-right:auto!important;
+  padding:21px 34px 38px!important;
+  color:var(--cthy-text)!important;
+  border:1px solid color-mix(in srgb,var(--cthy-cyan) 62%,var(--cthy-line))!important;
+  border-left:3px solid var(--cthy-cyan)!important;
+  border-radius:4px 20px 20px 20px!important;
+  box-shadow:inset 5px 0 18px color-mix(in srgb,var(--cthy-cyan) 9%,transparent),0 10px 30px color-mix(in srgb,var(--cthy-blue) 11%,transparent)!important;
+  text-shadow:0 1px color-mix(in srgb,var(--cthy-solid) 64%,transparent);
+}
+
+.cthy-message-assistant .cthy-markdown::before {
+  content:"WINDWARD RESPONSE  ·  " attr(data-cthy-message);
+  position:absolute;
+  left:20px;
+  top:8px;
+  color:var(--cthy-blue);
+  font:700 6px/1 var(--cthy-mono);
+  letter-spacing:.13em;
+}
+
+.cthy-message-assistant .cthy-markdown::after {
+  content:"CARTETHYIA  ◇  FLEURDELYS  ◇  ONE FREE WILL";
+  position:absolute;
+  left:20px;
+  right:20px;
+  bottom:10px;
+  padding-top:5px;
+  border-top:1px solid color-mix(in srgb,var(--cthy-gold) 56%,var(--cthy-line));
+  color:var(--cthy-text-3);
+  font:700 6px/1 var(--cthy-mono);
+  letter-spacing:.12em;
+  text-align:right;
+}
+
+html.cthy-theme .cthy-message-user {
+  position:relative;
+  border:0!important;
+  box-shadow:none!important;
+}
+
+html.cthy-theme .cthy-message-user [data-user-message-bubble="true"] {
+  position:relative;
+  isolation:isolate;
+  overflow:visible;
+  max-width:min(79%,760px)!important;
+  margin-left:auto!important;
+  margin-right:0!important;
+  padding:28px 30px 22px!important;
+  color:var(--cthy-text)!important;
+  border:1px solid color-mix(in srgb,var(--cthy-gold) 64%,var(--cthy-line))!important;
+  border-right:3px solid var(--cthy-gold)!important;
+  border-radius:22px 5px 22px 22px!important;
+  box-shadow:inset -5px 0 18px color-mix(in srgb,var(--cthy-gold) 9%,transparent),0 10px 30px color-mix(in srgb,var(--cthy-gold) 10%,transparent)!important;
+  text-shadow:0 1px color-mix(in srgb,var(--cthy-solid) 64%,transparent);
+}
+
+html.cthy-theme .cthy-message-user [data-user-message-bubble="true"]::before {
+  content:"✦  WIND  ·  TIDE  ·  CROWN  ✦";
+  position:absolute;
+  z-index:1;
+  left:18px;
+  right:18px;
+  top:8px;
+  height:12px;
+  color:color-mix(in srgb,var(--cthy-blue) 76%,var(--cthy-gold));
+  border-bottom:1px solid color-mix(in srgb,var(--cthy-gold) 48%,var(--cthy-line));
+  font:700 6px/1 var(--cthy-mono);
+  letter-spacing:.16em;
+  text-align:right;
+}
+
+html.cthy-theme .cthy-message-user [data-user-message-bubble="true"]::after {
+  content:"";
+  position:absolute;
+  z-index:-1;
+  right:-8px;
+  bottom:12px;
+  width:23px;
+  height:23px;
+  border-right:1px solid color-mix(in srgb,var(--cthy-gold) 62%,var(--cthy-blue));
+  border-bottom:1px solid color-mix(in srgb,var(--cthy-gold) 62%,var(--cthy-blue));
+  border-radius:0 0 18px;
+  transform:skewX(-18deg) rotate(5deg);
+}
+
+.cthy-theme.electron-dark :is(.cthy-message-assistant .cthy-markdown,.cthy-message-user [data-user-message-bubble="true"]) {
+  text-shadow:0 1px 4px rgba(0,0,0,.86);
+}
+
+.cthy-chat-paper {
+  border-left:1px solid color-mix(in srgb,var(--cthy-cyan) 34%,transparent);
+  border-right:1px solid color-mix(in srgb,var(--cthy-gold) 34%,transparent);
+  box-shadow:inset 18px 0 38px color-mix(in srgb,var(--cthy-solid) 17%,transparent),inset -18px 0 38px color-mix(in srgb,var(--cthy-gold) 6%,transparent);
+}
+
+.cthy-chat-paper::before {
+  content:none!important;
+}
+
+html.cthy-theme:not(.electron-dark) .cthy-chat-paper :is(.cthy-markdown,[data-user-message-bubble="true"],p,li,td,th,h1,h2,h3,h4,h5,h6,strong,em) {
+  color:#0a101a!important;
+}
+
+.cthy-output-panel {
+  position:relative!important;
+  overflow:hidden!important;
+  color:var(--cthy-text)!important;
+  border:1px solid color-mix(in srgb,var(--cthy-blue) 54%,var(--cthy-gold))!important;
+  border-radius:22px 5px 22px 5px!important;
+  background:linear-gradient(145deg,color-mix(in srgb,var(--cthy-solid) 94%,var(--cthy-blue) 6%),color-mix(in srgb,var(--cthy-panel) 91%,var(--cthy-gold) 9%))!important;
+  box-shadow:0 18px 45px color-mix(in srgb,var(--cthy-blue) 16%,transparent),inset 0 1px rgba(255,255,255,.34)!important;
+  backdrop-filter:blur(18px);
+}
+
+.cthy-output-panel::before {
+  content:"DUAL CROWN  /  FIELD LEDGER";
+  position:absolute;
+  z-index:3;
+  left:14px;
+  right:14px;
+  top:4px;
+  height:1px;
+  background:linear-gradient(90deg,var(--cthy-cyan),var(--cthy-gold),transparent 82%);
+  color:var(--cthy-text-3);
+  font:700 6px/1 var(--cthy-mono);
+  letter-spacing:.14em;
+  pointer-events:none;
+}
+
+.cthy-output-panel>div {
+  gap:8px!important;
+  padding:8px 8px 10px!important;
+}
+
+.cthy-output-panel>div>section {
+  margin:0!important;
+  padding:0 0 8px!important;
+  overflow:hidden!important;
+  border:1px solid color-mix(in srgb,var(--cthy-line) 88%,var(--cthy-gold))!important;
+  border-radius:15px 3px 15px 3px!important;
+  background:color-mix(in srgb,var(--cthy-panel) 92%,transparent)!important;
+}
+
+.cthy-output-panel>div>section::after {
+  display:none!important;
+}
+
+.cthy-output-panel>div>section>header {
+  position:relative!important;
+  min-height:31px!important;
+  padding:3px 10px 3px 12px!important;
+  color:var(--cthy-gold)!important;
+  border-bottom:1px solid color-mix(in srgb,var(--cthy-gold) 42%,var(--cthy-line))!important;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--cthy-blue) 12%,var(--cthy-solid)),color-mix(in srgb,var(--cthy-gold) 9%,var(--cthy-panel)))!important;
+}
+
+.cthy-output-panel>div>section>header [class~="group/section-toggle"] {
+  color:var(--cthy-gold)!important;
+  font:700 10px/1.2 var(--cthy-serif)!important;
+  letter-spacing:.08em;
+}
+
+.cthy-output-panel [data-slot="thread-summary-panel-item-button"] {
+  min-height:30px!important;
+  margin:2px 8px!important;
+  padding:5px 8px!important;
+  color:var(--cthy-text-2)!important;
+  border:1px solid transparent!important;
+  border-left:2px solid color-mix(in srgb,var(--cthy-cyan) 66%,var(--cthy-gold))!important;
+  border-radius:9px 3px 9px 3px!important;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--cthy-blue) 10%,var(--cthy-solid)),color-mix(in srgb,var(--cthy-solid) 63%,transparent) 82%,transparent)!important;
+  transition:border-color .2s,background .2s,transform .2s;
+}
+
+.cthy-output-panel [data-slot="thread-summary-panel-item-button"]:hover {
+  color:var(--cthy-text)!important;
+  border-color:color-mix(in srgb,var(--cthy-gold) 58%,var(--cthy-line))!important;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--cthy-cyan) 14%,var(--cthy-solid)),color-mix(in srgb,var(--cthy-gold) 10%,transparent) 82%,transparent)!important;
+  transform:translateX(2px);
+}
+
+.cthy-output-panel [data-slot="thread-summary-panel-item-button"] svg {
+  color:var(--cthy-blue)!important;
+}
+
+html.cthy-theme.electron-dark .cthy-output-panel {
+  background:linear-gradient(145deg,rgba(9,24,57,.98),rgba(12,31,69,.96) 70%,rgba(28,20,58,.96))!important;
+  box-shadow:0 20px 48px rgba(0,0,0,.54),inset 0 1px rgba(255,255,255,.06)!important;
+}
+
+html.cthy-theme.electron-dark .cthy-output-panel>div>section {
+  background:linear-gradient(145deg,rgba(18,42,82,.92),rgba(23,24,61,.84))!important;
+}
+
+html.cthy-theme.electron-dark .cthy-output-panel [data-slot="thread-summary-panel-item-button"] {
+  color:var(--cthy-text-2)!important;
+  background:linear-gradient(90deg,rgba(30,62,114,.86),rgba(29,29,72,.62) 82%,transparent)!important;
+}
+
+html.cthy-theme :is([data-edited-file],[data-diff-view],.diff-view,.file-summary) {
+  color:var(--cthy-text)!important;
+  border-color:var(--cthy-line)!important;
+}
+
+/* 10 Composer skin */
+/* 10 输入框皮肤：逐风长剑挂件、风潮描边与完整底栏控件。 */
+.cthy-theme .composer-surface-chrome:focus-within {
+  transform:translateY(-2px);
+  border-color:var(--cthy-cyan)!important;
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--cthy-cyan) 12%,transparent),0 25px 60px var(--cthy-control-glow)!important;
+}
+
+.cthy-theme .composer-surface-chrome :is(textarea,input,[contenteditable="true"],[class*="placeholder"]) {
+  color:inherit!important;
+  -webkit-text-fill-color:currentColor!important;
+  caret-color:var(--cthy-cyan)!important;
+}
+
+.cthy-theme:not(.electron-dark) .composer-surface-chrome :is(textarea,input)::placeholder,
+.cthy-theme:not(.electron-dark) .composer-surface-chrome [contenteditable="true"]:empty::before {
+  color:#687e94!important;
+  -webkit-text-fill-color:#687e94!important;
+  opacity:1!important;
+}
+
+.cthy-theme.electron-dark .composer-surface-chrome :is(textarea,input)::placeholder,
+.cthy-theme.electron-dark .composer-surface-chrome [contenteditable="true"]:empty::before {
+  color:#bdcde4!important;
+  -webkit-text-fill-color:#bdcde4!important;
+  opacity:1!important;
+}
+
+.cthy-theme .composer-surface-chrome :is(button,[role="button"]) {
+  color:var(--cthy-text-2)!important;
+  -webkit-text-fill-color:currentColor!important;
+}
+
+html.cthy-theme .composer-surface-chrome {
+  position:relative!important;
+  color:var(--cthy-text)!important;
+  border:1px solid color-mix(in srgb,var(--cthy-blue) 60%,var(--cthy-gold))!important;
+  border-radius:23px 4px 23px 4px!important;
+  background:linear-gradient(145deg,color-mix(in srgb,var(--cthy-solid) 97%,var(--cthy-cyan) 3%),color-mix(in srgb,var(--cthy-bg-2) 91%,var(--cthy-gold) 9%))!important;
+  box-shadow:var(--cthy-shadow),inset 3px 0 color-mix(in srgb,var(--cthy-cyan) 55%,transparent),inset -3px 0 color-mix(in srgb,var(--cthy-gold) 48%,transparent)!important;
+  backdrop-filter:blur(18px);
+  transition:border-color .25s,box-shadow .25s,transform .25s;
+}
+
+html.cthy-theme.electron-dark .composer-surface-chrome {
+  background:linear-gradient(145deg,#10254d,#07142e 72%,#17153d)!important;
+  box-shadow:0 0 0 1px rgba(116,181,255,.13),0 22px 60px rgba(0,0,0,.68),inset 3px 0 rgba(111,205,255,.44),inset -3px 0 rgba(214,193,141,.35)!important;
+}
+
+.cthy-theme .composer-surface-chrome::after {
+  content:"";
+  position:absolute;
+  left:20px;
+  right:20px;
+  top:8px;
+  height:8px;
+  border-top:1px solid var(--cthy-cyan);
+  border-radius:50%;
+  box-shadow:0 -2px 12px color-mix(in srgb,var(--cthy-blue) 46%,transparent);
+  opacity:.58;
+  pointer-events:none;
+  animation:cthy-composer-tide 5.4s ease-in-out infinite;
+}
+
+.cthy-theme .composer-surface-chrome [class*="_footer_"] {
+  position:relative;
+  z-index:2;
+}
+
+.cthy-theme .composer-surface-chrome [class*="_footer_"] button {
+  position:relative;
+  border-color:var(--cthy-control-line)!important;
+  transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease,filter .18s ease!important;
+}
+
+.cthy-theme .composer-surface-chrome [class*="_footer_"] button:hover {
+  transform:translateY(-1px);
+  border-color:color-mix(in srgb,var(--cthy-gold) 65%,var(--cthy-blue))!important;
+  filter:brightness(1.08);
+}
+
+.cthy-theme .composer-surface-chrome button:has([class*="_ModelPickerTrigger"]) {
+  color:var(--cthy-text)!important;
+  background:var(--cthy-control)!important;
+  border-color:var(--cthy-control-line)!important;
+  box-shadow:inset 0 1px color-mix(in srgb,var(--cthy-cyan) 24%,transparent),0 4px 14px var(--cthy-control-glow)!important;
+}
+
+.cthy-theme .composer-surface-chrome button:has([class*="_ModelPickerTrigger"]) [class*="ModelText"] {
+  color:var(--cthy-text)!important;
+  -webkit-text-fill-color:currentColor!important;
+  font-weight:650;
+}
+
+.cthy-theme .composer-surface-chrome button:has([class*="_ModelPickerTrigger"]) :is([class*="EffortLabel"],svg) {
+  color:var(--cthy-gold)!important;
+}
+
+.cthy-theme .composer-surface-chrome button:is([aria-label*="添加"],[aria-label*="Add"]) {
+  color:var(--cthy-blue)!important;
+  border-color:color-mix(in srgb,var(--cthy-gold) 55%,var(--cthy-blue))!important;
+  background:radial-gradient(circle at 69% 28%,color-mix(in srgb,var(--cthy-gold) 48%,transparent) 0 9%,transparent 11%),var(--cthy-control)!important;
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--cthy-gold) 15%,transparent),0 4px 13px var(--cthy-control-glow)!important;
+}
+
+.cthy-theme .composer-surface-chrome button:has([class*="_labelXs_"]) {
+  color:var(--cthy-gold)!important;
+  border-color:color-mix(in srgb,var(--cthy-gold) 58%,var(--cthy-blue))!important;
+  background:var(--cthy-control-strong)!important;
+  box-shadow:inset 0 1px color-mix(in srgb,var(--cthy-gold) 31%,transparent),0 4px 15px var(--cthy-control-glow)!important;
+}
+
+.cthy-theme .composer-surface-chrome button:has([class*="_labelXs_"]) :is(svg,[class*="_labelXs_"]) {
+  color:var(--cthy-gold)!important;
+  -webkit-text-fill-color:currentColor!important;
+}
+
+.cthy-theme .composer-surface-chrome :is([role="img"][aria-label*="上下文"],[role="img"][aria-label*="context" i],[role="img"][aria-label*="%"]):has(svg) {
+  color:var(--cthy-gold)!important;
+  border:1px solid color-mix(in srgb,var(--cthy-gold) 55%,transparent);
+  border-radius:50%;
+  background:conic-gradient(from 215deg,var(--cthy-blue),var(--cthy-cyan),var(--cthy-gold),var(--cthy-blue));
+  box-shadow:0 0 12px var(--cthy-control-glow),inset 0 0 0 2px color-mix(in srgb,var(--cthy-solid) 82%,transparent);
+}
+
+.cthy-theme .composer-surface-chrome :is([role="img"][aria-label*="上下文"],[role="img"][aria-label*="context" i],[role="img"][aria-label*="%"]):has(svg) svg {
+  color:var(--cthy-solid)!important;
+  transform:scale(.76);
+}
+
+.cthy-theme .composer-surface-chrome button:is([aria-label="听写"],[aria-label*="dictation" i]) {
+  color:var(--cthy-cyan)!important;
+  border-color:color-mix(in srgb,var(--cthy-cyan) 54%,var(--cthy-gold))!important;
+  background:radial-gradient(circle at 50% 42%,color-mix(in srgb,var(--cthy-cyan) 24%,transparent),transparent 64%),var(--cthy-control)!important;
+  box-shadow:0 4px 13px color-mix(in srgb,var(--cthy-cyan) 20%,transparent)!important;
+}
+
+.cthy-theme .composer-surface-chrome :is(button[aria-label="停止"],button[aria-label*="发送"],button[aria-label*="send" i],button[aria-label="听写"]+button,button[class~="bg-token-foreground"]) {
+  color:#f8fcff!important;
+  border:1px solid color-mix(in srgb,var(--cthy-gold) 72%,#fff)!important;
+  background:radial-gradient(circle at 34% 27%,#b9e7ff 0 7%,transparent 9%),linear-gradient(145deg,#5aa9ed,#2868c7 58%,#183f8e)!important;
+  box-shadow:0 0 0 2px color-mix(in srgb,var(--cthy-cyan) 13%,transparent),0 6px 18px color-mix(in srgb,var(--cthy-blue) 46%,transparent),inset 0 1px rgba(255,255,255,.4)!important;
+}
+
+.cthy-theme .composer-surface-chrome :is(button[aria-label="停止"],button[aria-label*="发送"],button[aria-label*="send" i],button[aria-label="听写"]+button,button[class~="bg-token-foreground"]) svg {
+  color:#f8fcff!important;
+}
+
+.cthy-crown-charm {
+  border:0;
+  background:none;
+  box-shadow:none;
+  filter:drop-shadow(0 11px 13px color-mix(in srgb,var(--cthy-blue) 42%,transparent));
+  animation:cthy-weapon-float 5.2s ease-in-out infinite;
+}
+
+.cthy-crown-charm>svg {
+  width:100%;
+  height:100%;
+  overflow:visible;
+}
+
+.cthy-crown-charm>small {
+  color:var(--cthy-text-3);
+  font:700 6px/1 var(--cthy-mono);
+  text-align:center;
+  letter-spacing:.09em;
+  text-shadow:0 1px 4px color-mix(in srgb,var(--cthy-solid) 78%,transparent);
+  white-space:nowrap;
+}
+
+.cthy-charm-light .cthy-weapon-blade,
+.cthy-charm-dark .cthy-weapon-blade {
+  transform-box:fill-box;
+  transform-origin:center;
+  animation:cthy-weapon-glint 4.4s ease-in-out infinite;
+}
+
+.cthy-charm-light .cthy-weapon-ribbon,
+.cthy-charm-dark .cthy-weapon-ribbon {
+  transform-box:fill-box;
+  transform-origin:20% 50%;
+  animation:cthy-weapon-ribbon 3.8s ease-in-out infinite alternate;
+}
+
+/* 11 Character components */
+/* 11 角色专属组件：鸢尾高光、荆棘分隔、风潮交互状态与微型材质。 */
+.cthy-theme ::selection {
+  color:#fff;
+  background:color-mix(in srgb,var(--cthy-blue) 72%,var(--cthy-iris));
+}
+
+.cthy-theme :is(a,[role="link"]) {
+  text-decoration-color:color-mix(in srgb,var(--cthy-cyan) 62%,transparent);
+}
+
+.cthy-theme :is(code,kbd) {
+  color:color-mix(in srgb,var(--cthy-blue) 82%,var(--cthy-text));
+  border-color:var(--cthy-line)!important;
+  background:color-mix(in srgb,var(--cthy-cyan) 9%,var(--cthy-solid))!important;
+}
+
+.cthy-theme pre {
+  color:var(--cthy-text)!important;
+  border:1px solid var(--cthy-line)!important;
+  background:color-mix(in srgb,var(--cthy-solid) 82%,transparent)!important;
+  box-shadow:inset 3px 0 var(--cthy-blue)!important;
+}
+
+.cthy-theme :is(button,[role="button"]):focus-visible {
+  outline:2px solid color-mix(in srgb,var(--cthy-cyan) 72%,var(--cthy-blue))!important;
+  outline-offset:2px!important;
+}
+
+.cthy-theme :is(input,textarea,select):focus {
+  border-color:var(--cthy-blue)!important;
+  box-shadow:0 0 0 2px color-mix(in srgb,var(--cthy-cyan) 22%,transparent)!important;
+}
+
+.cthy-theme * {
+  scrollbar-color:color-mix(in srgb,var(--cthy-blue) 62%,var(--cthy-cyan)) color-mix(in srgb,var(--cthy-bg) 72%,transparent);
+}
+
+.cthy-theme hr {
+  border-color:transparent!important;
+  background:linear-gradient(90deg,transparent,var(--cthy-blue),var(--cthy-gold),transparent)!important;
+  opacity:.5;
+}
+
+/* 12 Theme-only media behavior */
+/* 12 主题专属响应式与动效降级：只降低装饰强度，不改写模板几何。 */
+@media (max-width:1100px) {
+  .cthy-gale-crown,.cthy-task-card::before {
+    opacity:.72;
+  }
+
+  html.cthy-theme.cthy-is-task main.cthy-main::after {
+    background:linear-gradient(90deg,color-mix(in srgb,var(--cthy-solid) 25%,transparent),transparent 30%,transparent 70%,color-mix(in srgb,var(--cthy-solid) 22%,transparent));
+  }
+}
+
+@media (prefers-reduced-motion:reduce) {
+  #tessalume-theme-root[data-tessalume-template-version="1.0"] * {
+    animation:none!important;
+  }
+}
+
+/* 13 Character keyframes */
+/* 13 角色专属关键帧：双冕、三剑、黑潮、鸢尾与两种形态的不同节奏。 */
+@keyframes cthy-status {
+  0%,100% {
+    opacity:.56;
+    transform:scale(.88);
+  }
+
+  50% {
+    opacity:1;
+    transform:scale(1.08);
+  }
+}
+
+@keyframes cthy-hero-drift {
+  from {
+    transform:scale(1.004) translate3d(0,0,0);
+  }
+
+  to {
+    transform:scale(1.012) translate3d(-4px,-2px,0);
+  }
+}
+
+@keyframes cthy-banner-lattice {
+  0%,100% {
+    opacity:.62;
+    box-shadow:inset 0 0 34px color-mix(in srgb,var(--cthy-blue) 7%,transparent);
+  }
+
+  50% {
+    opacity:1;
+    box-shadow:inset 0 0 46px color-mix(in srgb,var(--cthy-cyan) 13%,transparent),0 0 20px color-mix(in srgb,var(--cthy-gold) 10%,transparent);
+  }
+}
+
+@keyframes cthy-title-shimmer {
+  0%,18%,100% {
+    background-position:100% 50%;
+  }
+
+  52%,68% {
+    background-position:0 50%;
+  }
+}
+
+@keyframes cthy-home-current {
+  to {
+    stroke-dashoffset:-150;
+  }
+}
+
+@keyframes cthy-home-night-current {
+  to {
+    stroke-dashoffset:166;
+  }
+}
+
+@keyframes cthy-home-orbit {
+  to {
+    transform:rotate(360deg);
+  }
+}
+
+@keyframes cthy-home-blade-unseal {
+  0%,100% {
+    opacity:.62;
+    transform:translateY(3px) scale(.92);
+  }
+
+  42%,58% {
+    opacity:1;
+    transform:translateY(-2px) scale(1.05);
+  }
+}
+
+@keyframes cthy-home-guard {
+  to {
+    stroke-dashoffset:-114;
+  }
+}
+
+@keyframes cthy-home-mote {
+  from {
+    opacity:.35;
+    transform:translate3d(-5px,3px,0) rotate(-8deg) scale(.82);
+  }
+
+  to {
+    opacity:1;
+    transform:translate3d(7px,-4px,0) rotate(10deg) scale(1.08);
+  }
+}
+
+@keyframes cthy-home-thorn-orbit {
+  to {
+    transform:rotate(-360deg);
+  }
+}
+
+@keyframes cthy-home-night-gem {
+  0%,100% {
+    opacity:.38;
+    transform:scale(.76) rotate(0);
+  }
+
+  50% {
+    opacity:1;
+    transform:scale(1.15) rotate(45deg);
+  }
+}
+
+@keyframes cthy-crown-breathe {
+  0%,100% {
+    opacity:.72;
+    filter:drop-shadow(0 0 8px color-mix(in srgb,var(--cthy-blue) 24%,transparent));
+  }
+
+  50% {
+    opacity:1;
+    filter:drop-shadow(0 0 15px color-mix(in srgb,var(--cthy-cyan) 48%,transparent));
+  }
+}
+
+@keyframes cthy-crown-trace {
+  to {
+    stroke-dashoffset:-196;
+  }
+}
+
+@keyframes cthy-blade-answer {
+  0%,100% {
+    opacity:.58;
+    transform:translateY(2px) scale(.92);
+  }
+
+  50% {
+    opacity:1;
+    transform:translateY(-2px) scale(1.05);
+  }
+}
+
+@keyframes cthy-petal-drift {
+  from {
+    opacity:.48;
+    transform:translate3d(-2px,1px,0) rotate(-6deg);
+  }
+
+  to {
+    opacity:1;
+    transform:translate3d(4px,-2px,0) rotate(8deg);
+  }
+}
+
+@keyframes cthy-wind-ring {
+  0% {
+    width:12px;
+    height:5px;
+    opacity:.75;
+  }
+
+  85%,100% {
+    width:178px;
+    height:46px;
+    opacity:0;
+  }
+}
+
+@keyframes cthy-emblem-breathe {
+  0%,100% {
+    filter:saturate(.92) brightness(.96);
+  }
+
+  50% {
+    filter:saturate(1.2) brightness(1.12);
+  }
+}
+
+@keyframes cthy-card-left {
+  0%,100% {
+    transform:translateY(0) rotate(.8deg);
+  }
+
+  50% {
+    transform:translateY(-7px) rotate(-.5deg);
+  }
+}
+
+@keyframes cthy-card-gale {
+  0%,100% {
+    transform:translate3d(0,-21px,0) rotate(-1.2deg);
+  }
+
+  45% {
+    transform:translate3d(-5px,13px,0) rotate(.9deg);
+  }
+}
+
+@keyframes cthy-card-tide {
+  0%,100% {
+    transform:translate3d(4px,14px,0) rotate(.7deg);
+  }
+
+  55% {
+    transform:translate3d(0,-23px,0) rotate(-.8deg);
+  }
+}
+
+@keyframes cthy-memory-tide {
+  to {
+    stroke-dashoffset:-52;
+  }
+}
+
+@keyframes cthy-memory-pulse {
+  0%,100% {
+    opacity:.35;
+    transform:scale(.7);
+  }
+
+  50% {
+    opacity:1;
+    transform:scale(1.2);
+  }
+}
+
+@keyframes cthy-sync-scan {
+  0%,12% {
+    left:-34%;
+    opacity:0;
+  }
+
+  22%,72% {
+    opacity:1;
+  }
+
+  86%,100% {
+    left:110%;
+    opacity:0;
+  }
+}
+
+@keyframes cthy-triad-orbit {
+  to {
+    transform:rotate(360deg);
+  }
+}
+
+@keyframes cthy-sync-blade {
+  0%,100% {
+    opacity:.58;
+    transform:scale(.88) translateY(1px);
+  }
+
+  50% {
+    opacity:1;
+    transform:scale(1.08) translateY(-1px);
+  }
+}
+
+@keyframes cthy-sync-gem {
+  0%,100% {
+    opacity:.58;
+    transform:scale(.78);
+  }
+
+  50% {
+    opacity:1;
+    transform:scale(1.22);
+  }
+}
+
+@keyframes cthy-meter {
+  from {
+    height:5px;
+    opacity:.38;
+  }
+
+  to {
+    height:var(--h);
+    opacity:1;
+  }
+}
+
+@keyframes cthy-composer-tide {
+  0%,100% {
+    opacity:.36;
+    transform:scaleX(.82);
+  }
+
+  50% {
+    opacity:.82;
+    transform:scaleX(1);
+  }
+}
+
+@keyframes cthy-weapon-float {
+  0%,100% {
+    transform:translate3d(0,2px,0) rotate(-2.4deg);
+  }
+
+  50% {
+    transform:translate3d(2px,-5px,0) rotate(1.2deg);
+  }
+}
+
+@keyframes cthy-weapon-glint {
+  0%,100% {
+    filter:brightness(.94) saturate(.94);
+  }
+
+  50% {
+    filter:brightness(1.18) saturate(1.12) drop-shadow(0 0 5px color-mix(in srgb,var(--cthy-cyan) 70%,transparent));
+  }
+}
+
+@keyframes cthy-weapon-ribbon {
+  from {
+    transform:rotate(-3deg) skewX(-2deg);
+  }
+
+  to {
+    transform:rotate(4deg) skewX(3deg);
+  }
+}
+
+@keyframes cthy-charm-float {
+  0%,100% {
+    transform:translate3d(0,1px,0) rotate(-1.4deg);
+  }
+
+  50% {
+    transform:translate3d(1px,-5px,0) rotate(1.2deg);
+  }
+}
+
+@keyframes cthy-charm-blade {
+  0%,100% {
+    opacity:.7;
+    transform:translateY(1px) scale(.96);
+  }
+
+  50% {
+    opacity:1;
+    transform:translateY(-2px) scale(1.04);
+  }
+}
+
+@keyframes cthy-thorn-turn {
+  to {
+    transform:rotate(360deg);
+  }
+}

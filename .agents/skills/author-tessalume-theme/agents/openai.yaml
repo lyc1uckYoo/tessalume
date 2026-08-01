@@ -1,4 +1,4 @@
 interface:
-  display_name: "Tessalume Theme Authoring"
-  short_description: "Preserve character identity in Template 1.0 themes"
-  default_prompt: "Use $author-tessalume-theme to migrate a Tessalume theme to Template 1.0 without losing its original visuals or animation."
+  display_name: "Tessalume Flagship Theme Author"
+  short_description: "Create complete flagship character themes from zero"
+  default_prompt: "Use $author-tessalume-theme to create a brand-new Tessalume Flagship Template 1.0 character theme from zero with researched identity, eleven finished assets, complete light/dark surface coverage, character-specific components, blocking validation, build, and runtime QA."

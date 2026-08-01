@@ -7,7 +7,7 @@
 3. 冻结几何
 4. 可替换层
 5. 自适应显隐
-6. 新建与改造流程
+6. 从零创建流程
 
 ## 模板目标
 
@@ -17,9 +17,9 @@
 和 CSS 动效。
 
 模板资产位于 `assets/theme-template/`。不要从某个已发布主题复制并删改。
-模板资产中的圆形挂件、通用轨道和示例关键帧只供新主题起步，不是旧主题
-迁移目标。改造已有主题时，必须保留该主题已经存在的首页装置、卡片动效、
-记忆徽记、同步仪、亮暗武器/SVG 和消息框，仅把它们映射到统一结构。
+模板中的圆形挂件、通用轨道、扫描线和示例关键帧都带有草稿语义，只用于说明
+DOM 所有权。新主题必须将它们全部替换成角色专属设计，不能把示例稍作换色后
+当作第一版。
 
 ## 固定结构
 
@@ -109,40 +109,18 @@ Template 1.0 的几何和公共表面现在只存在于运行时共享的
 左侧主卡与记忆卡共同显隐。代码审查、内容不可用或高度不足时，公共运行时
 隐藏对应组件并暂停动画。主题不写额外固定宽度显隐规则。
 
-## 新建与改造流程
+## 从零创建流程
 
-### 新主题
-
-1. 用 `scripts/scaffold_theme.py` 新建主题。
-2. 替换占位图片、示例内部组件、关键帧和 `manifest.json` 文案。
-3. 只编辑 `skin.css` 的主题变量、角色皮肤与专属动效。
-
-### 旧主题迁移
-
-1. 在修改前记录 Git 基线，并列出首页、左栏、聊天、消息框、左卡、两张
-   右卡、记忆、同步组件、输入框挂件、亮暗形态和关键帧。
-2. 在原 DOM 上补 `data-theme-stage`、`data-theme-role`、
-   `data-theme-part` 和优先级。只有无法满足固定嵌套时才移动节点，不用模板
-   示例节点替换原组件。
-3. 将 `sync-panel` 和 `composer-accessory` 调整为主题根节点直属元素，
-   但保留它们原来的内部 DOM、SVG、文案、类名和动效。
-4. 给 `mountCanonicalTheme` 补齐 `templateVersion: "1.0"` 与
-   `adaptiveLayout: true`，并固定使用 `320, 56, 40` 的面板定位参数。
-5. 移除会压过冻结层的旧 `!important` 位置、尺寸和显隐规则；不要删除
-   同一规则中的颜色、边框、滤镜、伪元素或 `animation`。
-6. 核对 CSS 中每个 `--tessalume-asset-*` 都有 manifest 键。保留旧变量别名通常
-   比一次性重命名整套角色皮肤更安全。
-7. 运行保留审计，再检查共享几何和皮肤隔离：
-
-   ```powershell
-   python .agents/skills/author-tessalume-theme/scripts/audit_migration_preservation.py `
-     --repo-root . --baseline-ref HEAD themes/<主题目录>
-
-   python .agents/skills/author-tessalume-theme/scripts/sync_template_geometry.py `
-     themes/<主题目录>
-   ```
-
-8. 运行 `validate_theme_contract.py`，再执行根目录 `一键构建EXE.ps1`。
-   不手工同步便携版和受信指纹。
-9. 运行检查前重新应用当前源码或本次构建，并先确认一个本次特有 DOM、
-   SVG 数量、动画名或计算样式已经出现，避免把旧注入误判为新结果。
+1. 先完成角色研究卡和 11 张图片矩阵，再运行 `scripts/scaffold_theme.py`。
+2. 生成并验收全部图片；横幅人物偏右、聊天人物居中、左栏人物占画面约
+   3/5-4/5，三张卡各自适配固定裁切。
+3. 替换全部占位图片、草稿标记、示例文案、示例内部组件和关键帧。亮暗模式
+   分别设计，但不要机械绑定角色形态。
+4. 按 [flagship-completeness.md](flagship-completeness.md) 完成首页、左栏、聊天、
+   标题行、消息气泡、环境信息内部、输入区底栏、三张卡、记忆、同步组件和挂件。
+5. 只编辑 `skin.css` 的主题变量、角色皮肤与专属动效，保持 01-13 顺序和冻结几何。
+6. 运行 `sync_template_geometry.py --check` 与 `validate_theme_contract.py`，任何草稿
+   遗留或视觉覆盖缺失都必须在构建前解决。
+7. 执行根目录 `一键构建EXE.ps1`，不手工同步便携版和受信指纹。
+8. 运行检查前重新应用当前源码或本次构建，并先确认一个本次特有 DOM、SVG、
+   动画名或计算样式已经出现，避免把旧注入误判为新结果。

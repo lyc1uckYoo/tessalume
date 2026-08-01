@@ -19,6 +19,7 @@ tmp/
 artifacts/
 previews/
 backups/
+/Prompt.md
 AGENTS.md
 
 # Every direct child of themes/ is a publishable theme package. Design sources

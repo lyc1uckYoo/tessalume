@@ -47,6 +47,22 @@ LEGACY_TOKENS = (
     "TESSALUME_TEMPLATE_V1_SURFACE", "TESSALUME_TEMPLATE_V1_GEOMETRY",
     "Moonheart Fox sovereign", "Requiem Stage",
 )
+DRAFT_TOKENS = (
+    "data-theme-draft=", "assets/placeholder.svg", "assets/placeholder.png",
+    "在这里填写", "亮色主标题", "暗色主标题", "角色挂件",
+)
+
+
+def selector_has_property(
+    css: str,
+    selector_tokens: tuple[str, ...],
+    property_name: str,
+) -> bool:
+    property_re = re.compile(rf"(?:^|;)\s*{re.escape(property_name)}\s*:", re.IGNORECASE)
+    for selector, body in CSS_RULE_RE.findall(css):
+        if all(token in selector for token in selector_tokens) and property_re.search(body):
+            return True
+    return False
 
 
 def css_entry(theme: Path, manifest: dict) -> Path:
@@ -152,6 +168,11 @@ def validate_theme(
         if not (theme / relative).is_file():
             errors.append(f"{label}: missing entry point: {relative}")
 
+    serialized_manifest = json.dumps(manifest, ensure_ascii=False)
+    for token in DRAFT_TOKENS:
+        if token in serialized_manifest or token in script or token in css:
+            errors.append(f"{label}: unresolved starter draft remains: {token}")
+
     if script.count("context.renderTemplateV1(") != 1:
         errors.append(f"{label}: theme.js must call context.renderTemplateV1 exactly once")
     if script.count("context.mountCanonicalTheme(") != 1:
@@ -199,6 +220,43 @@ def validate_theme(
             errors.append(f"{label}: stable light/dark task artwork selectors are missing")
         if f"--{namespace}-chat-art" not in css:
             errors.append(f"{label}: chat artwork token is missing")
+        quality_gate = (manifest.get("config") or {}).get("qualityGate")
+        if quality_gate == "flagship-complete-1":
+            visual_coverage = {
+                "explicit light/dark visibility": (
+                    f".{namespace}-dark-only", f".{namespace}-light-only", "display:none",
+                ),
+                "layered sidebar artwork": ("aside.app-shell-left-panel::after",),
+                "task-title row": (f".{namespace}-task-title",),
+                "environment panel sections": (f".{namespace}-output-panel>div>section",),
+                "environment panel item buttons": ('data-slot="thread-summary-panel-item-button"',),
+                "composer footer controls": ("_footer_",),
+                "composer model picker": ("_ModelPickerTrigger",),
+            }
+            compact_css = re.sub(r"\s+", "", css)
+            for surface, fragments in visual_coverage.items():
+                if not all(fragment.replace(" ", "") in compact_css for fragment in fragments):
+                    errors.append(f"{label}: flagship visual coverage missing: {surface}")
+            if not selector_has_property(
+                css,
+                (f".{namespace}-message-assistant", f".{namespace}-markdown"),
+                "padding",
+            ):
+                errors.append(f"{label}: assistant message frame needs deliberate inner padding")
+            if not selector_has_property(
+                css,
+                (f".{namespace}-message-user", "data-user-message-bubble"),
+                "padding",
+            ):
+                errors.append(f"{label}: user message frame needs deliberate inner padding")
+            if not selector_has_property(
+                css,
+                ("electron-dark", f".{namespace}-is-task", f"main.{namespace}-main::before"),
+                "filter",
+            ):
+                errors.append(f"{label}: dark chat artwork needs dedicated luminance tuning")
+        elif quality_gate is not None:
+            errors.append(f"{label}: unknown flagship quality gate: {quality_gate}")
         for selector, body in CSS_RULE_RE.findall(css):
             normalized_selector = selector.strip()
             properties = {

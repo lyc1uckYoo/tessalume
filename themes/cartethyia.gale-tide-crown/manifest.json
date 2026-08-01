@@ -1,0 +1,81 @@
+{
+  "$schema": "../../schemas/theme-manifest-v2.schema.json",
+  "schemaVersion": 2,
+  "id": "cartethyia.gale-tide-crown",
+  "name": "卡提希娅 · 风潮双冕",
+  "version": "1.0",
+  "author": "lyc1uckYoo",
+  "description": "以卡提希娅与解放形态芙露德莉斯为双重核心的旗舰主题。亮暗首页、左栏与聊天背景交叉呈现两种形态，并以风潮王冠、三柄剑影、黑潮荆棘和鸢尾花瓣重构全部组件与动效。",
+  "engineVersion": 2,
+  "type": "advanced",
+  "template": {
+    "id": "flagship",
+    "version": "1.0",
+    "style": "shared"
+  },
+  "capabilities": {
+    "light": true,
+    "dark": true
+  },
+  "entryPoints": {
+    "css": "skin.css",
+    "script": "theme.js"
+  },
+  "previews": {
+    "light": "assets/hero-light.png",
+    "dark": "assets/hero-dark.png"
+  },
+  "assets": {
+    "hero-light": "assets/hero-light.png",
+    "hero-dark": "assets/hero-dark.png",
+    "sidebar-light": "assets/sidebar-light.png",
+    "sidebar-dark": "assets/sidebar-dark.png",
+    "chat-light": "assets/chat-light.png",
+    "chat-dark": "assets/chat-dark.png",
+    "task-left": "assets/task-left.png",
+    "task-right-secondary": "assets/task-right-secondary.png",
+    "task-right-primary": "assets/task-right-primary.png",
+    "memory-light": "assets/memory-light.png",
+    "memory-dark": "assets/memory-dark.png"
+  },
+  "config": {
+    "qualityGate": "flagship-complete-1",
+    "title": "卡提希娅 · 风潮双冕",
+    "subtitle": "她曾被王冠与预言命名，如今只让风决定去向；当怒潮再临，芙露德莉斯便从同一颗自由之心中苏醒。",
+    "status": "GALE / TIDE · DUAL CROWN ONLINE",
+    "kickerLight": "WANDERING KNIGHT · FREEDOM IN BLOOM",
+    "kickerDark": "FLEURDELYS · CROWN OF THE STORM",
+    "headingLight": "轻掷王冠",
+    "headingLightAccent": "向风而行",
+    "headingDark": "让怒潮俯首",
+    "headingDarkAccent": "于花中重生",
+    "motionLabel": "卡提希娅三剑与风潮双冕",
+    "noteLabel": "FORM RESONANCE",
+    "noteLight": "卡提希娅 · 游侠形态",
+    "noteDark": "芙露德莉斯 · 解放形态",
+    "leftCardTitle": "卡提希娅 · 游风",
+    "leftCardMeta": "WANDERING KNIGHT / 01",
+    "secondaryCardTitle": "卡提希娅 · 逆潮",
+    "secondaryCardMeta": "BLADE OF FREEDOM / 02",
+    "primaryCardTitle": "芙露德莉斯 · 加冕",
+    "primaryCardMeta": "CROWNED TEMPEST / 03",
+    "memoryLabel": "AVINOLEUM · 王冠记忆",
+    "memory": "王冠可以被轻轻抛下，风却会记住她为自由挥剑的每一次回响。",
+    "syncLabel": "SWORD SHADOW SYNCHRONIZATION",
+    "syncTitle": "三剑共鸣",
+    "syncValue": "III",
+    "syncTotal": "III",
+    "syncCore": "风",
+    "syncCoreLabel": "潮",
+    "syncStateLabel": "CURRENT FORM",
+    "syncState": "同调",
+    "accessorySymbol": "冠",
+    "accessoryLabel": "逐风之刃",
+    "pinnedSection": "逐风书签",
+    "projectSection": "双冕档案",
+    "previewFocusX": "right"
+  },
+  "compatibility": {
+    "petOverlay": false
+  }
+}
