@@ -18,6 +18,16 @@ Read all three references before editing or generating images:
 2. [references/template-v1.md](references/template-v1.md)
 3. [references/flagship-completeness.md](references/flagship-completeness.md)
 
+## Repository branch policy
+
+Perform all Tessalume work directly on the existing `main` branch. Before
+editing, confirm `git branch --show-current` returns `main`; if it does not,
+return safely to `main` before making changes. Never create or switch to a
+feature branch, worktree branch or pull-request branch unless the user
+explicitly overrides this policy in the current task. Commit and push only
+`main`. A push still requires the user's explicit permission in the current
+task.
+
 ## Workflow
 
 1. Inspect repository instructions, the working tree and the target character.
