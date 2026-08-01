@@ -1,0 +1,47 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AssemblyName>Tessalume</AssemblyName>
+    <Product>$(AssemblyName)</Product>
+    <ApplicationIcon>Assets\$(AssemblyName).ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Description>Open-source visual theme studio for Codex desktop</Description>
+    <Authors>$(AssemblyName) Contributors</Authors>
+    <Version>1.0.0</Version>
+    <BuiltInThemesRoot Condition="'$(BuiltInThemesRoot)' == ''">..\..\themes</BuiltInThemesRoot>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Tessalume.Core\Tessalume.Core.csproj" />
+    <Resource Include="Assets\$(AssemblyName).ico" />
+    <Resource Include="Assets\$(AssemblyName).png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Compatibility\*.js">
+      <LogicalName>Tessalume.Compatibility/%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Compatibility\*.css">
+      <LogicalName>Tessalume.Compatibility/%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="$(BuiltInThemesRoot)\*\**\*"
+                      Exclude="$(BuiltInThemesRoot)\**\.legacy\**;$(BuiltInThemesRoot)\**\.references\**;$(BuiltInThemesRoot)\**\.sources\**;$(BuiltInThemesRoot)\.optimizer-cache.json">
+      <LogicalName>Tessalume.BuiltInThemes/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\examples\**\*">
+      <LogicalName>Tessalume.Templates/theme-template-v1/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <DebugType>None</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+  </PropertyGroup>
+
+</Project>

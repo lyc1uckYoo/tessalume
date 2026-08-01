@@ -32,7 +32,7 @@ SECTION_TITLES = (
     "08 Sync-panel skin", "09 Message and output frames", "10 Composer skin",
     "11 Character components", "12 Theme-only media behavior", "13 Character keyframes",
 )
-ASSET_VARIABLE_RE = re.compile(r"--cts-asset-([A-Za-z0-9][A-Za-z0-9._-]*)")
+ASSET_VARIABLE_RE = re.compile(r"--tessalume-asset-([A-Za-z0-9][A-Za-z0-9._-]*)")
 CSS_RULE_RE = re.compile(r"([^{}]+)\{([^{}]*)\}")
 KEYFRAME_RE = re.compile(r"@keyframes\s+([A-Za-z_][\w-]*)")
 CLASS_NAME_RE = re.compile(r'(?:className|stageClass)\s*:\s*"([^"]+)"')

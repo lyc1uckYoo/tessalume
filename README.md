@@ -117,8 +117,8 @@ powershell -ExecutionPolicy Bypass -File ".\一键构建EXE.ps1"
 ## 项目结构
 
 ```text
-src/CodexThemeStudio.App       WPF 主界面、顶部浮窗与本机适配
-src/CodexThemeStudio.Core      主题加载、校验、Codex 启动与 CDP 运行时
+src/Tessalume.App       WPF 主界面、顶部浮窗与本机适配
+src/Tessalume.Core      主题加载、校验、Codex 启动与 CDP 运行时
 tests/                         无外部测试框架的自动检查
 schemas/                       主题包 JSON Schema
 themes/<主题目录>/             四套内置旗舰主题源码

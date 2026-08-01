@@ -39,20 +39,20 @@ html.qxo-theme {
   --qxo-line:rgba(71,119,129,.25);
   --qxo-line-red:rgba(45,149,169,.46);
   --qxo-shadow:0 16px 42px rgba(39,80,88,.15);
-  --qxo-hero:var(--cts-asset-hero-light);
-  --qxo-sidebar-art:var(--cts-asset-sidebar-light);
-  --qxo-hecate-art:var(--cts-asset-task-right-primary);
-  --qxo-chat-art:var(--cts-asset-chat-light);
+  --qxo-hero:var(--tessalume-asset-hero-light);
+  --qxo-sidebar-art:var(--tessalume-asset-sidebar-light);
+  --qxo-hecate-art:var(--tessalume-asset-task-right-primary);
+  --qxo-chat-art:var(--tessalume-asset-chat-light);
   --qxo-display:"Microsoft YaHei UI","Segoe UI",sans-serif;
   --qxo-serif:"STKaiti","KaiTi",serif;
   --qxo-mono:"Cascadia Code",Consolas,monospace;
-  --cts-v1-light-text-primary:#172631;
-  --cts-v1-light-text-secondary:#48616b;
-  --cts-v1-light-chat-mask:linear-gradient(90deg,rgba(248,253,255,.84),rgba(248,253,255,.60) 46%,rgba(248,253,255,.27) 76%,rgba(248,253,255,.11));
-  --cts-v1-light-sidebar-row:linear-gradient(90deg,rgba(248,253,255,.80),rgba(248,253,255,.43) 72%,transparent);
-  --cts-v1-light-sidebar-row-active:linear-gradient(90deg,rgba(248,253,255,.94),rgba(248,253,255,.65) 72%,transparent);
+  --tessalume-v1-light-text-primary:#172631;
+  --tessalume-v1-light-text-secondary:#48616b;
+  --tessalume-v1-light-chat-mask:linear-gradient(90deg,rgba(248,253,255,.84),rgba(248,253,255,.60) 46%,rgba(248,253,255,.27) 76%,rgba(248,253,255,.11));
+  --tessalume-v1-light-sidebar-row:linear-gradient(90deg,rgba(248,253,255,.80),rgba(248,253,255,.43) 72%,transparent);
+  --tessalume-v1-light-sidebar-row-active:linear-gradient(90deg,rgba(248,253,255,.94),rgba(248,253,255,.65) 72%,transparent);
   color-scheme:light;
-  --qxo-memory-art:var(--cts-asset-memory-light);
+  --qxo-memory-art:var(--tessalume-asset-memory-light);
   --qxo-composer-control:linear-gradient(145deg,rgba(252,255,253,.92),rgba(230,242,240,.84));
   --qxo-composer-control-strong:linear-gradient(135deg,rgba(165,31,53,.13),rgba(173,139,89,.16));
   --qxo-composer-control-line:rgba(92,112,106,.34);
@@ -76,12 +76,12 @@ html.qxo-theme.electron-dark {
   --qxo-line:rgba(107,169,180,.22);
   --qxo-line-red:rgba(70,196,217,.48);
   --qxo-shadow:0 20px 54px rgba(0,0,0,.55);
-  --qxo-hero:var(--cts-asset-hero-dark);
-  --qxo-sidebar-art:var(--cts-asset-sidebar-dark);
-  --qxo-hecate-art:var(--cts-asset-task-right-primary);
-  --qxo-chat-art:var(--cts-asset-chat-dark);
+  --qxo-hero:var(--tessalume-asset-hero-dark);
+  --qxo-sidebar-art:var(--tessalume-asset-sidebar-dark);
+  --qxo-hecate-art:var(--tessalume-asset-task-right-primary);
+  --qxo-chat-art:var(--tessalume-asset-chat-dark);
   color-scheme:dark;
-  --qxo-memory-art:var(--cts-asset-memory-dark);
+  --qxo-memory-art:var(--tessalume-asset-memory-dark);
   --qxo-composer-control:linear-gradient(145deg,rgba(28,46,47,.82),rgba(10,17,18,.94));
   --qxo-composer-control-strong:linear-gradient(135deg,rgba(199,42,67,.78),rgba(67,30,37,.94));
   --qxo-composer-control-line:rgba(97,227,240,.38);
@@ -882,7 +882,7 @@ html.qxo-theme:not(.electron-dark) .qxo-task-companion {
   inset:0;
   background:var(--qxo-hecate-art) center 20%/cover no-repeat;
   filter:saturate(1.06) contrast(1.03);
-  background-image:var(--cts-asset-task-right-primary)!important;
+  background-image:var(--tessalume-asset-task-right-primary)!important;
   background-position:52% 12%!important;
   background-size:cover!important;
   background-repeat:no-repeat!important;
@@ -919,7 +919,7 @@ html.qxo-theme:not(.electron-dark) .qxo-task-companion {
 }
 
 .qxo-task-companion-left i {
-  background-image:var(--cts-asset-task-left)!important;
+  background-image:var(--tessalume-asset-task-left)!important;
   background-position:51% 8%;
 }
 
@@ -944,7 +944,7 @@ html.qxo-theme:not(.electron-dark) .qxo-task-companion {
 }
 
 .qxo-task-companion-right i {
-  background-image:var(--cts-asset-task-right-secondary)!important;
+  background-image:var(--tessalume-asset-task-right-secondary)!important;
   background-position:50% 12%;
   background-size:cover!important;
 }
@@ -1333,12 +1333,12 @@ html.qxo-theme.electron-dark .qxo-xianxin-strings path:nth-child(2) {
 /* 09 Message and output frames */
 /* 09 消息与输出框架：任务标题、消息气泡、聊天背景与环境信息。 */
 html.qxo-theme:not(.electron-dark) .qxo-chat-paper {
-  --qxo-text:var(--cts-v1-light-text-primary);
-  --qxo-text-2:var(--cts-v1-light-text-secondary);
-  --qxo-text-3:var(--cts-v1-light-text-secondary);
-  --color-text-foreground:var(--cts-v1-light-text-primary)!important;
-  --color-text-foreground-secondary:var(--cts-v1-light-text-secondary)!important;
-  --color-text-foreground-tertiary:var(--cts-v1-light-text-secondary)!important;
+  --qxo-text:var(--tessalume-v1-light-text-primary);
+  --qxo-text-2:var(--tessalume-v1-light-text-secondary);
+  --qxo-text-3:var(--tessalume-v1-light-text-secondary);
+  --color-text-foreground:var(--tessalume-v1-light-text-primary)!important;
+  --color-text-foreground-secondary:var(--tessalume-v1-light-text-secondary)!important;
+  --color-text-foreground-tertiary:var(--tessalume-v1-light-text-secondary)!important;
 }
 
 html.qxo-theme .qxo-task-header {
@@ -1362,7 +1362,7 @@ html.qxo-theme .qxo-task-header::after {
   pointer-events:none;
 }
 
-html.qxo-theme .qxo-task-title[data-cts-surface="task-title"],html.qxo-theme .qxo-task-title {
+html.qxo-theme .qxo-task-title[data-tessalume-surface="task-title"],html.qxo-theme .qxo-task-title {
   position:relative!important;
   display:flex!important;
   align-items:center!important;
@@ -1870,7 +1870,7 @@ html.qxo-theme.electron-dark .qxo-message-user [data-user-message-bubble="true"]
 }
 
 html.qxo-theme:not(.electron-dark) .qxo-chat-paper :is(.qxo-markdown,[data-user-message-bubble="true"]) {
-  color:var(--cts-v1-light-text-primary)!important;
+  color:var(--tessalume-v1-light-text-primary)!important;
   text-shadow:0 1px 0 rgba(255,255,255,.62);
 }
 
@@ -1879,7 +1879,7 @@ html.qxo-theme:not(.electron-dark) .qxo-chat-paper .qxo-markdown :is(p,li,td,th,
 }
 
 html.qxo-theme:not(.electron-dark) .qxo-chat-paper .qxo-markdown blockquote {
-  color:var(--cts-v1-light-text-primary)!important;
+  color:var(--tessalume-v1-light-text-primary)!important;
 }
 
 html.qxo-theme .qxo-message-assistant,html.qxo-theme .qxo-message-assistant>div,html.qxo-theme .qxo-message-assistant>div>div:not(.qxo-markdown) {

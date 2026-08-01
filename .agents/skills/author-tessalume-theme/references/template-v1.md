@@ -24,7 +24,7 @@
 ## 固定结构
 
 ```text
-#cts-theme-root
+#tessalume-theme-root
 ├─ [data-theme-stage]
 │  ├─ hero
 │  │  ├─ hero-kicker
@@ -130,7 +130,7 @@ Template 1.0 的几何和公共表面现在只存在于运行时共享的
    `adaptiveLayout: true`，并固定使用 `320, 56, 40` 的面板定位参数。
 5. 移除会压过冻结层的旧 `!important` 位置、尺寸和显隐规则；不要删除
    同一规则中的颜色、边框、滤镜、伪元素或 `animation`。
-6. 核对 CSS 中每个 `--cts-asset-*` 都有 manifest 键。保留旧变量别名通常
+6. 核对 CSS 中每个 `--tessalume-asset-*` 都有 manifest 键。保留旧变量别名通常
    比一次性重命名整套角色皮肤更安全。
 7. 运行保留审计，再检查共享几何和皮肤隔离：
 

@@ -13,7 +13,7 @@ The theme package owns:
 
 - manifest metadata and declared local assets;
 - light/dark color variables and artwork selection;
-- markup inside `#cts-theme-root`;
+- markup inside `#tessalume-theme-root`;
 - character-specific home effects, sidebar art, cards, message frames, memory
   display, sync instrument, composer accessory, internal SVG, copy, symbols,
   and CSS-only animation;
@@ -64,7 +64,7 @@ revision as a visual baseline. Inventory these surfaces separately:
 6. memory card and its meter/sigil;
 7. sync panel and its internal instrument;
 8. composer accessory, including every light/dark SVG form;
-9. all referenced `--cts-asset-*` variables;
+9. all referenced `--tessalume-asset-*` variables;
 10. all theme-owned `@keyframes`.
 
 Template migration means annotating and repositioning this identity, not
@@ -154,7 +154,7 @@ also be transparent, but their state text and boundaries remain legible.
 - version for this repository: `"1.0"`
 - author for official themes: the repository owner's GitHub name
 - every asset and preview must be relative, declared, present, and inside the package
-- every `var(--cts-asset-<name>)` reference in CSS must map to a manifest asset
+- every `var(--tessalume-asset-<name>)` reference in CSS must map to a manifest asset
   key `<name>`; when preserving legacy CSS, keep its old asset keys as aliases
   or deliberately rename every CSS reference
 - only direct children of `themes/` are publishable packages; the build embeds only files declared by the root manifest

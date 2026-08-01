@@ -14,10 +14,10 @@ html.example-theme {
   --example-line:rgba(80,94,138,.24);
   --example-line-strong:rgba(98,111,232,.48);
   --example-shadow:0 18px 48px rgba(41,51,86,.18);
-  --example-hero:var(--cts-asset-hero-light);
-  --example-sidebar-art:var(--cts-asset-sidebar-light);
-  --example-chat-art:var(--cts-asset-chat-light);
-  --example-memory-art:var(--cts-asset-memory-light);
+  --example-hero:var(--tessalume-asset-hero-light);
+  --example-sidebar-art:var(--tessalume-asset-sidebar-light);
+  --example-chat-art:var(--tessalume-asset-chat-light);
+  --example-memory-art:var(--tessalume-asset-memory-light);
   --example-display:"Microsoft YaHei UI","Segoe UI",sans-serif;
   --example-serif:"STKaiti","KaiTi",serif;
   --example-mono:"Cascadia Code",Consolas,monospace;
@@ -39,10 +39,10 @@ html.example-theme.electron-dark {
   --example-line:rgba(113,130,205,.28);
   --example-line-strong:rgba(132,145,255,.54);
   --example-shadow:0 20px 58px rgba(0,0,0,.58);
-  --example-hero:var(--cts-asset-hero-dark);
-  --example-sidebar-art:var(--cts-asset-sidebar-dark);
-  --example-chat-art:var(--cts-asset-chat-dark);
-  --example-memory-art:var(--cts-asset-memory-dark);
+  --example-hero:var(--tessalume-asset-hero-dark);
+  --example-sidebar-art:var(--tessalume-asset-sidebar-dark);
+  --example-chat-art:var(--tessalume-asset-chat-dark);
+  --example-memory-art:var(--tessalume-asset-memory-dark);
   color-scheme:dark;
 }
 
@@ -277,17 +277,17 @@ html.example-theme .example-window-bar {
 }
 
 .example-task-card-left [data-theme-part="task-card-art"] {
-  background-image:var(--cts-asset-task-left);
+  background-image:var(--tessalume-asset-task-left);
   background-position:50% 18%;
 }
 
 .example-task-card-secondary [data-theme-part="task-card-art"] {
-  background-image:var(--cts-asset-task-right-secondary);
+  background-image:var(--tessalume-asset-task-right-secondary);
   background-position:50% 18%;
 }
 
 .example-task-card-primary [data-theme-part="task-card-art"] {
-  background-image:var(--cts-asset-task-right-primary);
+  background-image:var(--tessalume-asset-task-right-primary);
   background-position:50% 18%;
 }
 
@@ -535,7 +535,7 @@ html.example-theme .composer-surface-chrome {
 
 /* 12 Theme-only media behavior */
 @media (prefers-reduced-motion:reduce) {
-  #cts-theme-root[data-cts-template-version="1.0"] * {
+  #tessalume-theme-root[data-tessalume-template-version="1.0"] * {
     animation:none!important;
   }
 }

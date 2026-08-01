@@ -11,9 +11,9 @@ from pathlib import Path
 
 
 REQUIRED_SHARED_SELECTORS = (
-    '[data-cts-surface="chat-paper"]',
-    '[data-cts-message="assistant"]',
-    '[data-cts-message="user"]',
+    '[data-tessalume-surface="chat-paper"]',
+    '[data-tessalume-message="assistant"]',
+    '[data-tessalume-message="user"]',
     '[data-theme-role="hero"]',
     '[data-theme-role="identity"]',
     '[data-theme-role="task-left"]',
@@ -37,7 +37,7 @@ FORBIDDEN_SKIN_PATTERNS = (
 
 def find_repo_root(theme: Path) -> Path:
     for candidate in (theme, *theme.parents):
-        if (candidate / "src" / "CodexThemeStudio.App").is_dir():
+        if (candidate / "src" / "Tessalume.App").is_dir():
             return candidate
     raise ValueError("repository root could not be located")
 
@@ -62,7 +62,7 @@ def main() -> int:
         theme = theme_argument.resolve()
         try:
             repo_root = find_repo_root(theme)
-            shared = repo_root / "src" / "CodexThemeStudio.App" / "Compatibility" / "theme-template-v1.css"
+            shared = repo_root / "src" / "Tessalume.App" / "Compatibility" / "theme-template-v1.css"
             if shared not in shared_checked:
                 shared_css = shared.read_text(encoding="utf-8")
                 for selector in REQUIRED_SHARED_SELECTORS:

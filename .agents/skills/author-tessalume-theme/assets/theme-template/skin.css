@@ -15,10 +15,10 @@ html.__NS__-theme {
   --__NS__-line:rgba(80,94,138,.24);
   --__NS__-line-strong:rgba(98,111,232,.48);
   --__NS__-shadow:0 18px 48px rgba(41,51,86,.18);
-  --__NS__-hero:var(--cts-asset-hero-light);
-  --__NS__-sidebar-art:var(--cts-asset-sidebar-light);
-  --__NS__-chat-art:var(--cts-asset-chat-light);
-  --__NS__-memory-art:var(--cts-asset-memory-light);
+  --__NS__-hero:var(--tessalume-asset-hero-light);
+  --__NS__-sidebar-art:var(--tessalume-asset-sidebar-light);
+  --__NS__-chat-art:var(--tessalume-asset-chat-light);
+  --__NS__-memory-art:var(--tessalume-asset-memory-light);
   --__NS__-display:"Microsoft YaHei UI","Segoe UI",sans-serif;
   --__NS__-serif:"STKaiti","KaiTi",serif;
   --__NS__-mono:"Cascadia Code",Consolas,monospace;
@@ -40,10 +40,10 @@ html.__NS__-theme.electron-dark {
   --__NS__-line:rgba(113,130,205,.28);
   --__NS__-line-strong:rgba(132,145,255,.54);
   --__NS__-shadow:0 20px 58px rgba(0,0,0,.58);
-  --__NS__-hero:var(--cts-asset-hero-dark);
-  --__NS__-sidebar-art:var(--cts-asset-sidebar-dark);
-  --__NS__-chat-art:var(--cts-asset-chat-dark);
-  --__NS__-memory-art:var(--cts-asset-memory-dark);
+  --__NS__-hero:var(--tessalume-asset-hero-dark);
+  --__NS__-sidebar-art:var(--tessalume-asset-sidebar-dark);
+  --__NS__-chat-art:var(--tessalume-asset-chat-dark);
+  --__NS__-memory-art:var(--tessalume-asset-memory-dark);
   color-scheme:dark;
 }
 
@@ -283,17 +283,17 @@ html.__NS__-theme .__NS__-window-bar {
 }
 
 .__NS__-task-card-left [data-theme-part="task-card-art"] {
-  background-image:var(--cts-asset-task-left);
+  background-image:var(--tessalume-asset-task-left);
   background-position:50% 18%;
 }
 
 .__NS__-task-card-secondary [data-theme-part="task-card-art"] {
-  background-image:var(--cts-asset-task-right-secondary);
+  background-image:var(--tessalume-asset-task-right-secondary);
   background-position:50% 18%;
 }
 
 .__NS__-task-card-primary [data-theme-part="task-card-art"] {
-  background-image:var(--cts-asset-task-right-primary);
+  background-image:var(--tessalume-asset-task-right-primary);
   background-position:50% 18%;
 }
 
@@ -547,7 +547,7 @@ html.__NS__-theme .composer-surface-chrome {
 /* 12 Theme-only media behavior */
 /* 12 主题专属响应式与动效降级：尺寸适配与减少动效。 */
 @media (prefers-reduced-motion:reduce) {
-  #cts-theme-root[data-cts-template-version="1.0"] * {
+  #tessalume-theme-root[data-tessalume-template-version="1.0"] * {
     animation:none!important;
   }
 }

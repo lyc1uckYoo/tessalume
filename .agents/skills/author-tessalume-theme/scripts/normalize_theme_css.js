@@ -247,7 +247,7 @@ function collectOwnedGeometryClasses(script, prefix) {
 
 function isCommonGeometrySelector(selector, prefix, owned) {
   if (selector.includes("[data-theme-role=") || selector.includes("[data-theme-stage]")) return true;
-  if (selector.includes("cts-code-review-open")) return true;
+  if (selector.includes("tessalume-code-review-open")) return true;
   return splitSelectors(selector).some((branch) => {
     if (branch.includes("::")) return false;
     return [...owned].some((className) => {
@@ -343,7 +343,7 @@ function cleanRule(node, prefix, used, owned, preserveSelectors = false) {
       const normalized = property.toLowerCase();
       return !sharedHomeProperties.has(normalized) &&
         normalized !== "--thread-content-max-width" &&
-        normalized !== "--cts-v1-home-hero-height" &&
+        normalized !== "--tessalume-v1-home-hero-height" &&
         !normalized.endsWith("home-hero-height");
     });
   }
@@ -448,7 +448,7 @@ function normalizeFromBaseline(themeDirectory, prefix, baselineRef) {
   const aliases = Object.entries(baselineAssetAliases[themeName] || {})
     .sort(([left], [right]) => right.length - left.length);
   for (const [oldName, newName] of aliases) {
-    source = source.replaceAll(`--cts-asset-${oldName}`, `--cts-asset-${newName}`);
+    source = source.replaceAll(`--tessalume-asset-${oldName}`, `--tessalume-asset-${newName}`);
   }
   if (themeName === "hiyuki.crimson-snow") {
     source = source.replace(

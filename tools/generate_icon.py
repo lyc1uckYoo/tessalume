@@ -8,8 +8,8 @@ from PIL import Image, ImageChops, ImageDraw, ImageEnhance
 
 
 ROOT = Path(__file__).resolve().parents[1]
-ASSETS = ROOT / "src" / "CodexThemeStudio.App" / "Assets"
-PROJECT = ROOT / "src" / "CodexThemeStudio.App" / "CodexThemeStudio.App.csproj"
+ASSETS = ROOT / "src" / "Tessalume.App" / "Assets"
+PROJECT = ROOT / "src" / "Tessalume.App" / "Tessalume.App.csproj"
 ICON_STEM = ElementTree.parse(PROJECT).findtext("./PropertyGroup/AssemblyName") or PROJECT.stem
 SOURCE = ASSETS / f"{ICON_STEM}.png"
 ICON = ASSETS / f"{ICON_STEM}.ico"

@@ -13,9 +13,9 @@ param(
 $ErrorActionPreference = 'Stop'
 $root = [IO.Path]::GetFullPath($PSScriptRoot)
 $globalJsonPath = Join-Path $root 'global.json'
-$solution = Join-Path $root 'CodexThemeStudio.sln'
-$project = Join-Path $root 'src\CodexThemeStudio.App\CodexThemeStudio.App.csproj'
-$tests = Join-Path $root 'tests\CodexThemeStudio.Core.Tests\CodexThemeStudio.Core.Tests.csproj'
+$solution = Join-Path $root 'Tessalume.sln'
+$project = Join-Path $root 'src\Tessalume.App\Tessalume.App.csproj'
+$tests = Join-Path $root 'tests\Tessalume.Core.Tests\Tessalume.Core.Tests.csproj'
 
 if (-not [IO.File]::Exists($globalJsonPath)) {
     throw "Missing SDK configuration: $globalJsonPath"

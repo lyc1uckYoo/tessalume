@@ -12,7 +12,7 @@ from pathlib import Path
 
 
 KEYFRAME_RE = re.compile(r"@(?:-webkit-)?keyframes\s+([A-Za-z_][\w-]*)")
-ASSET_RE = re.compile(r"--cts-asset-([A-Za-z0-9][A-Za-z0-9._-]*)")
+ASSET_RE = re.compile(r"--[A-Za-z][A-Za-z0-9-]*-asset-([A-Za-z0-9][A-Za-z0-9._-]*)")
 CLASS_ATTRIBUTE_RE = re.compile(r'class\s*=\s*"([^"]+)"')
 CLASS_NAME_RE = re.compile(r'(?:className|stageClass)\s*:\s*"([^"]+)"')
 CLASS_TOKEN_RE = re.compile(r"[A-Za-z_][A-Za-z0-9_-]*")

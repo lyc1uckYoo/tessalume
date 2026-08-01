@@ -73,20 +73,20 @@ html.dny-theme {
   --dny-glow:rgba(238,139,173,.22);
   --dny-shadow:0 12px 32px rgba(58,112,139,.14);
   --dny-shadow-deep:0 20px 54px rgba(49,91,117,.20);
-  --dny-hero:var(--cts-asset-hero-light);
-  --dny-chat-art:var(--cts-asset-chat-light);
-  --dny-portrait:var(--cts-asset-task-left);
-  --dny-sidebar-art:var(--cts-asset-sidebar-light);
-  --dny-companion:var(--cts-asset-task-right-primary);
-  --dny-task-alt:var(--cts-asset-task-right-secondary);
-  --dny-memory-art:var(--cts-asset-memory-light);
+  --dny-hero:var(--tessalume-asset-hero-light);
+  --dny-chat-art:var(--tessalume-asset-chat-light);
+  --dny-portrait:var(--tessalume-asset-task-left);
+  --dny-sidebar-art:var(--tessalume-asset-sidebar-light);
+  --dny-companion:var(--tessalume-asset-task-right-primary);
+  --dny-task-alt:var(--tessalume-asset-task-right-secondary);
+  --dny-memory-art:var(--tessalume-asset-memory-light);
   --dny-font-display:"Microsoft YaHei UI","Segoe UI",sans-serif;
   --dny-font-mono:"Cascadia Code",Consolas,monospace;
-  --cts-v1-light-text-primary:#162a36;
-  --cts-v1-light-text-secondary:#46606d;
-  --cts-v1-light-chat-mask:linear-gradient(90deg,rgba(247,253,255,.84),rgba(247,253,255,.60) 46%,rgba(247,253,255,.28) 76%,rgba(247,253,255,.12));
-  --cts-v1-light-sidebar-row:linear-gradient(90deg,rgba(247,253,255,.80),rgba(247,253,255,.42) 72%,transparent);
-  --cts-v1-light-sidebar-row-active:linear-gradient(90deg,rgba(247,253,255,.94),rgba(247,253,255,.64) 72%,transparent);
+  --tessalume-v1-light-text-primary:#162a36;
+  --tessalume-v1-light-text-secondary:#46606d;
+  --tessalume-v1-light-chat-mask:linear-gradient(90deg,rgba(247,253,255,.84),rgba(247,253,255,.60) 46%,rgba(247,253,255,.28) 76%,rgba(247,253,255,.12));
+  --tessalume-v1-light-sidebar-row:linear-gradient(90deg,rgba(247,253,255,.80),rgba(247,253,255,.42) 72%,transparent);
+  --tessalume-v1-light-sidebar-row-active:linear-gradient(90deg,rgba(247,253,255,.94),rgba(247,253,255,.64) 72%,transparent);
   color-scheme:light;
   --dny-composer-control:linear-gradient(145deg,rgba(250,253,254,.92),rgba(229,242,247,.84));
   --dny-composer-control-strong:linear-gradient(135deg,rgba(239,143,174,.14),rgba(216,164,93,.16));
@@ -113,13 +113,13 @@ html.dny-theme.electron-dark {
   --dny-glow:rgba(65,91,255,.22);
   --dny-shadow:0 16px 38px rgba(0,0,0,.48);
   --dny-shadow-deep:0 26px 66px rgba(0,0,0,.68);
-  --dny-hero:var(--cts-asset-hero-dark);
-  --dny-chat-art:var(--cts-asset-chat-dark);
-  --dny-portrait:var(--cts-asset-task-left-dark);
-  --dny-sidebar-art:var(--cts-asset-sidebar-dark);
-  --dny-companion:var(--cts-asset-task-right-primary-dark);
-  --dny-task-alt:var(--cts-asset-task-right-secondary-dark);
-  --dny-memory-art:var(--cts-asset-memory-dark);
+  --dny-hero:var(--tessalume-asset-hero-dark);
+  --dny-chat-art:var(--tessalume-asset-chat-dark);
+  --dny-portrait:var(--tessalume-asset-task-left-dark);
+  --dny-sidebar-art:var(--tessalume-asset-sidebar-dark);
+  --dny-companion:var(--tessalume-asset-task-right-primary-dark);
+  --dny-task-alt:var(--tessalume-asset-task-right-secondary-dark);
+  --dny-memory-art:var(--tessalume-asset-memory-dark);
   color-scheme:dark;
   --dny-composer-control:linear-gradient(145deg,rgba(17,25,58,.82),rgba(5,9,21,.94));
   --dny-composer-control-strong:linear-gradient(135deg,rgba(93,124,255,.78),rgba(24,37,89,.94));
@@ -1502,15 +1502,15 @@ html.dny-theme.electron-dark .dny-sync-core>b {
 /* 09 Message and output frames */
 /* 09 消息与输出框架：任务标题、消息气泡、聊天背景与环境信息。 */
 html.dny-theme:not(.electron-dark) .dny-chat-paper {
-  --dny-text:var(--cts-v1-light-text-primary);
-  --dny-text-2:var(--cts-v1-light-text-secondary);
-  --dny-text-3:var(--cts-v1-light-text-secondary);
-  --color-text-foreground:var(--cts-v1-light-text-primary)!important;
-  --color-text-foreground-secondary:var(--cts-v1-light-text-secondary)!important;
-  --color-text-foreground-tertiary:var(--cts-v1-light-text-secondary)!important;
+  --dny-text:var(--tessalume-v1-light-text-primary);
+  --dny-text-2:var(--tessalume-v1-light-text-secondary);
+  --dny-text-3:var(--tessalume-v1-light-text-secondary);
+  --color-text-foreground:var(--tessalume-v1-light-text-primary)!important;
+  --color-text-foreground-secondary:var(--tessalume-v1-light-text-secondary)!important;
+  --color-text-foreground-tertiary:var(--tessalume-v1-light-text-secondary)!important;
 }
 
-html.dny-theme .dny-task-title[data-cts-surface="task-title"],html.dny-theme .dny-task-title {
+html.dny-theme .dny-task-title[data-tessalume-surface="task-title"],html.dny-theme .dny-task-title {
   position:relative!important;
   display:flex!important;
   align-items:center!important;
@@ -1969,7 +1969,7 @@ html.dny-theme:not(.electron-dark) .dny-output-header {
 }
 
 html.dny-theme:not(.electron-dark) .dny-chat-paper :is(.dny-markdown,[data-user-message-bubble="true"]) {
-  color:var(--cts-v1-light-text-primary)!important;
+  color:var(--tessalume-v1-light-text-primary)!important;
   text-shadow:0 1px 0 rgba(255,255,255,.62);
 }
 
@@ -1978,7 +1978,7 @@ html.dny-theme:not(.electron-dark) .dny-chat-paper .dny-markdown :is(p,li,td,th,
 }
 
 html.dny-theme:not(.electron-dark) .dny-chat-paper .dny-markdown blockquote {
-  color:var(--cts-v1-light-text-primary)!important;
+  color:var(--tessalume-v1-light-text-primary)!important;
 }
 
 html.dny-theme .dny-message-assistant {

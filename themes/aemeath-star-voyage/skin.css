@@ -2,7 +2,7 @@
 
 /* 01 Light and dark tokens */
 /* 01 亮暗色令牌：统一管理亮色与暗色主题变量。 */
-:root.cts-theme-aemeath-star-voyage.ae3-theme:not(.electron-dark) {
+:root.tessalume-theme-aemeath-star-voyage.ae3-theme:not(.electron-dark) {
   --ae3-bg:#f7f2f7;
   --ae3-bg2:#fff9fb;
   --ae3-solid:#fffafd;
@@ -19,19 +19,19 @@
   --ae3-line:rgba(173,91,143,.25);
   --ae3-line-cyan:rgba(70,184,207,.42);
   --ae3-shadow:0 18px 48px rgba(83,53,86,.18);
-  --ae3-hero:var(--cts-asset-hero-light);
-  --ae3-sidebar-art:var(--cts-asset-sidebar-light);
-  --ae3-chat-art:var(--cts-asset-chat-light);
-  --ae3-memory-art:var(--cts-asset-memory-light);
-  --cts-v1-light-text-primary:#17212a;
-  --cts-v1-light-text-secondary:#465762;
-  --cts-v1-light-chat-mask:linear-gradient(90deg,rgba(255,250,253,.82),rgba(255,250,253,.57) 46%,rgba(255,250,253,.24) 76%,rgba(255,250,253,.10));
-  --cts-v1-light-sidebar-row:linear-gradient(90deg,rgba(255,252,255,.78),rgba(255,252,255,.40) 72%,transparent);
-  --cts-v1-light-sidebar-row-active:linear-gradient(90deg,rgba(255,252,255,.92),rgba(255,252,255,.62) 72%,transparent);
+  --ae3-hero:var(--tessalume-asset-hero-light);
+  --ae3-sidebar-art:var(--tessalume-asset-sidebar-light);
+  --ae3-chat-art:var(--tessalume-asset-chat-light);
+  --ae3-memory-art:var(--tessalume-asset-memory-light);
+  --tessalume-v1-light-text-primary:#17212a;
+  --tessalume-v1-light-text-secondary:#465762;
+  --tessalume-v1-light-chat-mask:linear-gradient(90deg,rgba(255,250,253,.82),rgba(255,250,253,.57) 46%,rgba(255,250,253,.24) 76%,rgba(255,250,253,.10));
+  --tessalume-v1-light-sidebar-row:linear-gradient(90deg,rgba(255,252,255,.78),rgba(255,252,255,.40) 72%,transparent);
+  --tessalume-v1-light-sidebar-row-active:linear-gradient(90deg,rgba(255,252,255,.92),rgba(255,252,255,.62) 72%,transparent);
   color-scheme:light;
 }
 
-:root.cts-theme-aemeath-star-voyage.ae3-theme.electron-dark {
+:root.tessalume-theme-aemeath-star-voyage.ae3-theme.electron-dark {
   --ae3-bg:#070b18;
   --ae3-bg2:#0d1327;
   --ae3-solid:#121a31;
@@ -48,10 +48,10 @@
   --ae3-line:rgba(127,110,188,.30);
   --ae3-line-cyan:rgba(91,215,235,.43);
   --ae3-shadow:0 22px 62px rgba(0,0,0,.68);
-  --ae3-hero:var(--cts-asset-hero-dark);
-  --ae3-sidebar-art:var(--cts-asset-sidebar-dark);
-  --ae3-chat-art:var(--cts-asset-chat-dark);
-  --ae3-memory-art:var(--cts-asset-memory-dark);
+  --ae3-hero:var(--tessalume-asset-hero-dark);
+  --ae3-sidebar-art:var(--tessalume-asset-sidebar-dark);
+  --ae3-chat-art:var(--tessalume-asset-chat-dark);
+  --ae3-memory-art:var(--tessalume-asset-memory-dark);
   color-scheme:dark;
 }
 
@@ -766,7 +766,7 @@ html.ae3-theme.electron-dark .ae3-window-bar {
 }
 
 .ae3-task-left>i {
-  background-image:var(--cts-asset-task-left);
+  background-image:var(--tessalume-asset-task-left);
   background-position:50% 18%;
 }
 
@@ -1106,7 +1106,7 @@ html.ae3-theme .ae3-task-header::after {
   pointer-events:none;
 }
 
-html.ae3-theme .ae3-task-title[data-cts-surface="task-title"],html.ae3-theme .ae3-task-title {
+html.ae3-theme .ae3-task-title[data-tessalume-surface="task-title"],html.ae3-theme .ae3-task-title {
   position:relative!important;
   display:flex!important;
   align-items:center!important;
@@ -1231,16 +1231,16 @@ html.ae3-theme.electron-dark .ae3-task-title::after {
 }
 
 html.ae3-theme:not(.electron-dark) .ae3-chat-paper {
-  --ae3-text:var(--cts-v1-light-text-primary);
-  --ae3-text2:var(--cts-v1-light-text-secondary);
-  --ae3-text3:var(--cts-v1-light-text-secondary);
-  --color-text-foreground:var(--cts-v1-light-text-primary)!important;
-  --color-text-foreground-secondary:var(--cts-v1-light-text-secondary)!important;
-  --color-text-foreground-tertiary:var(--cts-v1-light-text-secondary)!important;
+  --ae3-text:var(--tessalume-v1-light-text-primary);
+  --ae3-text2:var(--tessalume-v1-light-text-secondary);
+  --ae3-text3:var(--tessalume-v1-light-text-secondary);
+  --color-text-foreground:var(--tessalume-v1-light-text-primary)!important;
+  --color-text-foreground-secondary:var(--tessalume-v1-light-text-secondary)!important;
+  --color-text-foreground-tertiary:var(--tessalume-v1-light-text-secondary)!important;
 }
 
 html.ae3-theme:not(.electron-dark) .ae3-chat-paper :is(.ae3-markdown,[data-user-message-bubble="true"]) {
-  color:var(--cts-v1-light-text-primary)!important;
+  color:var(--tessalume-v1-light-text-primary)!important;
   text-shadow:0 1px 0 rgba(255,255,255,.62);
 }
 
@@ -1249,7 +1249,7 @@ html.ae3-theme:not(.electron-dark) .ae3-chat-paper .ae3-markdown :is(p,li,td,th,
 }
 
 html.ae3-theme:not(.electron-dark) .ae3-chat-paper .ae3-markdown blockquote {
-  color:var(--cts-v1-light-text-primary)!important;
+  color:var(--tessalume-v1-light-text-primary)!important;
 }
 
 html.ae3-theme .ae3-message-assistant {
@@ -1722,7 +1722,7 @@ html.ae3-theme.electron-dark .composer-surface-chrome {
 }
 
 .ae3-task-voyage>i {
-  background-image:var(--cts-asset-task-right-secondary);
+  background-image:var(--tessalume-asset-task-right-secondary);
   background-position:50% 18%;
 }
 
@@ -1731,7 +1731,7 @@ html.ae3-theme.electron-dark .composer-surface-chrome {
 }
 
 .ae3-task-tunneler>i {
-  background-image:var(--cts-asset-task-right-primary);
+  background-image:var(--tessalume-asset-task-right-primary);
   background-position:50% 18%;
 }
 

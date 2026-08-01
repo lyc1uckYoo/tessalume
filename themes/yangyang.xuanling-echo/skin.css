@@ -39,18 +39,18 @@ html.xyl-theme {
   --xyl-line:rgba(47,125,167,.25);
   --xyl-line-gold:rgba(186,160,95,.48);
   --xyl-shadow:0 16px 44px rgba(40,76,99,.18);
-  --xyl-hero:var(--cts-asset-hero-light);
-  --xyl-chat-art:var(--cts-asset-chat-light);
-  --xyl-sidebar-art:var(--cts-asset-sidebar-light);
-  --xyl-memory-art:var(--cts-asset-memory-light);
+  --xyl-hero:var(--tessalume-asset-hero-light);
+  --xyl-chat-art:var(--tessalume-asset-chat-light);
+  --xyl-sidebar-art:var(--tessalume-asset-sidebar-light);
+  --xyl-memory-art:var(--tessalume-asset-memory-light);
   --xyl-display:"Microsoft YaHei UI","Segoe UI",sans-serif;
   --xyl-serif:"STKaiti","KaiTi",serif;
   --xyl-mono:"Cascadia Code",Consolas,monospace;
-  --cts-v1-light-text-primary:#142838;
-  --cts-v1-light-text-secondary:#466172;
-  --cts-v1-light-chat-mask:linear-gradient(90deg,rgba(246,252,255,.84),rgba(246,252,255,.59) 46%,rgba(246,252,255,.27) 76%,rgba(246,252,255,.11));
-  --cts-v1-light-sidebar-row:linear-gradient(90deg,rgba(246,252,255,.80),rgba(246,252,255,.43) 72%,transparent);
-  --cts-v1-light-sidebar-row-active:linear-gradient(90deg,rgba(246,252,255,.94),rgba(246,252,255,.64) 72%,transparent);
+  --tessalume-v1-light-text-primary:#142838;
+  --tessalume-v1-light-text-secondary:#466172;
+  --tessalume-v1-light-chat-mask:linear-gradient(90deg,rgba(246,252,255,.84),rgba(246,252,255,.59) 46%,rgba(246,252,255,.27) 76%,rgba(246,252,255,.11));
+  --tessalume-v1-light-sidebar-row:linear-gradient(90deg,rgba(246,252,255,.80),rgba(246,252,255,.43) 72%,transparent);
+  --tessalume-v1-light-sidebar-row-active:linear-gradient(90deg,rgba(246,252,255,.94),rgba(246,252,255,.64) 72%,transparent);
   color-scheme:light;
   --xyl-composer-control:linear-gradient(145deg,rgba(251,254,255,.92),rgba(226,240,245,.82));
   --xyl-composer-control-strong:linear-gradient(135deg,rgba(36,94,179,.13),rgba(186,160,95,.16));
@@ -75,10 +75,10 @@ html.xyl-theme.electron-dark {
   --xyl-line:rgba(70,154,211,.28);
   --xyl-line-gold:rgba(213,183,109,.46);
   --xyl-shadow:0 20px 56px rgba(0,0,0,.62);
-  --xyl-hero:var(--cts-asset-hero-dark);
-  --xyl-chat-art:var(--cts-asset-chat-dark);
-  --xyl-sidebar-art:var(--cts-asset-sidebar-dark);
-  --xyl-memory-art:var(--cts-asset-memory-dark);
+  --xyl-hero:var(--tessalume-asset-hero-dark);
+  --xyl-chat-art:var(--tessalume-asset-chat-dark);
+  --xyl-sidebar-art:var(--tessalume-asset-sidebar-dark);
+  --xyl-memory-art:var(--tessalume-asset-memory-dark);
   color-scheme:dark;
   --xyl-composer-control:linear-gradient(145deg,rgba(24,48,83,.78),rgba(10,22,44,.92));
   --xyl-composer-control-strong:linear-gradient(135deg,rgba(37,91,177,.78),rgba(25,43,91,.94));
@@ -686,7 +686,7 @@ html.xyl-theme.electron-dark .xyl-window-bar {
 }
 
 .xyl-task-card-left>i {
-  background-image:var(--cts-asset-task-left);
+  background-image:var(--tessalume-asset-task-left);
   background-position:50% 18%;
 }
 
@@ -696,7 +696,7 @@ html.xyl-theme.electron-dark .xyl-window-bar {
 }
 
 .xyl-task-card-right>i {
-  background-image:var(--cts-asset-task-right-secondary);
+  background-image:var(--tessalume-asset-task-right-secondary);
   background-position:51% 20%;
 }
 
@@ -705,7 +705,7 @@ html.xyl-theme.electron-dark .xyl-window-bar {
 }
 
 .xyl-task-card-human>i {
-  background-image:var(--cts-asset-task-right-secondary);
+  background-image:var(--tessalume-asset-task-right-secondary);
   background-position:50% 18%;
 }
 
@@ -714,7 +714,7 @@ html.xyl-theme.electron-dark .xyl-window-bar {
 }
 
 .xyl-task-card-fox>i {
-  background-image:var(--cts-asset-task-right-primary);
+  background-image:var(--tessalume-asset-task-right-primary);
   background-position:50% 22%;
 }
 
@@ -1000,7 +1000,7 @@ html.xyl-theme .xyl-task-header::after {
   pointer-events:none;
 }
 
-html.xyl-theme .xyl-task-title[data-cts-surface="task-title"],html.xyl-theme .xyl-task-title {
+html.xyl-theme .xyl-task-title[data-tessalume-surface="task-title"],html.xyl-theme .xyl-task-title {
   position:relative!important;
   display:flex!important;
   align-items:center!important;
@@ -1300,16 +1300,16 @@ html.xyl-theme.electron-dark .xyl-message-user [data-user-message-bubble="true"]
 }
 
 html.xyl-theme:not(.electron-dark) .xyl-chat-paper {
-  --xyl-text:var(--cts-v1-light-text-primary);
-  --xyl-text-2:var(--cts-v1-light-text-secondary);
-  --xyl-text-3:var(--cts-v1-light-text-secondary);
-  --color-text-foreground:var(--cts-v1-light-text-primary)!important;
-  --color-text-foreground-secondary:var(--cts-v1-light-text-secondary)!important;
-  --color-text-foreground-tertiary:var(--cts-v1-light-text-secondary)!important;
+  --xyl-text:var(--tessalume-v1-light-text-primary);
+  --xyl-text-2:var(--tessalume-v1-light-text-secondary);
+  --xyl-text-3:var(--tessalume-v1-light-text-secondary);
+  --color-text-foreground:var(--tessalume-v1-light-text-primary)!important;
+  --color-text-foreground-secondary:var(--tessalume-v1-light-text-secondary)!important;
+  --color-text-foreground-tertiary:var(--tessalume-v1-light-text-secondary)!important;
 }
 
 html.xyl-theme:not(.electron-dark) .xyl-chat-paper :is(.xyl-markdown,[data-user-message-bubble="true"]) {
-  color:var(--cts-v1-light-text-primary)!important;
+  color:var(--tessalume-v1-light-text-primary)!important;
   text-shadow:0 1px 0 rgba(255,255,255,.62);
 }
 
@@ -1318,7 +1318,7 @@ html.xyl-theme:not(.electron-dark) .xyl-chat-paper .xyl-markdown :is(p,li,td,th,
 }
 
 html.xyl-theme:not(.electron-dark) .xyl-chat-paper .xyl-markdown blockquote {
-  color:var(--cts-v1-light-text-primary)!important;
+  color:var(--tessalume-v1-light-text-primary)!important;
 }
 
 html.xyl-theme .xyl-message-assistant {
