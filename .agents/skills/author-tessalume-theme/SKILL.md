@@ -23,10 +23,11 @@ Read all three references before editing or generating images:
 Perform all Tessalume work directly on the existing `main` branch. Before
 editing, confirm `git branch --show-current` returns `main`; if it does not,
 return safely to `main` before making changes. Never create or switch to a
-feature branch, worktree branch or pull-request branch unless the user
-explicitly overrides this policy in the current task. Commit and push only
-`main`. A push still requires the user's explicit permission in the current
-task.
+feature branch, worktree branch or pull-request branch, and never open a pull
+request. For commit or push requests, use ordinary Git directly on `main`; do
+not invoke any publishing workflow whose default behavior creates a branch or
+pull request. A push still requires the user's explicit permission in the
+current task.
 
 ## Workflow
 
