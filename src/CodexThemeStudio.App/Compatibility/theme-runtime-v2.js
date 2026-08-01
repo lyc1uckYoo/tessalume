@@ -568,15 +568,21 @@
       markSurface(content, "markdown");
       const unit = content.closest("[data-content-search-unit-key]");
       const key = unit?.getAttribute("data-content-search-unit-key") || "";
-      if (key.endsWith(":assistant")) {
+      const label = unit?.querySelector("h4.sr-only")?.textContent?.trim() || "";
+      const isUserMessage = Boolean(unit?.querySelector('[data-user-message-bubble="true"]')) ||
+        /^(?:you|你)\s*(?:said|说)/i.test(label);
+      const isAssistantMessage = !isUserMessage &&
+        /^(?:chatgpt|assistant|助手)\s*(?:said|说)/i.test(label);
+      if (isAssistantMessage || key.endsWith(":assistant")) {
         mark(unit, roleClass("message-assistant"));
         markMessage(unit, "assistant");
       }
-      if (key.endsWith(":user")) {
+      if (isUserMessage || key.endsWith(":user")) {
         mark(unit, roleClass("message-user"));
         markMessage(unit, "user");
       }
-      if (key.endsWith(":assistant") || key.endsWith(":user")) {
+      if (isAssistantMessage || isUserMessage ||
+        key.endsWith(":assistant") || key.endsWith(":user")) {
         const paper = unit.closest('[class*="thread-content-max-width"]');
         mark(paper, roleClass("chat-paper"));
         markSurface(paper, "chat-paper");
@@ -587,11 +593,16 @@
     const decorateTaskHeaders = () => {
       document.querySelectorAll('[data-testid="app-shell-header-context-menu-surface"]').forEach((header) => {
         if (!header.isConnected) return;
-        const title = header.querySelector("span > span.truncate")?.parentElement;
+        const titleButton = header.querySelector("span > button.truncate");
+        const title = titleButton?.parentElement?.parentElement ||
+          header.querySelector("span > span.truncate")?.parentElement;
+        const secondaryTitle = header.querySelector("span > span.truncate")?.parentElement;
         mark(header, roleClass("task-header"));
-        mark(title, roleClass("task-title"));
         markSurface(header, "task-header");
-        markSurface(title, "task-title");
+        for (const candidate of new Set([title, secondaryTitle])) {
+          mark(candidate, roleClass("task-title"));
+          markSurface(candidate, "task-title");
+        }
       });
     };
     const decorateTaskCriticalSurfaces = (mutations) => {

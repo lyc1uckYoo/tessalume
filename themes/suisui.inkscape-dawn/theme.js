@@ -4,37 +4,14 @@ registerTheme({
     root.setAttribute("aria-hidden", "true");
     context.renderTemplateV1({
         stageClass: "sui-stage",
-        stageDecorations: `<div class="sui-banner-fx" aria-hidden="true">
-          <svg viewBox="0 0 560 210">
-            <g class="sui-banner-mountains" fill="none" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M8 155C54 141 71 99 105 118c22 12 31 43 64 23 33-20 43-71 80-45 24 17 30 56 70 50"/>
-              <path d="M36 161c40-7 54-31 78-25 23 6 37 34 72 18 31-14 48-39 78-27 19 7 28 25 51 26"/>
-              <path d="M77 132l24-28 17 23 31-51 35 65 29-42 31 35"/>
-            </g>
-            <g class="sui-banner-water" fill="none" stroke-linecap="round">
-              <path d="M0 169c78-30 135 28 221 2 83-25 128-3 193 4 53 6 88-8 146-33"/>
-              <path d="M13 184c72-20 132 19 210 1 74-17 128 7 194 9 57 2 92-16 132-34"/>
-              <path d="M45 195c68-12 118 10 183-2 89-17 132 11 212 8"/>
-            </g>
-            <g class="sui-banner-fan">
-              <path class="sui-banner-fan-silk" d="M405 160 350 99Q404 54 493 85L405 160Z"/>
-              <g class="sui-banner-fan-ribs" fill="none" stroke-linecap="round">
-                <path d="m405 160-55-61"/><path d="m405 160-27-81"/><path d="m405 160 7-91"/><path d="m405 160 42-79"/><path d="m405 160 69-61"/><path d="m405 160 88-75"/>
-                <path d="M350 99q54-45 143-14"/>
-              </g>
-              <circle cx="405" cy="160" r="6"/>
-            </g>
-            <g class="sui-banner-dew">
-              <circle cx="79" cy="157" r="4"/><circle cx="254" cy="151" r="3"/><circle cx="342" cy="172" r="3.5"/><circle cx="505" cy="150" r="2.5"/>
-            </g>
-          </svg>
-          <small><b>栖霞饮露</b><i></i>山河水境 · SHANHE FLOW</small>
-        </div>`,
         hero: { tag: "section", className: "sui-hero-copy", html: `<span class="sui-kicker" data-theme-part="hero-kicker"><i></i><span class="sui-light-only">朝晖开卷 · ZHAOMING ARCHIVE</span><span class="sui-dark-only">月映山河 · SHANHE NIGHT</span></span>
           <h1 class="sui-light-only" data-theme-part="hero-title-light">扇开千里<br><em>朝光落山河</em></h1>
           <h1 class="sui-dark-only" data-theme-part="hero-title-dark">月沉黛岭<br><em>水境照云天</em></h1>
           <p>${config.subtitle}</p>
-          <div class="sui-river" data-theme-part="hero-motion"><i></i><i></i><i></i><b></b></div>
+          <div class="sui-river" data-theme-part="hero-motion" aria-label="朝明开扇卷与月映重明境">
+            <span class="sui-river-form sui-river-form-light sui-light-only" data-sui-home-fx="dawn-fan-scroll-v2"><i></i><i></i><i></i><i></i><i></i><b></b><em></em></span>
+            <span class="sui-river-form sui-river-form-dark sui-dark-only" data-sui-home-fx="moonlit-chongming-v2"><i></i><i></i><i></i><i></i><i></i><b></b><em></em></span>
+          </div>
           <div class="sui-verse" data-theme-part="hero-note"><small>山河水境</small><strong class="sui-light-only">霞铺万顷欲流金</strong><strong class="sui-dark-only">一桁秋山共我吟</strong></div>` },
         identity: { tag: "div", className: "sui-identity", html: `<span data-theme-part="identity-emblem"></span>
           <div data-theme-part="identity-copy"><b>${config.title}</b><small>${config.status}</small></div>
@@ -51,17 +28,10 @@ registerTheme({
               <circle class="sui-memory-dew" cx="8" cy="25" r="2.4"/>
             </svg>
           </span>` },
-        syncPanel: { tag: "div", className: "sui-shanhe-sync", html: `<span class="sui-sync-copy" data-theme-part="sync-copy"><small>栖霞饮露 · QIXIA</small><b>山河水境 <strong>千里</strong><em> / FLOW</em></b></span>
-        <span class="sui-sync-core" data-theme-part="sync-core">
-          <svg class="sui-sync-scroll" viewBox="0 0 128 56">
-            <g class="sui-sync-mountains" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M2 37 21 23l12 10 17-23 22 29 17-16 19 14"/><path d="M1 43c31-12 48 9 76 0 24-8 39 5 50-1"/></g>
-            <g class="sui-sync-water" fill="none" stroke-linecap="round"><path d="M2 48c36-10 62 8 99 0 11-3 19-3 27-2"/><path d="M7 52c31-6 54 5 87 0 13-2 23-2 34-2"/></g>
-            <g class="sui-sync-fan"><path d="m83 43-21-23q20-16 50-7Z"/><path d="m83 43-21-23m21 23-9-32m9 32 4-34m-4 34 17-30m-17 30 29-30" fill="none"/></g>
-            <circle class="sui-sync-dew" cx="54" cy="40" r="3"/>
-          </svg>
-        </span>
-        <span class="sui-mist" data-theme-part="sync-meter">${Array.from({ length: 7 }, (_, i) => `<i style="--n:${i}"></i>`).join("")}</span>
-        <span class="sui-sync-state" data-theme-part="sync-state"><small>昭明商会</small><b><i></i>入画</b></span>` },
+        syncPanel: { tag: "div", className: "sui-shanhe-sync", html: `<span class="sui-sync-copy" data-theme-part="sync-copy"><small>栖霞 · SHANHE SCROLL</small><b>山河入画 <strong>千里</strong><em> / FLOW</em></b></span>
+          <span class="sui-sync-core" data-theme-part="sync-core" data-sui-sync-fx="shanhe-fan-v2" aria-hidden="true"><i></i><i></i><i></i><b></b><em></em></span>
+          <span class="sui-mist" data-theme-part="sync-meter" aria-hidden="true">${Array.from({length:9},(_,i)=>`<i style="--i:${i};--h:${7 + (i % 5) * 4}px"></i>`).join("")}</span>
+          <span class="sui-sync-state" data-theme-part="sync-state"><small>ZHAOMING</small><b><i></i>入画</b></span>` },
         composerAccessory: { tag: "div", className: "sui-seal", html: `<svg class="sui-dew-fan" viewBox="0 0 100 100" aria-hidden="true">
           <defs>
             <linearGradient id="sui-fan-jade" x1="0" y1="1" x2="1" y2="0"><stop stop-color="var(--sui-blue)"/><stop offset=".42" stop-color="var(--sui-jade)"/><stop offset=".78" stop-color="var(--sui-jade-bright)"/><stop offset="1" stop-color="#f7fff1"/></linearGradient>

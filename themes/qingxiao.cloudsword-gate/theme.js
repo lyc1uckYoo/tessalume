@@ -4,48 +4,14 @@ registerTheme({
     root.setAttribute("aria-hidden", "true");
     context.renderTemplateV1({
         stageClass: "qxo-stage",
-        stageDecorations: `<div class="qxo-banner-fx" aria-hidden="true">
-          <svg viewBox="0 0 560 220">
-            <defs>
-              <linearGradient id="qxo-banner-blade" x1="0" y1="0" x2="1" y2="1">
-                <stop stop-color="#f8ffff"/><stop offset=".36" stop-color="var(--qxo-red-bright)"/><stop offset=".72" stop-color="var(--qxo-violet)"/><stop offset="1" stop-color="var(--qxo-gold)"/>
-              </linearGradient>
-              <filter id="qxo-banner-glow"><feGaussianBlur stdDeviation="1.8" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-            </defs>
-            <g class="qxo-banner-cloud-ring" fill="none">
-              <ellipse cx="376" cy="113" rx="128" ry="64"/>
-              <ellipse cx="376" cy="113" rx="99" ry="48"/>
-              <path d="M242 112c31-34 69-51 115-53M396 61c42 7 73 25 107 55M250 139c35 26 72 35 113 31M405 169c38-7 69-25 94-49"/>
-            </g>
-            <g class="qxo-banner-wind" fill="none" stroke-linecap="round">
-              <path d="M14 169c68-31 125 24 202-2 73-25 121-1 179 8 61 10 105-4 151-35"/>
-              <path d="M36 187c72-22 129 18 205-1 69-18 118 5 184 8 55 3 91-14 121-32"/>
-              <path d="M79 202c59-12 105 8 168-3 82-15 134 13 222 2"/>
-            </g>
-            <g class="qxo-banner-flying-swords" fill="url(#qxo-banner-blade)" filter="url(#qxo-banner-glow)">
-              <path d="m265 73 8 27-5 9-8-6-4-27z"/><path d="m295 44 11 30-4 10-9-7-7-29z"/>
-              <path d="m337 29 7 34-6 9-8-9-1-34z"/><path d="m415 29-1 34-8 9-6-9 7-34z"/>
-              <path d="m457 44-7 29-9 7-4-10 11-30z"/><path d="m487 73-4 27-8 6-5-9 8-27z"/>
-            </g>
-            <g class="qxo-banner-heart-sword" filter="url(#qxo-banner-glow)">
-              <path class="qxo-banner-core-blade" d="M376 19 389 128 376 149 363 128Z" fill="url(#qxo-banner-blade)"/>
-              <path class="qxo-banner-core-line" d="M376 30v106M367 121l9 15 9-15" fill="none"/>
-              <path class="qxo-banner-guard" d="M343 129q33-16 66 0l-9 11q-24-10-48 0Z"/>
-              <path class="qxo-banner-grip" d="M376 136v44m-6-34h12m-12 10h12m-12 10h12"/>
-              <path class="qxo-banner-pommel" d="m366 181 10 13 10-13-10-8Z"/>
-            </g>
-            <g class="qxo-banner-heart-seal" fill="none">
-              <path d="M376 85 397 106 376 127 355 106Z"/>
-              <circle cx="376" cy="106" r="8"/><path d="M376 94v24M364 106h24"/>
-            </g>
-          </svg>
-          <small><b>天地弦心剑</b><i></i>万剑归弦 · HEARTSWORD ARRAY</small>
-        </div>`,
         hero: { tag: "section", className: "qxo-hero-copy", html: `<span class="qxo-kicker" data-theme-part="hero-kicker"><i></i><span class="qxo-light-only">FIRST FROST · CLOUD GATE</span><span class="qxo-dark-only">MOON VIGIL · SWORD ARRAY</span></span>
           <h1 class="qxo-light-only" data-theme-part="hero-title-light">云门初霁<br><em>一剑照清宵</em></h1>
           <h1 class="qxo-dark-only" data-theme-part="hero-title-dark">月悬天关<br><em>万剑听霜鸣</em></h1>
           <p>${config.subtitle}</p>
-          <div class="qxo-score" data-theme-part="hero-motion"><i></i><i></i><i></i><i></i><i></i><b></b></div>
+          <div class="qxo-score" data-theme-part="hero-motion" aria-label="云关心剑与月轮万剑">
+            <span class="qxo-score-form qxo-score-form-light qxo-light-only" data-qxo-home-fx="cloud-heart-sword-v2"><i></i><i></i><i></i><i></i><i></i><b></b></span>
+            <span class="qxo-score-form qxo-score-form-dark qxo-dark-only" data-qxo-home-fx="moon-sword-array-v2"><i></i><i></i><i></i><i></i><i></i><b></b></span>
+          </div>
           <div class="qxo-cue" data-theme-part="hero-note"><small>HEARTSWORD</small><strong class="qxo-light-only">心剑出鞘 · 云门开</strong><strong class="qxo-dark-only">万剑归弦 · 月轮定</strong></div>` },
         identity: { tag: "div", className: "qxo-identity", html: `<span data-theme-part="identity-emblem"></span><div data-theme-part="identity-copy"><b>${config.title}</b><small>${config.status}</small></div><i data-theme-part="identity-status"></i>` },
         taskLeft: { tag: "aside", className: "qxo-task-companion qxo-task-companion-left", html: `<i data-theme-part="task-card-art"></i><div class="qxo-task-companion-caption" data-theme-part="task-card-caption"><b>清宵 · 镇玄</b><small>HEARTSWORD / VIGIL</small></div>` },

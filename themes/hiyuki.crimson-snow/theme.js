@@ -8,7 +8,7 @@ registerTheme({
           <h1 class="hy3-light-only" data-theme-part="hero-title-light">守住此刻<br><em>让绯樱落在雪前</em></h1>
           <h1 class="hy3-dark-only" data-theme-part="hero-title-dark">预见未来<br><em>以归刃斩断寒夜</em></h1>
           <p>${config.subtitle}</p>
-          <div class="hy3-atlas" data-theme-part="hero-motion" aria-label="常世与预求未来分岔"><i></i><i></i><i></i><i></i><b></b></div>
+          <div class="hy3-atlas" data-theme-part="hero-motion" aria-label="守愿雪结与预求镜阵"><span class="hy3-atlas-track"></span><span class="hy3-atlas-form hy3-atlas-form-light hy3-light-only" data-hy3-home-fx="snow-vow-v2"><i></i><i></i><i></i><i></i><b></b></span><span class="hy3-atlas-form hy3-atlas-form-dark hy3-dark-only" data-hy3-home-fx="foreclaim-blade-v2"><i></i><i></i><i></i><i></i><b></b></span></div>
           <div class="hy3-mode" data-theme-part="hero-note"><small class="hy3-light-only">常世身</small><small class="hy3-dark-only">预求身</small><strong class="hy3-light-only">心念与霜刃已归入刀鞘</strong><strong class="hy3-dark-only">居合与预见正冻结未至之敌</strong></div>` },
         identity: { tag: "div", className: "hy3-identity", html: `<span data-theme-part="identity-emblem"><i></i><b></b></span><div data-theme-part="identity-copy"><b>${config.title}</b><small>${config.status}</small></div><em data-theme-part="identity-status"></em>` },
         taskLeft: { tag: "aside", className: "hy3-task-card hy3-task-left", html: `<i data-theme-part="task-card-art"></i><div data-theme-part="task-card-caption"><b>愿望 · 结绳</b><small>VOW RECORD / 01</small></div>` },

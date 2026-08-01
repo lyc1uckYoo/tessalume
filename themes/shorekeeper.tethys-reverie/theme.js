@@ -8,7 +8,10 @@ registerTheme({
           <h1 class="sk3-light-only" data-theme-part="hero-title-light">守望静海<br><em>让文明靠岸</em></h1>
           <h1 class="sk3-dark-only" data-theme-part="hero-title-dark">溯回星潮<br><em>聆听万千回响</em></h1>
           <p>${config.subtitle}</p>
-          <div class="sk3-tide" data-theme-part="hero-motion"><i></i><i></i><i></i><i></i><b></b></div>
+          <div class="sk3-tide" data-theme-part="hero-motion" aria-label="镜海蝶航与泰缇斯概率潮核">
+            <span class="sk3-tide-form sk3-tide-form-light sk3-light-only" data-sk3-home-fx="shoreline-butterfly-v2"><i></i><i></i><i></i><i></i><i></i><b></b><em></em></span>
+            <span class="sk3-tide-form sk3-tide-form-dark sk3-dark-only" data-sk3-home-fx="tethys-probability-v2"><i></i><i></i><i></i><i></i><i></i><b></b><em></em></span>
+          </div>
           <div class="sk3-mode" data-theme-part="hero-note"><small class="sk3-light-only">海岸守望</small><small class="sk3-dark-only">泰缇斯演算</small><strong class="sk3-light-only">镜海潮汐已抵达观测岸线</strong><strong class="sk3-dark-only">概率之海同步完成</strong></div>` },
         identity: { tag: "div", className: "sk3-identity", html: `<span data-theme-part="identity-emblem"><i></i><b></b></span><div data-theme-part="identity-copy"><b>${config.title}</b><small>${config.status}</small></div><em data-theme-part="identity-status"></em>` },
         taskLeft: { tag: "aside", className: "sk3-task-card sk3-task-left", html: `<i data-theme-part="task-card-art"></i><div data-theme-part="task-card-caption"><b>文明 · 留声</b><small>ARCHIVE ECHO / 01</small></div>` },

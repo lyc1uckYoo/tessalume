@@ -75,6 +75,13 @@ component identity, or keyframes with the template examples.
     permitted push, inspect the full status and include exactly the scope the
     user authorized.
 
+13. Maintain every theme `skin.css` in the canonical 01→13 section order. Keep
+    the validator-required English section marker and add a Chinese description
+    beside it. Merge repeated selectors into their owning section; when a
+    visual override is necessary, fold the final effective declarations into
+    that section instead of appending a second override block at the end of the
+    file.
+
 ## Reusable resources
 
 - `assets/theme-template/` is the only canonical skeleton for new themes.

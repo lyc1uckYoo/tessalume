@@ -11,7 +11,7 @@ registerTheme({
           <h1 class="ae3-light-only" data-theme-part="hero-title-light">把告别折成<br><em>新的航标</em></h1>
           <h1 class="ae3-dark-only" data-theme-part="hero-title-dark">越过深空<br><em>回应星海</em></h1>
           <p>${config.subtitle}</p>
-          <div class="ae3-route" data-theme-part="hero-motion" aria-label="远航信标轨迹"><i></i><i></i><i></i><i></i><b></b></div>
+          <div class="ae3-route" data-theme-part="hero-motion" aria-label="启航信标与隧者核心链路"><span class="ae3-route-track"></span><span class="ae3-route-form ae3-route-form-light ae3-light-only" data-ae3-home-fx="departure-gate-v2"><i></i><i></i><i></i><i></i><b></b></span><span class="ae3-route-form ae3-route-form-dark ae3-dark-only" data-ae3-home-fx="tunneler-core-v2"><i></i><i></i><i></i><i></i><b></b></span></div>
           <div class="ae3-mode" data-theme-part="hero-note"><small class="ae3-light-only">晨航模式</small><small class="ae3-dark-only">兵装链接</small><strong class="ae3-light-only">纸飞机已进入远航轨道</strong><strong class="ae3-dark-only">隧者核心同步完成</strong></div>` },
         identity: { tag: "div", className: "ae3-identity", html: `<span data-theme-part="identity-emblem"><i></i></span><div data-theme-part="identity-copy"><b>${config.title}</b><small>${config.status}</small></div><em data-theme-part="identity-status"></em>` },
         taskLeft: { tag: "aside", className: "ae3-task-card ae3-task-left", html: `<i data-theme-part="task-card-art"></i><div data-theme-part="task-card-caption"><b>星讯 · 留声</b><small>FAREWELL SIGNAL / 01</small></div>` },

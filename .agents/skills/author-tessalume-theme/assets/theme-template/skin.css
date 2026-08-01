@@ -1,4 +1,5 @@
 /* 01 Light and dark tokens */
+/* 01 亮暗色令牌：统一管理亮色与暗色主题变量。 */
 html.__NS__-theme {
   --__NS__-bg:#f1f3f7;
   --__NS__-bg-2:#f8f9fb;
@@ -64,6 +65,7 @@ html.__NS__-theme.electron-dark {
 }
 
 /* 02 App and native planes */
+/* 02 应用与原生平面：应用底色、窗口栏与原生页面承载层。 */
 html.__NS__-theme,.__NS__-theme body,.__NS__-theme #root {
   background:var(--__NS__-bg)!important;
   color:var(--__NS__-text)!important;
@@ -112,6 +114,7 @@ html.__NS__-theme.__NS__-is-settings .__NS__-settings-surface {
 }
 
 /* 03 Sidebar skin */
+/* 03 左栏皮肤：左栏背景、项目行、会话行与分组标题。 */
 html.__NS__-theme aside [data-app-action-sidebar-project-row] {
   --phase:var(--__NS__-accent);
   border:1px solid color-mix(in srgb,var(--phase) 45%,var(--__NS__-line))!important;
@@ -134,6 +137,7 @@ html.__NS__-theme aside [data-app-action-sidebar-thread-row]:hover,html.__NS__-t
 }
 
 /* 04 Home skin */
+/* 04 首页皮肤：首页横幅、主标题、路线装饰与快捷卡片。 */
 .__NS__-theme .__NS__-home>div:first-child>div:first-child>div:first-child::before {
   content:"";
   background:linear-gradient(90deg,color-mix(in srgb,var(--__NS__-solid) 78%,transparent),color-mix(in srgb,var(--__NS__-solid) 24%,transparent) 40%,transparent 62%),
@@ -214,6 +218,7 @@ html.__NS__-theme aside [data-app-action-sidebar-thread-row]:hover,html.__NS__-t
 }
 
 /* 05 Identity skin */
+/* 05 身份组件皮肤：主题身份牌与状态标记。 */
 html.__NS__-theme .__NS__-window-bar {
   border-bottom:1px solid var(--__NS__-line)!important;
   background:color-mix(in srgb,var(--__NS__-solid) 94%,transparent)!important;
@@ -262,6 +267,7 @@ html.__NS__-theme .__NS__-window-bar {
 }
 
 /* 06 Task-card skin */
+/* 06 任务卡皮肤：左卡与右侧双任务卡。 */
 .__NS__-task-card {
   border:1px solid var(--__NS__-line-strong);
   background:var(--__NS__-panel);
@@ -328,6 +334,7 @@ html.__NS__-theme .__NS__-window-bar {
 }
 
 /* 07 Memory skin */
+/* 07 记忆组件皮肤：记忆卡、心印 SVG 与相关动效样式。 */
 .__NS__-memory {
   border:1px solid var(--__NS__-line);
   border-radius:18px 3px 18px 3px;
@@ -379,6 +386,7 @@ html.__NS__-theme .__NS__-window-bar {
 }
 
 /* 08 Sync-panel skin */
+/* 08 同步面板皮肤：同步率、核心环、频谱与状态读数。 */
 .__NS__-sync-panel {
   border:1px solid color-mix(in srgb,var(--__NS__-accent) 58%,var(--__NS__-gold));
   border-radius:5px 20px 5px 20px;
@@ -463,6 +471,7 @@ html.__NS__-theme .__NS__-window-bar {
 }
 
 /* 09 Message and output frames */
+/* 09 消息与输出框架：任务标题、消息气泡、聊天背景与环境信息。 */
 .__NS__-task-header {
   border:1px solid var(--__NS__-line-strong)!important;
   border-radius:18px 3px 18px 3px!important;
@@ -488,6 +497,7 @@ html.__NS__-theme .__NS__-window-bar {
 }
 
 /* 10 Composer skin */
+/* 10 输入框皮肤：输入区、占位文字与发送控件。 */
 .__NS__-composer-accessory {
   border:1px solid var(--__NS__-line-strong);
   border-radius:50%;
@@ -532,8 +542,10 @@ html.__NS__-theme .composer-surface-chrome {
 }
 
 /* 11 Character components */
+/* 11 角色专属组件：角色专属装饰与组件。 */
 
 /* 12 Theme-only media behavior */
+/* 12 主题专属响应式与动效降级：尺寸适配与减少动效。 */
 @media (prefers-reduced-motion:reduce) {
   #cts-theme-root[data-cts-template-version="1.0"] * {
     animation:none!important;
@@ -541,6 +553,7 @@ html.__NS__-theme .composer-surface-chrome {
 }
 
 /* 13 Character keyframes */
+/* 13 角色专属关键帧：主题动画时间轴。 */
 @keyframes __NS__-pulse {
   0%,100% {
     opacity:.55;

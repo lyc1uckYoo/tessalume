@@ -182,7 +182,7 @@ html.cts-theme-active:not(.electron-dark) [data-cts-surface="sidebar"] :is([data
 
 html.cts-theme-active [data-cts-surface="home"] {
   --thread-content-max-width:min(1240px,calc(100cqw - 42px))!important;
-  --cts-v1-home-composer-reserve:195px;
+  --cts-v1-home-composer-reserve:240px;
   --cts-v1-home-hero-height:clamp(320px,min(calc(100cqh - var(--cts-v1-home-composer-reserve)),calc((100cqw - 70px) * .5628)),840px);
   overflow-x:hidden!important;
 }

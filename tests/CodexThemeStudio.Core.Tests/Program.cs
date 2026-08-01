@@ -424,15 +424,50 @@ static async Task PublishedThemesUseCanonicalInjectionContractAsync()
         if (directory == "danya.bubble-void-duality")
         {
             Ensure(script.Contains("stageDecorations:", StringComparison.Ordinal) &&
-                   script.Contains("dny-hero-fx", StringComparison.Ordinal) &&
-                   script.Contains("dny-main-frame", StringComparison.Ordinal),
-                "Danya's light/dark stage effects must survive shared-DOM migration.");
+                   script.Contains("data-dny-home-fx=\"bubble-prism-v2\"", StringComparison.Ordinal) &&
+                   script.Contains("data-dny-home-fx=\"void-lattice-v2\"", StringComparison.Ordinal) &&
+                   script.Contains("dny-main-frame", StringComparison.Ordinal) &&
+                   script.Contains("class=\"dny-domain-line\" data-theme-part=\"hero-motion\"", StringComparison.Ordinal) &&
+                   !script.Contains("homeEffects", StringComparison.Ordinal) &&
+                   css.Contains(".dny-domain-phases-light", StringComparison.Ordinal) &&
+                   css.Contains(".dny-domain-phases-dark", StringComparison.Ordinal) &&
+                   script.Contains("data-dny-sync-fx=\"duality-chamber-v2\"", StringComparison.Ordinal) &&
+                   css.Contains(".dny-sync-core", StringComparison.Ordinal) &&
+                   css.Contains(".dny-sync-state", StringComparison.Ordinal),
+                "Danya's light/dark home effects must live in the canonical hero-motion slot.");
         }
         if (directory == "qingxiao.cloudsword-gate")
         {
-            Ensure(script.Contains("stageDecorations:", StringComparison.Ordinal) &&
-                   script.Contains("qxo-banner-fx", StringComparison.Ordinal),
-                "Qingxiao's sword-array banner must survive shared-DOM migration.");
+            Ensure(script.Contains("class=\"qxo-score\" data-theme-part=\"hero-motion\"", StringComparison.Ordinal) &&
+                   script.Contains("data-qxo-home-fx=\"cloud-heart-sword-v2\"", StringComparison.Ordinal) &&
+                   script.Contains("data-qxo-home-fx=\"moon-sword-array-v2\"", StringComparison.Ordinal) &&
+                   !script.Contains("qxo-banner-fx", StringComparison.Ordinal) &&
+                   css.Contains(".qxo-score-form-light", StringComparison.Ordinal) &&
+                   css.Contains(".qxo-score-form-dark", StringComparison.Ordinal),
+                "Qingxiao's light/dark sword arrays must live in the canonical hero-motion slot.");
+        }
+        if (directory == "shorekeeper.tethys-reverie")
+        {
+            Ensure(script.Contains("class=\"sk3-tide\" data-theme-part=\"hero-motion\"", StringComparison.Ordinal) &&
+                   script.Contains("data-sk3-home-fx=\"shoreline-butterfly-v2\"", StringComparison.Ordinal) &&
+                   script.Contains("data-sk3-home-fx=\"tethys-probability-v2\"", StringComparison.Ordinal) &&
+                   css.Contains(".sk3-tide-form-light", StringComparison.Ordinal) &&
+                   css.Contains(".sk3-tide-form-dark", StringComparison.Ordinal) &&
+                   !css.Contains("sk3-route-scan", StringComparison.Ordinal),
+                "Shorekeeper's light/dark home effects must live in the canonical hero-motion slot.");
+        }
+        if (directory == "suisui.inkscape-dawn")
+        {
+            Ensure(script.Contains("class=\"sui-river\" data-theme-part=\"hero-motion\"", StringComparison.Ordinal) &&
+                   script.Contains("data-sui-home-fx=\"dawn-fan-scroll-v2\"", StringComparison.Ordinal) &&
+                   script.Contains("data-sui-home-fx=\"moonlit-chongming-v2\"", StringComparison.Ordinal) &&
+                   !script.Contains("sui-banner-fx", StringComparison.Ordinal) &&
+                   css.Contains(".sui-river-form-light", StringComparison.Ordinal) &&
+                   css.Contains(".sui-river-form-dark", StringComparison.Ordinal) &&
+                   script.Contains("data-sui-sync-fx=\"shanhe-fan-v2\"", StringComparison.Ordinal) &&
+                   css.Contains(".sui-sync-core", StringComparison.Ordinal) &&
+                   css.Contains(".sui-sync-state", StringComparison.Ordinal),
+                "Suisui's light/dark home effects must live in the canonical hero-motion slot.");
         }
         if (directory == "xin.moonfox-sovereign")
         {
@@ -520,7 +555,7 @@ static async Task FlagshipTemplateV1FreezesSharedStructureAsync()
            sharedCss.Contains("top:334px;", StringComparison.Ordinal) &&
            sharedCss.Contains("width:320px;", StringComparison.Ordinal) &&
            sharedCss.Contains("height:56px;", StringComparison.Ordinal) &&
-           sharedCss.Contains("--cts-v1-home-composer-reserve:195px;", StringComparison.Ordinal) &&
+           sharedCss.Contains("--cts-v1-home-composer-reserve:240px;", StringComparison.Ordinal) &&
            sharedCss.Contains("calc(100cqh - var(--cts-v1-home-composer-reserve))", StringComparison.Ordinal) &&
            sharedCss.Contains("data-cts-surface=\"chat-paper\"", StringComparison.Ordinal),
         "Runtime-owned Template 1.0 geometry must preserve the accepted Xin layout.");

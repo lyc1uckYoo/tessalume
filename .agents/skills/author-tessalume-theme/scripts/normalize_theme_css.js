@@ -51,6 +51,37 @@ const sectionTitles = {
   keyframes: "13 Character keyframes",
 };
 
+const sectionDescriptions = {
+  tokens: "01 亮暗色令牌：统一管理亮色与暗色主题变量。",
+  app: "02 应用与原生平面：应用底色、窗口栏与原生页面承载层。",
+  sidebar: "03 左栏皮肤：左栏背景、项目行、会话行与分组标题。",
+  home: "04 首页皮肤：首页横幅、主标题、路线装饰与快捷卡片。",
+  identity: "05 身份组件皮肤：主题身份牌与状态标记。",
+  task: "06 任务卡皮肤：左卡与右侧双任务卡。",
+  memory: "07 记忆组件皮肤：记忆卡、心印 SVG 与相关动效样式。",
+  sync: "08 同步面板皮肤：同步率、核心环、频谱与状态读数。",
+  message: "09 消息与输出框架：任务标题、消息气泡、聊天背景与环境信息。",
+  composer: "10 输入框皮肤：输入区、占位文字与发送控件。",
+  components: "11 角色专属组件：角色专属装饰与组件。",
+  media: "12 主题专属响应式与动效降级：尺寸适配与减少动效。",
+  keyframes: "13 角色专属关键帧：主题动画时间轴。",
+};
+
+const themeTitles = {
+  "aemeath-star-voyage": "/* 爱弥斯主题样式：按首页、原生平面、组件与关键帧分章维护。 */",
+  "danya.bubble-void-duality": "/* 达妮娅主题样式：按首页、原生平面、组件与关键帧分章节维护。 */",
+  "hiyuki.crimson-snow": "/* 绯雪主题样式：按首页、原生平面、组件与关键帧分章节维护。 */",
+  "qingxiao.cloudsword-gate": "/* 清宵主题样式：按首页、原生平面、组件与关键帧分章节维护。 */",
+  "shorekeeper.tethys-reverie": "/* 守岸人主题样式：按首页、原生平面、组件与关键帧分章节维护。 */",
+  "suisui.inkscape-dawn": "/* 穗穗主题样式：按首页、原生平面、组件与关键帧分章节维护。 */",
+  "xin.moonfox-sovereign": "/* 心主题样式：按首页、原生平面、组件与关键帧分章节维护。 */",
+  "yangyang.xuanling-echo": "/* 秧秧主题样式：按首页、原生平面、组件与关键帧分章节维护。 */",
+};
+
+function sectionHeader(name) {
+  return `/* ${sectionTitles[name]} */\n/* ${sectionDescriptions[name]} */`;
+}
+
 function stripComments(css) {
   return css.replace(/\/\*[\s\S]*?\*\//g, "");
 }
@@ -195,7 +226,8 @@ function collectUsedClasses(script, prefix) {
 function filterUnusedSelectors(selector, prefix, used) {
   const branches = splitSelectors(selector).filter((branch) => {
     const own = [...branch.matchAll(new RegExp(`\\.(${prefix}-[a-z0-9_-]+)`, "gi"))].map((match) => match[1]);
-    return own.length === 0 || own.every((className) => used.has(className));
+    return own.length === 0 || own.every((className) =>
+      used.has(className) || (prefix === "dny" && /^(?:dny-star-|dny-dwarf-core$)/.test(className)));
   });
   return branches.join(",");
 }
@@ -401,34 +433,18 @@ const baselineAssetAliases = {
   },
 };
 
-function cleanNodesPreservingCascade(nodes, prefix, used, owned) {
-  const result = [];
-  for (const node of nodes) {
-    if (node.type === "rule") {
-      const cleaned = cleanRule(node, prefix, used, owned, true);
-      if (cleaned) result.push(cleaned);
-    } else if (node.type === "media") {
-      const children = cleanNodesPreservingCascade(node.children, prefix, used, owned);
-      if (children.length) result.push({ ...node, children });
-    } else {
-      result.push(node);
-    }
-  }
-  return result;
-}
-
 function normalizeFromBaseline(themeDirectory, prefix, baselineRef) {
   const themeName = path.basename(themeDirectory);
   const repoRoot = path.resolve(__dirname, "../../../..");
-  const baselinePath = `themes/${themeName}/theme.css`;
+  const baselineManifest = JSON.parse(fs.readFileSync(path.join(themeDirectory, "manifest.json"), "utf8"));
+  const baselinePath = `themes/${themeName}/${baselineManifest.entryPoints.css}`;
   let source = childProcess.execFileSync(
     "git",
     ["show", `${baselineRef}:${baselinePath}`],
     { cwd: repoRoot, encoding: "utf8", maxBuffer: 8 * 1024 * 1024 },
   );
   const surfaceMarker = source.indexOf("/* TESSALUME_TEMPLATE_V1_SURFACE_START */");
-  if (surfaceMarker < 0) throw new Error(`Baseline surface marker is missing: ${baselinePath}`);
-  source = source.slice(0, surfaceMarker).trim();
+  source = (surfaceMarker >= 0 ? source.slice(0, surfaceMarker) : source).trim();
   const aliases = Object.entries(baselineAssetAliases[themeName] || {})
     .sort(([left], [right]) => right.length - left.length);
   for (const [oldName, newName] of aliases) {
@@ -447,7 +463,7 @@ function normalizeFromBaseline(themeDirectory, prefix, baselineRef) {
   const script = fs.readFileSync(path.join(themeDirectory, "theme.js"), "utf8");
   const used = collectUsedClasses(script, prefix);
   const owned = collectOwnedGeometryClasses(script, prefix);
-  let nodes = cleanNodesPreservingCascade(parseBlocks(stripComments(source)), prefix, used, owned);
+  let nodes = normalizeNodes(parseBlocks(stripComments(source)), prefix, used, owned);
   if (themeName === "danya.bubble-void-duality") {
     nodes = nodes.filter((node) =>
       !["@keyframes dny-pearl-bubble", "@keyframes dny-void-bubble"].includes(node.header));
@@ -480,11 +496,13 @@ function normalizeFromBaseline(themeDirectory, prefix, baselineRef) {
       }
     }
   }
-  const sectionIndex = sectionOrder
-    .map((name) => `/* ${sectionTitles[name]} */`)
-    .join("\n");
-  const body = nodes.map((node) => formatNode(node)).join("\n\n");
-  const output = `${sectionIndex}\n\n/* Character cascade: original visual order preserved. */\n${body}\n`;
+  nodes = removeUnusedThemeVariables(nodes, script, prefix);
+  const sections = new Map(sectionOrder.map((name) => [name, []]));
+  nodes.forEach((node) => sections.get(category(node, prefix)).push(node));
+  const sectionOutput = sectionOrder
+    .map((name) => `${sectionHeader(name)}${sections.get(name).length ? `\n${sections.get(name).map((node) => formatNode(node)).join("\n\n")}` : ""}`)
+    .join("\n\n") + "\n";
+  const output = `${themeTitles[themeName] ? `${themeTitles[themeName]}\n\n` : ""}${sectionOutput}`;
   const manifest = JSON.parse(fs.readFileSync(path.join(themeDirectory, "manifest.json"), "utf8"));
   fs.writeFileSync(path.join(themeDirectory, manifest.entryPoints.css), output, "utf8");
 }
@@ -561,12 +579,13 @@ function animationNames(nodes) {
   return names;
 }
 
-function removeUnusedKeyframes(nodes, script) {
+function removeUnusedKeyframes(nodes, script, prefix) {
   const used = animationNames(nodes);
   return nodes.filter((node) => {
     if (node.type !== "keyframes") return true;
     const name = node.header.replace(/^@keyframes\s+/i, "").trim();
-    return used.has(name) || script.includes(name);
+    return used.has(name) || script.includes(name) ||
+      (prefix === "dny" && /^dny-star-/.test(name));
   });
 }
 
@@ -593,20 +612,42 @@ function removeUnusedThemeVariables(nodes, script, prefix) {
   return prune(nodes);
 }
 
+function isTokenScope(selector, prefix) {
+  return splitSelectors(selector).every((branch) => {
+    const compact = branch.replace(/\s+/g, "");
+    return compact === `.${prefix}-theme` ||
+      new RegExp(`^(?::root|html)(?:\\.[a-z0-9_-]+)*\\.${prefix}-theme(?:\\.[a-z0-9_-]+)*(?::[a-z-]+(?:\\([^)]*\\))?)*$`, "i").test(compact);
+  });
+}
+
 function category(node, prefix) {
   if (node.type === "media") return "media";
   if (node.type === "keyframes") return "keyframes";
   if (node.type !== "rule") return "components";
   const selector = node.selector.toLowerCase();
-  if (node.declarations.every((item) => item.property.startsWith("--") || item.property === "color-scheme")) return "tokens";
+  if (node.declarations.every((item) => item.property.startsWith("--") || item.property === "color-scheme") &&
+      isTokenScope(node.selector, prefix)) return "tokens";
   if (/sidebar|project-heading|section-label|expand-|thread-row|project-row/.test(selector)) return "sidebar";
-  if (/hero|home|suggestions|kicker/.test(selector)) return "home";
+  if (/task-(?:card|left|right|secondary|primary|companion)|hecate|portrait-card|observer|alt-card|has-output/.test(selector)) return "task";
+  if (/memory|heart|sigil|resonator/.test(selector)) return "memory";
+  if (/message|markdown|chat-paper|output|task-header|task-title|turn-diff|homeutilitybar/.test(selector)) return "message";
+  if (/composer|tempo|sword-totem/.test(selector) ||
+      (prefix === "ae3" && /weapon-charm|polestar/.test(selector)) ||
+      (prefix === "sk3" && /weapon-charm|stellar-symphony|symphony/.test(selector)) ||
+      (prefix === "sui" && /seal|dew-fan|fan-(?:leaves|ribs|leaf|paint|water|dew|handle)/.test(selector)) ||
+      (prefix === "xmf" && /composer-charm|heart-pendant|heart-(?:halo|crescent|jewel|tassels|sparks)/.test(selector)) ||
+      (prefix === "xyl" && /composer-charm|plume-/.test(selector))) return "composer";
+  if (/sync|syntax|xianxin/.test(selector) ||
+      (prefix === "sk3" && /orbit/.test(selector)) ||
+      (prefix === "sui" && /mist/.test(selector)) ||
+      (prefix === "xmf" && /covenant/.test(selector)) ||
+      (prefix === "xyl" && /domain|resonance/.test(selector))) return "sync";
   if (/identity|window-bar/.test(selector)) return "identity";
-  if (/task-(?:card|left|right|secondary|primary)|task-title/.test(selector)) return "task";
-  if (/memory/.test(selector)) return "memory";
-  if (/sync/.test(selector)) return "sync";
-  if (/message|markdown|chat-paper|output|task-header|turn-diff/.test(selector)) return "message";
-  if (/composer/.test(selector)) return "composer";
+  if (/hero|home|suggestions|kicker|atlas|mode|score|cue|corner|petals|light-only|dark-only|route|collapse/.test(selector) ||
+      (prefix === "sk3" && /tide/.test(selector)) ||
+      (prefix === "sui" && /river|verse|banner/.test(selector)) ||
+      (prefix === "xmf" && /phases|oracle-note/.test(selector)) ||
+      (prefix === "xyl" && /phases|oracle-note/.test(selector))) return "home";
   if (new RegExp(`html\\.${prefix}-theme|\\.${prefix}-theme body|\\.${prefix}-theme #root|\\.${prefix}-main`).test(selector)) return "app";
   return "components";
 }
@@ -632,13 +673,14 @@ function normalizeTheme(themeDirectory, prefix) {
   const owned = collectOwnedGeometryClasses(script, prefix);
   let nodes = parseBlocks(stripComments(fs.readFileSync(cssPath, "utf8")));
   nodes = normalizeNodes(nodes, prefix, used, owned);
-  nodes = removeUnusedKeyframes(nodes, script);
+  nodes = removeUnusedKeyframes(nodes, script, prefix);
   nodes = removeUnusedThemeVariables(nodes, script, prefix);
   const sections = new Map(sectionOrder.map((name) => [name, []]));
   nodes.forEach((node) => sections.get(category(node, prefix)).push(node));
-  const output = sectionOrder
-    .map((name) => `/* ${sectionTitles[name]} */${sections.get(name).length ? `\n${sections.get(name).map((node) => formatNode(node)).join("\n\n")}` : ""}`)
+  const sectionOutput = sectionOrder
+    .map((name) => `${sectionHeader(name)}${sections.get(name).length ? `\n${sections.get(name).map((node) => formatNode(node)).join("\n\n")}` : ""}`)
     .join("\n\n") + "\n";
+  const output = `${themeTitles[manifest.id] ? `${themeTitles[manifest.id]}\n\n` : ""}${sectionOutput}`;
   fs.writeFileSync(cssPath, output, "utf8");
 }
 
