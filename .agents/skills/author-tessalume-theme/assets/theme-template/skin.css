@@ -119,10 +119,6 @@ html.__NS__-theme aside.app-shell-left-panel::after {
   filter:saturate(1.02) contrast(1.02);
 }
 
-html.__NS__-theme.electron-dark aside.app-shell-left-panel::after {
-  filter:brightness(.72) saturate(.9) contrast(1.08);
-}
-
 html.__NS__-theme.__NS__-is-task main.__NS__-main {
   background:linear-gradient(145deg,var(--__NS__-bg-2),var(--__NS__-bg))!important;
 }
@@ -133,10 +129,6 @@ html.__NS__-theme.electron-dark.__NS__-is-task main.__NS__-main {
 
 html.__NS__-theme.__NS__-is-task main.__NS__-main::before {
   background:var(--__NS__-chat-art) center/cover no-repeat;
-}
-
-html.__NS__-theme.electron-dark.__NS__-is-task main.__NS__-main::before {
-  filter:brightness(.66) saturate(.9) contrast(1.08);
 }
 
 html.__NS__-theme.__NS__-is-task main.__NS__-main::after {

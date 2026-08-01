@@ -34,18 +34,21 @@ task.
    Research current official or primary sources before designing. Record the
    character's invariant face, body type, hair, eyes, costume, accessories,
    weapon, symbols, palette, personality and any distinct forms.
-2. Create the package only with `scripts/scaffold_theme.py`. Never copy another
-   published theme. Declare `templateVersion: "1.0"` and keep the canonical
-   roles, parts, priorities and frozen geometry unchanged.
-3. Before image generation, write the eleven-slot art matrix from
+2. Before image generation, write the eleven-slot art matrix from
    `flagship-completeness.md`. Give each slot its own crop, pose, focal point,
    light/dark assignment and readability plan. Light/dark mode must not be
    mechanically bound to a character form unless the user explicitly asks.
-4. Generate or prepare all eleven final assets at production quality. Use the
+   Present the character research sheet and complete matrix to the user, then
+   pause. Do not generate any image until the user explicitly approves them.
+3. Create the package only with `scripts/scaffold_theme.py`. Never copy another
+   published theme. Declare `templateVersion: "1.0"` and keep the canonical
+   roles, parts, priorities and frozen geometry unchanged.
+4. Generate or prepare all eleven final assets at production quality. After
+   every image, complete the fixed identity checklist in
+   `flagship-completeness.md` and reject any failed item. Use the
    required composition for banner, centered chat artwork, sidebar and cards.
-   Compare every generated character against the identity invariants before
-   accepting it. Reject copied poses, wrong proportions, wrong ornaments and
-   merely recolored duplicates.
+   Reject copied poses, wrong proportions, wrong ornaments and merely recolored
+   duplicates.
 5. Replace every starter asset, draft marker, sample sentence, generic circle,
    scan line and placeholder animation. Home motion, memory instrument, sync
    panel and composer accessory must derive from the character's weapon,
@@ -59,8 +62,10 @@ task.
    `templateVersion: "1.0"`, `preserveRoot: true` and `adaptiveLayout: true`.
    Use both canonical positioning helpers with the Template 1.0 dimensions.
 8. Paint chat artwork on the isolated themed `main`. Keep message fills
-   transparent while retaining visible directional frames. Dark chat artwork
-   must be dim enough for prose and controls without erasing the character.
+   transparent while retaining visible directional frames. Judge dark artwork
+   from its actual result: retain its original brightness when already balanced,
+   and adjust artwork, veil or filters only when readability or composition
+   requires it.
 9. Keep `skin.css` in canonical 01-13 order. Modify only assets, copy, color,
    texture, symbols and theme-owned animation. Never append a late override
    dump or edit the frozen geometry block.
@@ -80,9 +85,10 @@ task.
 11. Run the repository-root `一键构建EXE.ps1`. Let the build fully replace
    `dist/portable-win-x64`, optimized assets and trust fingerprints. Never
    hand-sync or merge portable output.
-12. Reapply the current source or build before runtime QA. Confirm a unique DOM,
-   asset or computed-style signal first. Inspect home and task views in light
-   and dark mode, including narrow/adaptive states and every checklist surface.
+12. Prepare the current source or build for the user's runtime QA. If the user
+   asks Codex to inspect it, reapply the current payload and confirm a unique
+   DOM, asset or computed-style signal first. Screenshots are optional unless
+   the user explicitly requests them.
 13. Distinguish static validation, build validation and runtime visual QA in the
    handoff. Never push without explicit permission in the current task; before
    a permitted push, inspect status and include exactly the authorized scope.

@@ -249,12 +249,6 @@ def validate_theme(
                 "padding",
             ):
                 errors.append(f"{label}: user message frame needs deliberate inner padding")
-            if not selector_has_property(
-                css,
-                ("electron-dark", f".{namespace}-is-task", f"main.{namespace}-main::before"),
-                "filter",
-            ):
-                errors.append(f"{label}: dark chat artwork needs dedicated luminance tuning")
         elif quality_gate is not None:
             errors.append(f"{label}: unknown flagship quality gate: {quality_gate}")
         for selector, body in CSS_RULE_RE.findall(css):

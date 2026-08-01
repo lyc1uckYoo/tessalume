@@ -3,6 +3,15 @@
 This is a blocking production checklist, not optional polish. Apply it before
 image generation, before the first build and again during runtime QA.
 
+## Contents
+
+1. Character research gate
+2. Eleven-slot art matrix
+3. Per-image identity checklist
+4. Required visual surface coverage
+5. First-build gate
+6. Runtime QA matrix
+
 ## 1. Character research gate
 
 Use current official or primary sources where available. Write a compact
@@ -22,6 +31,10 @@ explicitly declares them authoritative. Compare face, proportions, hair,
 ornaments, costume and weapon after every generation. A beautiful image with
 the wrong character is a failed asset.
 
+Do not start image generation immediately after research. Present the identity
+sheet and the complete eleven-slot matrix to the user and wait for explicit
+approval. Approval of the character name alone is not approval of the art plan.
+
 ## 2. Eleven-slot art matrix
 
 Finish all eleven standard slots. Do not reuse one crop everywhere.
@@ -33,7 +46,7 @@ Finish all eleven standard slots. Do not reuse one crop everywhere.
 | `sidebar-light` | Tall crop; character occupies roughly 3/5-4/5; readable navigation |
 | `sidebar-dark` | Distinct tall crop; character occupies roughly 3/5-4/5 |
 | `chat-light` | Wide task scene; character centered so the chat viewport retains the full subject |
-| `chat-dark` | Distinct centered task scene; controlled luminance for readable prose |
+| `chat-dark` | Distinct centered task scene; readable contrast without mandatory dimming |
 | `task-left` | Portrait crop designed for `146x234`; clear face and silhouette |
 | `task-right-secondary` | Portrait crop designed for `188x334`; distinct pose/form |
 | `task-right-primary` | Portrait crop designed for `188x334`; distinct pose/form |
@@ -49,7 +62,26 @@ For each row record: form, pose, crop, focal point, dominant color, negative
 space and intended mode. Reject identical poses, mirrored duplicates, simple
 recolors and artwork that relies on CSS to repair a wrong composition.
 
-## 3. Required visual surface coverage
+## 3. Per-image identity checklist
+
+Evaluate every generated image against the approved reference and mark each
+item pass or fail before accepting the asset:
+
+1. face shape, apparent age, expression and eye color;
+2. body type, height impression, limb proportions and anatomy;
+3. hair color, length, fringe, silhouette and every required ornament;
+4. costume silhouette, construction, material, palette and signature details;
+5. weapon, accessory, symbol and form-specific changes;
+6. approved form, pose, crop, focal point and slot-specific negative space;
+7. distinction from the other ten images: no copied pose, mirror or recolor;
+8. image integrity: hands, overlapping parts, edges, background artifacts and
+   usable resolution.
+
+Any failed identity item blocks the image. Regenerate or correct it instead of
+planning to hide the error with CSS cropping, overlays or effects. Keep this
+checklist in working notes, not in the publishable theme package.
+
+## 4. Required visual surface coverage
 
 ### Home
 
@@ -77,7 +109,9 @@ recolors and artwork that relies on CSS to repair a wrong composition.
 - Never position or transform `main > *` globally.
 - Center the subject for chat compositions. Adjust background size/position and
   veil independently for light and dark mode.
-- Dark artwork must not overpower text, task controls or transparent bubbles.
+- Review dark artwork together with text, task controls and transparent
+  bubbles. Keep its brightness unchanged when the result is already balanced;
+  tune the image, veil or filter only when the actual composition needs it.
 
 ### Task title and environment information
 
@@ -114,7 +148,7 @@ recolors and artwork that relies on CSS to repair a wrong composition.
 - Give home motion, memory, sync and accessory separate animation rhythms.
   Respect `prefers-reduced-motion`.
 
-## 4. First-build gate
+## 5. First-build gate
 
 Before building, search for and remove:
 
@@ -123,13 +157,14 @@ Before building, search for and remove:
 - missing `.light-only`/`.dark-only` exclusivity;
 - task-title, environment-panel or composer-footer selectors with no skin;
 - message frames without padding;
-- dark chat art with no dedicated luminance/veil tuning;
+- dark chat art whose real contrast and readability have not been reviewed;
 - duplicated selectors or declarations appended outside sections 01-13.
 
-The contract validator catches objective remnants. The qualitative checks still
-require human judgment and runtime screenshots.
+The contract validator catches objective remnants. Qualitative checks still
+require human judgment. Runtime screenshots are optional unless the user asks
+for them; the user may perform final visual testing and request later tuning.
 
-## 5. Runtime QA matrix
+## 6. Runtime QA matrix
 
 Check all four primary states: home light, home dark, task light and task dark.
 Then test task-to-task, task-to-home and home-to-task navigation, environment
