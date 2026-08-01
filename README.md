@@ -2,23 +2,27 @@
 
 面向 Codex Desktop 的开源 Windows 主题工作室。Tessalume 把完整沉浸式主题、亮暗模式、收藏切换、额度信息和本机诊断集中在一个便携应用中；它通过本机回环端口连接 Codex，不修改 Codex 安装包、`app.asar` 或用户数据。
 
-[下载 Tessalume 1.0](https://github.com/lyc1uckYoo/tessalume/releases/latest) · [主题制作指南](THEMING.md) · [旗舰主题模板 1.0](examples/README.md)
+[下载 Tessalume 1.1](https://github.com/lyc1uckYoo/tessalume/releases/latest) · [主题制作指南](THEMING.md) · [旗舰主题模板 1.0](examples/README.md)
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/tessalume-dark.png">
   <source media="(prefers-color-scheme: light)" srcset="docs/screenshots/tessalume-light.png">
-  <img alt="Tessalume 1.0 主题画廊，展示四套内置主题" src="docs/screenshots/tessalume-light.png">
+  <img alt="Tessalume 主题画廊" src="docs/screenshots/tessalume-light.png">
 </picture>
 
-## Tessalume 1.0 能做什么
+## Tessalume 1.1
+
+1.1 完成了 Tessalume 品牌与工程结构的完整迁移，并把内置主题扩充到 8 款。本版本同时修正主题引擎状态显示、自启动迁移和主题热切换生命周期：软件可实时换肤时，主界面会同步显示真实运行状态；旧版 `CodexThemeStudio` 自启动项会自动迁移并清理；切换主题时先准备新资源，再安全替换旧运行时，减少组件延迟出现和旧主题残留。
+
+## 主要功能
 
 - **完整主题画廊**：统一管理角色横幅、聊天背景、消息框、卡片、输入框挂件和专属动效，不只是替换颜色。
-- **四套内置旗舰主题**：所有内置主题均支持亮色和暗色，并遵循同一套 Template 1.0 结构、自适应规则与运行时契约。
+- **八套内置旗舰主题**：8 款主题全部随 EXE 发布，均支持亮色和暗色，并遵循同一套 Template 1.0 结构、自适应规则与运行时契约。
 - **收藏与快速切换**：收藏喜欢的主题，在主界面或顶部浮窗中直接切换；恢复默认外观后，也可以一键回到刚才使用的主题。
-- **Codex 明暗模式控制**：Studio 自身和 Codex 的亮暗模式分别控制，浮窗会显示 Codex 当前状态。
+- **Codex 明暗模式控制**：Tessalume 自身和 Codex 的亮暗模式分别控制，浮窗会显示 Codex 当前状态。
 - **本地主题导入**：导入包含 `manifest.json`、`skin.css`、`theme.js` 和本地资源的完整主题包；也可以从软件内释放并复制旗舰模板开始制作。
-- **便携数据与开机启动**：主题、收藏、信任指纹和界面设置都保存在 `Tessalume.exe` 旁边；开机启动只写入当前 Windows 用户，不需要管理员权限。
-- **恢复与诊断**：随时移除已注入的主题并恢复 Codex 默认外观；诊断页会检查 Codex 进程、本机端口、主题包和当前运行状态。
+- **便携数据与开机启动**：主题、收藏、信任指纹和界面设置都保存在 `Tessalume.exe` 旁边；开机启动只写入当前 Windows 用户，不需要管理员权限，并可迁移清理旧品牌启动项。
+- **恢复与诊断**：随时移除已注入的主题并恢复 Codex 默认外观；诊断页会检查 Codex 进程、本机端口、主题包和当前运行状态，顶部状态与实际主题引擎保持同步。
 - **单实例续接**：重复运行 `Tessalume.exe` 不会创建第二套后台状态，而是唤起已经运行的主界面。
 
 ## 顶部主题浮窗
@@ -32,7 +36,7 @@ Tessalume 默认以顶部浮窗开始工作。浮窗常驻屏幕上方，不遮�
 - Codex 亮色/暗色切换；
 - 打开 Tessalume 主界面与关闭浮窗。
 
-![Tessalume 1.0 顶部主题浮窗](docs/screenshots/tessalume-quick-switch.png)
+![Tessalume 顶部主题浮窗](docs/screenshots/tessalume-quick-switch.png)
 
 如果 Codex 暂时没有返回某个额度，圆环会显示 `--`，不会阻塞主题切换。点击浮窗中的主页按钮，或再次运行 `Tessalume.exe`，即可打开完整主题画廊。
 
@@ -42,10 +46,14 @@ Tessalume 默认以顶部浮窗开始工作。浮窗常驻屏幕上方，不遮�
 |---|---|---|
 | 爱弥斯 · 星海远航 | `aemeath.star-voyage` | 星炬学院晨光 / 隧者核心深空，包含机制同步面板与专属长剑「永远的启明星」 |
 | 达妮娅 · 泡影虚阈 | `danya.bubble-void-duality` | 泡泡剧场伪装形态 / 寂静虚阈真形，保留双形态角色组件与专属动效 |
+| 绯雪 · 常世预见 | `hiyuki.crimson-snow` | 晨雪守愿 / 冰蓝预见，包含愿望档案、常世与预见双卡、预见铃阵及迅刀「霙霜」 |
+| 清宵 · 云门剑境 | `qingxiao.cloudsword-gate` | 行剑云关 / 抚弦布阵，包含天地弦心剑、万剑归弦、云门剑痕消息框与玉案记忆组件 |
 | 守岸人 · 泰缇斯回响 | `shorekeeper.tethys-reverie` | 镜海晨曦 / 概率之海，包含潮汐演算、双卡交替与专武「星序协响」 |
+| 穗穗 · 朝晖山水卷 | `suisui.inkscape-dawn` | 朝晖山河长卷 / 夜色水墨境，包含栖霞饮露扇、重明双卡、昆明记忆水镜与流金消息框 |
 | 心 · 朝月孤城 | `xin.moonfox-sovereign` | 白玉云宫 / 赤月黑城，人形与白狐本体、红玉岁序结界和双角色卡交替动效 |
+| 秧秧 · 苍翎远音 | `yangyang.xuanling-echo` | 温柔清雪 / 玄方夜战，包含苍翎六音、苍剑与翎剑式、秧秧和玄翎鸟双卡及风轨动效 |
 
-四套主题均为版本 `1.0`，同时支持亮色与暗色。程序根据 Studio 当前模式自动使用对应预览，应用后可以直接在浮窗中切换 Codex 明暗形态。
+8 款内置主题的主题包版本与旗舰模板契约均为 `1.0`，同时支持亮色与暗色。程序根据 Tessalume 当前模式自动使用对应预览，应用后可以直接在浮窗中切换 Codex 明暗形态。
 
 ## 下载与使用
 
@@ -64,7 +72,7 @@ Tessalume 默认以顶部浮窗开始工作。浮窗常驻屏幕上方，不遮�
 5. Tessalume 会优先从收藏主题中随机选择一个启动；收藏为空时从全部有效主题中选择。需要建立本机调试连接时，程序会使用 `127.0.0.1` 上的 `9340–9399` 端口启动或重新启动 Codex。
 6. 在主界面选择主题并点击“启动 Codex 并应用”，之后即可通过浮窗实时切换。
 
-发布页同时提供 `SHA256SUMS.txt`，可用于核对下载的 EXE。Tessalume 1.0 当前面向安装了 Windows 版 Codex Desktop 的 x64 系统。
+发布页同时提供 `SHA256SUMS.txt`，可用于核对下载的 EXE。Tessalume 1.1 当前面向安装了 Windows 版 Codex Desktop 的 x64 系统。
 
 ## 本机运行与安全边界
 
@@ -76,7 +84,7 @@ Tessalume 的主题运行链路保持在本机：
 - 高级主题按完整包内容计算 SHA-256 指纹，并在便携数据目录中记录当前加载版本；
 - 删除主题只作用于 Tessalume 自己的本地主题库；删除正在使用的主题前会先恢复 Codex 默认外观。
 
-![Tessalume 1.0 本机运行与诊断](docs/screenshots/tessalume-diagnostics.png)
+![Tessalume 本机运行与诊断](docs/screenshots/tessalume-diagnostics.png)
 
 诊断页区分 Codex 进程、本机端口、有效主题数量、当前主题和包校验结果，便于判断问题发生在主题包、Codex 启动还是本机连接阶段。
 
@@ -121,11 +129,11 @@ src/Tessalume.App       WPF 主界面、顶部浮窗与本机适配
 src/Tessalume.Core      主题加载、校验、Codex 启动与 CDP 运行时
 tests/                         无外部测试框架的自动检查
 schemas/                       主题包 JSON Schema
-themes/<主题目录>/             四套内置旗舰主题源码
+themes/<主题目录>/             8 款内置旗舰主题源码
 examples/                      可直接复制的旗舰主题模板 1.0
 .agents/skills/                主题创作规范、脚手架与契约校验
-docs/screenshots/              Tessalume 1.0 实机界面截图
+docs/screenshots/              Tessalume 实机界面截图
 一键构建EXE.ps1               还原、测试、优化与发布入口
 ```
 
-Tessalume 1.0 的正式发布产物为 `Tessalume.exe` 与对应的 SHA-256 校验文件，不额外要求安装器或 .NET 运行环境。
+Tessalume 1.1 的正式发布产物为 `Tessalume.exe` 与对应的 SHA-256 校验文件，不额外要求安装器或 .NET 运行环境。
