@@ -18,7 +18,7 @@ public partial class ThemeQuickSwitchWindow : Window
     private readonly Action _showHome;
     private readonly Func<Task<CodexUsageSnapshot?>> _readUsage;
     private readonly DispatcherTimer _usageTimer;
-    private IReadOnlyList<ThemeCardModel> _favorites = [];
+    private IReadOnlyList<ThemeCardModel> _switchCandidates = [];
     private string? _currentThemeId;
     private bool _isDefaultAppearance;
     private bool _readingUsage;
@@ -48,11 +48,11 @@ public partial class ThemeQuickSwitchWindow : Window
         string currentThemeId,
         string currentThemeName,
         bool isDefaultAppearance,
-        IReadOnlyList<ThemeCardModel> favorites)
+        IReadOnlyList<ThemeCardModel> switchCandidates)
     {
         _currentThemeId = currentThemeId;
         _isDefaultAppearance = isDefaultAppearance;
-        _favorites = favorites;
+        _switchCandidates = switchCandidates;
         if (IsLoaded && !string.Equals(CurrentThemeText.Text, currentThemeName, StringComparison.Ordinal))
         {
             AnimateThemeChange(currentThemeName, 0);
@@ -142,21 +142,21 @@ public partial class ThemeQuickSwitchWindow : Window
 
     private async Task ApplyRelativeAsync(int offset)
     {
-        if (_favorites.Count == 0)
+        if (_switchCandidates.Count == 0)
         {
-            CurrentThemeText.Text = "还没有收藏主题";
+            CurrentThemeText.Text = "还没有可切换主题";
             return;
         }
 
-        var currentIndex = _favorites.Select((theme, index) => (theme, index))
+        var currentIndex = _switchCandidates.Select((theme, index) => (theme, index))
             .FirstOrDefault(item => string.Equals(item.theme.ThemeId, _currentThemeId, StringComparison.OrdinalIgnoreCase)).index;
-        if (!string.Equals(_favorites[currentIndex].ThemeId, _currentThemeId, StringComparison.OrdinalIgnoreCase))
+        if (!string.Equals(_switchCandidates[currentIndex].ThemeId, _currentThemeId, StringComparison.OrdinalIgnoreCase))
         {
             currentIndex = offset > 0 ? -1 : 0;
         }
 
-        var nextIndex = (currentIndex + offset + _favorites.Count) % _favorites.Count;
-        var theme = _favorites[nextIndex];
+        var nextIndex = (currentIndex + offset + _switchCandidates.Count) % _switchCandidates.Count;
+        var theme = _switchCandidates[nextIndex];
         if (await _applyTheme(theme))
         {
             _currentThemeId = theme.ThemeId;

@@ -79,6 +79,8 @@ var tests = new (string Name, Func<Task> Run)[]
     ("advanced import keeps script and trust follows fingerprint", AdvancedImportAndTrustFollowFingerprintAsync),
     ("deferred main UI replays the live engine state", DeferredMainUiReplaysEngineStateAsync),
     ("startup registration migrates the predecessor brand", StartupRegistrationMigratesPredecessorBrandAsync),
+    ("startup restores the last theme before first-run random selection", StartupRestoresLastThemeBeforeRandomAsync),
+    ("build script launches the published executable by default", BuildScriptLaunchesPublishedExecutableAsync),
 };
 
 var failures = new List<string>();
@@ -376,6 +378,44 @@ static async Task StartupRegistrationMigratesPredecessorBrandAsync()
         "The settings checkbox and toolbar startup button must share one current registry state.");
 }
 
+static async Task StartupRestoresLastThemeBeforeRandomAsync()
+{
+    var repositoryRoot = FindRepositoryRoot();
+    var source = await File.ReadAllTextAsync(Path.Combine(
+        repositoryRoot,
+        "src",
+        "Tessalume.App",
+        "MainWindow.xaml.cs"));
+    var startupStart = source.IndexOf("internal async Task StartInQuickModeAsync()", StringComparison.Ordinal);
+    var startupEnd = startupStart < 0
+        ? -1
+        : source.IndexOf("private async void MainWindow_Closed", startupStart, StringComparison.Ordinal);
+    Ensure(startupStart >= 0 && startupEnd > startupStart,
+        "Quick-mode startup must remain a distinct testable block.");
+    var startupBlock = source[startupStart..startupEnd];
+    var loadStateIndex = startupBlock.IndexOf("var state = await _stateStore.LoadAsync();", StringComparison.Ordinal);
+    var firstRunIndex = startupBlock.IndexOf("if (state is null)", StringComparison.Ordinal);
+    var randomIndex = startupBlock.IndexOf("await ApplyRandomThemeOnStartupAsync();", StringComparison.Ordinal);
+    var resumeIndex = startupBlock.IndexOf("await TryResumeAsync(state);", StringComparison.Ordinal);
+    Ensure(loadStateIndex >= 0 && firstRunIndex > loadStateIndex && randomIndex > firstRunIndex && resumeIndex > randomIndex,
+        "Startup must restore saved state and reserve random selection for a missing first-run state.");
+    Ensure(!startupBlock.Contains("if (!await ApplyRandomThemeOnStartupAsync())", StringComparison.Ordinal),
+        "Startup must not randomize before attempting to restore the saved theme.");
+    Ensure(source.Contains("private ThemeCardModel[] GetQuickSwitchCandidates()", StringComparison.Ordinal) &&
+           source.Contains("GetQuickSwitchCandidates());", StringComparison.Ordinal),
+        "Random startup and quick switching must share the dynamic favorites-first candidate rule.");
+}
+
+static async Task BuildScriptLaunchesPublishedExecutableAsync()
+{
+    var repositoryRoot = FindRepositoryRoot();
+    var source = await File.ReadAllTextAsync(Path.Combine(repositoryRoot, "一键构建EXE.ps1"));
+    Ensure(source.Contains("[switch]$NoLaunch", StringComparison.Ordinal) &&
+           source.Contains("if (-not $NoLaunch)", StringComparison.Ordinal) &&
+           source.Contains("Start-Process -FilePath $finalExe -WorkingDirectory $output", StringComparison.Ordinal),
+        "The one-click build must launch the newly published EXE by default and retain an explicit opt-out.");
+}
+
 static async Task RuntimeRemovesNativeComposerFadeAsync()
 {
     var repositoryRoot = FindRepositoryRoot();
@@ -522,6 +562,9 @@ static async Task PublishedThemesUseCanonicalInjectionContractAsync()
         "The open runtime must own Template 1.0 outer DOM and generic surface markers.");
     Ensure(runtime.Contains("syncRouteState();", StringComparison.Ordinal),
         "The canonical host must synchronize route state before its debounced repair.");
+    Ensure(runtime.Contains("const decorateOutputPanels = () => {", StringComparison.Ordinal) &&
+           runtime.Contains("[data-slot=\"thread-summary-panel-item-button\"]", StringComparison.Ordinal),
+        "The canonical host must bind environment panels by their stable item slot, not only visible labels.");
 
     var themes = new[]
     {

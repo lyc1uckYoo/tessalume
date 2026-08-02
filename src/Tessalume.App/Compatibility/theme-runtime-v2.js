@@ -645,6 +645,36 @@
         }
       });
     };
+    const decorateOutputPanels = () => {
+      const sections = new Set();
+      const collectSection = (node) => {
+        const section = node?.closest?.("section");
+        if (section?.isConnected) sections.add(section);
+      };
+
+      // The environment panel can open on a branch/status view that does not
+      // render the old "Output" or "Sources" labels. Its item slot remains
+      // stable across those views and after React replaces the panel subtree.
+      document.querySelectorAll(
+        '[data-slot="thread-summary-panel-item-button"]',
+      ).forEach(collectSection);
+
+      // Keep compatibility with older Codex builds that predate the item slot.
+      const legacyLabels = new Set(["\u8f93\u51fa", "\u6765\u6e90", "Output", "Sources"]);
+      document.querySelectorAll("button").forEach((button) => {
+        if (legacyLabels.has(button.textContent?.trim() || "")) collectSection(button);
+      });
+
+      sections.forEach((section) => {
+        const panel = section.parentElement?.parentElement;
+        mark(section, roleClass("output-section"));
+        mark(section.querySelector("header"), roleClass("output-header"));
+        mark(panel, roleClass("output-panel"));
+        markSurface(section, "output-section");
+        markSurface(section.querySelector("header"), "output-header");
+        markSurface(panel, "output-panel");
+      });
+    };
     const decorateTaskCriticalSurfaces = (mutations) => {
       if (!mutations?.length || !html.classList.contains(roleClass("is-task"))) return;
       const markdownSelector = '[class*="_markdownContent_"]';
@@ -675,6 +705,9 @@
       // task navigation, so the tiny header query is safer than relying only on
       // added nodes. This path performs no layout reads or whole-page scans.
       decorateTaskHeaders();
+      // Mark the environment panel immediately as well. Deferring this work to
+      // the debounced repair can starve while live counters keep mutating.
+      decorateOutputPanels();
     };
     const decorateSharedSurfaces = (main, aside, home) => {
       mark(main, roleClass("main"));
@@ -696,17 +729,7 @@
         }
       });
 
-      document.querySelectorAll("button").forEach((button) => {
-        const label = button.textContent?.trim();
-        if (label !== "输出" && label !== "来源") return;
-        const section = button.closest("section");
-        mark(section, roleClass("output-section"));
-        mark(section?.querySelector("header"), roleClass("output-header"));
-        mark(section?.parentElement?.parentElement, roleClass("output-panel"));
-        markSurface(section, "output-section");
-        markSurface(section?.querySelector("header"), "output-header");
-        markSurface(section?.parentElement?.parentElement, "output-panel");
-      });
+      decorateOutputPanels();
       const outputOpen = Array.from(document.querySelectorAll(`.${roleClass("output-panel")}`)).some((panel) => {
         const box = panel.getBoundingClientRect();
         return box.width > 120 && box.height > 80;

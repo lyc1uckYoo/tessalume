@@ -7,7 +7,9 @@ param(
     [string]$Runtime = 'win-x64',
 
     [ValidateRange(1, 100)]
-    [int]$ThemeImageQuality = 90
+    [int]$ThemeImageQuality = 90,
+
+    [switch]$NoLaunch
 )
 
 $ErrorActionPreference = 'Stop'
@@ -296,3 +298,8 @@ $finalExe = Join-Path $output $executableName
 $size = [Math]::Round((Get-Item -LiteralPath $finalExe).Length / 1MB, 1)
 Write-Host "Build complete: $finalExe ($size MB)" -ForegroundColor Green
 Write-Host 'Built-in themes are embedded and will be extracted on first launch.' -ForegroundColor Green
+
+if (-not $NoLaunch) {
+    Write-Host "Launching: $finalExe" -ForegroundColor Cyan
+    Start-Process -FilePath $finalExe -WorkingDirectory $output
+}

@@ -1,0 +1,80 @@
+{
+  "$schema": "../../schemas/theme-manifest-v2.schema.json",
+  "schemaVersion": 2,
+  "id": "iuno.moonbow-defiance",
+  "name": "尤诺 · 月弦逆命",
+  "version": "1.0",
+  "author": "lyc1uckYoo",
+  "description": "以尤诺的月环、月弓与逆写命运为核心的 Tessalume Template 1.0 旗舰主题。",
+  "engineVersion": 2,
+  "type": "advanced",
+  "template": {
+    "id": "flagship",
+    "version": "1.0",
+    "style": "shared"
+  },
+  "capabilities": {
+    "light": true,
+    "dark": true
+  },
+  "entryPoints": {
+    "css": "skin.css",
+    "script": "theme.js"
+  },
+  "previews": {
+    "light": "assets/hero-light.png",
+    "dark": "assets/hero-dark.png"
+  },
+  "assets": {
+    "hero-light": "assets/hero-light.png",
+    "hero-dark": "assets/hero-dark.png",
+    "sidebar-light": "assets/sidebar-light.png",
+    "sidebar-dark": "assets/sidebar-dark.png",
+    "chat-light": "assets/chat-light.png",
+    "chat-dark": "assets/chat-dark.png",
+    "task-left": "assets/task-left.png",
+    "task-right-secondary": "assets/task-right-secondary.png",
+    "task-right-primary": "assets/task-right-primary.png",
+    "memory-light": "assets/memory-light.png",
+    "memory-dark": "assets/memory-dark.png"
+  },
+  "config": {
+    "qualityGate": "flagship-complete-1",
+    "title": "尤诺 · 月弦逆命",
+    "subtitle": "以月光锚定不可见之物，以弓弦射向未写定的未来。",
+    "status": "SEPTIMONT · LUNAR ANCHOR ONLINE",
+    "kickerLight": "UNWRITTEN DAY · MOONBOW TRAJECTORY",
+    "kickerDark": "ECLIPSE NIGHT · MOONRING ANCHOR",
+    "headingLight": "写下轨迹",
+    "headingLightAccent": "射向未定",
+    "headingDark": "锚住月光",
+    "headingDarkAccent": "忤逆终焉",
+    "motionLabel": "四方殿月相历盘与第127位谕女星历",
+    "noteLabel": "LUNAR CYCLE",
+    "noteLight": "新月 · 月弓越限",
+    "noteDark": "弦月 · 月环显形",
+    "leftCardTitle": "弦月 · 锚定",
+    "leftCardMeta": "MOONRING · HALF MOON",
+    "secondaryCardTitle": "新月 · 弦引",
+    "secondaryCardMeta": "MOONBOW · NEW MOON",
+    "primaryCardTitle": "满月 · 至臻",
+    "primaryCardMeta": "ABSOLUTE FULLNESS · FULL MOON",
+    "memoryLabel": "四方殿 · 第127位谕女",
+    "memory": "照片会褪色，枝芽仍会生长；只要还有一束月光记得她，存在就不会归零。",
+    "syncLabel": "TETRAGON · EPHEMERIS",
+    "syncTitle": "月历校准",
+    "syncValue": "127",
+    "syncTotal": "127",
+    "syncCore": "弦",
+    "syncCoreLabel": "月历",
+    "syncStateLabel": "FULL MOON",
+    "syncState": "在轨",
+    "accessorySymbol": "月",
+    "accessoryLabel": "万物持存 · 注释",
+    "pinnedSection": "未写书签",
+    "projectSection": "四方殿档案"
+  },
+  "compatibility": {
+    "petOverlay": false
+  }
+}

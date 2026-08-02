@@ -51,7 +51,6 @@ public partial class MainWindow : Window, IAsyncDisposable
     private bool _updatingStartupSetting;
     private bool _startupInitialized;
     private bool _shutdownRequested;
-    private bool _switchWithinFavorites;
     private bool _uiInitialized;
     private bool _mainContentLoaded;
     private RightPane _rightPane = RightPane.Themes;
@@ -101,11 +100,15 @@ public partial class MainWindow : Window, IAsyncDisposable
         if (_startupInitialized) return;
         _startupInitialized = true;
         await ReloadThemesAsync(loadPreviews: false);
+        var state = await _stateStore.LoadAsync();
         OpenQuickSwitchWindow();
-        if (!await ApplyRandomThemeOnStartupAsync())
+        if (state is null)
         {
-            await TryResumeAsync();
+            await ApplyRandomThemeOnStartupAsync();
+            return;
         }
+
+        await TryResumeAsync(state);
     }
 
     private async void MainWindow_Closed(object? sender, EventArgs e)
@@ -255,33 +258,8 @@ public partial class MainWindow : Window, IAsyncDisposable
             : "使用上方按钮导入一个本地主题文件夹。";
     }
 
-    private async Task TryResumeAsync()
+    private async Task TryResumeAsync(StudioState state)
     {
-        var state = await _stateStore.LoadAsync();
-        var port = state is not null && await _launcher.IsDebugPortReadyAsync(state.Port)
-            ? state.Port
-            : await _launcher.FindRunningDebugPortAsync();
-        if (port is null)
-        {
-            SetEngineState("主题引擎待启动");
-            return;
-        }
-
-        _activePort = port.Value;
-        if (state is null)
-        {
-            SetEngineState($"Codex 可用 · 本机 {port.Value}");
-            SetStatus("选择本地主题后即可应用");
-            return;
-        }
-
-        if (!state.Enabled)
-        {
-            SetEngineState("Codex 默认外观");
-            SetStatus("主题已停用，可随时重新应用");
-            return;
-        }
-
         var theme = _themes.FirstOrDefault(item =>
             item.CatalogItem.Package?.Manifest.Id == state.ThemeId && item.IsValid);
         if (theme?.CatalogItem.Package is null)
@@ -290,37 +268,26 @@ public partial class MainWindow : Window, IAsyncDisposable
             return;
         }
 
-        if (_uiInitialized)
+        _lastThemeId = theme.CatalogItem.Package.Manifest.Id;
+        SelectTheme(theme);
+        if (!state.Enabled)
         {
-            ShowThemes(state.ThemeId);
+            SetEngineState("Codex 默认外观");
+            SetStatus("上次关闭时使用默认外观，已保留最后运行的主题");
+            RefreshQuickSwitchWindow();
+            return;
         }
 
-        await EnsureTrustedAsync(theme.CatalogItem.Package);
-
-        await _runtime.StartAsync(port.Value, theme.CatalogItem.Package);
-        await LegacyInjectorMigrator.TryStopAsync();
-        await _stateStore.SaveAsync(new StudioState
+        if (await ApplyThemeAsync(theme))
         {
-            Port = port.Value,
-            ThemeId = theme.CatalogItem.Package.Manifest.Id,
-            UpdatedAt = DateTimeOffset.Now,
-            Enabled = true,
-        });
-        SetEngineState($"运行中 · 本机 {port.Value}");
-        _activeThemeId = theme.CatalogItem.Package.Manifest.Id;
-        _lastThemeId = _activeThemeId;
-        UpdateAppliedThemeState();
-        SetStatus($"{theme.Name} 已恢复");
-        RefreshQuickSwitchWindow();
+            SetStatus($"{theme.Name} 已恢复为上次关闭时运行的主题");
+        }
     }
 
     private async Task<bool> ApplyRandomThemeOnStartupAsync()
     {
         var favorites = _themes.Where(theme => theme.IsFavorite && theme.IsValid).ToArray();
-        _switchWithinFavorites = favorites.Length > 0;
-        var candidates = favorites.Length > 0
-            ? favorites
-            : _themes.Where(theme => theme.IsValid).ToArray();
+        var candidates = GetQuickSwitchCandidates();
         if (candidates.Length == 0)
         {
             return false;
@@ -337,6 +304,14 @@ public partial class MainWindow : Window, IAsyncDisposable
 
         await ApplyThemeAsync(theme);
         return true;
+    }
+
+    private ThemeCardModel[] GetQuickSwitchCandidates()
+    {
+        var favorites = _themes.Where(theme => theme.IsFavorite && theme.IsValid).ToArray();
+        return favorites.Length > 0
+            ? favorites
+            : _themes.Where(theme => theme.IsValid).ToArray();
     }
 
     private void ShowThemes_Click(object sender, RoutedEventArgs e)
@@ -642,9 +617,7 @@ public partial class MainWindow : Window, IAsyncDisposable
             _activeThemeId ?? string.Empty,
             currentThemeName,
             isDefaultAppearance,
-            (_switchWithinFavorites
-                ? _themes.Where(theme => theme.IsFavorite && theme.IsValid)
-                : _themes.Where(theme => theme.IsValid)).ToArray());
+            GetQuickSwitchCandidates());
     }
 
     private void StartupButton_Click(object sender, RoutedEventArgs e)
