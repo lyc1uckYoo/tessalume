@@ -108,8 +108,7 @@ html.iun-theme.iun-is-task main.iun-main::before {
 }
 
 html.iun-theme.electron-dark.iun-is-task main.iun-main::before {
-  filter:saturate(1.02) contrast(1.01) brightness(.96);
-  opacity:1;
+  filter:brightness(.80) saturate(.88);
 }
 
 html.iun-theme.iun-is-task main.iun-main::after {
@@ -117,7 +116,7 @@ html.iun-theme.iun-is-task main.iun-main::after {
 }
 
 html.iun-theme.electron-dark.iun-is-task main.iun-main::after {
-  background:linear-gradient(90deg,rgba(3,8,16,.34),rgba(3,8,16,.16) 38%,rgba(3,8,16,.05) 70%,rgba(3,8,16,.16)),linear-gradient(180deg,rgba(3,8,16,.19),transparent 18%,transparent 82%,rgba(3,8,16,.28));
+  background:transparent;
 }
 
 html.iun-theme.iun-is-task .iun-chat-paper::before { content:none!important; }

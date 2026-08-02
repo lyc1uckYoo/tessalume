@@ -187,7 +187,7 @@ html.hy3-theme.hy3-is-task main.hy3-main::before {
 }
 
 html.hy3-theme.electron-dark.hy3-is-task main.hy3-main::before {
-  filter:brightness(.72) saturate(.88) contrast(1.06);
+  filter:brightness(.80) saturate(.88);
 }
 
 html.hy3-theme.hy3-is-task main.hy3-main::after {
@@ -195,7 +195,7 @@ html.hy3-theme.hy3-is-task main.hy3-main::after {
 }
 
 html.hy3-theme.electron-dark.hy3-is-task main.hy3-main::after {
-  background:linear-gradient(90deg,rgba(4,6,14,.60),rgba(4,6,14,.34) 28%,rgba(4,6,14,.09) 51%,rgba(4,6,14,.34) 73%,rgba(4,6,14,.62));
+  background:transparent;
 }
 
 /* 03 Sidebar skin */

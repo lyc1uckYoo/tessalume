@@ -175,12 +175,16 @@ html.sui-theme.sui-is-task main.sui-main::before {
   background:var(--sui-chat-art) center center/cover no-repeat;
 }
 
+html.sui-theme.electron-dark.sui-is-task main.sui-main::before {
+  filter:brightness(.90) saturate(.88);
+}
+
 html.sui-theme.sui-is-task main.sui-main::after {
   background:linear-gradient(90deg,rgba(255,253,245,.63) 0%,rgba(255,253,245,.24) 24%,rgba(255,253,245,.06) 42%,rgba(255,253,245,.06) 58%,rgba(255,253,245,.16) 79%,rgba(255,253,245,.28) 100%);
 }
 
 html.sui-theme.electron-dark.sui-is-task main.sui-main::after {
-  background:linear-gradient(90deg,rgba(5,16,23,.74) 0%,rgba(5,16,23,.31) 24%,rgba(5,16,23,.08) 42%,rgba(5,16,23,.08) 58%,rgba(5,16,23,.20) 79%,rgba(5,16,23,.34) 100%);
+  background:transparent;
 }
 
 /* 03 Sidebar skin */

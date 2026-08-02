@@ -162,7 +162,7 @@ html.xmf-theme.xmf-is-task main.xmf-main::after {
 }
 
 html.xmf-theme.electron-dark.xmf-is-task main.xmf-main::after {
-  background:linear-gradient(90deg,rgba(10,6,8,.56),rgba(10,6,8,.38) 54%,rgba(10,6,8,.18) 78%,rgba(10,6,8,.06));
+  background:transparent;
 }
 
 html.xmf-theme.xmf-is-settings .xmf-settings-surface {

@@ -182,7 +182,7 @@ html.qxo-theme.qxo-is-task main.qxo-main::after {
 }
 
 html.qxo-theme.electron-dark.qxo-is-task main.qxo-main::after {
-  background:linear-gradient(90deg,rgba(4,12,22,.76) 0%,rgba(4,13,24,.34) 24%,rgba(4,13,24,.08) 42%,rgba(4,13,24,.08) 58%,rgba(4,13,24,.20) 78%,rgba(4,13,24,.34) 100%);
+  background:transparent;
 }
 
 /* 03 Sidebar skin */

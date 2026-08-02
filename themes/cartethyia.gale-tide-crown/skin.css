@@ -165,7 +165,7 @@ html.cthy-theme.cthy-is-task main.cthy-main::before {
 }
 
 html.cthy-theme.electron-dark.cthy-is-task main.cthy-main::before {
-  filter:brightness(.66) saturate(.88) contrast(1.08);
+  filter:brightness(.90) saturate(.88);
 }
 
 html.cthy-theme.cthy-is-task main.cthy-main::after {
@@ -173,9 +173,8 @@ html.cthy-theme.cthy-is-task main.cthy-main::after {
 }
 
 html.cthy-theme.electron-dark.cthy-is-task main.cthy-main::after {
-  background:radial-gradient(ellipse at 50% 45%,rgba(2,7,18,.03) 0 18%,rgba(2,7,18,.12) 42%,rgba(2,7,18,.28) 76%,rgba(2,7,18,.45)),linear-gradient(90deg,rgba(2,7,18,.58),rgba(2,7,18,.2) 28%,rgba(2,7,18,.08) 46%,rgba(2,7,18,.08) 54%,rgba(2,7,18,.19) 72%,rgba(2,7,18,.56)),linear-gradient(180deg,rgba(2,7,18,.34),transparent 25%,transparent 68%,rgba(2,7,18,.5));
+  background:transparent;
 }
-
 html.cthy-theme.cthy-is-settings .cthy-settings-surface {
   background:transparent!important;
 }

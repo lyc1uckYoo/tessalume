@@ -159,7 +159,7 @@ html.ae3-theme.ae3-is-task main.ae3-main::after {
 }
 
 html.ae3-theme.electron-dark.ae3-is-task main.ae3-main::after {
-  background:linear-gradient(90deg,rgba(7,11,24,.56),rgba(7,11,24,.38) 54%,rgba(7,11,24,.18) 78%,rgba(7,11,24,.06));
+  background:transparent;
 }
 
 /* 03 Sidebar skin */

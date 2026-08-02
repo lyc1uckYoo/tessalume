@@ -120,12 +120,16 @@ html.sk3-theme.sk3-is-task main.sk3-main::before {
   background:var(--sk3-chat-art) center center/cover no-repeat;
 }
 
+html.sk3-theme.electron-dark.sk3-is-task main.sk3-main::before {
+  filter:brightness(.90) saturate(.88);
+}
+
 html.sk3-theme.sk3-is-task main.sk3-main::after {
   background:linear-gradient(180deg,rgba(245,251,253,.12),rgba(245,251,253,.06) 62%,rgba(230,243,248,.14));
 }
 
 html.sk3-theme.electron-dark.sk3-is-task main.sk3-main::after {
-  background:linear-gradient(90deg,rgba(4,12,28,.56),rgba(4,12,28,.38) 54%,rgba(4,12,28,.18) 78%,rgba(4,12,28,.06));
+  background:transparent;
 }
 
 html.sk3-theme main.sk3-main>header.app-header-tint {

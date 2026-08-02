@@ -358,16 +358,12 @@ html.dny-theme.dny-is-task main.dny-main::before {
   background:var(--dny-chat-art) center center/cover no-repeat;
 }
 
-html.dny-theme.electron-dark.dny-is-task main.dny-main::before {
-  background:var(--dny-chat-art) center center/cover no-repeat;
-}
-
 html.dny-theme.dny-is-task main.dny-main::after {
   background:linear-gradient(90deg,rgba(238,247,250,.42),rgba(238,247,250,.27) 54%,rgba(238,247,250,.10) 78%,rgba(238,247,250,.03));
 }
 
 html.dny-theme.electron-dark.dny-is-task main.dny-main::after {
-  background:linear-gradient(90deg,rgba(5,8,21,.56),rgba(5,8,21,.38) 54%,rgba(5,8,21,.18) 78%,rgba(5,8,21,.06));
+  background:transparent;
 }
 
 html.dny-theme:not(.electron-dark) .dny-weapon-charm {

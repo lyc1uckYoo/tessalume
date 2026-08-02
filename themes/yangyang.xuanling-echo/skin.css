@@ -179,14 +179,17 @@ html.xyl-theme.xyl-is-task main.xyl-main::before {
   background:var(--xyl-chat-art) center center/contain no-repeat;
 }
 
+html.xyl-theme.electron-dark.xyl-is-task main.xyl-main::before {
+  filter:brightness(.80) saturate(.88);
+}
+
 html.xyl-theme.xyl-is-task main.xyl-main::after {
   background:linear-gradient(180deg,rgba(244,250,252,.19),transparent 22%,transparent 78%,rgba(232,243,247,.16)),
     linear-gradient(90deg,rgba(241,247,249,.22),rgba(241,247,249,.05) 39%,rgba(241,247,249,.03) 62%,rgba(241,247,249,.17));
 }
 
 html.xyl-theme.electron-dark.xyl-is-task main.xyl-main::after {
-  background:linear-gradient(180deg,rgba(3,8,20,.10),transparent 24%,transparent 75%,rgba(3,8,20,.12)),
-    linear-gradient(90deg,rgba(4,10,24,.56),rgba(4,10,24,.38) 54%,rgba(4,10,24,.18) 78%,rgba(4,10,24,.06));
+  background:transparent;
 }
 
 /* 03 Sidebar skin */
