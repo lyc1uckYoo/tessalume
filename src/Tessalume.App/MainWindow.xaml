@@ -4,11 +4,12 @@
         xmlns:local="clr-namespace:Tessalume.App"
         Title="{x:Static local:BrandInfo.WindowTitle}"
         Icon="{x:Static local:BrandInfo.AppIcon}"
-        Width="1280" Height="820" MinWidth="1080" MinHeight="720"
+        Width="1280" Height="820" MinWidth="760" MinHeight="420"
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource WindowBackground}"
         FontFamily="Microsoft YaHei UI"
         UseLayoutRounding="True"
+        PreviewKeyDown="MainWindow_PreviewKeyDown"
         TextOptions.TextFormattingMode="Display">
     <Window.Resources>
         <LinearGradientBrush x:Key="PrimaryGradient" StartPoint="0,0" EndPoint="1,1">
@@ -70,16 +71,25 @@
         <DropShadowEffect x:Key="PrimaryButtonShadow" Color="#5149C8" BlurRadius="18" ShadowDepth="4" Opacity="0.26" />
         <DropShadowEffect x:Key="SettingsBarShadow" Color="#59637A" BlurRadius="24" ShadowDepth="7" Opacity="0.18" />
 
+        <Style x:Key="KeyboardFocusVisual" TargetType="Control">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <Border Margin="2" BorderBrush="{DynamicResource Accent}" BorderThickness="2" CornerRadius="7" />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
         <Style TargetType="Button">
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="FontFamily" Value="Microsoft YaHei UI" />
-            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusVisual}" />
         </Style>
         <Style x:Key="NavButton" TargetType="Button">
             <Setter Property="Foreground" Value="{DynamicResource MutedText}" />
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusVisual}" />
             <Setter Property="HorizontalContentAlignment" Value="Left" />
             <Setter Property="Padding" Value="13,10" />
             <Setter Property="Margin" Value="0,1" />
@@ -179,7 +189,7 @@
             <Setter Property="BorderBrush" Value="Transparent" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Padding" Value="7,0" />
-            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusVisual}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
@@ -221,7 +231,7 @@
             <Setter Property="Background" Value="{DynamicResource SettingsControlSurface}" />
             <Setter Property="BorderBrush" Value="{DynamicResource SettingsControlBorder}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusVisual}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
@@ -268,7 +278,7 @@
         <Style x:Key="SettingsSlider" TargetType="Slider">
             <Setter Property="Height" Value="22" />
             <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusVisual}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Slider">
@@ -313,7 +323,7 @@
         <Style x:Key="SettingsToggle" TargetType="CheckBox">
             <Setter Property="Width" Value="50" />
             <Setter Property="Height" Value="28" />
-            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusVisual}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="CheckBox">
@@ -526,7 +536,7 @@
             <Setter Property="Cursor" Value="IBeam" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
             <Setter Property="CaretBrush" Value="{DynamicResource Accent}" />
-            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusVisual}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TextBox">
@@ -563,7 +573,9 @@
         </Style>
     </Window.Resources>
 
-    <Grid Background="{DynamicResource WindowBackground}">
+    <Grid x:Name="AdaptiveViewport" Background="{DynamicResource WindowBackground}" ClipToBounds="True" SizeChanged="AdaptiveViewport_SizeChanged">
+      <Grid x:Name="AdaptiveRoot" MinWidth="1080" MinHeight="720" Background="{DynamicResource WindowBackground}">
+        <Grid.LayoutTransform><ScaleTransform x:Name="AdaptiveScale" ScaleX="1" ScaleY="1" /></Grid.LayoutTransform>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="226" />
             <ColumnDefinition Width="*" />
@@ -753,7 +765,7 @@
                             <TextBlock Text="已收藏" Style="{StaticResource PillText}" HorizontalAlignment="Center" Margin="0,2,0,0" />
                         </StackPanel>
                     </StackPanel>
-                    <Button x:Name="ImportButton" Grid.Column="7" Height="38" Click="ImportTheme_Click" Style="{StaticResource PrimaryActionButton}" Content="导入主题" />
+                    <Button x:Name="ImportButton" Grid.Column="7" Height="38" Click="ImportTheme_Click" Style="{StaticResource PrimaryActionButton}" Content="导入主题" ToolTip="选择主题文件夹（Ctrl+I）" />
                 </Grid>
             </Border>
 
@@ -1080,8 +1092,8 @@
                                     <StackPanel VerticalAlignment="Center">
                                         <TextBlock Text="准备好主题包了吗？" Foreground="{DynamicResource PrimaryText}" FontSize="11" FontWeight="SemiBold" />
                                         <TextBlock Text="导入前不会修改任何 Codex 文件。" Foreground="{DynamicResource MutedText}" FontSize="9" Margin="0,4,0,12" />
-                                        <Button Style="{StaticResource PrimaryActionButton}" Click="ImportTheme_Click" Content="选择主题文件夹" Height="38" />
-                                        <Button Style="{StaticResource QuietActionButton}" Click="ImportArchive_Click" Content="选择 ZIP 主题包" Margin="0,8,0,0" />
+                                        <Button Style="{StaticResource PrimaryActionButton}" Click="ImportTheme_Click" Content="选择主题文件夹" Height="38" ToolTip="快捷键 Ctrl+I" />
+                                        <Button Style="{StaticResource QuietActionButton}" Click="ImportArchive_Click" Content="选择 ZIP 主题包" Margin="0,8,0,0" ToolTip="快捷键 Ctrl+Shift+I" />
                                     </StackPanel>
                                 </Border>
                             </Grid>
@@ -1162,7 +1174,7 @@
                                     <ColumnDefinition Width="40" /><ColumnDefinition Width="10" /><ColumnDefinition Width="*" /><ColumnDefinition Width="10" />
                                     <ColumnDefinition Width="40" /><ColumnDefinition Width="18" /><ColumnDefinition Width="1" /><ColumnDefinition Width="18" /><ColumnDefinition Width="166" />
                                 </Grid.ColumnDefinitions>
-                                <Button x:Name="SettingsPreviousThemeButton" Style="{StaticResource SettingsIconButton}" Click="SettingsPreviousTheme_Click" ToolTip="应用上一个可切换主题">
+                                <Button x:Name="SettingsPreviousThemeButton" Style="{StaticResource SettingsIconButton}" Click="SettingsPreviousTheme_Click" ToolTip="应用上一个可切换主题" AutomationProperties.Name="应用上一个可切换主题">
                                     <Viewbox Width="18" Height="18"><Canvas Width="24" Height="24"><Rectangle Canvas.Left="4" Canvas.Top="6" Width="2.4" Height="12" RadiusX="1.2" Fill="{DynamicResource SettingsBarPrimaryText}" /><Path Data="M 19,6 L 9,12 L 19,18 Z" Fill="{DynamicResource SettingsBarPrimaryText}" /></Canvas></Viewbox>
                                 </Button>
                                 <Border Grid.Column="2" Height="60" Background="{DynamicResource SettingsCurrentThemeGradient}" BorderBrush="{DynamicResource SettingsControlBorder}" BorderThickness="1" CornerRadius="16" Padding="14,0" VerticalAlignment="Center">
@@ -1187,7 +1199,7 @@
                                         </Border>
                                     </Grid>
                                 </Border>
-                                <Button x:Name="SettingsNextThemeButton" Grid.Column="4" Style="{StaticResource SettingsIconButton}" Click="SettingsNextTheme_Click" ToolTip="应用下一个可切换主题">
+                                <Button x:Name="SettingsNextThemeButton" Grid.Column="4" Style="{StaticResource SettingsIconButton}" Click="SettingsNextTheme_Click" ToolTip="应用下一个可切换主题" AutomationProperties.Name="应用下一个可切换主题">
                                     <Viewbox Width="18" Height="18"><Canvas Width="24" Height="24"><Path Data="M 5,6 L 15,12 L 5,18 Z" Fill="{DynamicResource SettingsBarPrimaryText}" /><Rectangle Canvas.Left="17.6" Canvas.Top="6" Width="2.4" Height="12" RadiusX="1.2" Fill="{DynamicResource SettingsBarPrimaryText}" /></Canvas></Viewbox>
                                 </Button>
                                 <Border Grid.Column="6" Width="1" Height="42" Background="{DynamicResource SettingsControlBorder}" VerticalAlignment="Center" />
@@ -1244,13 +1256,13 @@
                                                 <Grid.ColumnDefinitions><ColumnDefinition Width="34" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                                                 <Border Width="28" Height="28" CornerRadius="9" Background="{DynamicResource SkySoft}"><Path Width="14" Height="14" Data="M 3,16 L 8,11 L 12,15 L 15,12 L 21,18 M 5,4 L 19,4 C 20,4 21,5 21,6 L 21,19 C 21,20 20,21 19,21 L 5,21 C 4,21 3,20 3,19 L 3,6 C 3,5 4,4 5,4 Z" Stroke="{DynamicResource Sky}" StrokeThickness="1.8" Fill="Transparent" Stretch="Uniform" /></Border>
                                                 <StackPanel Grid.Column="1" VerticalAlignment="Center"><TextBlock Text="首页横幅" Foreground="{DynamicResource PrimaryText}" FontWeight="SemiBold" FontSize="12.5" /><TextBlock Text="首页主视觉原图" Foreground="{DynamicResource SubtleText}" FontSize="8.5" /></StackPanel>
-                                                <Button Grid.Column="2" Style="{StaticResource SettingsMiniButton}" Tag="hero" Click="ResetVisualRegion_Click" ToolTip="重置首页横幅"><Path Width="13" Height="13" Data="M 7,8 L 3,8 L 3,4 M 3.5,8 C 5.8,3.5 11,2 15.5,4.2 C 20,6.5 21.5,12 19,16.5" Stroke="{DynamicResource MutedText}" StrokeThickness="1.8" Fill="Transparent" Stretch="Uniform" /></Button>
+                                                <Button Grid.Column="2" Style="{StaticResource SettingsMiniButton}" Tag="hero" Click="ResetVisualRegion_Click" ToolTip="重置首页横幅" AutomationProperties.Name="重置首页横幅图像参数"><Path Width="13" Height="13" Data="M 7,8 L 3,8 L 3,4 M 3.5,8 C 5.8,3.5 11,2 15.5,4.2 C 20,6.5 21.5,12 19,16.5" Stroke="{DynamicResource MutedText}" StrokeThickness="1.8" Fill="Transparent" Stretch="Uniform" /></Button>
                                             </Grid>
                                             <Border Height="1" Background="{DynamicResource Border}" Margin="0,11,0,7" />
-                                            <Grid Margin="0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /><ColumnDefinition Width="44" /></Grid.ColumnDefinitions><TextBlock Text="亮度" Foreground="{DynamicResource MutedText}" FontSize="9.5" VerticalAlignment="Center" /><Slider x:Name="HeroBrightnessSlider" Grid.Column="1" Style="{StaticResource SettingsSlider}" Tag="hero.brightness" Minimum="20" Maximum="180" Value="100" ValueChanged="VisualAdjustmentSlider_ValueChanged" AutoToolTipPlacement="TopLeft" /><Border Grid.Column="2" Background="{DynamicResource Surface}" CornerRadius="7" Padding="4,3" Margin="5,0,0,0"><TextBlock x:Name="HeroBrightnessValue" Text="100%" Foreground="{DynamicResource PrimaryText}" FontSize="8.5" TextAlignment="Center" /></Border></Grid>
-                                            <Grid Margin="0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /><ColumnDefinition Width="44" /></Grid.ColumnDefinitions><TextBlock Text="对比" Foreground="{DynamicResource MutedText}" FontSize="9.5" VerticalAlignment="Center" /><Slider x:Name="HeroContrastSlider" Grid.Column="1" Style="{StaticResource SettingsSlider}" Tag="hero.contrast" Minimum="20" Maximum="180" Value="100" ValueChanged="VisualAdjustmentSlider_ValueChanged" AutoToolTipPlacement="TopLeft" /><Border Grid.Column="2" Background="{DynamicResource Surface}" CornerRadius="7" Padding="4,3" Margin="5,0,0,0"><TextBlock x:Name="HeroContrastValue" Text="100%" Foreground="{DynamicResource PrimaryText}" FontSize="8.5" TextAlignment="Center" /></Border></Grid>
-                                            <Grid Margin="0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /><ColumnDefinition Width="44" /></Grid.ColumnDefinitions><TextBlock Text="饱和" Foreground="{DynamicResource MutedText}" FontSize="9.5" VerticalAlignment="Center" /><Slider x:Name="HeroSaturationSlider" Grid.Column="1" Style="{StaticResource SettingsSlider}" Tag="hero.saturation" Minimum="0" Maximum="200" Value="100" ValueChanged="VisualAdjustmentSlider_ValueChanged" AutoToolTipPlacement="TopLeft" /><Border Grid.Column="2" Background="{DynamicResource Surface}" CornerRadius="7" Padding="4,3" Margin="5,0,0,0"><TextBlock x:Name="HeroSaturationValue" Text="100%" Foreground="{DynamicResource PrimaryText}" FontSize="8.5" TextAlignment="Center" /></Border></Grid>
-                                            <Grid Margin="0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /><ColumnDefinition Width="44" /></Grid.ColumnDefinitions><TextBlock Text="透明" Foreground="{DynamicResource MutedText}" FontSize="9.5" VerticalAlignment="Center" /><Slider x:Name="HeroOpacitySlider" Grid.Column="1" Style="{StaticResource SettingsSlider}" Tag="hero.opacity" Minimum="0" Maximum="100" Value="100" ValueChanged="VisualAdjustmentSlider_ValueChanged" AutoToolTipPlacement="TopLeft" /><Border Grid.Column="2" Background="{DynamicResource Surface}" CornerRadius="7" Padding="4,3" Margin="5,0,0,0"><TextBlock x:Name="HeroOpacityValue" Text="100%" Foreground="{DynamicResource PrimaryText}" FontSize="8.5" TextAlignment="Center" /></Border></Grid>
+                                            <Grid Margin="0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /><ColumnDefinition Width="44" /></Grid.ColumnDefinitions><TextBlock Text="亮度" Foreground="{DynamicResource MutedText}" FontSize="9.5" VerticalAlignment="Center" /><Slider x:Name="HeroBrightnessSlider" Grid.Column="1" Style="{StaticResource SettingsSlider}" Tag="hero.brightness" AutomationProperties.Name="首页横幅亮度" Minimum="20" Maximum="180" Value="100" ValueChanged="VisualAdjustmentSlider_ValueChanged" AutoToolTipPlacement="TopLeft" /><Border Grid.Column="2" Background="{DynamicResource Surface}" CornerRadius="7" Padding="4,3" Margin="5,0,0,0"><TextBlock x:Name="HeroBrightnessValue" Text="100%" Foreground="{DynamicResource PrimaryText}" FontSize="8.5" TextAlignment="Center" /></Border></Grid>
+                                            <Grid Margin="0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /><ColumnDefinition Width="44" /></Grid.ColumnDefinitions><TextBlock Text="对比" Foreground="{DynamicResource MutedText}" FontSize="9.5" VerticalAlignment="Center" /><Slider x:Name="HeroContrastSlider" Grid.Column="1" Style="{StaticResource SettingsSlider}" Tag="hero.contrast" AutomationProperties.Name="首页横幅对比度" Minimum="20" Maximum="180" Value="100" ValueChanged="VisualAdjustmentSlider_ValueChanged" AutoToolTipPlacement="TopLeft" /><Border Grid.Column="2" Background="{DynamicResource Surface}" CornerRadius="7" Padding="4,3" Margin="5,0,0,0"><TextBlock x:Name="HeroContrastValue" Text="100%" Foreground="{DynamicResource PrimaryText}" FontSize="8.5" TextAlignment="Center" /></Border></Grid>
+                                            <Grid Margin="0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /><ColumnDefinition Width="44" /></Grid.ColumnDefinitions><TextBlock Text="饱和" Foreground="{DynamicResource MutedText}" FontSize="9.5" VerticalAlignment="Center" /><Slider x:Name="HeroSaturationSlider" Grid.Column="1" Style="{StaticResource SettingsSlider}" Tag="hero.saturation" AutomationProperties.Name="首页横幅饱和度" Minimum="0" Maximum="200" Value="100" ValueChanged="VisualAdjustmentSlider_ValueChanged" AutoToolTipPlacement="TopLeft" /><Border Grid.Column="2" Background="{DynamicResource Surface}" CornerRadius="7" Padding="4,3" Margin="5,0,0,0"><TextBlock x:Name="HeroSaturationValue" Text="100%" Foreground="{DynamicResource PrimaryText}" FontSize="8.5" TextAlignment="Center" /></Border></Grid>
+                                            <Grid Margin="0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /><ColumnDefinition Width="44" /></Grid.ColumnDefinitions><TextBlock Text="透明" Foreground="{DynamicResource MutedText}" FontSize="9.5" VerticalAlignment="Center" /><Slider x:Name="HeroOpacitySlider" Grid.Column="1" Style="{StaticResource SettingsSlider}" Tag="hero.opacity" AutomationProperties.Name="首页横幅不透明度" Minimum="0" Maximum="100" Value="100" ValueChanged="VisualAdjustmentSlider_ValueChanged" AutoToolTipPlacement="TopLeft" /><Border Grid.Column="2" Background="{DynamicResource Surface}" CornerRadius="7" Padding="4,3" Margin="5,0,0,0"><TextBlock x:Name="HeroOpacityValue" Text="100%" Foreground="{DynamicResource PrimaryText}" FontSize="8.5" TextAlignment="Center" /></Border></Grid>
                                         </StackPanel>
                                     </Border>
 
@@ -1260,13 +1272,13 @@
                                                 <Grid.ColumnDefinitions><ColumnDefinition Width="34" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                                                 <Border Width="28" Height="28" CornerRadius="9" Background="{DynamicResource AccentSoft}"><Path Width="14" Height="14" Data="M 4,3 L 10,3 L 10,21 L 4,21 Z M 12,6 L 20,6 L 20,21 L 12,21 Z M 6.8,12 L 7.2,12" Stroke="{DynamicResource Accent}" StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Fill="Transparent" Stretch="Uniform" /></Border>
                                                 <StackPanel Grid.Column="1" VerticalAlignment="Center"><TextBlock Text="左栏图片" Foreground="{DynamicResource PrimaryText}" FontWeight="SemiBold" FontSize="12.5" /><TextBlock Text="导航区域人物原图" Foreground="{DynamicResource SubtleText}" FontSize="8.5" /></StackPanel>
-                                                <Button Grid.Column="2" Style="{StaticResource SettingsMiniButton}" Tag="sidebar" Click="ResetVisualRegion_Click" ToolTip="重置左栏图片"><Path Width="13" Height="13" Data="M 7,8 L 3,8 L 3,4 M 3.5,8 C 5.8,3.5 11,2 15.5,4.2 C 20,6.5 21.5,12 19,16.5" Stroke="{DynamicResource MutedText}" StrokeThickness="1.8" Fill="Transparent" Stretch="Uniform" /></Button>
+                                                <Button Grid.Column="2" Style="{StaticResource SettingsMiniButton}" Tag="sidebar" Click="ResetVisualRegion_Click" ToolTip="重置左栏图片" AutomationProperties.Name="重置左栏图像参数"><Path Width="13" Height="13" Data="M 7,8 L 3,8 L 3,4 M 3.5,8 C 5.8,3.5 11,2 15.5,4.2 C 20,6.5 21.5,12 19,16.5" Stroke="{DynamicResource MutedText}" StrokeThickness="1.8" Fill="Transparent" Stretch="Uniform" /></Button>
                                             </Grid>
                                             <Border Height="1" Background="{DynamicResource Border}" Margin="0,11,0,7" />
-                                            <Grid Margin="0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /><ColumnDefinition Width="44" /></Grid.ColumnDefinitions><TextBlock Text="亮度" Foreground="{DynamicResource MutedText}" FontSize="9.5" VerticalAlignment="Center" /><Slider x:Name="SidebarBrightnessSlider" Grid.Column="1" Style="{StaticResource SettingsSlider}" Tag="sidebar.brightness" Minimum="20" Maximum="180" Value="100" ValueChanged="VisualAdjustmentSlider_ValueChanged" AutoToolTipPlacement="TopLeft" /><Border Grid.Column="2" Background="{DynamicResource Surface}" CornerRadius="7" Padding="4,3" Margin="5,0,0,0"><TextBlock x:Name="SidebarBrightnessValue" Text="100%" Foreground="{DynamicResource PrimaryText}" FontSize="8.5" TextAlignment="Center" /></Border></Grid>
-                                            <Grid Margin="0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /><ColumnDefinition Width="44" /></Grid.ColumnDefinitions><TextBlock Text="对比" Foreground="{DynamicResource MutedText}" FontSize="9.5" VerticalAlignment="Center" /><Slider x:Name="SidebarContrastSlider" Grid.Column="1" Style="{StaticResource SettingsSlider}" Tag="sidebar.contrast" Minimum="20" Maximum="180" Value="100" ValueChanged="VisualAdjustmentSlider_ValueChanged" AutoToolTipPlacement="TopLeft" /><Border Grid.Column="2" Background="{DynamicResource Surface}" CornerRadius="7" Padding="4,3" Margin="5,0,0,0"><TextBlock x:Name="SidebarContrastValue" Text="100%" Foreground="{DynamicResource PrimaryText}" FontSize="8.5" TextAlignment="Center" /></Border></Grid>
-                                            <Grid Margin="0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /><ColumnDefinition Width="44" /></Grid.ColumnDefinitions><TextBlock Text="饱和" Foreground="{DynamicResource MutedText}" FontSize="9.5" VerticalAlignment="Center" /><Slider x:Name="SidebarSaturationSlider" Grid.Column="1" Style="{StaticResource SettingsSlider}" Tag="sidebar.saturation" Minimum="0" Maximum="200" Value="100" ValueChanged="VisualAdjustmentSlider_ValueChanged" AutoToolTipPlacement="TopLeft" /><Border Grid.Column="2" Background="{DynamicResource Surface}" CornerRadius="7" Padding="4,3" Margin="5,0,0,0"><TextBlock x:Name="SidebarSaturationValue" Text="100%" Foreground="{DynamicResource PrimaryText}" FontSize="8.5" TextAlignment="Center" /></Border></Grid>
-                                            <Grid Margin="0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /><ColumnDefinition Width="44" /></Grid.ColumnDefinitions><TextBlock Text="透明" Foreground="{DynamicResource MutedText}" FontSize="9.5" VerticalAlignment="Center" /><Slider x:Name="SidebarOpacitySlider" Grid.Column="1" Style="{StaticResource SettingsSlider}" Tag="sidebar.opacity" Minimum="0" Maximum="100" Value="100" ValueChanged="VisualAdjustmentSlider_ValueChanged" AutoToolTipPlacement="TopLeft" /><Border Grid.Column="2" Background="{DynamicResource Surface}" CornerRadius="7" Padding="4,3" Margin="5,0,0,0"><TextBlock x:Name="SidebarOpacityValue" Text="100%" Foreground="{DynamicResource PrimaryText}" FontSize="8.5" TextAlignment="Center" /></Border></Grid>
+                                            <Grid Margin="0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /><ColumnDefinition Width="44" /></Grid.ColumnDefinitions><TextBlock Text="亮度" Foreground="{DynamicResource MutedText}" FontSize="9.5" VerticalAlignment="Center" /><Slider x:Name="SidebarBrightnessSlider" Grid.Column="1" Style="{StaticResource SettingsSlider}" Tag="sidebar.brightness" AutomationProperties.Name="左栏图片亮度" Minimum="20" Maximum="180" Value="100" ValueChanged="VisualAdjustmentSlider_ValueChanged" AutoToolTipPlacement="TopLeft" /><Border Grid.Column="2" Background="{DynamicResource Surface}" CornerRadius="7" Padding="4,3" Margin="5,0,0,0"><TextBlock x:Name="SidebarBrightnessValue" Text="100%" Foreground="{DynamicResource PrimaryText}" FontSize="8.5" TextAlignment="Center" /></Border></Grid>
+                                            <Grid Margin="0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /><ColumnDefinition Width="44" /></Grid.ColumnDefinitions><TextBlock Text="对比" Foreground="{DynamicResource MutedText}" FontSize="9.5" VerticalAlignment="Center" /><Slider x:Name="SidebarContrastSlider" Grid.Column="1" Style="{StaticResource SettingsSlider}" Tag="sidebar.contrast" AutomationProperties.Name="左栏图片对比度" Minimum="20" Maximum="180" Value="100" ValueChanged="VisualAdjustmentSlider_ValueChanged" AutoToolTipPlacement="TopLeft" /><Border Grid.Column="2" Background="{DynamicResource Surface}" CornerRadius="7" Padding="4,3" Margin="5,0,0,0"><TextBlock x:Name="SidebarContrastValue" Text="100%" Foreground="{DynamicResource PrimaryText}" FontSize="8.5" TextAlignment="Center" /></Border></Grid>
+                                            <Grid Margin="0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /><ColumnDefinition Width="44" /></Grid.ColumnDefinitions><TextBlock Text="饱和" Foreground="{DynamicResource MutedText}" FontSize="9.5" VerticalAlignment="Center" /><Slider x:Name="SidebarSaturationSlider" Grid.Column="1" Style="{StaticResource SettingsSlider}" Tag="sidebar.saturation" AutomationProperties.Name="左栏图片饱和度" Minimum="0" Maximum="200" Value="100" ValueChanged="VisualAdjustmentSlider_ValueChanged" AutoToolTipPlacement="TopLeft" /><Border Grid.Column="2" Background="{DynamicResource Surface}" CornerRadius="7" Padding="4,3" Margin="5,0,0,0"><TextBlock x:Name="SidebarSaturationValue" Text="100%" Foreground="{DynamicResource PrimaryText}" FontSize="8.5" TextAlignment="Center" /></Border></Grid>
+                                            <Grid Margin="0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /><ColumnDefinition Width="44" /></Grid.ColumnDefinitions><TextBlock Text="透明" Foreground="{DynamicResource MutedText}" FontSize="9.5" VerticalAlignment="Center" /><Slider x:Name="SidebarOpacitySlider" Grid.Column="1" Style="{StaticResource SettingsSlider}" Tag="sidebar.opacity" AutomationProperties.Name="左栏图片不透明度" Minimum="0" Maximum="100" Value="100" ValueChanged="VisualAdjustmentSlider_ValueChanged" AutoToolTipPlacement="TopLeft" /><Border Grid.Column="2" Background="{DynamicResource Surface}" CornerRadius="7" Padding="4,3" Margin="5,0,0,0"><TextBlock x:Name="SidebarOpacityValue" Text="100%" Foreground="{DynamicResource PrimaryText}" FontSize="8.5" TextAlignment="Center" /></Border></Grid>
                                         </StackPanel>
                                     </Border>
 
@@ -1276,13 +1288,13 @@
                                                 <Grid.ColumnDefinitions><ColumnDefinition Width="34" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                                                 <Border Width="28" Height="28" CornerRadius="9" Background="{DynamicResource AmberSoft}"><Path Width="14" Height="14" Data="M 4,5 C 4,3.9 4.9,3 6,3 L 18,3 C 19.1,3 20,3.9 20,5 L 20,15 C 20,16.1 19.1,17 18,17 L 10,17 L 6,21 L 6,17 C 4.9,17 4,16.1 4,15 Z M 8,8 L 16,8 M 8,12 L 13,12" Stroke="{DynamicResource Amber}" StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Fill="Transparent" Stretch="Uniform" /></Border>
                                                 <StackPanel Grid.Column="1" VerticalAlignment="Center"><TextBlock Text="聊天背景" Foreground="{DynamicResource PrimaryText}" FontWeight="SemiBold" FontSize="12.5" /><TextBlock Text="对话主区域背景原图" Foreground="{DynamicResource SubtleText}" FontSize="8.5" /></StackPanel>
-                                                <Button Grid.Column="2" Style="{StaticResource SettingsMiniButton}" Tag="chat" Click="ResetVisualRegion_Click" ToolTip="重置聊天背景"><Path Width="13" Height="13" Data="M 7,8 L 3,8 L 3,4 M 3.5,8 C 5.8,3.5 11,2 15.5,4.2 C 20,6.5 21.5,12 19,16.5" Stroke="{DynamicResource MutedText}" StrokeThickness="1.8" Fill="Transparent" Stretch="Uniform" /></Button>
+                                                <Button Grid.Column="2" Style="{StaticResource SettingsMiniButton}" Tag="chat" Click="ResetVisualRegion_Click" ToolTip="重置聊天背景" AutomationProperties.Name="重置聊天背景图像参数"><Path Width="13" Height="13" Data="M 7,8 L 3,8 L 3,4 M 3.5,8 C 5.8,3.5 11,2 15.5,4.2 C 20,6.5 21.5,12 19,16.5" Stroke="{DynamicResource MutedText}" StrokeThickness="1.8" Fill="Transparent" Stretch="Uniform" /></Button>
                                             </Grid>
                                             <Border Height="1" Background="{DynamicResource Border}" Margin="0,11,0,7" />
-                                            <Grid Margin="0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /><ColumnDefinition Width="44" /></Grid.ColumnDefinitions><TextBlock Text="亮度" Foreground="{DynamicResource MutedText}" FontSize="9.5" VerticalAlignment="Center" /><Slider x:Name="ChatBrightnessSlider" Grid.Column="1" Style="{StaticResource SettingsSlider}" Tag="chat.brightness" Minimum="20" Maximum="180" Value="100" ValueChanged="VisualAdjustmentSlider_ValueChanged" AutoToolTipPlacement="TopLeft" /><Border Grid.Column="2" Background="{DynamicResource Surface}" CornerRadius="7" Padding="4,3" Margin="5,0,0,0"><TextBlock x:Name="ChatBrightnessValue" Text="100%" Foreground="{DynamicResource PrimaryText}" FontSize="8.5" TextAlignment="Center" /></Border></Grid>
-                                            <Grid Margin="0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /><ColumnDefinition Width="44" /></Grid.ColumnDefinitions><TextBlock Text="对比" Foreground="{DynamicResource MutedText}" FontSize="9.5" VerticalAlignment="Center" /><Slider x:Name="ChatContrastSlider" Grid.Column="1" Style="{StaticResource SettingsSlider}" Tag="chat.contrast" Minimum="20" Maximum="180" Value="100" ValueChanged="VisualAdjustmentSlider_ValueChanged" AutoToolTipPlacement="TopLeft" /><Border Grid.Column="2" Background="{DynamicResource Surface}" CornerRadius="7" Padding="4,3" Margin="5,0,0,0"><TextBlock x:Name="ChatContrastValue" Text="100%" Foreground="{DynamicResource PrimaryText}" FontSize="8.5" TextAlignment="Center" /></Border></Grid>
-                                            <Grid Margin="0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /><ColumnDefinition Width="44" /></Grid.ColumnDefinitions><TextBlock Text="饱和" Foreground="{DynamicResource MutedText}" FontSize="9.5" VerticalAlignment="Center" /><Slider x:Name="ChatSaturationSlider" Grid.Column="1" Style="{StaticResource SettingsSlider}" Tag="chat.saturation" Minimum="0" Maximum="200" Value="100" ValueChanged="VisualAdjustmentSlider_ValueChanged" AutoToolTipPlacement="TopLeft" /><Border Grid.Column="2" Background="{DynamicResource Surface}" CornerRadius="7" Padding="4,3" Margin="5,0,0,0"><TextBlock x:Name="ChatSaturationValue" Text="100%" Foreground="{DynamicResource PrimaryText}" FontSize="8.5" TextAlignment="Center" /></Border></Grid>
-                                            <Grid Margin="0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /><ColumnDefinition Width="44" /></Grid.ColumnDefinitions><TextBlock Text="透明" Foreground="{DynamicResource MutedText}" FontSize="9.5" VerticalAlignment="Center" /><Slider x:Name="ChatOpacitySlider" Grid.Column="1" Style="{StaticResource SettingsSlider}" Tag="chat.opacity" Minimum="0" Maximum="100" Value="100" ValueChanged="VisualAdjustmentSlider_ValueChanged" AutoToolTipPlacement="TopLeft" /><Border Grid.Column="2" Background="{DynamicResource Surface}" CornerRadius="7" Padding="4,3" Margin="5,0,0,0"><TextBlock x:Name="ChatOpacityValue" Text="100%" Foreground="{DynamicResource PrimaryText}" FontSize="8.5" TextAlignment="Center" /></Border></Grid>
+                                            <Grid Margin="0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /><ColumnDefinition Width="44" /></Grid.ColumnDefinitions><TextBlock Text="亮度" Foreground="{DynamicResource MutedText}" FontSize="9.5" VerticalAlignment="Center" /><Slider x:Name="ChatBrightnessSlider" Grid.Column="1" Style="{StaticResource SettingsSlider}" Tag="chat.brightness" AutomationProperties.Name="聊天背景亮度" Minimum="20" Maximum="180" Value="100" ValueChanged="VisualAdjustmentSlider_ValueChanged" AutoToolTipPlacement="TopLeft" /><Border Grid.Column="2" Background="{DynamicResource Surface}" CornerRadius="7" Padding="4,3" Margin="5,0,0,0"><TextBlock x:Name="ChatBrightnessValue" Text="100%" Foreground="{DynamicResource PrimaryText}" FontSize="8.5" TextAlignment="Center" /></Border></Grid>
+                                            <Grid Margin="0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /><ColumnDefinition Width="44" /></Grid.ColumnDefinitions><TextBlock Text="对比" Foreground="{DynamicResource MutedText}" FontSize="9.5" VerticalAlignment="Center" /><Slider x:Name="ChatContrastSlider" Grid.Column="1" Style="{StaticResource SettingsSlider}" Tag="chat.contrast" AutomationProperties.Name="聊天背景对比度" Minimum="20" Maximum="180" Value="100" ValueChanged="VisualAdjustmentSlider_ValueChanged" AutoToolTipPlacement="TopLeft" /><Border Grid.Column="2" Background="{DynamicResource Surface}" CornerRadius="7" Padding="4,3" Margin="5,0,0,0"><TextBlock x:Name="ChatContrastValue" Text="100%" Foreground="{DynamicResource PrimaryText}" FontSize="8.5" TextAlignment="Center" /></Border></Grid>
+                                            <Grid Margin="0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /><ColumnDefinition Width="44" /></Grid.ColumnDefinitions><TextBlock Text="饱和" Foreground="{DynamicResource MutedText}" FontSize="9.5" VerticalAlignment="Center" /><Slider x:Name="ChatSaturationSlider" Grid.Column="1" Style="{StaticResource SettingsSlider}" Tag="chat.saturation" AutomationProperties.Name="聊天背景饱和度" Minimum="0" Maximum="200" Value="100" ValueChanged="VisualAdjustmentSlider_ValueChanged" AutoToolTipPlacement="TopLeft" /><Border Grid.Column="2" Background="{DynamicResource Surface}" CornerRadius="7" Padding="4,3" Margin="5,0,0,0"><TextBlock x:Name="ChatSaturationValue" Text="100%" Foreground="{DynamicResource PrimaryText}" FontSize="8.5" TextAlignment="Center" /></Border></Grid>
+                                            <Grid Margin="0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /><ColumnDefinition Width="44" /></Grid.ColumnDefinitions><TextBlock Text="透明" Foreground="{DynamicResource MutedText}" FontSize="9.5" VerticalAlignment="Center" /><Slider x:Name="ChatOpacitySlider" Grid.Column="1" Style="{StaticResource SettingsSlider}" Tag="chat.opacity" AutomationProperties.Name="聊天背景不透明度" Minimum="0" Maximum="100" Value="100" ValueChanged="VisualAdjustmentSlider_ValueChanged" AutoToolTipPlacement="TopLeft" /><Border Grid.Column="2" Background="{DynamicResource Surface}" CornerRadius="7" Padding="4,3" Margin="5,0,0,0"><TextBlock x:Name="ChatOpacityValue" Text="100%" Foreground="{DynamicResource PrimaryText}" FontSize="8.5" TextAlignment="Center" /></Border></Grid>
                                         </StackPanel>
                                     </Border>
                                 </Grid>
@@ -1456,5 +1468,6 @@
                            TextWrapping="Wrap" LineHeight="17" Margin="7,1,0,0" />
             </Grid>
         </Border>
+      </Grid>
     </Grid>
 </Window>

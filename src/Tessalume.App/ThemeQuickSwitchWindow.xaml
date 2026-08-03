@@ -87,6 +87,10 @@
                             <DoubleAnimation Storyboard.TargetName="MotionRoot" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1.08" Duration="0:0:0.12" />
                         </Storyboard></BeginStoryboard></Trigger.ExitActions>
                     </Trigger>
+                    <Trigger Property="IsKeyboardFocused" Value="True">
+                        <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource QuickPrimaryText}" />
+                        <Setter TargetName="Chrome" Property="BorderThickness" Value="2" />
+                    </Trigger>
                     <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.35" /></Trigger>
                 </ControlTemplate.Triggers>
             </ControlTemplate></Setter.Value></Setter>
@@ -157,13 +161,13 @@
                 <Border Grid.Column="4" Width="1" Height="29" Background="{DynamicResource QuickSeparator}" VerticalAlignment="Center" />
                 <Border Grid.Column="11" Width="1" Height="29" Background="{DynamicResource QuickSeparator}" VerticalAlignment="Center" />
 
-                <Button Grid.Column="6" Style="{StaticResource PlayerButton}" Click="Previous_Click" ToolTip="上一个可切换主题">
+                <Button Grid.Column="6" Style="{StaticResource PlayerButton}" Click="Previous_Click" ToolTip="上一个可切换主题" AutomationProperties.Name="上一个可切换主题">
                     <Viewbox Width="17" Height="17"><Canvas Width="24" Height="24">
                         <Rectangle Canvas.Left="4" Canvas.Top="6" Width="2.4" Height="12" RadiusX="1.2" Fill="{DynamicResource QuickIconBrush}" />
                         <Path Data="M 19,6 L 9,12 L 19,18 Z" Fill="{DynamicResource QuickIconBrush}" />
                     </Canvas></Viewbox>
                 </Button>
-                <Button Grid.Column="10" Style="{StaticResource PlayerButton}" Click="Next_Click" ToolTip="下一个可切换主题">
+                <Button Grid.Column="10" Style="{StaticResource PlayerButton}" Click="Next_Click" ToolTip="下一个可切换主题" AutomationProperties.Name="下一个可切换主题">
                     <Viewbox Width="17" Height="17"><Canvas Width="24" Height="24">
                         <Path Data="M 5,6 L 15,12 L 5,18 Z" Fill="{DynamicResource QuickIconBrush}" />
                         <Rectangle Canvas.Left="17.6" Canvas.Top="6" Width="2.4" Height="12" RadiusX="1.2" Fill="{DynamicResource QuickIconBrush}" />
@@ -237,7 +241,7 @@
                     </Grid>
                 </Border>
 
-                <Button x:Name="RestoreThemeButton" Grid.Column="12" Style="{StaticResource AccentIconButton}" Click="Restore_Click" ToolTip="恢复 Codex 默认外观">
+                <Button x:Name="RestoreThemeButton" Grid.Column="12" Style="{StaticResource AccentIconButton}" Click="Restore_Click" ToolTip="恢复 Codex 默认外观" AutomationProperties.Name="恢复 Codex 默认外观">
                     <Viewbox x:Name="RestoreIconViewbox" Width="18" Height="18" RenderTransformOrigin="0.5,0.5">
                         <Viewbox.RenderTransform><RotateTransform Angle="0" /></Viewbox.RenderTransform>
                         <Canvas Width="24" Height="24">
@@ -246,7 +250,7 @@
                         </Canvas>
                     </Viewbox>
                 </Button>
-                <Button x:Name="ColorModeButton" Grid.Column="14" Style="{StaticResource ColorIconButton}" Click="ToggleColor_Click" ToolTip="正在读取 Codex 明暗状态…">
+                <Button x:Name="ColorModeButton" Grid.Column="14" Style="{StaticResource ColorIconButton}" Click="ToggleColor_Click" ToolTip="正在读取 Codex 明暗状态…" AutomationProperties.Name="切换 Codex 亮暗模式">
                     <Viewbox x:Name="ColorIconViewbox" Width="18" Height="18" RenderTransformOrigin="0.5,0.5">
                         <Viewbox.RenderTransform><RotateTransform Angle="0" /></Viewbox.RenderTransform>
                         <Grid Width="24" Height="24">
@@ -260,13 +264,13 @@
                         </Grid>
                     </Viewbox>
                 </Button>
-                <Button Grid.Column="16" Style="{StaticResource HomeIconButton}" Click="Home_Click" ToolTip="{x:Static local:BrandInfo.OpenMainWindowTooltip}">
+                <Button Grid.Column="16" Style="{StaticResource HomeIconButton}" Click="Home_Click" ToolTip="{x:Static local:BrandInfo.OpenMainWindowTooltip}" AutomationProperties.Name="打开 Tessalume 主界面">
                     <Viewbox Width="18" Height="18"><Canvas Width="24" Height="24">
                         <Path Data="M 4,11.5 L 12,4.5 L 20,11.5 M 6.5,10 L 6.5,20 L 17.5,20 L 17.5,10 M 10,20 L 10,14 L 14,14 L 14,20"
                               Stroke="{DynamicResource QuickIconBrush}" StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Fill="Transparent" />
                     </Canvas></Viewbox>
                 </Button>
-                <Button Grid.Column="18" Style="{StaticResource CloseIconButton}" Click="Close_Click" ToolTip="关闭浮窗并打开主页">
+                <Button Grid.Column="18" Style="{StaticResource CloseIconButton}" Click="Close_Click" ToolTip="关闭浮窗并打开主页" AutomationProperties.Name="关闭主题浮窗">
                     <Viewbox Width="17" Height="17"><Canvas Width="24" Height="24">
                         <Path Data="M 6.5,6.5 L 17.5,17.5 M 17.5,6.5 L 6.5,17.5" Stroke="{DynamicResource QuickCloseIcon}" StrokeThickness="1.9" StrokeStartLineCap="Round" />
                     </Canvas></Viewbox>

@@ -71,6 +71,7 @@ var tests = new (string Name, Func<Task> Run)[]
     ("flagship template v1 freezes shared structure", FlagshipTemplateV1FreezesSharedStructureAsync),
     ("artwork adjustments are runtime-owned", ArtworkAdjustmentsAreRuntimeOwnedAsync),
     ("main product surfaces share the design system", MainProductSurfacesShareDesignSystemAsync),
+    ("adaptive layout and keyboard accessibility are available", AdaptiveLayoutAndKeyboardAccessibilityAsync),
     ("version 1.2 product workflow is complete", Version12ProductWorkflowIsCompleteAsync),
     ("portable Codex creator workspace is self-contained", PortableCreatorWorkspaceIsSelfContainedAsync),
     ("diagnostics report and built-in recovery are available", DiagnosticsRecoveryIsAvailableAsync),
@@ -952,6 +953,39 @@ static async Task MainProductSurfacesShareDesignSystemAsync()
     Ensure(!cardModel.Contains("BUILT-IN", StringComparison.Ordinal) &&
            !cardModel.Contains("LOCAL", StringComparison.Ordinal),
         "Chinese product surfaces should not fall back to legacy English theme badges.");
+}
+
+static async Task AdaptiveLayoutAndKeyboardAccessibilityAsync()
+{
+    var repositoryRoot = FindRepositoryRoot();
+    var appRoot = Path.Combine(repositoryRoot, "src", "Tessalume.App");
+    var mainXaml = await File.ReadAllTextAsync(Path.Combine(appRoot, "MainWindow.xaml"));
+    var mainSource = await File.ReadAllTextAsync(Path.Combine(appRoot, "MainWindow.xaml.cs"));
+    var quickXaml = await File.ReadAllTextAsync(Path.Combine(appRoot, "ThemeQuickSwitchWindow.xaml"));
+    var manifest = await File.ReadAllTextAsync(Path.Combine(appRoot, "app.manifest"));
+
+    Ensure(mainXaml.Contains("x:Name=\"AdaptiveViewport\"", StringComparison.Ordinal) &&
+           mainXaml.Contains("x:Name=\"AdaptiveScale\"", StringComparison.Ordinal) &&
+           mainXaml.Contains("MinWidth=\"760\" MinHeight=\"420\"", StringComparison.Ordinal),
+        "The main product surface must scale down instead of extending beyond a small work area.");
+    Ensure(mainSource.Contains("FitWindowToWorkArea", StringComparison.Ordinal) &&
+           mainSource.Contains("AdaptiveViewport_SizeChanged", StringComparison.Ordinal) &&
+           mainSource.Contains("_quickSwitchWindow.Close();", StringComparison.Ordinal) &&
+           mainSource.Contains("Key.F", StringComparison.Ordinal) &&
+           mainSource.Contains("Key.I", StringComparison.Ordinal) &&
+           mainSource.Contains("Key.F5", StringComparison.Ordinal),
+        "Small-screen fitting and documented keyboard shortcuts must remain wired.");
+    Ensure(mainXaml.Contains("x:Key=\"KeyboardFocusVisual\"", StringComparison.Ordinal) &&
+           !mainXaml.Contains("FocusVisualStyle\" Value=\"{x:Null}", StringComparison.Ordinal) &&
+           mainXaml.Contains("AutomationProperties.Name=\"首页横幅亮度\"", StringComparison.Ordinal) &&
+           mainXaml.Contains("AutomationProperties.Name=\"聊天背景不透明度\"", StringComparison.Ordinal),
+        "Keyboard focus and advanced image sliders require visible, descriptive accessibility metadata.");
+    Ensure(quickXaml.Contains("AutomationProperties.Name=\"上一个可切换主题\"", StringComparison.Ordinal) &&
+           quickXaml.Contains("AutomationProperties.Name=\"关闭主题浮窗\"", StringComparison.Ordinal) &&
+           quickXaml.Contains("IsKeyboardFocused", StringComparison.Ordinal),
+        "The icon-only quick bar controls must be named and visibly focusable.");
+    Ensure(manifest.Contains("PerMonitorV2, PerMonitor", StringComparison.Ordinal),
+        "The Windows application manifest must opt into per-monitor DPI scaling.");
 }
 
 static async Task Version12ProductWorkflowIsCompleteAsync()

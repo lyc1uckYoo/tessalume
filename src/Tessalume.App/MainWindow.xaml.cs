@@ -5,6 +5,7 @@ using System.IO;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
@@ -112,6 +113,7 @@ public partial class MainWindow : Window, IAsyncDisposable
 
         InitializeComponent();
         _uiInitialized = true;
+        FitWindowToWorkArea();
         SourceInitialized += (_, _) => NativeTitleBar.Apply(this, _darkMode);
         ThemeItems.ItemsSource = _visibleThemes;
         _visualSettingsDebounce = new DispatcherTimer(DispatcherPriority.Background)
@@ -127,6 +129,59 @@ public partial class MainWindow : Window, IAsyncDisposable
         ApplyStudioTheme(_darkMode);
         UpdateStartupButton();
         UpdateVisualAdjustmentControls();
+    }
+
+    private void FitWindowToWorkArea()
+    {
+        const double outerMargin = 24;
+        var workArea = SystemParameters.WorkArea;
+        var availableWidth = Math.Max(640, workArea.Width - outerMargin);
+        var availableHeight = Math.Max(360, workArea.Height - outerMargin);
+        MinWidth = Math.Min(MinWidth, availableWidth);
+        MinHeight = Math.Min(MinHeight, availableHeight);
+        Width = Math.Min(Width, availableWidth);
+        Height = Math.Min(Height, availableHeight);
+    }
+
+    private void AdaptiveViewport_SizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        const double designWidth = 1080;
+        const double designHeight = 720;
+        if (e.NewSize.Width <= 0 || e.NewSize.Height <= 0) return;
+
+        var scale = Math.Min(1, Math.Min(e.NewSize.Width / designWidth, e.NewSize.Height / designHeight));
+        if (Math.Abs(AdaptiveScale.ScaleX - scale) < 0.001) return;
+        AdaptiveScale.ScaleX = scale;
+        AdaptiveScale.ScaleY = scale;
+    }
+
+    private void MainWindow_PreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.F)
+        {
+            ShowThemes();
+            ThemeSearchBox.Focus();
+            ThemeSearchBox.SelectAll();
+            e.Handled = true;
+            return;
+        }
+        if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.I)
+        {
+            ImportTheme_Click(sender, e);
+            e.Handled = true;
+            return;
+        }
+        if (Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift) && e.Key == Key.I)
+        {
+            ImportArchive_Click(sender, e);
+            e.Handled = true;
+            return;
+        }
+        if (e.Key == Key.F5)
+        {
+            RefreshThemes_Click(sender, e);
+            e.Handled = true;
+        }
     }
 
     internal async Task StartInQuickModeAsync()
@@ -147,7 +202,6 @@ public partial class MainWindow : Window, IAsyncDisposable
 
             _onboardingCompleted = true;
             await SavePreferencesAsync();
-            OpenQuickSwitchWindow();
             SetEngineState("等待选择主题");
             SetStatus(codexInstalled
                 ? "欢迎使用 Tessalume，请选择喜欢的主题后手动应用"
@@ -826,6 +880,10 @@ public partial class MainWindow : Window, IAsyncDisposable
 
     internal async void ShowMainInterface()
     {
+        if (_quickSwitchWindow is { IsVisible: true })
+        {
+            _quickSwitchWindow.Close();
+        }
         EnsureMainUiInitialized();
         ShowInTaskbar = true;
         if (!IsVisible)

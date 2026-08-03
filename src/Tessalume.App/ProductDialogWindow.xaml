@@ -64,7 +64,7 @@
                     <TextBlock x:Name="DialogMessageText" Text="请确认是否继续。" Foreground="{DynamicResource DialogMutedBrush}" FontSize="10.5"
                                TextWrapping="Wrap" LineHeight="18" Margin="0,7,0,0" MaxHeight="300" />
                 </StackPanel>
-                <Button Grid.Column="2" Width="28" Height="28" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource DialogMutedBrush}"
+                <Button Grid.Column="2" Width="28" Height="28" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource DialogMutedBrush}" AutomationProperties.Name="关闭提示"
                         Content="×" FontSize="16" Cursor="Hand" ToolTip="关闭" Click="Cancel_Click" />
             </Grid>
             <Border Grid.Row="1" Height="1" Background="{DynamicResource DialogBorderBrush}" VerticalAlignment="Center" />
