@@ -45,17 +45,20 @@ public partial class App : Application, IDisposable
         }
 
         base.OnStartup(e);
-        _ = StartupRegistration.TryMigrateLegacyRegistration();
-        BuiltInAssetInstaller.EnsureInstalled(PortableLayout.Create());
-        var mainWindow = new MainWindow();
-        MainWindow = mainWindow;
-        StartActivationListener();
         try
         {
+            var layout = PortableLayout.Create();
+            LocalLog.Initialize(layout.DataDirectory);
+            _ = StartupRegistration.TryMigrateLegacyRegistration();
+            BuiltInAssetInstaller.EnsureInstalled(layout);
+            var mainWindow = new MainWindow(layout);
+            MainWindow = mainWindow;
+            StartActivationListener();
             await mainWindow.StartInQuickModeAsync();
         }
         catch (Exception exception)
         {
+            LocalLog.Write("Application startup failed.", exception);
             MessageBox.Show(exception.Message, $"{BrandInfo.ProductName} 启动失败", MessageBoxButton.OK, MessageBoxImage.Error);
             Shutdown();
         }

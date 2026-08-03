@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -38,7 +39,7 @@ public partial class MainWindow : Window, IAsyncDisposable
         Dark,
     }
 
-    private readonly PortableLayout _layout = PortableLayout.Create();
+    private readonly PortableLayout _layout;
     private readonly ObservableCollection<ThemeCardModel> _themes = [];
     private readonly ObservableCollection<ThemeCardModel> _visibleThemes = [];
     private readonly StudioStateStore _stateStore;
@@ -73,8 +74,9 @@ public partial class MainWindow : Window, IAsyncDisposable
     private DispatcherTimer? _toastTimer;
     private RightPane _rightPane = RightPane.Themes;
 
-    public MainWindow()
+    internal MainWindow(PortableLayout? layout = null)
     {
+        _layout = layout ?? PortableLayout.Create();
         _stateStore = new StudioStateStore(_layout.DataDirectory);
         _preferencesStore = new UiPreferencesStore(_layout.DataDirectory);
         _launcher = new CodexPackageLauncher(_launcherDiscovery);
@@ -243,7 +245,7 @@ public partial class MainWindow : Window, IAsyncDisposable
             ? $"本地库共 {_themes.Count} 个主题，{validCount} 个可用"
             : _themes.Count == 0
                 ? "本地主题库为空"
-                : "主题包未通过安全校验，请打开诊断查看";
+                : "主题包格式不完整，请打开诊断查看";
         UpdateLibraryMetrics();
         RefreshQuickSwitchWindow();
     }
@@ -580,9 +582,11 @@ public partial class MainWindow : Window, IAsyncDisposable
             await ReloadThemesAsync(imported.Manifest.Id);
             StatusText.Text = $"{imported.Manifest.Name} 已加入主题库";
             ShowToast($"{imported.Manifest.Name} 已加入主题库");
+            LocalLog.Write($"Imported theme {imported.Manifest.Id}.");
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
         {
+            LocalLog.Write("Theme import failed.", exception);
             ShowProductMessage("无法导入主题", exception.Message, ProductDialogKind.Error);
         }
     }
@@ -650,10 +654,12 @@ public partial class MainWindow : Window, IAsyncDisposable
             await ReloadThemesAsync();
             StatusText.Text = $"{themeName} 已从本地主题库删除";
             ShowToast($"{themeName} 已从本地主题库删除", warning: true);
+            LocalLog.Write($"Deleted theme {themeId ?? themeName}.");
             RefreshQuickSwitchWindow();
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
         {
+            LocalLog.Write("Theme deletion failed.", exception);
             StatusText.Text = exception.Message;
             ShowProductMessage("无法删除主题", exception.Message, ProductDialogKind.Error);
         }
@@ -942,7 +948,7 @@ public partial class MainWindow : Window, IAsyncDisposable
         Process.Start(new ProcessStartInfo("explorer.exe", $"\"{path}\"") { UseShellExecute = true });
     }
 
-    private void PrepareCreatorWorkspace_Click(object sender, RoutedEventArgs e)
+    private async void PrepareCreatorWorkspace_Click(object sender, RoutedEventArgs e)
     {
         var dialog = new OpenFolderDialog
         {
@@ -955,7 +961,7 @@ public partial class MainWindow : Window, IAsyncDisposable
         {
             var destination = GetAvailableCreatorWorkspacePath(dialog.FolderName);
             BuiltInAssetInstaller.CreateCreatorWorkspace(destination);
-            var promptCopied = TryCopyCreatorPrompt(showSuccessToast: false);
+            var promptCopied = await TryCopyCreatorPromptAsync(showSuccessToast: false);
             Process.Start(new ProcessStartInfo("explorer.exe", $"\"{destination}\"") { UseShellExecute = true });
             ShowProductMessage(
                 "Codex 创作工作区已准备",
@@ -969,25 +975,21 @@ public partial class MainWindow : Window, IAsyncDisposable
         }
     }
 
-    private void CopyCreatorPrompt_Click(object sender, RoutedEventArgs e) =>
-        TryCopyCreatorPrompt(showSuccessToast: true);
+    private async void CopyCreatorPrompt_Click(object sender, RoutedEventArgs e) =>
+        await TryCopyCreatorPromptAsync(showSuccessToast: true);
 
-    private bool TryCopyCreatorPrompt(bool showSuccessToast)
+    private async Task<bool> TryCopyCreatorPromptAsync(bool showSuccessToast)
     {
-        try
+        if (!await TrySetClipboardTextAsync(CreatorPrompt, "无法复制创作指令"))
         {
-            Clipboard.SetText(CreatorPrompt);
-            if (showSuccessToast)
-            {
-                ShowToast("一句话创作指令已复制");
-            }
-            return true;
-        }
-        catch (System.Runtime.InteropServices.ExternalException exception)
-        {
-            ShowProductMessage("无法复制创作指令", exception.Message, ProductDialogKind.Error);
             return false;
         }
+
+        if (showSuccessToast)
+        {
+            ShowToast("一句话创作指令已复制");
+        }
+        return true;
     }
 
     private static string GetAvailableCreatorWorkspacePath(string parentDirectory)
@@ -1068,6 +1070,12 @@ public partial class MainWindow : Window, IAsyncDisposable
 
     private async void Diagnostics_Click(object sender, RoutedEventArgs e)
     {
+        await RefreshDiagnosticsAsync();
+        ShowInfoPage(RightPane.Diagnostics);
+    }
+
+    private async Task RefreshDiagnosticsAsync()
+    {
         var state = await _stateStore.LoadAsync();
         var port = _activePort ?? state?.Port;
         var portReady = port is not null && await _launcher.IsDebugPortReadyAsync(port.Value);
@@ -1117,7 +1125,97 @@ public partial class MainWindow : Window, IAsyncDisposable
             DiagnosticHealthDot.Fill = (Brush)Resources["Danger"];
         }
         DiagnosticUpdatedText.Text = $"刚刚更新 · {DateTime.Now:HH:mm:ss}";
-        ShowInfoPage(RightPane.Diagnostics);
+    }
+
+    private async void CopyDiagnosticReport_Click(object sender, RoutedEventArgs e)
+    {
+        await RefreshDiagnosticsAsync();
+        var report = new StringBuilder()
+            .AppendLine("Tessalume 诊断报告")
+            .AppendLine(CultureInfo.InvariantCulture, $"生成时间：{DateTimeOffset.Now:yyyy-MM-dd HH:mm:ss zzz}")
+            .AppendLine(CultureInfo.InvariantCulture, $"软件版本：{BrandInfo.VersionLabel}")
+            .AppendLine(CultureInfo.InvariantCulture, $"Windows：{Environment.OSVersion}")
+            .AppendLine(CultureInfo.InvariantCulture, $"进程架构：{System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture}")
+            .AppendLine(CultureInfo.InvariantCulture, $"Codex：{DiagnosticCodexText.Text}")
+            .AppendLine(CultureInfo.InvariantCulture, $"本机端口：{DiagnosticPortText.Text}")
+            .AppendLine(CultureInfo.InvariantCulture, $"主题包：{DiagnosticThemesText.Text}")
+            .AppendLine(CultureInfo.InvariantCulture, $"主题状态：{DiagnosticThemeStateText.Text}")
+            .AppendLine(DiagnosticCurrentThemeText.Text)
+            .AppendLine(CultureInfo.InvariantCulture, $"应用目录：{_layout.RootDirectory}")
+            .AppendLine(CultureInfo.InvariantCulture, $"主题目录：{_layout.ThemesDirectory}")
+            .AppendLine(CultureInfo.InvariantCulture, $"日志目录：{LocalLog.LogDirectory}")
+            .AppendLine()
+            .AppendLine("最近日志：");
+        foreach (var line in LocalLog.ReadTail())
+        {
+            report.AppendLine(line);
+        }
+
+        if (await TrySetClipboardTextAsync(report.ToString(), "无法复制诊断报告"))
+        {
+            LocalLog.Write("Diagnostic report copied.");
+            ShowToast("诊断报告已复制，可直接粘贴到问题反馈中");
+        }
+    }
+
+    private async Task<bool> TrySetClipboardTextAsync(string text, string errorTitle)
+    {
+        System.Runtime.InteropServices.ExternalException? lastException = null;
+        for (var attempt = 1; attempt <= 5; attempt++)
+        {
+            try
+            {
+                Clipboard.SetText(text);
+                return true;
+            }
+            catch (System.Runtime.InteropServices.ExternalException exception)
+            {
+                lastException = exception;
+                if (attempt < 5)
+                {
+                    await Task.Delay(80);
+                }
+            }
+        }
+
+        LocalLog.Write($"{errorTitle}: the Windows clipboard remained unavailable.", lastException);
+        ShowProductMessage(errorTitle, lastException?.Message ?? "Windows 剪贴板暂时不可用，请稍后重试。", ProductDialogKind.Error);
+        return false;
+    }
+
+    private async void RestoreBuiltInThemes_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var restoredCount = BuiltInAssetInstaller.RestoreDeletedThemes(_layout);
+            if (restoredCount == 0)
+            {
+                ShowProductMessage("无需恢复", "当前没有被删除的内置主题。", ProductDialogKind.Information);
+                return;
+            }
+
+            await ReloadThemesAsync();
+            LocalLog.Write($"Restored {restoredCount} deleted built-in theme(s).");
+            ShowToast($"已恢复 {restoredCount} 个内置主题");
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
+        {
+            LocalLog.Write("Restoring built-in themes failed.", exception);
+            ShowProductMessage("无法恢复内置主题", exception.Message, ProductDialogKind.Error);
+        }
+    }
+
+    private void OpenLogDirectory_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            Directory.CreateDirectory(LocalLog.LogDirectory);
+            Process.Start(new ProcessStartInfo("explorer.exe", $"\"{LocalLog.LogDirectory}\"") { UseShellExecute = true });
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or InvalidOperationException)
+        {
+            ShowProductMessage("无法打开日志目录", exception.Message, ProductDialogKind.Error);
+        }
     }
 
     private async void ActivateButton_Click(object sender, RoutedEventArgs e)
@@ -1180,12 +1278,14 @@ public partial class MainWindow : Window, IAsyncDisposable
             UpdateAppliedThemeState();
             SetEngineState($"运行中 · 本机 {port}");
             SetStatus($"{package.Manifest.Name} 已应用，可继续实时切换");
+            LocalLog.Write($"Applied theme {package.Manifest.Id} on port {port}.");
             RefreshQuickSwitchWindow();
             UpdateVisualAdjustmentControls();
             return true;
         }
         catch (Exception exception)
         {
+            LocalLog.Write($"Applying theme {package.Manifest.Id} failed.", exception);
             SetEngineState("启动失败");
             SetStatus(exception.Message);
             ShowProductMessage("无法应用主题", exception.Message, ProductDialogKind.Error);

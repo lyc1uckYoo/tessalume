@@ -73,6 +73,20 @@ internal static class BuiltInAssetInstaller
         File.WriteAllLines(path, deletedThemeIds.Order(StringComparer.OrdinalIgnoreCase));
     }
 
+    public static int RestoreDeletedThemes(PortableLayout layout)
+    {
+        var deletedThemeIds = LoadDeletedThemeIds(layout);
+        if (deletedThemeIds.Count == 0) return 0;
+
+        var path = Path.Combine(layout.DataDirectory, DeletedThemesFileName);
+        if (File.Exists(path))
+        {
+            File.Delete(path);
+        }
+        EnsureInstalled(layout);
+        return deletedThemeIds.Count;
+    }
+
     public static void CreateCreatorWorkspace(string destination)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(destination);

@@ -1375,9 +1375,12 @@
                         <Grid>
                             <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                             <StackPanel><TextBlock Text="运行与诊断" Style="{StaticResource PageTitleText}" /><TextBlock Text="检查 Codex、主题运行时与本地资源状态，不会访问互联网。" Style="{StaticResource PageDescriptionText}" /></StackPanel>
-                            <Button Grid.Column="1" Style="{StaticResource SecondaryActionButton}" Click="Diagnostics_Click" VerticalAlignment="Center">
-                                <StackPanel Orientation="Horizontal"><Path Width="13" Height="13" Data="M 19,7 L 19,3 L 15,3 M 19,3 C 16.5,1.2 12.8,1.5 10.5,3.2 C 8.7,4.5 7.7,6.4 7.5,8.4 M 5,17 L 5,21 L 9,21 M 5,21 C 7.5,22.8 11.2,22.5 13.5,20.8 C 15.3,19.5 16.3,17.6 16.5,15.6" Stroke="{DynamicResource Accent}" StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Fill="Transparent" Stretch="Uniform" Margin="0,0,7,0" /><TextBlock Text="重新检查" /></StackPanel>
-                            </Button>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Button Style="{StaticResource QuietActionButton}" Content="复制诊断报告" Click="CopyDiagnosticReport_Click" />
+                                <Button Style="{StaticResource SecondaryActionButton}" Click="Diagnostics_Click" Margin="8,0,0,0">
+                                    <StackPanel Orientation="Horizontal"><Path Width="13" Height="13" Data="M 19,7 L 19,3 L 15,3 M 19,3 C 16.5,1.2 12.8,1.5 10.5,3.2 C 8.7,4.5 7.7,6.4 7.5,8.4 M 5,17 L 5,21 L 9,21 M 5,21 C 7.5,22.8 11.2,22.5 13.5,20.8 C 15.3,19.5 16.3,17.6 16.5,15.6" Stroke="{DynamicResource Accent}" StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Fill="Transparent" Stretch="Uniform" Margin="0,0,7,0" /><TextBlock Text="重新检查" /></StackPanel>
+                                </Button>
+                            </StackPanel>
                         </Grid>
 
                         <Border Style="{StaticResource ProductCard}" Margin="0,20,0,0" Padding="18">
@@ -1419,6 +1422,20 @@
                                     <Border Grid.Row="4" Grid.Column="2" Background="{DynamicResource InfoSurface}" BorderBrush="{DynamicResource InfoBorder}" BorderThickness="1" CornerRadius="12" Padding="13"><StackPanel><TextBlock Text="主题包校验" Foreground="{DynamicResource Accent}" FontSize="8.5" FontWeight="SemiBold" /><TextBlock x:Name="DiagnosticValidationText" Text="—" Foreground="{DynamicResource PrimaryText}" FontSize="10.5" FontWeight="SemiBold" Margin="0,5,0,0" /><TextBlock Text="仅本机注入 · 无公网请求" Foreground="{DynamicResource MutedText}" FontSize="9" Margin="0,3,0,0" /></StackPanel></Border>
                                 </Grid>
                             </StackPanel>
+                        </Border>
+
+                        <Border Background="{DynamicResource InfoSurface}" BorderBrush="{DynamicResource InfoBorder}" BorderThickness="1" CornerRadius="15" Padding="16,13" Margin="0,14,0,0">
+                            <Grid>
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="自助恢复" Foreground="{DynamicResource PrimaryText}" FontSize="11.5" FontWeight="SemiBold" />
+                                    <TextBlock Text="找回被删除的内置主题，或打开本地日志查看最近运行记录。" Foreground="{DynamicResource MutedText}" FontSize="9" Margin="0,4,0,0" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Button Style="{StaticResource QuietActionButton}" Content="打开日志目录" Click="OpenLogDirectory_Click" />
+                                    <Button Style="{StaticResource SecondaryActionButton}" Content="恢复内置主题" Margin="8,0,0,0" Click="RestoreBuiltInThemes_Click" />
+                                </StackPanel>
+                            </Grid>
                         </Border>
                     </StackPanel>
                 </Grid>

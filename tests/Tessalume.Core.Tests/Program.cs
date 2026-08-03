@@ -72,6 +72,7 @@ var tests = new (string Name, Func<Task> Run)[]
     ("main product surfaces share the design system", MainProductSurfacesShareDesignSystemAsync),
     ("version 1.2 product workflow is complete", Version12ProductWorkflowIsCompleteAsync),
     ("portable Codex creator workspace is self-contained", PortableCreatorWorkspaceIsSelfContainedAsync),
+    ("diagnostics report and built-in recovery are available", DiagnosticsRecoveryIsAvailableAsync),
     ("local importer copies a validated package", LocalImporterCopiesPackageAsync),
     ("bundled adapter builds a complete payload", BundledAdapterBuildsPayloadAsync),
     ("open advanced template loads with a stable revision hash", OpenAdvancedTemplateLoadsWithStableRevisionHashAsync),
@@ -1053,6 +1054,53 @@ static async Task PortableCreatorWorkspaceIsSelfContainedAsync()
         Ensure(File.Exists(Path.Combine(repositoryRoot, relativePath)),
             $"Creator workspace source is missing: {relativePath}");
     }
+}
+
+static async Task DiagnosticsRecoveryIsAvailableAsync()
+{
+    var repositoryRoot = FindRepositoryRoot();
+    var appRoot = Path.Combine(repositoryRoot, "src", "Tessalume.App");
+    var xaml = await File.ReadAllTextAsync(Path.Combine(appRoot, "MainWindow.xaml"));
+    var mainSource = await File.ReadAllTextAsync(Path.Combine(appRoot, "MainWindow.xaml.cs"));
+    var appSource = await File.ReadAllTextAsync(Path.Combine(appRoot, "App.xaml.cs"));
+    var installerSource = await File.ReadAllTextAsync(Path.Combine(
+        appRoot,
+        "Infrastructure",
+        "BuiltInAssetInstaller.cs"));
+    var logSource = await File.ReadAllTextAsync(Path.Combine(
+        appRoot,
+        "Infrastructure",
+        "LocalLog.cs"));
+
+    foreach (var marker in new[]
+             {
+                 "Content=\"复制诊断报告\"",
+                 "Content=\"打开日志目录\"",
+                 "Content=\"恢复内置主题\"",
+             })
+    {
+        Ensure(xaml.Contains(marker, StringComparison.Ordinal),
+            $"The recovery surface is missing {marker}.");
+    }
+
+    Ensure(mainSource.Contains("CopyDiagnosticReport_Click", StringComparison.Ordinal) &&
+           mainSource.Contains("LocalLog.ReadTail", StringComparison.Ordinal) &&
+           mainSource.Contains("RestoreBuiltInThemes_Click", StringComparison.Ordinal) &&
+           mainSource.Contains("TrySetClipboardTextAsync", StringComparison.Ordinal) &&
+           mainSource.Contains("attempt <= 5", StringComparison.Ordinal),
+        "The diagnostics page must expose a copyable local report and built-in theme recovery.");
+    Ensure(appSource.Contains("LocalLog.Initialize(layout.DataDirectory)", StringComparison.Ordinal) &&
+           appSource.IndexOf("LocalLog.Initialize(layout.DataDirectory)", StringComparison.Ordinal) <
+           appSource.IndexOf("new MainWindow(layout)", StringComparison.Ordinal),
+        "Local logging must be initialized before the main product surface starts.");
+    Ensure(logSource.Contains("MaximumLogBytes", StringComparison.Ordinal) &&
+           logSource.Contains("tessalume.previous.log", StringComparison.Ordinal) &&
+           logSource.Contains("TakeLast", StringComparison.Ordinal),
+        "Local logs must be bounded, rotated, and suitable for concise diagnostics.");
+    Ensure(installerSource.Contains("RestoreDeletedThemes", StringComparison.Ordinal) &&
+           installerSource.Contains("File.Delete(path)", StringComparison.Ordinal) &&
+           installerSource.Contains("EnsureInstalled(layout)", StringComparison.Ordinal),
+        "Built-in recovery must clear the deletion marker and reinstall embedded themes.");
 }
 
 static async Task LocalImporterCopiesPackageAsync()
