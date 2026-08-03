@@ -1,3 +1,4 @@
+using System.IO.Compression;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Tessalume.Core.Themes;
@@ -74,6 +75,7 @@ var tests = new (string Name, Func<Task> Run)[]
     ("portable Codex creator workspace is self-contained", PortableCreatorWorkspaceIsSelfContainedAsync),
     ("diagnostics report and built-in recovery are available", DiagnosticsRecoveryIsAvailableAsync),
     ("local importer copies a validated package", LocalImporterCopiesPackageAsync),
+    ("ZIP theme import is bounded and rejects traversal", ZipThemeImportIsBoundedAsync),
     ("bundled adapter builds a complete payload", BundledAdapterBuildsPayloadAsync),
     ("open advanced template loads with a stable revision hash", OpenAdvancedTemplateLoadsWithStableRevisionHashAsync),
     ("advanced import keeps script and revision hash tracks changes", AdvancedImportKeepsScriptAndTracksChangesAsync),
@@ -1123,6 +1125,58 @@ static async Task LocalImporterCopiesPackageAsync()
         {
             Directory.Delete(library, recursive: true);
         }
+    }
+}
+
+static async Task ZipThemeImportIsBoundedAsync()
+{
+    using var fixture = await ThemeFixture.CreateAsync();
+    var token = Guid.NewGuid().ToString("N");
+    var archivePath = Path.Combine(Path.GetTempPath(), $"tessalume-theme-{token}.zip");
+    var maliciousPath = Path.Combine(Path.GetTempPath(), $"tessalume-malicious-{token}.zip");
+    var library = Path.Combine(Path.GetTempPath(), $"tessalume-zip-library-{token}");
+    string? extractedThemeDirectory = null;
+    try
+    {
+        ZipFile.CreateFromDirectory(fixture.Root, archivePath);
+        using (var extraction = await ThemeArchiveExtractor.ExtractAsync(archivePath))
+        {
+            extractedThemeDirectory = extraction.ThemeDirectory;
+            Ensure(File.Exists(Path.Combine(extraction.ThemeDirectory, "manifest.json")),
+                "The extracted ZIP theme manifest is missing.");
+            var imported = await new ThemeImporter(new ThemePackageLoader()).ImportAsync(
+                extraction.ThemeDirectory,
+                library,
+                overwrite: false);
+            Ensure(imported.Manifest.Id == "sample.theme", "ZIP import changed the theme identity.");
+        }
+        Ensure(extractedThemeDirectory is not null && !Directory.Exists(extractedThemeDirectory),
+            "Temporary ZIP extraction was not cleaned after import.");
+
+        using (var archive = ZipFile.Open(maliciousPath, ZipArchiveMode.Create))
+        {
+            var entry = archive.CreateEntry("../escaped.txt");
+            await using var stream = entry.Open();
+            await using var writer = new StreamWriter(stream);
+            await writer.WriteAsync("must not escape");
+        }
+
+        var traversalRejected = false;
+        try
+        {
+            using var extraction = await ThemeArchiveExtractor.ExtractAsync(maliciousPath);
+        }
+        catch (InvalidDataException)
+        {
+            traversalRejected = true;
+        }
+        Ensure(traversalRejected, "ZIP path traversal was not rejected.");
+    }
+    finally
+    {
+        if (File.Exists(archivePath)) File.Delete(archivePath);
+        if (File.Exists(maliciousPath)) File.Delete(maliciousPath);
+        if (Directory.Exists(library)) Directory.Delete(library, recursive: true);
     }
 }
 

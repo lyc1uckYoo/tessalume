@@ -550,45 +550,73 @@ public partial class MainWindow : Window, IAsyncDisposable
 
         try
         {
-            var loader = new ThemePackageLoader();
-            var result = await loader.LoadAsync(dialog.FolderName);
-            if (result.Package is null)
-            {
-                throw new InvalidDataException(string.Join(
-                    Environment.NewLine,
-                    result.Validation.Issues.Select(issue => $"• {issue.Message}")));
-            }
-
-            if (!result.Package.IsAdvanced)
-            {
-                throw new InvalidDataException("这个文件夹不是受支持的沉浸式主题；主题必须包含 theme.js。");
-            }
-
-            var destinationDirectory = _layout.ThemesDirectory;
-            var destination = Path.Combine(destinationDirectory, result.Package.Manifest.Id);
-            var overwrite = false;
-            if (Directory.Exists(destination) &&
-                !string.Equals(Path.GetFullPath(dialog.FolderName), Path.GetFullPath(destination), StringComparison.OrdinalIgnoreCase))
-            {
-                overwrite = ShowProductConfirmation(
-                    "替换本地主题",
-                    $"本地库中已有“{result.Package.Manifest.Name}”。是否替换为所选版本？",
-                    "替换主题");
-                if (!overwrite) return;
-            }
-
-            var imported = await new ThemeImporter(loader).ImportAsync(dialog.FolderName, destinationDirectory, overwrite);
-            _showFavorites = false;
-            await ReloadThemesAsync(imported.Manifest.Id);
-            StatusText.Text = $"{imported.Manifest.Name} 已加入主题库";
-            ShowToast($"{imported.Manifest.Name} 已加入主题库");
-            LocalLog.Write($"Imported theme {imported.Manifest.Id}.");
+            await ImportThemeSourceAsync(dialog.FolderName, "文件夹");
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
         {
             LocalLog.Write("Theme import failed.", exception);
             ShowProductMessage("无法导入主题", exception.Message, ProductDialogKind.Error);
         }
+    }
+
+    private async void ImportArchive_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new OpenFileDialog
+        {
+            Title = "选择 Tessalume ZIP 主题包",
+            Filter = "Tessalume 主题包 (*.zip)|*.zip",
+            CheckFileExists = true,
+            Multiselect = false,
+        };
+        if (dialog.ShowDialog(this) != true) return;
+
+        try
+        {
+            using var extraction = await ThemeArchiveExtractor.ExtractAsync(dialog.FileName);
+            await ImportThemeSourceAsync(extraction.ThemeDirectory, "ZIP");
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
+        {
+            LocalLog.Write("ZIP theme import failed.", exception);
+            ShowProductMessage("无法导入 ZIP 主题包", exception.Message, ProductDialogKind.Error);
+        }
+    }
+
+    private async Task ImportThemeSourceAsync(string sourceDirectory, string sourceKind)
+    {
+        var loader = new ThemePackageLoader();
+        var result = await loader.LoadAsync(sourceDirectory);
+        if (result.Package is null)
+        {
+            throw new InvalidDataException(string.Join(
+                Environment.NewLine,
+                result.Validation.Issues.Select(issue => $"• {issue.Message}")));
+        }
+
+        if (!result.Package.IsAdvanced)
+        {
+            throw new InvalidDataException("这个主题包不是受支持的沉浸式主题；主题必须包含 theme.js。");
+        }
+
+        var destinationDirectory = _layout.ThemesDirectory;
+        var destination = Path.Combine(destinationDirectory, result.Package.Manifest.Id);
+        var overwrite = false;
+        if (Directory.Exists(destination) &&
+            !string.Equals(Path.GetFullPath(sourceDirectory), Path.GetFullPath(destination), StringComparison.OrdinalIgnoreCase))
+        {
+            overwrite = ShowProductConfirmation(
+                "替换本地主题",
+                $"本地库中已有“{result.Package.Manifest.Name}”。是否替换为所选版本？",
+                "替换主题");
+            if (!overwrite) return;
+        }
+
+        var imported = await new ThemeImporter(loader).ImportAsync(sourceDirectory, destinationDirectory, overwrite);
+        _showFavorites = false;
+        await ReloadThemesAsync(imported.Manifest.Id);
+        StatusText.Text = $"{imported.Manifest.Name} 已加入主题库 · 来源：{sourceKind}";
+        ShowToast($"{imported.Manifest.Name} 已加入主题库");
+        LocalLog.Write($"Imported theme {imported.Manifest.Id} from {sourceKind}.");
     }
 
     private async void RefreshThemes_Click(object sender, RoutedEventArgs e)

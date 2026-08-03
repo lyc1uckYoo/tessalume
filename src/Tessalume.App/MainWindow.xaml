@@ -1053,7 +1053,7 @@
                             <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                             <StackPanel>
                                 <TextBlock Text="导入主题" Style="{StaticResource PageTitleText}" />
-                                <TextBlock Text="选择一个完整的本地主题包；软件会先校验结构，再允许应用。" Style="{StaticResource PageDescriptionText}" />
+                                <TextBlock Text="选择主题文件夹或 ZIP 压缩包；软件会先校验结构，再允许应用。" Style="{StaticResource PageDescriptionText}" />
                             </StackPanel>
                             <Border Grid.Column="1" Background="{DynamicResource TealSoft}" BorderBrush="{DynamicResource Teal}" BorderThickness="1" CornerRadius="11" Padding="11,6" VerticalAlignment="Center">
                                 <StackPanel Orientation="Horizontal"><Ellipse Width="6" Height="6" Fill="{DynamicResource Teal}" Margin="0,0,7,0" /><TextBlock Text="全程本地处理" Foreground="{DynamicResource Teal}" FontSize="9.5" FontWeight="SemiBold" /></StackPanel>
@@ -1068,7 +1068,7 @@
                                 </Border>
                                 <StackPanel Grid.Column="1">
                                     <TextBlock Text="导入完整主题包" Foreground="{DynamicResource PrimaryText}" FontSize="17" FontWeight="SemiBold" />
-                                    <TextBlock Text="主题文件夹需要包含清单、样式、运行脚本和资源目录。软件会在导入前检查结构、路径与本地资源。" TextWrapping="Wrap" Foreground="{DynamicResource MutedText}" FontSize="10.5" LineHeight="18" Margin="0,7,0,0" />
+                                    <TextBlock Text="文件夹或 ZIP 需要包含清单、样式、运行脚本和资源目录。ZIP 可在根目录或单层主题文件夹中放置 manifest.json。" TextWrapping="Wrap" Foreground="{DynamicResource MutedText}" FontSize="10.5" LineHeight="18" Margin="0,7,0,0" />
                                     <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
                                         <Border Background="{DynamicResource AccentSoft}" CornerRadius="8" Padding="8,4" Margin="0,0,7,0"><TextBlock Text="manifest.json" Foreground="{DynamicResource Accent}" FontFamily="Consolas" FontSize="8.5" /></Border>
                                         <Border Background="{DynamicResource AccentSoft}" CornerRadius="8" Padding="8,4" Margin="0,0,7,0"><TextBlock Text="skin.css" Foreground="{DynamicResource Accent}" FontFamily="Consolas" FontSize="8.5" /></Border>
@@ -1078,9 +1078,10 @@
                                 </StackPanel>
                                 <Border Grid.Column="3" Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="14" Padding="16">
                                     <StackPanel VerticalAlignment="Center">
-                                        <TextBlock Text="准备好主题文件夹了吗？" Foreground="{DynamicResource PrimaryText}" FontSize="11" FontWeight="SemiBold" />
+                                        <TextBlock Text="准备好主题包了吗？" Foreground="{DynamicResource PrimaryText}" FontSize="11" FontWeight="SemiBold" />
                                         <TextBlock Text="导入前不会修改任何 Codex 文件。" Foreground="{DynamicResource MutedText}" FontSize="9" Margin="0,4,0,12" />
                                         <Button Style="{StaticResource PrimaryActionButton}" Click="ImportTheme_Click" Content="选择主题文件夹" Height="38" />
+                                        <Button Style="{StaticResource QuietActionButton}" Click="ImportArchive_Click" Content="选择 ZIP 主题包" Margin="0,8,0,0" />
                                     </StackPanel>
                                 </Border>
                             </Grid>
@@ -1089,9 +1090,9 @@
                         <TextBlock Text="导入流程" Style="{StaticResource SectionEyebrowText}" Margin="1,18,0,9" />
                         <Grid>
                             <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="10" /><ColumnDefinition Width="*" /><ColumnDefinition Width="10" /><ColumnDefinition Width="*" /><ColumnDefinition Width="10" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                            <Border Style="{StaticResource InsetCard}"><StackPanel><TextBlock Text="01" Foreground="{DynamicResource Accent}" FontSize="10" FontWeight="Bold" /><TextBlock Text="选择文件夹" Foreground="{DynamicResource PrimaryText}" FontSize="11.5" FontWeight="SemiBold" Margin="0,8,0,0" /><TextBlock Text="定位完整主题源码" TextWrapping="Wrap" Foreground="{DynamicResource MutedText}" FontSize="9" Margin="0,4,0,0" /></StackPanel></Border>
-                            <Border Grid.Column="2" Style="{StaticResource InsetCard}"><StackPanel><TextBlock Text="02" Foreground="{DynamicResource Sky}" FontSize="10" FontWeight="Bold" /><TextBlock Text="结构校验" Foreground="{DynamicResource PrimaryText}" FontSize="11.5" FontWeight="SemiBold" Margin="0,8,0,0" /><TextBlock Text="检查脚本、资源与安全规则" TextWrapping="Wrap" Foreground="{DynamicResource MutedText}" FontSize="9" Margin="0,4,0,0" /></StackPanel></Border>
-                            <Border Grid.Column="4" Style="{StaticResource InsetCard}"><StackPanel><TextBlock Text="03" Foreground="{DynamicResource Amber}" FontSize="10" FontWeight="Bold" /><TextBlock Text="加入主题库" Foreground="{DynamicResource PrimaryText}" FontSize="11.5" FontWeight="SemiBold" Margin="0,8,0,0" /><TextBlock Text="安全复制到便携版目录" TextWrapping="Wrap" Foreground="{DynamicResource MutedText}" FontSize="9" Margin="0,4,0,0" /></StackPanel></Border>
+                            <Border Style="{StaticResource InsetCard}"><StackPanel><TextBlock Text="01" Foreground="{DynamicResource Accent}" FontSize="10" FontWeight="Bold" /><TextBlock Text="选择来源" Foreground="{DynamicResource PrimaryText}" FontSize="11.5" FontWeight="SemiBold" Margin="0,8,0,0" /><TextBlock Text="文件夹或 ZIP 均可" TextWrapping="Wrap" Foreground="{DynamicResource MutedText}" FontSize="9" Margin="0,4,0,0" /></StackPanel></Border>
+                            <Border Grid.Column="2" Style="{StaticResource InsetCard}"><StackPanel><TextBlock Text="02" Foreground="{DynamicResource Sky}" FontSize="10" FontWeight="Bold" /><TextBlock Text="结构校验" Foreground="{DynamicResource PrimaryText}" FontSize="11.5" FontWeight="SemiBold" Margin="0,8,0,0" /><TextBlock Text="检查脚本、资源与包路径" TextWrapping="Wrap" Foreground="{DynamicResource MutedText}" FontSize="9" Margin="0,4,0,0" /></StackPanel></Border>
+                            <Border Grid.Column="4" Style="{StaticResource InsetCard}"><StackPanel><TextBlock Text="03" Foreground="{DynamicResource Amber}" FontSize="10" FontWeight="Bold" /><TextBlock Text="加入主题库" Foreground="{DynamicResource PrimaryText}" FontSize="11.5" FontWeight="SemiBold" Margin="0,8,0,0" /><TextBlock Text="完整复制到便携目录" TextWrapping="Wrap" Foreground="{DynamicResource MutedText}" FontSize="9" Margin="0,4,0,0" /></StackPanel></Border>
                             <Border Grid.Column="6" Style="{StaticResource InsetCard}"><StackPanel><TextBlock Text="04" Foreground="{DynamicResource Teal}" FontSize="10" FontWeight="Bold" /><TextBlock Text="预览并应用" Foreground="{DynamicResource PrimaryText}" FontSize="11.5" FontWeight="SemiBold" Margin="0,8,0,0" /><TextBlock Text="从画廊选择并实时切换" TextWrapping="Wrap" Foreground="{DynamicResource MutedText}" FontSize="9" Margin="0,4,0,0" /></StackPanel></Border>
                         </Grid>
 
