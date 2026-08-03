@@ -1,6 +1,6 @@
 # Tessalume · 万棱流光
 
-面向 Codex Desktop 的开源 Windows 主题工作室。Tessalume 把完整沉浸式主题、亮暗模式、收藏切换、额度信息和本机诊断集中在一个便携应用中；它通过本机回环端口连接 Codex，不修改 Codex 安装包、`app.asar` 或用户数据。
+面向 Codex Desktop 的开源 Windows 主题工作室。Tessalume 把完整沉浸式主题、亮暗模式、收藏切换、额度信息、本机诊断和官方自动更新集中在一个便携应用中；主题运行通过本机回环端口连接 Codex，不修改 Codex 安装包、`app.asar` 或用户数据。
 
 [下载 Tessalume 1.2](https://github.com/lyc1uckYoo/tessalume/releases/latest) · [问题反馈](https://github.com/lyc1uckYoo/tessalume/issues/new?template=bug-report.yml) · [版本记录](CHANGELOG.md) · [主题制作指南](THEMING.md) · [安全与隐私](SECURITY.md) · [MIT 许可证](LICENSE)
 
@@ -25,6 +25,7 @@
 - **本地主题导入**：可直接选择主题文件夹或 ZIP 压缩包，导入包含 `manifest.json`、`skin.css`、`theme.js` 和本地资源的完整主题；也可以从软件内释放并复制旗舰模板开始制作。
 - **一句话主题创作**：从“主题创作”页准备自包含的 Codex 创作者工作区；在 Codex 中打开后，只需说出作品与角色，即可启动研究、11 张素材规划、制作和契约校验流程。
 - **便携数据与开机启动**：主题、收藏、运行状态和界面设置都保存在 `Tessalume.exe` 旁边；开机启动默认关闭，只有用户主动开启后才写入当前 Windows 用户的启动项，不需要管理员权限。
+- **完整自动更新**：默认定期检查官方 GitHub Releases，也可在设置页手动检查；新版本会展示说明，经确认后下载、校验 SHA-256、备份旧 EXE、安全替换并自动重新启动，失败时保留当前版本。
 - **恢复与诊断**：随时恢复 Codex 默认外观或找回误删的内置主题；诊断页会直接显示 Codex 进程、本机端口、主题包和当前运行状态，并可打开本地日志目录。
 - **单实例续接**：重复运行 `Tessalume.exe` 不会创建第二套后台状态，而是唤起已经运行的主界面。
 - **缩放与键盘操作**：主界面会适应小屏幕和 Windows 高 DPI；可用 `Ctrl+F` 搜索、`Ctrl+I` 导入文件夹、`Ctrl+Shift+I` 导入 ZIP、`F5` 刷新主题库。
@@ -78,13 +79,17 @@ Tessalume 默认以顶部浮窗开始工作。浮窗常驻屏幕上方，不遮�
 5. 首次启动会先显示欢迎引导，不会自动应用主题或中断正在运行的 Codex。进入主题库后，由你选择想使用的主题。
 6. 在主界面选择主题并点击“应用主题到 Codex”。需要重新启动 Codex 时，软件会先提醒保存当前工作并等待确认；连接成功后即可通过浮窗实时切换。
 
+软件默认每 12 小时至多自动检查一次官方 Releases；发现新版本后会先展示版本号、说明和下载大小，只有确认后才下载并安装。可在“个性化设置 → 软件自动更新”关闭自动检查，手动检查始终可用。更新仅替换 `Tessalume.exe`，不会删除 `data/`、用户主题或个性化参数。
+
 发布页同时提供 `SHA256SUMS.txt`，可用于核对下载的 EXE。Tessalume 1.2 当前面向安装了 Windows 版 Codex Desktop 的 x64 系统。当前构建没有商业代码签名，首次下载时 Microsoft Defender SmartScreen 可能显示提示；请只从本仓库 Releases 下载并核对 SHA-256。
 
 ## 本机运行与安全边界
 
-Tessalume 的主题运行链路保持在本机：
+Tessalume 的主题运行链路保持在本机，只有软件更新会访问官方 GitHub 服务：
 
 - 只发现和连接 `127.0.0.1` / `::1` 回环端口，不提供账号、云同步、主题商店或远程主题下载；
+- 自动或手动检查更新时访问 `api.github.com` 和 GitHub Release 资源地址，不发送主题内容、Codex 数据、账号、日志或设备标识；
+- 下载的新 EXE 必须通过 Release 资源摘要或 `SHA256SUMS.txt` 校验；安装时先备份旧 EXE，失败则继续保留当前版本；
 - 不修改 WindowsApps、Codex 安装文件、`app.asar` 或 Codex 用户数据；
 - 导入时校验清单、入口文件、资源路径、扩展名与大小，拒绝路径越界和 CSS 远程资源；
 - 主题运行时根据完整包内容识别当前加载版本，切换和恢复均在当前本机会话内完成；

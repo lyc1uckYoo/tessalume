@@ -1,3 +1,4 @@
+using System.IO;
 using System.Threading;
 using System.Windows;
 using Tessalume.App.Infrastructure;
@@ -14,6 +15,28 @@ public partial class App : Application, IDisposable
 
     protected override async void OnStartup(StartupEventArgs e)
     {
+        try
+        {
+            if (UpdateBootstrapper.TryParseHelperArguments(e.Args, out var updateRequest) && updateRequest is not null)
+            {
+                base.OnStartup(e);
+                var exitCode = await UpdateBootstrapper.RunHelperAsync(updateRequest);
+                Shutdown(exitCode);
+                return;
+            }
+        }
+        catch (Exception exception) when (exception is InvalidDataException or ArgumentException)
+        {
+            base.OnStartup(e);
+            MessageBox.Show(
+                exception.Message,
+                $"{BrandInfo.ProductName} 更新助手已停止",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+            Shutdown(1);
+            return;
+        }
+
         if (e.Args is ["--export-creator-workspace", var destination])
         {
             base.OnStartup(e);
@@ -49,9 +72,15 @@ public partial class App : Application, IDisposable
         {
             var layout = PortableLayout.Create();
             LocalLog.Initialize(layout.DataDirectory);
+            var startupUpdateResult = UpdateBootstrapper.ReadResult(layout);
+            if (startupUpdateResult is null)
+            {
+                _ = UpdateBootstrapper.CleanupStaleArtifactsAsync(layout);
+            }
             _ = StartupRegistration.TryCleanLegacyRegistration();
             BuiltInAssetInstaller.EnsureInstalled(layout);
             var mainWindow = new MainWindow(layout);
+            mainWindow.SetStartupUpdateResult(startupUpdateResult);
             MainWindow = mainWindow;
             StartActivationListener();
             await mainWindow.StartInQuickModeAsync();

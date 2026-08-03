@@ -1321,6 +1321,28 @@
                                 </Grid>
                             </Border>
                         </Grid>
+
+                        <Border Style="{StaticResource ProductCard}" Margin="0,14,0,0" Padding="17">
+                            <Grid>
+                                <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="38" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                                <Border Width="32" Height="32" CornerRadius="10" Background="{DynamicResource TealSoft}"><Path Width="16" Height="16" Data="M 19,7 L 19,3 L 15,3 M 19,3 C 16.5,1.2 12.8,1.5 10.5,3.2 C 8.7,4.5 7.7,6.4 7.5,8.4 M 5,17 L 5,21 L 9,21 M 5,21 C 7.5,22.8 11.2,22.5 13.5,20.8 C 15.3,19.5 16.3,17.6 16.5,15.6" Stroke="{DynamicResource Teal}" StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Fill="Transparent" Stretch="Uniform" /></Border>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="软件自动更新" Foreground="{DynamicResource PrimaryText}" FontWeight="SemiBold" FontSize="12.5" />
+                                    <TextBlock x:Name="UpdateStatusText" Text="尚未检查更新" Foreground="{DynamicResource MutedText}" FontSize="9" Margin="0,3,12,0" TextTrimming="CharacterEllipsis" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <TextBlock Text="自动检查" Foreground="{DynamicResource MutedText}" FontSize="9.5" VerticalAlignment="Center" Margin="0,0,8,0" />
+                                    <CheckBox x:Name="AutomaticUpdatesCheckBox" Style="{StaticResource SettingsToggle}" VerticalAlignment="Center" Checked="AutomaticUpdatesCheckBox_Changed" Unchecked="AutomaticUpdatesCheckBox_Changed" AutomationProperties.Name="自动检查软件更新" />
+                                    <Button x:Name="CheckForUpdatesButton" Style="{StaticResource SecondaryActionButton}" Content="立即检查" Margin="14,0,0,0" Click="CheckForUpdates_Click" AutomationProperties.Name="立即检查软件更新" />
+                                </StackPanel>
+                                <Grid Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Margin="0,12,0,0">
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                                    <ProgressBar x:Name="UpdateProgressBar" Height="6" Minimum="0" Maximum="100" Value="0" Visibility="Collapsed" Background="{DynamicResource SurfaceAlt}" Foreground="{DynamicResource Accent}" BorderThickness="0" VerticalAlignment="Center" />
+                                    <TextBlock x:Name="UpdateProgressText" Grid.Column="1" Text="0%" Visibility="Collapsed" Foreground="{DynamicResource SubtleText}" FontSize="8.5" Margin="10,0,0,0" VerticalAlignment="Center" />
+                                </Grid>
+                            </Grid>
+                        </Border>
                     </StackPanel>
 
                     <StackPanel x:Name="AboutInfoPanel" Visibility="Collapsed" VerticalAlignment="Top" Margin="0,0,0,4">
@@ -1344,7 +1366,7 @@
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="4,0,20,0">
                                     <TextBlock Text="{x:Static local:BrandInfo.ProductName}" Foreground="{DynamicResource PrimaryText}" FontSize="20" FontWeight="SemiBold" />
                                     <TextBlock Text="万棱流光 · Codex Desktop 主题工作室" Foreground="{DynamicResource MutedText}" FontSize="10.5" Margin="0,5,0,0" />
-                                    <TextBlock Text="本机运行 · 便携数据 · 不修改 Codex 安装文件" Foreground="{DynamicResource Teal}" FontSize="9.5" FontWeight="SemiBold" Margin="0,9,0,0" />
+                                    <TextBlock Text="主题本机运行 · 官方更新联网 · 不修改 Codex 安装文件" Foreground="{DynamicResource Teal}" FontSize="9.5" FontWeight="SemiBold" Margin="0,9,0,0" />
                                 </StackPanel>
                                 <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
                                     <TextBlock Text="当前版本" Style="{StaticResource MetricLabelText}" HorizontalAlignment="Right" />

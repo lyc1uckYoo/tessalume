@@ -10,6 +10,10 @@ internal sealed record UiPreferences
 
     public bool OnboardingCompleted { get; init; }
 
+    public bool AutomaticUpdateChecks { get; init; } = true;
+
+    public DateTimeOffset? LastUpdateCheckAt { get; init; }
+
     public List<string> FavoriteThemeIds { get; init; } = [];
 
     public Dictionary<string, ThemeVisualSettings> ThemeVisualSettings { get; init; } =

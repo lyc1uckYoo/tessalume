@@ -12,6 +12,7 @@ using Tessalume.App.Infrastructure;
 using Tessalume.App.Models;
 using Tessalume.Core.Runtime;
 using Tessalume.Core.Themes;
+using Tessalume.Core.Updates;
 using Microsoft.Win32;
 
 namespace Tessalume.App;
@@ -47,6 +48,8 @@ public partial class MainWindow : Window, IAsyncDisposable
     private readonly CodexPackageLauncher _launcher;
     private readonly ThemeRuntime _runtime;
     private readonly CodexUsageReader _usageReader = new();
+    private readonly ReleaseUpdateClient _updateClient;
+    private readonly CancellationTokenSource _updateCancellation = new();
     private readonly HashSet<string> _favoriteThemeIds = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, ThemeVisualSettings> _themeVisualSettings =
         new(StringComparer.OrdinalIgnoreCase);
@@ -60,6 +63,9 @@ public partial class MainWindow : Window, IAsyncDisposable
     private bool _darkMode;
     private bool? _codexDarkMode;
     private bool _updatingStartupSetting;
+    private bool _updatingAutomaticUpdateSetting;
+    private bool _automaticUpdateChecks;
+    private bool _updateCheckInProgress;
     private bool _startupInitialized;
     private bool _shutdownRequested;
     private bool _onboardingCompleted;
@@ -69,6 +75,9 @@ public partial class MainWindow : Window, IAsyncDisposable
     private bool _updatingVisualControls;
     private ThemeLibraryFilter _themeLibraryFilter;
     private string _themeSearchQuery = string.Empty;
+    private string _updateStatusMessage = "尚未检查更新";
+    private DateTimeOffset? _lastUpdateCheckAt;
+    private PortableUpdateResult? _startupUpdateResult;
     private DispatcherTimer? _visualSettingsDebounce;
     private DispatcherTimer? _toastTimer;
     private RightPane _rightPane = RightPane.Themes;
@@ -79,6 +88,11 @@ public partial class MainWindow : Window, IAsyncDisposable
         _stateStore = new StudioStateStore(_layout.DataDirectory);
         _preferencesStore = new UiPreferencesStore(_layout.DataDirectory);
         _launcher = new CodexPackageLauncher(_launcherDiscovery);
+        _updateClient = new ReleaseUpdateClient(
+            BrandInfo.RepositoryOwner,
+            BrandInfo.RepositoryName,
+            _layout.DataDirectory,
+            Version.Parse(BrandInfo.Version));
         _runtime = new ThemeRuntime(
             new LoopbackCdpDiscovery(),
             new ThemePayloadBuilder(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -93,6 +107,8 @@ public partial class MainWindow : Window, IAsyncDisposable
         var preferences = _preferencesStore.Load();
         _darkMode = preferences.DarkMode;
         _onboardingCompleted = preferences.OnboardingCompleted || hadSavedPreferences;
+        _automaticUpdateChecks = preferences.AutomaticUpdateChecks;
+        _lastUpdateCheckAt = preferences.LastUpdateCheckAt;
         _favoriteThemeIds.UnionWith(preferences.FavoriteThemeIds.Where(id => !string.IsNullOrWhiteSpace(id)));
         foreach (var (themeId, settings) in preferences.ThemeVisualSettings)
         {
@@ -126,6 +142,7 @@ public partial class MainWindow : Window, IAsyncDisposable
         _toastTimer.Tick += ToastTimer_Tick;
         ApplyStudioTheme(_darkMode);
         UpdateStartupButton();
+        UpdateUpdateControls();
         UpdateVisualAdjustmentControls();
     }
 
@@ -204,6 +221,8 @@ public partial class MainWindow : Window, IAsyncDisposable
             SetStatus(codexInstalled
                 ? "欢迎使用 Tessalume，请选择喜欢的主题后手动应用"
                 : "可以先浏览主题；应用前请先安装 Windows 版 Codex Desktop");
+            ShowStartupUpdateResult();
+            ScheduleAutomaticUpdateCheck();
             return;
         }
 
@@ -217,6 +236,8 @@ public partial class MainWindow : Window, IAsyncDisposable
             SetEngineState("Codex 默认外观");
             SetStatus("请选择主题并手动应用到 Codex");
         }
+        ShowStartupUpdateResult();
+        ScheduleAutomaticUpdateCheck();
     }
 
     private async void MainWindow_Closed(object? sender, EventArgs e)
@@ -247,6 +268,9 @@ public partial class MainWindow : Window, IAsyncDisposable
             _toastTimer.Tick -= ToastTimer_Tick;
             _toastTimer = null;
         }
+        _updateCancellation.Cancel();
+        _updateCancellation.Dispose();
+        _updateClient.Dispose();
         if (visualSettingsPending)
         {
             await SavePreferencesAsync();
@@ -781,6 +805,7 @@ public partial class MainWindow : Window, IAsyncDisposable
     private void Settings_Click(object sender, RoutedEventArgs e)
     {
         UpdateStartupButton();
+        UpdateUpdateControls();
         if (_codexDarkMode is { } dark)
         {
             _editingVisualDarkMode = dark;
@@ -995,6 +1020,222 @@ public partial class MainWindow : Window, IAsyncDisposable
             UpdateStartupButton();
             ShowProductMessage("无法更新开机启动设置", exception.Message, ProductDialogKind.Error);
         }
+    }
+
+    private async void AutomaticUpdatesCheckBox_Changed(object sender, RoutedEventArgs e)
+    {
+        if (_updatingAutomaticUpdateSetting) return;
+        _automaticUpdateChecks = AutomaticUpdatesCheckBox.IsChecked == true;
+        if (_automaticUpdateChecks)
+        {
+            _lastUpdateCheckAt = null;
+            _updateStatusMessage = "自动检查已开启，将从 GitHub Releases 获取最新版本";
+        }
+        else
+        {
+            _updateStatusMessage = "自动检查已关闭，仍可随时手动检查";
+        }
+
+        UpdateUpdateControls();
+        await SavePreferencesAsync();
+        ShowToast(_automaticUpdateChecks ? "已开启自动更新检查" : "已关闭自动更新检查");
+        if (_automaticUpdateChecks)
+        {
+            ScheduleAutomaticUpdateCheck(forceSoon: true);
+        }
+    }
+
+    private async void CheckForUpdates_Click(object sender, RoutedEventArgs e) =>
+        await CheckForUpdatesAsync(automatic: false);
+
+    internal void SetStartupUpdateResult(PortableUpdateResult? result) =>
+        _startupUpdateResult = result;
+
+    private void ShowStartupUpdateResult()
+    {
+        if (_startupUpdateResult is not { } result) return;
+        _startupUpdateResult = null;
+        LocalLog.Write(result.Success
+            ? $"Update completed: {result.VersionLabel}."
+            : $"Update failed: {result.Message}");
+        ShowProductMessage(
+            result.Success ? "Tessalume 已完成更新" : "自动更新未完成",
+            result.Success
+                ? $"当前已运行 {result.VersionLabel}。主题、收藏和个性化参数均已保留。"
+                : $"当前版本仍可继续使用。\n\n原因：{result.Message}",
+            result.Success ? ProductDialogKind.Information : ProductDialogKind.Warning);
+        UpdateBootstrapper.DismissResult(_layout);
+        _ = UpdateBootstrapper.CleanupArtifactsAsync(_layout, result);
+    }
+
+    private void ScheduleAutomaticUpdateCheck(bool forceSoon = false)
+    {
+        if (!_automaticUpdateChecks || _updateCheckInProgress) return;
+        if (!forceSoon && _lastUpdateCheckAt is { } checkedAt &&
+            DateTimeOffset.Now - checkedAt < TimeSpan.FromHours(12))
+        {
+            return;
+        }
+
+        _ = RunScheduledUpdateCheckAsync(forceSoon ? TimeSpan.FromSeconds(1) : TimeSpan.FromSeconds(5));
+    }
+
+    private async Task RunScheduledUpdateCheckAsync(TimeSpan delay)
+    {
+        try
+        {
+            await Task.Delay(delay, _updateCancellation.Token);
+            await CheckForUpdatesAsync(automatic: true);
+        }
+        catch (OperationCanceledException)
+        {
+        }
+    }
+
+    private async Task CheckForUpdatesAsync(bool automatic)
+    {
+        if (_updateCheckInProgress) return;
+        _updateCheckInProgress = true;
+        if (_uiInitialized)
+        {
+            UpdateProgressBar.Value = 0;
+            UpdateProgressBar.Visibility = Visibility.Collapsed;
+            UpdateProgressText.Visibility = Visibility.Collapsed;
+        }
+        _updateStatusMessage = automatic ? "正在自动检查更新…" : "正在连接 GitHub Releases…";
+        UpdateUpdateControls();
+        try
+        {
+            _lastUpdateCheckAt = DateTimeOffset.Now;
+            await SavePreferencesAsync();
+            var release = await _updateClient.CheckLatestAsync(_updateCancellation.Token);
+            if (release is null)
+            {
+                _updateStatusMessage = $"当前已是最新版本 · {BrandInfo.VersionLabel}";
+                UpdateUpdateControls();
+                if (!automatic)
+                {
+                    ShowProductMessage(
+                        "当前已是最新版本",
+                        $"你正在使用 {BrandInfo.VersionLabel}，暂时没有可安装的新版本。",
+                        ProductDialogKind.Information);
+                }
+                return;
+            }
+
+            _updateStatusMessage = $"发现新版本 {release.VersionLabel} · 等待确认";
+            UpdateUpdateControls();
+            var notes = FormatReleaseNotes(release.ReleaseNotes);
+            var confirmed = ShowProductConfirmation(
+                $"发现 Tessalume {release.VersionLabel}",
+                $"当前版本：{BrandInfo.VersionLabel}\n新版本：{release.VersionLabel}\n下载大小：{FormatBytes(release.DownloadSize)}\n\n{notes}\n\n下载完成后会校验 SHA-256，随后退出、替换程序并自动重新打开。你的主题和 data 数据不会被删除。",
+                "下载并安装");
+            if (!confirmed)
+            {
+                _updateStatusMessage = $"{release.VersionLabel} 可用 · 已选择稍后更新";
+                UpdateUpdateControls();
+                return;
+            }
+
+            await DownloadAndInstallUpdateAsync(release);
+        }
+        catch (OperationCanceledException) when (_updateCancellation.IsCancellationRequested)
+        {
+        }
+        catch (Exception exception)
+        {
+            LocalLog.Write("Update check or installation failed.", exception);
+            _updateStatusMessage = $"更新失败 · {exception.Message}";
+            UpdateUpdateControls();
+            if (!automatic || IsVisible)
+            {
+                ShowProductMessage(
+                    "无法完成软件更新",
+                    $"当前版本没有被修改，可以继续使用。\n\n{exception.Message}",
+                    ProductDialogKind.Error);
+            }
+        }
+        finally
+        {
+            _updateCheckInProgress = false;
+            UpdateUpdateControls();
+        }
+    }
+
+    private async Task DownloadAndInstallUpdateAsync(ReleaseUpdate release)
+    {
+        ShowMainInterface();
+        ShowInfoPage(RightPane.Settings);
+        _updateStatusMessage = $"正在下载 {release.VersionLabel}…";
+        if (_uiInitialized)
+        {
+            UpdateProgressBar.Visibility = Visibility.Visible;
+            UpdateProgressBar.Value = 0;
+            UpdateProgressText.Visibility = Visibility.Visible;
+            UpdateProgressText.Text = $"0% · 0 B / {FormatBytes(release.DownloadSize)}";
+        }
+
+        var progress = new Progress<UpdateDownloadProgress>(value =>
+        {
+            var total = Math.Max(1, value.TotalBytes);
+            var percentage = Math.Clamp(value.BytesReceived * 100d / total, 0, 100);
+            if (_uiInitialized)
+            {
+                UpdateProgressBar.Value = percentage;
+                UpdateProgressText.Text = $"{percentage:0}% · {FormatBytes(value.BytesReceived)} / {FormatBytes(total)}";
+            }
+        });
+        var downloaded = await _updateClient.DownloadAsync(
+            release,
+            progress,
+            _updateCancellation.Token);
+        _updateStatusMessage = "下载与 SHA-256 校验完成，正在准备安全替换…";
+        UpdateUpdateControls();
+        var helperProcessId = UpdateBootstrapper.StartHelper(_layout, downloaded, release);
+        LocalLog.Write($"Update helper {helperProcessId} started for {release.VersionLabel}.");
+        _shutdownRequested = true;
+        Application.Current.Shutdown();
+    }
+
+    private void UpdateUpdateControls()
+    {
+        if (!_uiInitialized || AutomaticUpdatesCheckBox is null) return;
+        _updatingAutomaticUpdateSetting = true;
+        AutomaticUpdatesCheckBox.IsChecked = _automaticUpdateChecks;
+        _updatingAutomaticUpdateSetting = false;
+        CheckForUpdatesButton.IsEnabled = !_updateCheckInProgress;
+        UpdateStatusText.Text = _updateStatusMessage;
+        if (!_updateCheckInProgress && UpdateProgressBar.Value <= 0)
+        {
+            UpdateProgressBar.Visibility = Visibility.Collapsed;
+            UpdateProgressText.Visibility = Visibility.Collapsed;
+        }
+    }
+
+    private static string FormatReleaseNotes(string notes)
+    {
+        var lines = notes
+            .Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(line => line.TrimStart('#', ' ', '-', '*'))
+            .Where(line => !string.IsNullOrWhiteSpace(line))
+            .Take(6)
+            .ToArray();
+        var summary = lines.Length == 0 ? "此版本包含稳定性与体验改进。" : string.Join("\n", lines);
+        return summary.Length <= 700 ? summary : summary[..700] + "…";
+    }
+
+    private static string FormatBytes(long bytes)
+    {
+        string[] units = ["B", "KB", "MB", "GB"];
+        var value = Math.Max(0, bytes);
+        var unit = 0;
+        var scaled = (double)value;
+        while (scaled >= 1024 && unit < units.Length - 1)
+        {
+            scaled /= 1024;
+            unit++;
+        }
+        return $"{scaled:0.#} {units[unit]}";
     }
 
     private void ShowThemeLibraryPage()
@@ -1692,6 +1933,8 @@ public partial class MainWindow : Window, IAsyncDisposable
     {
         DarkMode = _darkMode,
         OnboardingCompleted = _onboardingCompleted,
+        AutomaticUpdateChecks = _automaticUpdateChecks,
+        LastUpdateCheckAt = _lastUpdateCheckAt,
         FavoriteThemeIds = _favoriteThemeIds.Order(StringComparer.OrdinalIgnoreCase).ToList(),
         ThemeVisualSettings = _themeVisualSettings.ToDictionary(
             pair => pair.Key,
