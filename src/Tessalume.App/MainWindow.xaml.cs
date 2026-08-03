@@ -18,6 +18,8 @@ namespace Tessalume.App;
 public partial class MainWindow : Window, IAsyncDisposable
 {
     private const string BuiltInTemplateFolderName = "theme-template-v1";
+    private const string CreatorWorkspaceFolderName = "Tessalume-Creator";
+    private const string CreatorPrompt = "请使用 $author-tessalume-theme 为《作品名》的角色名制作一套 Tessalume 主题；先完成角色研究和 11 张素材计划，等我确认后再生成、校验并交付可导入的主题文件夹。";
 
     private enum RightPane
     {
@@ -938,6 +940,68 @@ public partial class MainWindow : Window, IAsyncDisposable
         }
 
         Process.Start(new ProcessStartInfo("explorer.exe", $"\"{path}\"") { UseShellExecute = true });
+    }
+
+    private void PrepareCreatorWorkspace_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new OpenFolderDialog
+        {
+            Title = "选择 Codex 主题创作者工作区的保存位置",
+            Multiselect = false,
+        };
+        if (dialog.ShowDialog(this) != true) return;
+
+        try
+        {
+            var destination = GetAvailableCreatorWorkspacePath(dialog.FolderName);
+            BuiltInAssetInstaller.CreateCreatorWorkspace(destination);
+            var promptCopied = TryCopyCreatorPrompt(showSuccessToast: false);
+            Process.Start(new ProcessStartInfo("explorer.exe", $"\"{destination}\"") { UseShellExecute = true });
+            ShowProductMessage(
+                "Codex 创作工作区已准备",
+                $"工作区已经创建并打开：\n{destination}\n\n请在 Codex 中打开整个文件夹，然后发送一句角色主题需求。" +
+                (promptCopied ? "\n\n示例创作指令已复制到剪贴板。" : string.Empty),
+                ProductDialogKind.Information);
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
+        {
+            ShowProductMessage("无法创建创作工作区", exception.Message, ProductDialogKind.Error);
+        }
+    }
+
+    private void CopyCreatorPrompt_Click(object sender, RoutedEventArgs e) =>
+        TryCopyCreatorPrompt(showSuccessToast: true);
+
+    private bool TryCopyCreatorPrompt(bool showSuccessToast)
+    {
+        try
+        {
+            Clipboard.SetText(CreatorPrompt);
+            if (showSuccessToast)
+            {
+                ShowToast("一句话创作指令已复制");
+            }
+            return true;
+        }
+        catch (System.Runtime.InteropServices.ExternalException exception)
+        {
+            ShowProductMessage("无法复制创作指令", exception.Message, ProductDialogKind.Error);
+            return false;
+        }
+    }
+
+    private static string GetAvailableCreatorWorkspacePath(string parentDirectory)
+    {
+        var first = Path.Combine(parentDirectory, CreatorWorkspaceFolderName);
+        if (!Directory.Exists(first) && !File.Exists(first)) return first;
+
+        for (var suffix = 2; suffix <= 99; suffix++)
+        {
+            var candidate = Path.Combine(parentDirectory, $"{CreatorWorkspaceFolderName}-{suffix}");
+            if (!Directory.Exists(candidate) && !File.Exists(candidate)) return candidate;
+        }
+
+        throw new IOException("所选位置已有过多 Tessalume-Creator 工作区，请换一个文件夹后重试。");
     }
 
     private void CopyTemplate_Click(object sender, RoutedEventArgs e)

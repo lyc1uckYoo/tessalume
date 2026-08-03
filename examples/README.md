@@ -29,8 +29,8 @@ python .agents/skills/author-tessalume-theme/scripts/scaffold_theme.py `
 3. 在 `skin.css` 的固定章节中修改配色、图片裁切、角色纹样和动效；公共结构与几何由运行时共享模板提供。
 4. 不要改动 `data-theme-role`、`data-theme-part`、主次优先级或
    `templateVersion: "1.0"`。
-5. 不要编辑 CSS 最末尾的
-5. ??? `skin.css` ????????????????????? `theme-template-v1.css` ???
+5. 不要把共享几何复制回 `skin.css`；尺寸与位置由运行时的
+   `theme-template-v1.css` 统一提供。
 
 ## 校验
 

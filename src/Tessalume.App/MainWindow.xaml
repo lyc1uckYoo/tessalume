@@ -646,7 +646,7 @@
                     <Button x:Name="UsageGuideButton" Style="{StaticResource NavButton}" Click="UsageGuide_Click">
                         <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="27" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
                             <Path Style="{StaticResource NavIcon}" Data="M 4,4 C 8,3 10,4 12,6 L 12,20 C 10,18 8,17 4,18 Z M 20,4 C 16,3 14,4 12,6 L 12,20 C 14,18 16,17 20,18 Z" />
-                            <TextBlock Grid.Column="1" Text="开发指南" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="1" Text="主题创作" VerticalAlignment="Center" />
                         </Grid>
                     </Button>
                 </StackPanel>
@@ -1103,7 +1103,7 @@
                     <StackPanel x:Name="UsageInfoPanel" Visibility="Collapsed" VerticalAlignment="Top" Margin="0,0,0,4">
                         <Grid>
                             <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                            <StackPanel><TextBlock Text="开发指南" Style="{StaticResource PageTitleText}" /><TextBlock Text="从旗舰模板 1.0 开始，把角色视觉放进稳定、可验证的主题结构。" Style="{StaticResource PageDescriptionText}" /></StackPanel>
+                            <StackPanel><TextBlock Text="主题创作" Style="{StaticResource PageTitleText}" /><TextBlock Text="准备 Codex 创作者工作区，用一句角色需求启动完整的研究、设计与校验流程。" Style="{StaticResource PageDescriptionText}" /></StackPanel>
                             <Border Grid.Column="1" Background="{DynamicResource AmberSoft}" BorderBrush="{DynamicResource Amber}" BorderThickness="1" CornerRadius="11" Padding="11,6" VerticalAlignment="Center"><TextBlock Text="Template 1.0" Foreground="{DynamicResource Amber}" FontSize="9.5" FontWeight="SemiBold" /></Border>
                         </Grid>
 
@@ -1112,13 +1112,16 @@
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="58" /><ColumnDefinition Width="*" /><ColumnDefinition Width="18" /><ColumnDefinition Width="210" /></Grid.ColumnDefinitions>
                                 <Border Width="48" Height="48" CornerRadius="15" Background="{DynamicResource PrimaryGradient}" VerticalAlignment="Top"><Path Width="22" Height="22" Data="M 4,4 C 8,3 10,4 12,6 L 12,20 C 10,18 8,17 4,18 Z M 20,4 C 16,3 14,4 12,6 L 12,20 C 14,18 16,17 20,18 Z" Stroke="White" StrokeThickness="1.8" StrokeLineJoin="Round" Fill="Transparent" Stretch="Uniform" /></Border>
                                 <StackPanel Grid.Column="1">
-                                    <TextBlock Text="从官方模板开始创作" Foreground="{DynamicResource PrimaryText}" FontSize="17" FontWeight="SemiBold" />
-                                    <TextBlock Text="公共运行时负责路由、注入、清理与自适应显隐；你只需要专注角色图片、文案、配色、纹样和专属动效。" TextWrapping="Wrap" Foreground="{DynamicResource MutedText}" FontSize="10.5" LineHeight="18" Margin="0,7,0,0" />
-                                    <TextBlock Text="验收结构：心 · 朝月孤城" Foreground="{DynamicResource Accent}" FontSize="9.5" FontWeight="SemiBold" Margin="0,10,0,0" />
+                                    <TextBlock Text="使用 Codex 自动创作主题" Foreground="{DynamicResource PrimaryText}" FontSize="17" FontWeight="SemiBold" />
+                                    <TextBlock Text="工作区已经内置 Template 1.0、11 张素材规范和校验脚本。你只需在 Codex 中打开它，并说出作品与角色。" TextWrapping="Wrap" Foreground="{DynamicResource MutedText}" FontSize="10.5" LineHeight="18" Margin="0,7,0,0" />
+                                    <Border Background="{DynamicResource AccentSoft}" BorderBrush="{DynamicResource InfoBorder}" BorderThickness="1" CornerRadius="10" Padding="11,8" Margin="0,11,0,0">
+                                        <TextBlock Text="一句话示例：请为《鸣潮》的椿制作一套 Tessalume 主题。" TextWrapping="Wrap" Foreground="{DynamicResource Accent}" FontSize="9.5" FontWeight="SemiBold" />
+                                    </Border>
                                 </StackPanel>
                                 <StackPanel Grid.Column="3" VerticalAlignment="Center">
-                                    <Button Style="{StaticResource SecondaryActionButton}" Click="OpenTemplate_Click"><StackPanel Orientation="Horizontal"><Path Width="13" Height="13" Data="M 3,6 L 10,6 L 12,8 L 21,8 L 21,20 L 3,20 Z M 3,8 L 3,4 L 10,4 L 12,6" Stroke="{DynamicResource Accent}" StrokeThickness="1.7" StrokeLineJoin="Round" Fill="Transparent" Stretch="Uniform" Margin="0,0,7,0" /><TextBlock Text="打开模板文件夹" /></StackPanel></Button>
-                                    <Button Style="{StaticResource PrimaryActionButton}" Click="CopyTemplate_Click" Content="复制一份开始设计" Height="38" Margin="0,8,0,0" />
+                                    <Button Style="{StaticResource PrimaryActionButton}" Click="PrepareCreatorWorkspace_Click" Content="准备 Codex 创作工作区" Height="40" />
+                                    <Button Style="{StaticResource SecondaryActionButton}" Click="CopyCreatorPrompt_Click" Content="复制一句话创作指令" Margin="0,8,0,0" />
+                                    <Button Style="{StaticResource QuietActionButton}" Click="CopyTemplate_Click" Content="仅复制手动模板" Margin="0,8,0,0" />
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -1126,13 +1129,13 @@
                         <TextBlock Text="推荐工作流" Style="{StaticResource SectionEyebrowText}" Margin="1,18,0,9" />
                         <Grid>
                             <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="12" /><ColumnDefinition Width="*" /><ColumnDefinition Width="12" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                            <Border Style="{StaticResource InsetCard}" Padding="16"><StackPanel><Border Width="30" Height="30" CornerRadius="9" Background="{DynamicResource AccentSoft}" HorizontalAlignment="Left"><TextBlock Text="01" Foreground="{DynamicResource Accent}" FontSize="9" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border><TextBlock Text="定义主题身份" Foreground="{DynamicResource PrimaryText}" FontSize="12" FontWeight="SemiBold" Margin="0,12,0,0" /><TextBlock Text="先设置唯一 id、名称、作者和版本，建立清晰可追踪的主题信息。" TextWrapping="Wrap" Foreground="{DynamicResource MutedText}" FontSize="9.5" LineHeight="16" Margin="0,6,0,0" /></StackPanel></Border>
-                            <Border Grid.Column="2" Style="{StaticResource InsetCard}" Padding="16"><StackPanel><Border Width="30" Height="30" CornerRadius="9" Background="{DynamicResource SkySoft}" HorizontalAlignment="Left"><TextBlock Text="02" Foreground="{DynamicResource Sky}" FontSize="9" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border><TextBlock Text="完成角色表达" Foreground="{DynamicResource PrimaryText}" FontSize="12" FontWeight="SemiBold" Margin="0,12,0,0" /><TextBlock Text="替换标准资源槽位与角色文案，再完善配色、纹样和专属动效。" TextWrapping="Wrap" Foreground="{DynamicResource MutedText}" FontSize="9.5" LineHeight="16" Margin="0,6,0,0" /></StackPanel></Border>
-                            <Border Grid.Column="4" Style="{StaticResource InsetCard}" Padding="16"><StackPanel><Border Width="30" Height="30" CornerRadius="9" Background="{DynamicResource TealSoft}" HorizontalAlignment="Left"><TextBlock Text="03" Foreground="{DynamicResource Teal}" FontSize="9" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border><TextBlock Text="校验并构建" Foreground="{DynamicResource PrimaryText}" FontSize="12" FontWeight="SemiBold" Margin="0,12,0,0" /><TextBlock Text="检查亮暗两态、资源引用和模板契约，通过完整构建后再交付。" TextWrapping="Wrap" Foreground="{DynamicResource MutedText}" FontSize="9.5" LineHeight="16" Margin="0,6,0,0" /></StackPanel></Border>
+                            <Border Style="{StaticResource InsetCard}" Padding="16"><StackPanel><Border Width="30" Height="30" CornerRadius="9" Background="{DynamicResource AccentSoft}" HorizontalAlignment="Left"><TextBlock Text="01" Foreground="{DynamicResource Accent}" FontSize="9" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border><TextBlock Text="准备工作区" Foreground="{DynamicResource PrimaryText}" FontSize="12" FontWeight="SemiBold" Margin="0,12,0,0" /><TextBlock Text="选择保存位置，Tessalume 会释放 Codex 能直接理解的完整创作环境。" TextWrapping="Wrap" Foreground="{DynamicResource MutedText}" FontSize="9.5" LineHeight="16" Margin="0,6,0,0" /></StackPanel></Border>
+                            <Border Grid.Column="2" Style="{StaticResource InsetCard}" Padding="16"><StackPanel><Border Width="30" Height="30" CornerRadius="9" Background="{DynamicResource SkySoft}" HorizontalAlignment="Left"><TextBlock Text="02" Foreground="{DynamicResource Sky}" FontSize="9" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border><TextBlock Text="告诉 Codex 一句话" Foreground="{DynamicResource PrimaryText}" FontSize="12" FontWeight="SemiBold" Margin="0,12,0,0" /><TextBlock Text="说出作品、角色和可选风格；Codex 会自动研究并规划 11 张主题素材。" TextWrapping="Wrap" Foreground="{DynamicResource MutedText}" FontSize="9.5" LineHeight="16" Margin="0,6,0,0" /></StackPanel></Border>
+                            <Border Grid.Column="4" Style="{StaticResource InsetCard}" Padding="16"><StackPanel><Border Width="30" Height="30" CornerRadius="9" Background="{DynamicResource TealSoft}" HorizontalAlignment="Left"><TextBlock Text="03" Foreground="{DynamicResource Teal}" FontSize="9" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border><TextBlock Text="确认方案并导入" Foreground="{DynamicResource PrimaryText}" FontSize="12" FontWeight="SemiBold" Margin="0,12,0,0" /><TextBlock Text="确认角色身份与素材计划后，Codex 完成制作和校验，再从 themes 目录导入。" TextWrapping="Wrap" Foreground="{DynamicResource MutedText}" FontSize="9.5" LineHeight="16" Margin="0,6,0,0" /></StackPanel></Border>
                         </Grid>
 
                         <Border Background="{DynamicResource InfoSurface}" BorderBrush="{DynamicResource InfoBorder}" BorderThickness="1" CornerRadius="13" Padding="15,12" Margin="0,16,0,0">
-                            <TextBlock Text="模板统一的是结构、几何和运行时生命周期，不是角色皮肤。保留每个角色独有的构图、组件、纹样与动效，才能让主题真正有辨识度。" TextWrapping="Wrap" Foreground="{DynamicResource PrimaryText}" FontSize="9.5" LineHeight="16" />
+                            <TextBlock Text="一句话会启动完整流程。为避免生成错误角色或浪费 11 张图片，Codex 会在正式生成前让你确认一次角色身份卡和素材计划。" TextWrapping="Wrap" Foreground="{DynamicResource PrimaryText}" FontSize="9.5" LineHeight="16" />
                         </Border>
                     </StackPanel>
 

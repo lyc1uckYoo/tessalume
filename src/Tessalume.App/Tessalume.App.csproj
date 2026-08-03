@@ -37,6 +37,16 @@
     <EmbeddedResource Include="..\..\examples\**\*">
       <LogicalName>Tessalume.Templates/theme-template-v1/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
     </EmbeddedResource>
+    <EmbeddedResource Include="..\..\creator-workspace\**\*">
+      <LogicalName>Tessalume.CreatorWorkspace/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\.agents\skills\author-tessalume-theme\**\*"
+                      Exclude="..\..\.agents\skills\author-tessalume-theme\**\__pycache__\**;..\..\.agents\skills\author-tessalume-theme\**\*.pyc">
+      <LogicalName>Tessalume.CreatorWorkspace/.agents/skills/author-tessalume-theme/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\schemas\theme-manifest-v2.schema.json">
+      <LogicalName>Tessalume.CreatorWorkspace/schemas/theme-manifest-v2.schema.json</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">

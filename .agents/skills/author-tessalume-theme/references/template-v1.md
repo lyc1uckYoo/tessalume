@@ -126,6 +126,8 @@ Template 1.0 的几何和公共表面现在只存在于运行时共享的
 5. 只编辑 `skin.css` 的主题变量、角色皮肤与专属动效，保持 01-13 顺序和冻结几何。
 6. 运行 `sync_template_geometry.py --check` 与 `validate_theme_contract.py`，任何草稿
    遗留或视觉覆盖缺失都必须在构建前解决。
-7. 执行根目录 `一键构建EXE.ps1`，不手工同步便携版和受信指纹。
+7. 在应用源码仓库中执行根目录 `一键构建EXE.ps1`，不手工同步便携版；如果根目录
+   存在 `TESSALUME_CREATOR_WORKSPACE.md`，则跳过 EXE 构建，将通过校验的
+   `themes/<theme>` 文件夹导入 Tessalume。
 8. 运行检查前重新应用当前源码或本次构建，并先确认一个本次特有 DOM、SVG、
    动画名或计算样式已经出现，避免把旧注入误判为新结果。

@@ -20,6 +20,15 @@ Read all three references before editing or generating images:
 
 ## Repository branch policy
 
+If the workspace root contains `TESSALUME_CREATOR_WORKSPACE.md`, use portable
+creator mode. This workspace is intentionally not the Tessalume application
+repository: do not require Git, do not look for a `main` branch, and do not run
+the application EXE build. Create the theme under `themes/`, run the bundled
+geometry and contract validators, and hand off that theme folder for import in
+Tessalume.
+
+Otherwise, use repository mode:
+
 Perform all Tessalume work directly on the existing `main` branch. Before
 editing, confirm `git branch --show-current` returns `main`; if it does not,
 return safely to `main` before making changes. Never create or switch to a
@@ -83,13 +92,15 @@ current task.
    Treat draft remnants, missing visual coverage, asset errors, generic starter
    components, contract errors and shared-geometry isolation failures as
    blocking.
-11. Run the repository-root `一键构建EXE.ps1`. Let the build fully replace
-   `dist/portable-win-x64`, optimized assets and trust fingerprints. Never
-   hand-sync or merge portable output.
-12. Prepare the current source or build for the user's runtime QA. If the user
-   asks Codex to inspect it, reapply the current payload and confirm a unique
-   DOM, asset or computed-style signal first. Screenshots are optional unless
-   the user explicitly requests them.
+11. In repository mode, run the repository-root `一键构建EXE.ps1` and let the
+   build fully replace `dist/portable-win-x64` and optimized assets. Never
+   hand-sync or merge portable output. In portable creator mode, do not build
+   Tessalume; the two blocking validators are the handoff gate.
+12. Prepare the result for runtime QA. In portable creator mode, tell the user
+   to import `themes/<theme>` from Tessalume. In repository mode, reapply the
+   current source or build and confirm a unique DOM, asset or computed-style
+   signal first. Screenshots are optional unless the user explicitly requests
+   them.
 13. Distinguish static validation, build validation and runtime visual QA in the
    handoff. Never push without explicit permission in the current task; before
    a permitted push, inspect status and include exactly the authorized scope.

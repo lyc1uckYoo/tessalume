@@ -57,7 +57,10 @@ def main() -> int:
     print("Complete character research and the eleven-slot art matrix before accepting assets.")
     print("Replace every placeholder, data-theme-draft marker, sample component and keyframe.")
     print("Complete the flagship visual-coverage checklist; keep skin.css free of shared geometry.")
-    print("Run geometry and contract checks, then the repository-root 一键构建EXE.ps1.")
+    if (args.repo_root.resolve() / "TESSALUME_CREATOR_WORKSPACE.md").is_file():
+        print("Run geometry and contract checks, then import this theme folder in Tessalume.")
+    else:
+        print("Run geometry and contract checks, then the repository-root 一键构建EXE.ps1.")
     return 0
 
 

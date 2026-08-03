@@ -9,6 +9,7 @@ internal static class BuiltInAssetInstaller
     private const string ThemePrefix = "Tessalume.BuiltInThemes/";
     private const string CompatibilityPrefix = "Tessalume.Compatibility/";
     private const string TemplatePrefix = "Tessalume.Templates/";
+    private const string CreatorWorkspacePrefix = "Tessalume.CreatorWorkspace/";
     private const string DeletedThemesFileName = "deleted-built-in-themes.txt";
 
     private static IReadOnlyDictionary<string, string> ResourceFolderThemeIds { get; } =
@@ -70,6 +71,49 @@ internal static class BuiltInAssetInstaller
 
         var path = Path.Combine(layout.DataDirectory, DeletedThemesFileName);
         File.WriteAllLines(path, deletedThemeIds.Order(StringComparer.OrdinalIgnoreCase));
+    }
+
+    public static void CreateCreatorWorkspace(string destination)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(destination);
+        destination = Path.GetFullPath(destination);
+        if (Directory.Exists(destination) || File.Exists(destination))
+        {
+            throw new IOException($"目标位置已经存在：{destination}");
+        }
+
+        Directory.CreateDirectory(destination);
+        try
+        {
+            var assembly = typeof(BuiltInAssetInstaller).Assembly;
+            var resources = assembly.GetManifestResourceNames()
+                .Where(name => name.StartsWith(CreatorWorkspacePrefix, StringComparison.Ordinal))
+                .ToArray();
+            if (resources.Length == 0)
+            {
+                throw new InvalidDataException("程序中没有找到 Codex 主题创作者工作区资源。");
+            }
+
+            foreach (var resourceName in resources)
+            {
+                ExtractResource(
+                    assembly,
+                    resourceName,
+                    CreatorWorkspacePrefix,
+                    destination);
+            }
+
+            ExtractResource(
+                assembly,
+                CompatibilityPrefix + "theme-template-v1.css",
+                CompatibilityPrefix,
+                Path.Combine(destination, "src", "Tessalume.App", "Compatibility"));
+        }
+        catch
+        {
+            Directory.Delete(destination, recursive: true);
+            throw;
+        }
     }
 
     private static HashSet<string> LoadDeletedThemeIds(PortableLayout layout)

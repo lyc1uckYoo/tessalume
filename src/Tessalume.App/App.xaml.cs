@@ -14,6 +14,26 @@ public partial class App : Application, IDisposable
 
     protected override async void OnStartup(StartupEventArgs e)
     {
+        if (e.Args is ["--export-creator-workspace", var destination])
+        {
+            base.OnStartup(e);
+            try
+            {
+                BuiltInAssetInstaller.CreateCreatorWorkspace(destination);
+                Shutdown(0);
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show(
+                    exception.Message,
+                    $"{BrandInfo.ProductName} 创作者工作区导出失败",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                Shutdown(1);
+            }
+            return;
+        }
+
         _singleInstance = new Mutex(initiallyOwned: true, SingleInstanceName, out var createdNew);
         if (!createdNew)
         {

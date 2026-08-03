@@ -168,8 +168,10 @@ For every theme change:
 6. For Template 1.0, run `sync_template_geometry.py --check`.
 7. Complete the blocking first-pass audit in
    [flagship-completeness.md](flagship-completeness.md).
-8. Run the repository-root `一键构建EXE.ps1`. The build owns portable
-   synchronization, optimized assets and trust fingerprints.
+8. In the application repository, run the repository-root `一键构建EXE.ps1`;
+   the build owns portable synchronization and optimized assets. In a portable
+   creator workspace marked by `TESSALUME_CREATOR_WORKSPACE.md`, skip the EXE
+   build and hand the validated `themes/<theme>` folder to Tessalume for import.
 9. Reapply the current source or current build to Codex before visual
    inspection. Verify a change-specific DOM node, asset or computed style to
    prove the running page is not an older injected payload.
@@ -177,6 +179,6 @@ For every theme change:
     QA is in scope. Check every item in the flagship runtime QA matrix,
     including deep environment-panel and composer-footer states.
 
-Do not hand-copy files into portable output or hand-edit trust fingerprints.
+Do not hand-copy files into portable output.
 For runtime, C#, XAML or build-script changes, also run the tests relevant to
 that code in addition to the complete build.
