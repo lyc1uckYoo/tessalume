@@ -311,7 +311,8 @@ public partial class MainWindow : Window, IAsyncDisposable
     {
         if (!_uiInitialized || AllThemesFilterButton is null) return;
 
-        ThemeSearchPlaceholder.Visibility = string.IsNullOrEmpty(ThemeSearchBox.Text)
+        ThemeSearchPlaceholder.Visibility = string.IsNullOrEmpty(ThemeSearchBox.Text) &&
+            !ThemeSearchBox.IsKeyboardFocused
             ? Visibility.Visible
             : Visibility.Collapsed;
         ClearThemeSearchButton.Visibility = string.IsNullOrEmpty(ThemeSearchBox.Text)
@@ -343,6 +344,14 @@ public partial class MainWindow : Window, IAsyncDisposable
         if (!_uiInitialized) return;
         _themeSearchQuery = ThemeSearchBox.Text;
         ApplyThemeLibraryFilter();
+    }
+
+    private void ThemeSearchBox_FocusChanged(object sender, RoutedEventArgs e)
+    {
+        ThemeSearchPlaceholder.Visibility = string.IsNullOrEmpty(ThemeSearchBox.Text) &&
+            !ThemeSearchBox.IsKeyboardFocused
+            ? Visibility.Visible
+            : Visibility.Collapsed;
     }
 
     private void ClearThemeSearch_Click(object sender, RoutedEventArgs e)

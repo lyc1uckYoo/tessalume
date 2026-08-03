@@ -523,6 +523,7 @@
             <Setter Property="BorderBrush" Value="{DynamicResource Border}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="FontSize" Value="10.5" />
+            <Setter Property="Cursor" Value="IBeam" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
             <Setter Property="CaretBrush" Value="{DynamicResource Accent}" />
             <Setter Property="FocusVisualStyle" Value="{x:Null}" />
@@ -530,7 +531,7 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="TextBox">
                         <Border x:Name="SearchChrome" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="12">
-                            <ScrollViewer x:Name="PART_ContentHost" Margin="34,0,34,0" VerticalAlignment="Center" />
+                            <ScrollViewer x:Name="PART_ContentHost" Margin="40,0,34,0" VerticalAlignment="Center" />
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsKeyboardFocused" Value="True">
@@ -773,12 +774,14 @@
                     </Grid.ColumnDefinitions>
                     <Grid>
                         <TextBox x:Name="ThemeSearchBox" Style="{StaticResource SearchTextBox}" TextChanged="ThemeSearchBox_TextChanged"
+                                 GotKeyboardFocus="ThemeSearchBox_FocusChanged" LostKeyboardFocus="ThemeSearchBox_FocusChanged"
                                  AutomationProperties.Name="搜索主题" ToolTip="按主题名称、说明、作者或 ID 搜索" />
-                        <Path Width="13" Height="13" HorizontalAlignment="Left" Margin="12,0,0,0" IsHitTestVisible="False"
-                              Data="M 10.5,10.5 L 16,16 M 9,14 A 5,5 0 1 1 9,4 A 5,5 0 1 1 9,14"
-                              Stroke="{DynamicResource MutedText}" StrokeThickness="1.7" StrokeStartLineCap="Round" Fill="Transparent" />
+                        <Path Width="14" Height="14" HorizontalAlignment="Left" Margin="13,0,0,0" IsHitTestVisible="False"
+                              Data="M 6,11 A 5,5 0 1 1 6,1 A 5,5 0 1 1 6,11 M 9.5,9.5 L 13.5,13.5"
+                              Stretch="Uniform" Stroke="{DynamicResource MutedText}" StrokeThickness="1.6"
+                              StrokeStartLineCap="Round" StrokeEndLineCap="Round" Fill="Transparent" />
                         <TextBlock x:Name="ThemeSearchPlaceholder" Text="搜索名称、作者或主题 ID" Foreground="{DynamicResource SubtleText}"
-                                   FontSize="10.5" VerticalAlignment="Center" Margin="34,0,34,0" IsHitTestVisible="False" />
+                                   FontSize="10.5" VerticalAlignment="Center" Margin="40,0,34,0" IsHitTestVisible="False" />
                         <Button x:Name="ClearThemeSearchButton" Content="×" Width="25" Height="25" HorizontalAlignment="Right" Margin="0,0,6,0"
                                 Visibility="Collapsed" Style="{StaticResource QuietActionButton}" Padding="0" FontSize="14"
                                 ToolTip="清除搜索" AutomationProperties.Name="清除主题搜索" Click="ClearThemeSearch_Click" />

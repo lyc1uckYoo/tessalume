@@ -949,10 +949,14 @@ static async Task Version12ProductWorkflowIsCompleteAsync()
     }
 
     Ensure(source.Contains("ApplyThemeLibraryFilter", StringComparison.Ordinal) &&
+           source.Contains("ThemeSearchBox_FocusChanged", StringComparison.Ordinal) &&
            source.Contains("ShowProductConfirmation", StringComparison.Ordinal) &&
            source.Contains("ShowToast", StringComparison.Ordinal) &&
            !source.Contains("MessageBox.Show", StringComparison.Ordinal),
         "The main interface must use searchable filtering and unified in-product feedback.");
+    Ensure(xaml.Contains("Property=\"Cursor\" Value=\"IBeam\"", StringComparison.Ordinal) &&
+           xaml.Contains("GotKeyboardFocus=\"ThemeSearchBox_FocusChanged\"", StringComparison.Ordinal),
+        "The search field must keep a clear text caret and hide its placeholder while focused.");
     Ensure(dialogXaml.Contains("DialogAccentBrush", StringComparison.Ordinal) &&
            dialogXaml.Contains("IsDefault=\"True\"", StringComparison.Ordinal) &&
            dialogXaml.Contains("IsCancel=\"True\"", StringComparison.Ordinal) &&
