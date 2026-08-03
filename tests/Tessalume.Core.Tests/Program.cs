@@ -74,14 +74,14 @@ var tests = new (string Name, Func<Task> Run)[]
     ("adaptive layout and keyboard accessibility are available", AdaptiveLayoutAndKeyboardAccessibilityAsync),
     ("version 1.2 product workflow is complete", Version12ProductWorkflowIsCompleteAsync),
     ("portable Codex creator workspace is self-contained", PortableCreatorWorkspaceIsSelfContainedAsync),
-    ("diagnostics report and built-in recovery are available", DiagnosticsRecoveryIsAvailableAsync),
+    ("local diagnostics and built-in recovery are available", DiagnosticsRecoveryIsAvailableAsync),
     ("local importer copies a validated package", LocalImporterCopiesPackageAsync),
     ("ZIP theme import is bounded and rejects traversal", ZipThemeImportIsBoundedAsync),
     ("bundled adapter builds a complete payload", BundledAdapterBuildsPayloadAsync),
     ("open advanced template loads with a stable revision hash", OpenAdvancedTemplateLoadsWithStableRevisionHashAsync),
     ("advanced import keeps script and revision hash tracks changes", AdvancedImportKeepsScriptAndTracksChangesAsync),
     ("deferred main UI replays the live engine state", DeferredMainUiReplaysEngineStateAsync),
-    ("startup registration migrates the predecessor brand", StartupRegistrationMigratesPredecessorBrandAsync),
+    ("startup stays opt-in and cleans the predecessor brand", StartupRegistrationStaysOptInAsync),
     ("first-run onboarding never applies a random theme", FirstRunOnboardingNeverAppliesRandomThemeAsync),
     ("build script launches the published executable by default", BuildScriptLaunchesPublishedExecutableAsync),
     ("release artifacts and feedback paths are documented", ReleaseReadinessAssetsAreDocumentedAsync),
@@ -353,7 +353,7 @@ static async Task DeferredMainUiReplaysEngineStateAsync()
         "Main UI initialization and recoloring must replay the cached live engine state.");
 }
 
-static async Task StartupRegistrationMigratesPredecessorBrandAsync()
+static async Task StartupRegistrationStaysOptInAsync()
 {
     var repositoryRoot = FindRepositoryRoot();
     var startupSource = await File.ReadAllTextAsync(Path.Combine(
@@ -372,12 +372,19 @@ static async Task StartupRegistrationMigratesPredecessorBrandAsync()
         "src",
         "Tessalume.App",
         "MainWindow.xaml.cs"));
+    var cleanupStart = startupSource.IndexOf("public static bool TryCleanLegacyRegistration()", StringComparison.Ordinal);
+    var cleanupEnd = cleanupStart < 0
+        ? -1
+        : startupSource.IndexOf("public static bool IsEnabled()", cleanupStart, StringComparison.Ordinal);
+    Ensure(cleanupStart >= 0 && cleanupEnd > cleanupStart,
+        "Startup registration must expose a bounded predecessor cleanup path.");
+    var cleanupBlock = startupSource[cleanupStart..cleanupEnd];
     Ensure(startupSource.Contains("LegacyValueName = \"CodexThemeStudio\"", StringComparison.Ordinal) &&
-           startupSource.Contains("TryMigrateLegacyRegistration", StringComparison.Ordinal) &&
-           startupSource.Contains("key.DeleteValue(LegacyValueName", StringComparison.Ordinal),
-        "Startup registration must preserve and clean the predecessor brand value.");
-    Ensure(appSource.Contains("StartupRegistration.TryMigrateLegacyRegistration()", StringComparison.Ordinal),
-        "Application startup must run the predecessor registration migration.");
+           cleanupBlock.Contains("key.DeleteValue(LegacyValueName", StringComparison.Ordinal) &&
+           !cleanupBlock.Contains("key.SetValue(ValueName", StringComparison.Ordinal),
+        "Application startup may clean the predecessor value but must never opt users into startup.");
+    Ensure(appSource.Contains("StartupRegistration.TryCleanLegacyRegistration()", StringComparison.Ordinal),
+        "Application startup must clean only the predecessor registration.");
     Ensure(mainWindowSource.Contains("StartupCheckBox.IsChecked = enabled;", StringComparison.Ordinal),
         "The settings checkbox and toolbar startup button must share one current registry state.");
 }
@@ -439,18 +446,23 @@ static async Task ReleaseReadinessAssetsAreDocumentedAsync()
     var buildScript = await File.ReadAllTextAsync(Path.Combine(repositoryRoot, "一键构建EXE.ps1"));
     var readme = await File.ReadAllTextAsync(Path.Combine(repositoryRoot, "README.md"));
     var securityPath = Path.Combine(repositoryRoot, "SECURITY.md");
+    var licensePath = Path.Combine(repositoryRoot, "LICENSE");
     var issueTemplatePath = Path.Combine(repositoryRoot, ".github", "ISSUE_TEMPLATE", "bug-report.yml");
     var releaseChecklistPath = Path.Combine(repositoryRoot, "docs", "RELEASE_CHECKLIST.md");
+    var license = await File.ReadAllTextAsync(licensePath);
 
     Ensure(buildScript.Contains("Get-FileHash -LiteralPath $finalExe -Algorithm SHA256", StringComparison.Ordinal) &&
            buildScript.Contains("SHA256SUMS.txt", StringComparison.Ordinal),
         "The release build must create a SHA-256 manifest beside the executable.");
-    Ensure(File.Exists(securityPath) && File.Exists(issueTemplatePath) && File.Exists(releaseChecklistPath),
-        "Public testing requires security guidance, a structured bug form, and a release checklist.");
+    Ensure(File.Exists(securityPath) && File.Exists(issueTemplatePath) && File.Exists(releaseChecklistPath) &&
+           license.Contains("MIT License", StringComparison.Ordinal) &&
+           license.Contains("Permission is hereby granted", StringComparison.Ordinal),
+        "Public testing requires an MIT license, security guidance, a structured bug form, and a release checklist.");
     Ensure(readme.Contains("issues/new?template=bug-report.yml", StringComparison.Ordinal) &&
            readme.Contains("Microsoft Defender SmartScreen", StringComparison.Ordinal) &&
-           readme.Contains("SHA256SUMS.txt", StringComparison.Ordinal),
-        "The download guide must expose feedback, signature status, and checksum verification.");
+           readme.Contains("SHA256SUMS.txt", StringComparison.Ordinal) &&
+           readme.Contains("[MIT License](LICENSE)", StringComparison.Ordinal),
+        "The download guide must expose feedback, signature status, checksum verification, and licensing.");
 }
 
 static async Task RuntimeRemovesNativeComposerFadeAsync()
@@ -1088,9 +1100,11 @@ static async Task PortableCreatorWorkspaceIsSelfContainedAsync()
            appSource.Contains("BuiltInAssetInstaller.CreateCreatorWorkspace(destination)", StringComparison.Ordinal),
         "The published EXE must expose a testable creator-workspace export path.");
     Ensure(mainSource.Contains("PrepareCreatorWorkspace_Click", StringComparison.Ordinal) &&
-           mainSource.Contains("CreatorPrompt", StringComparison.Ordinal) &&
-           mainXaml.Contains("准备 Codex 创作工作区", StringComparison.Ordinal),
-        "The product guide must expose the one-sentence Codex creation entry point.");
+           mainXaml.Contains("准备 Codex 创作工作区", StringComparison.Ordinal) &&
+           mainXaml.Contains("请使用 $author-tessalume-theme", StringComparison.Ordinal) &&
+           !mainSource.Contains("Clipboard", StringComparison.Ordinal) &&
+           !mainXaml.Contains("复制一句话创作指令", StringComparison.Ordinal),
+        "The product guide must expose the complete Codex prompt without automatic clipboard access.");
     Ensure(skill.Contains("TESSALUME_CREATOR_WORKSPACE.md", StringComparison.Ordinal) &&
            skill.Contains("portable creator mode", StringComparison.Ordinal),
         "The authoring Skill must distinguish the portable workspace from the app repository.");
@@ -1131,7 +1145,6 @@ static async Task DiagnosticsRecoveryIsAvailableAsync()
 
     foreach (var marker in new[]
              {
-                 "Content=\"复制诊断报告\"",
                  "Content=\"打开日志目录\"",
                  "Content=\"恢复内置主题\"",
              })
@@ -1140,14 +1153,11 @@ static async Task DiagnosticsRecoveryIsAvailableAsync()
             $"The recovery surface is missing {marker}.");
     }
 
-    Ensure(mainSource.Contains("CopyDiagnosticReport_Click", StringComparison.Ordinal) &&
-           mainSource.Contains("LocalLog.ReadTail", StringComparison.Ordinal) &&
+    Ensure(mainSource.Contains("RefreshDiagnosticsAsync", StringComparison.Ordinal) &&
            mainSource.Contains("RestoreBuiltInThemes_Click", StringComparison.Ordinal) &&
-           mainSource.Contains("TrySetClipboardTextAsync", StringComparison.Ordinal) &&
-           mainSource.Contains("attempt <= 5", StringComparison.Ordinal) &&
-           mainSource.Contains("RedactDiagnosticText(line)", StringComparison.Ordinal) &&
-           mainSource.Contains("%USERPROFILE%", StringComparison.Ordinal),
-        "The diagnostics page must expose a copyable local report and built-in theme recovery.");
+           !mainSource.Contains("CopyDiagnosticReport_Click", StringComparison.Ordinal) &&
+           !xaml.Contains("复制诊断报告", StringComparison.Ordinal),
+        "The diagnostics page must retain local status and recovery without clipboard report actions.");
     Ensure(appSource.Contains("LocalLog.Initialize(layout.DataDirectory)", StringComparison.Ordinal) &&
            appSource.IndexOf("LocalLog.Initialize(layout.DataDirectory)", StringComparison.Ordinal) <
            appSource.IndexOf("new MainWindow(layout)", StringComparison.Ordinal),

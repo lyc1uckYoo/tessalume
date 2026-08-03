@@ -49,7 +49,7 @@ public partial class App : Application, IDisposable
         {
             var layout = PortableLayout.Create();
             LocalLog.Initialize(layout.DataDirectory);
-            _ = StartupRegistration.TryMigrateLegacyRegistration();
+            _ = StartupRegistration.TryCleanLegacyRegistration();
             BuiltInAssetInstaller.EnsureInstalled(layout);
             var mainWindow = new MainWindow(layout);
             MainWindow = mainWindow;

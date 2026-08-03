@@ -2,7 +2,6 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -21,7 +20,6 @@ public partial class MainWindow : Window, IAsyncDisposable
 {
     private const string BuiltInTemplateFolderName = "theme-template-v1";
     private const string CreatorWorkspaceFolderName = "Tessalume-Creator";
-    private const string CreatorPrompt = "请使用 $author-tessalume-theme 为《作品名》的角色名制作一套 Tessalume 主题；先完成角色研究和 11 张素材计划，等我确认后再生成、校验并交付可导入的主题文件夹。";
 
     private enum RightPane
     {
@@ -1034,7 +1032,7 @@ public partial class MainWindow : Window, IAsyncDisposable
         Process.Start(new ProcessStartInfo("explorer.exe", $"\"{path}\"") { UseShellExecute = true });
     }
 
-    private async void PrepareCreatorWorkspace_Click(object sender, RoutedEventArgs e)
+    private void PrepareCreatorWorkspace_Click(object sender, RoutedEventArgs e)
     {
         var dialog = new OpenFolderDialog
         {
@@ -1047,35 +1045,16 @@ public partial class MainWindow : Window, IAsyncDisposable
         {
             var destination = GetAvailableCreatorWorkspacePath(dialog.FolderName);
             BuiltInAssetInstaller.CreateCreatorWorkspace(destination);
-            var promptCopied = await TryCopyCreatorPromptAsync(showSuccessToast: false);
             Process.Start(new ProcessStartInfo("explorer.exe", $"\"{destination}\"") { UseShellExecute = true });
             ShowProductMessage(
                 "Codex 创作工作区已准备",
-                $"工作区已经创建并打开：\n{destination}\n\n请在 Codex 中打开整个文件夹，然后发送一句角色主题需求。" +
-                (promptCopied ? "\n\n示例创作指令已复制到剪贴板。" : string.Empty),
+                $"工作区已经创建并打开：\n{destination}\n\n请在 Codex 中打开整个文件夹，然后参照主题创作页的提示词示例发送角色需求。",
                 ProductDialogKind.Information);
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
         {
             ShowProductMessage("无法创建创作工作区", exception.Message, ProductDialogKind.Error);
         }
-    }
-
-    private async void CopyCreatorPrompt_Click(object sender, RoutedEventArgs e) =>
-        await TryCopyCreatorPromptAsync(showSuccessToast: true);
-
-    private async Task<bool> TryCopyCreatorPromptAsync(bool showSuccessToast)
-    {
-        if (!await TrySetClipboardTextAsync(CreatorPrompt, "无法复制创作指令"))
-        {
-            return false;
-        }
-
-        if (showSuccessToast)
-        {
-            ShowToast("一句话创作指令已复制");
-        }
-        return true;
     }
 
     private static string GetAvailableCreatorWorkspacePath(string parentDirectory)
@@ -1211,80 +1190,6 @@ public partial class MainWindow : Window, IAsyncDisposable
             DiagnosticHealthDot.Fill = (Brush)Resources["Danger"];
         }
         DiagnosticUpdatedText.Text = $"刚刚更新 · {DateTime.Now:HH:mm:ss}";
-    }
-
-    private async void CopyDiagnosticReport_Click(object sender, RoutedEventArgs e)
-    {
-        await RefreshDiagnosticsAsync();
-        var report = new StringBuilder()
-            .AppendLine("Tessalume 诊断报告")
-            .AppendLine(CultureInfo.InvariantCulture, $"生成时间：{DateTimeOffset.Now:yyyy-MM-dd HH:mm:ss zzz}")
-            .AppendLine(CultureInfo.InvariantCulture, $"软件版本：{BrandInfo.VersionLabel}")
-            .AppendLine(CultureInfo.InvariantCulture, $"Windows：{Environment.OSVersion}")
-            .AppendLine(CultureInfo.InvariantCulture, $"进程架构：{System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture}")
-            .AppendLine(CultureInfo.InvariantCulture, $"Codex：{DiagnosticCodexText.Text}")
-            .AppendLine(CultureInfo.InvariantCulture, $"本机端口：{DiagnosticPortText.Text}")
-            .AppendLine(CultureInfo.InvariantCulture, $"主题包：{DiagnosticThemesText.Text}")
-            .AppendLine(CultureInfo.InvariantCulture, $"主题状态：{DiagnosticThemeStateText.Text}")
-            .AppendLine(DiagnosticCurrentThemeText.Text)
-            .AppendLine(CultureInfo.InvariantCulture, $"应用目录：{RedactDiagnosticText(_layout.RootDirectory)}")
-            .AppendLine(CultureInfo.InvariantCulture, $"主题目录：{RedactDiagnosticText(_layout.ThemesDirectory)}")
-            .AppendLine(CultureInfo.InvariantCulture, $"日志目录：{RedactDiagnosticText(LocalLog.LogDirectory)}")
-            .AppendLine()
-            .AppendLine("最近日志：");
-        foreach (var line in LocalLog.ReadTail())
-        {
-            report.AppendLine(RedactDiagnosticText(line));
-        }
-
-        if (await TrySetClipboardTextAsync(report.ToString(), "无法复制诊断报告"))
-        {
-            LocalLog.Write("Diagnostic report copied.");
-            ShowToast("诊断报告已复制，可直接粘贴到问题反馈中");
-        }
-    }
-
-    private async Task<bool> TrySetClipboardTextAsync(string text, string errorTitle)
-    {
-        System.Runtime.InteropServices.ExternalException? lastException = null;
-        for (var attempt = 1; attempt <= 5; attempt++)
-        {
-            try
-            {
-                Clipboard.SetText(text);
-                return true;
-            }
-            catch (System.Runtime.InteropServices.ExternalException exception)
-            {
-                lastException = exception;
-                if (attempt < 5)
-                {
-                    await Task.Delay(80);
-                }
-            }
-        }
-
-        LocalLog.Write($"{errorTitle}: the Windows clipboard remained unavailable.", lastException);
-        ShowProductMessage(errorTitle, lastException?.Message ?? "Windows 剪贴板暂时不可用，请稍后重试。", ProductDialogKind.Error);
-        return false;
-    }
-
-    private static string RedactDiagnosticText(string value)
-    {
-        var replacements = new (string Path, string Token)[]
-        {
-            (Path.GetTempPath().TrimEnd(Path.DirectorySeparatorChar), "%TEMP%"),
-            (Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "%LOCALAPPDATA%"),
-            (Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "%USERPROFILE%"),
-        };
-        foreach (var (path, token) in replacements
-                     .Where(item => !string.IsNullOrWhiteSpace(item.Path))
-                     .DistinctBy(item => item.Path, StringComparer.OrdinalIgnoreCase)
-                     .OrderByDescending(item => item.Path.Length))
-        {
-            value = value.Replace(path, token, StringComparison.OrdinalIgnoreCase);
-        }
-        return value;
     }
 
     private async void RestoreBuiltInThemes_Click(object sender, RoutedEventArgs e)

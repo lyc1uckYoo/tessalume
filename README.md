@@ -2,7 +2,7 @@
 
 面向 Codex Desktop 的开源 Windows 主题工作室。Tessalume 把完整沉浸式主题、亮暗模式、收藏切换、额度信息和本机诊断集中在一个便携应用中；它通过本机回环端口连接 Codex，不修改 Codex 安装包、`app.asar` 或用户数据。
 
-[下载 Tessalume 1.2](https://github.com/lyc1uckYoo/tessalume/releases/latest) · [问题反馈](https://github.com/lyc1uckYoo/tessalume/issues/new?template=bug-report.yml) · [版本记录](CHANGELOG.md) · [主题制作指南](THEMING.md) · [安全与隐私](SECURITY.md)
+[下载 Tessalume 1.2](https://github.com/lyc1uckYoo/tessalume/releases/latest) · [问题反馈](https://github.com/lyc1uckYoo/tessalume/issues/new?template=bug-report.yml) · [版本记录](CHANGELOG.md) · [主题制作指南](THEMING.md) · [安全与隐私](SECURITY.md) · [MIT 许可证](LICENSE)
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/tessalume-dark.png">
@@ -24,8 +24,8 @@
 - **高级图像调节**：首页横幅、左栏人物和聊天背景可分别调整亮度、对比度、饱和度与不透明度；每个主题的亮色和暗色参数独立保存，默认保持原图。
 - **本地主题导入**：可直接选择主题文件夹或 ZIP 压缩包，导入包含 `manifest.json`、`skin.css`、`theme.js` 和本地资源的完整主题；也可以从软件内释放并复制旗舰模板开始制作。
 - **一句话主题创作**：从“主题创作”页准备自包含的 Codex 创作者工作区；在 Codex 中打开后，只需说出作品与角色，即可启动研究、11 张素材规划、制作和契约校验流程。
-- **便携数据与开机启动**：主题、收藏、运行状态和界面设置都保存在 `Tessalume.exe` 旁边；开机启动只写入当前 Windows 用户，不需要管理员权限，并可迁移清理旧品牌启动项。
-- **恢复与诊断**：随时恢复 Codex 默认外观或找回误删的内置主题；诊断页会检查 Codex 进程、本机端口、主题包和当前运行状态，还可一键复制包含最近本地日志的诊断报告。
+- **便携数据与开机启动**：主题、收藏、运行状态和界面设置都保存在 `Tessalume.exe` 旁边；开机启动默认关闭，只有用户主动开启后才写入当前 Windows 用户的启动项，不需要管理员权限。
+- **恢复与诊断**：随时恢复 Codex 默认外观或找回误删的内置主题；诊断页会直接显示 Codex 进程、本机端口、主题包和当前运行状态，并可打开本地日志目录。
 - **单实例续接**：重复运行 `Tessalume.exe` 不会创建第二套后台状态，而是唤起已经运行的主界面。
 - **缩放与键盘操作**：主界面会适应小屏幕和 Windows 高 DPI；可用 `Ctrl+F` 搜索、`Ctrl+I` 导入文件夹、`Ctrl+Shift+I` 导入 ZIP、`F5` 刷新主题库。
 
@@ -92,7 +92,7 @@ Tessalume 的主题运行链路保持在本机：
 
 ![Tessalume 本机运行与诊断](docs/screenshots/tessalume-diagnostics.png)
 
-诊断页区分 Codex 进程、本机端口、有效主题数量、当前主题和包校验结果，便于判断问题发生在主题包、Codex 启动还是本机连接阶段。需要反馈问题时可直接复制诊断报告；日志只保存在 `data/logs/`，超过 1 MiB 后自动轮换，不会上传。误删内置主题时，可在同一页面恢复全部已删除的内置主题，用户导入和自制主题不会受到影响。
+诊断页区分 Codex 进程、本机端口、有效主题数量、当前主题和包校验结果，便于判断问题发生在主题包、Codex 启动还是本机连接阶段。日志只保存在 `data/logs/`，超过 1 MiB 后自动轮换，不会上传；需要排查时可从诊断页打开日志目录。误删内置主题时，可在同一页面恢复全部已删除的内置主题，用户导入和自制主题不会受到影响。
 
 ## 制作与导入主题
 
@@ -148,3 +148,7 @@ docs/screenshots/              Tessalume 实机界面截图
 ```
 
 Tessalume 1.2 的正式发布产物为 `Tessalume.exe` 与对应的 SHA-256 校验文件，不额外要求安装器或 .NET 运行环境。
+
+## 许可证
+
+Tessalume 的程序源码以 [MIT License](LICENSE) 发布。内置角色主题中涉及的第三方作品名称、角色形象与美术素材不因本项目许可证而获得再授权，相关权利归原权利人；使用和再分发者需自行遵守对应授权。

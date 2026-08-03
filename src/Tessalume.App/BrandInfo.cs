@@ -19,7 +19,7 @@ public static class BrandInfo
     public static BitmapImage AppLogo { get; } = LoadImage("png");
     public static string OpenMainWindowTooltip { get; } = "打开 " + ProductName + " 主界面";
     public static string RuntimeSettingsDescription { get; } = "管理 " + ProductName + " 在当前 Windows 用户下的运行方式。";
-    public static string StartupDescription { get; } = "登录 Windows 后自动打开 " + ProductName + "。此项仅写入当前用户的启动项，不需要管理员权限。";
+    public static string StartupDescription { get; } = "默认关闭；只有主动开启后，登录 Windows 才会自动打开 " + ProductName + "。此项仅写入当前用户的启动项，不需要管理员权限。";
     public static string PortableDataDescription { get; } = ProductName + " 不会修改 Codex 安装文件；主题和界面设置都保存在程序旁边的便携目录。";
 
     private static BitmapImage LoadImage(string extension)

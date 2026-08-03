@@ -10,7 +10,7 @@ internal static class StartupRegistration
     private const string LegacyValueName = "CodexThemeStudio";
     private const string StartupArgument = "--startup";
 
-    public static bool TryMigrateLegacyRegistration()
+    public static bool TryCleanLegacyRegistration()
     {
         try
         {
@@ -20,14 +20,6 @@ internal static class StartupRegistration
                 return false;
             }
 
-            var currentCommand = key.GetValue(ValueName) as string;
-            var legacyCommand = key.GetValue(LegacyValueName) as string;
-            if (string.IsNullOrWhiteSpace(currentCommand) && string.IsNullOrWhiteSpace(legacyCommand))
-            {
-                return true;
-            }
-
-            key.SetValue(ValueName, BuildCurrentExecutableCommand(), RegistryValueKind.String);
             key.DeleteValue(LegacyValueName, throwOnMissingValue: false);
             return true;
         }

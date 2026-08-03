@@ -1127,13 +1127,15 @@
                                 <StackPanel Grid.Column="1">
                                     <TextBlock Text="使用 Codex 自动创作主题" Foreground="{DynamicResource PrimaryText}" FontSize="17" FontWeight="SemiBold" />
                                     <TextBlock Text="工作区已经内置 Template 1.0、11 张素材规范和校验脚本。你只需在 Codex 中打开它，并说出作品与角色。" TextWrapping="Wrap" Foreground="{DynamicResource MutedText}" FontSize="10.5" LineHeight="18" Margin="0,7,0,0" />
-                                    <Border Background="{DynamicResource AccentSoft}" BorderBrush="{DynamicResource InfoBorder}" BorderThickness="1" CornerRadius="10" Padding="11,8" Margin="0,11,0,0">
-                                        <TextBlock Text="一句话示例：请为《鸣潮》的椿制作一套 Tessalume 主题。" TextWrapping="Wrap" Foreground="{DynamicResource Accent}" FontSize="9.5" FontWeight="SemiBold" />
+                                    <Border Background="{DynamicResource AccentSoft}" BorderBrush="{DynamicResource InfoBorder}" BorderThickness="1" CornerRadius="10" Padding="12,10" Margin="0,11,0,0">
+                                        <StackPanel>
+                                            <TextBlock Text="提示词示例" Foreground="{DynamicResource Accent}" FontSize="8.5" FontWeight="Bold" />
+                                            <TextBlock Text="请使用 $author-tessalume-theme 为《鸣潮》的椿制作一套 Tessalume 主题；先完成角色研究和 11 张素材计划，等我确认后再生成、校验并交付可导入的主题文件夹。" TextWrapping="Wrap" Foreground="{DynamicResource PrimaryText}" FontSize="9.5" LineHeight="16" Margin="0,5,0,0" />
+                                        </StackPanel>
                                     </Border>
                                 </StackPanel>
                                 <StackPanel Grid.Column="3" VerticalAlignment="Center">
                                     <Button Style="{StaticResource PrimaryActionButton}" Click="PrepareCreatorWorkspace_Click" Content="准备 Codex 创作工作区" Height="40" />
-                                    <Button Style="{StaticResource SecondaryActionButton}" Click="CopyCreatorPrompt_Click" Content="复制一句话创作指令" Margin="0,8,0,0" />
                                     <Button Style="{StaticResource QuietActionButton}" Click="CopyTemplate_Click" Content="仅复制手动模板" Margin="0,8,0,0" />
                                 </StackPanel>
                             </Grid>
@@ -1307,7 +1309,7 @@
                                 <Grid>
                                     <Grid.ColumnDefinitions><ColumnDefinition Width="38" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                                     <Border Width="32" Height="32" CornerRadius="10" Background="{DynamicResource AccentSoft}"><Path Width="16" Height="16" Data="M 12,2 L 12,7 M 7.5,4.5 A 8,8 0 1 0 16.5,4.5" Stroke="{DynamicResource Accent}" StrokeThickness="2" StrokeStartLineCap="Round" Fill="Transparent" Stretch="Uniform" /></Border>
-                                    <StackPanel Grid.Column="1" VerticalAlignment="Center"><TextBlock Text="开机自动启动" Foreground="{DynamicResource PrimaryText}" FontWeight="SemiBold" FontSize="12.5" /><TextBlock Text="登录 Windows 后自动显示主题悬浮窗" Foreground="{DynamicResource MutedText}" FontSize="9" Margin="0,3,12,0" /></StackPanel>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center"><TextBlock Text="开机自动启动" Foreground="{DynamicResource PrimaryText}" FontWeight="SemiBold" FontSize="12.5" /><TextBlock Text="默认关闭；开启后登录 Windows 自动显示主题浮窗" Foreground="{DynamicResource MutedText}" FontSize="9" Margin="0,3,12,0" /></StackPanel>
                                     <CheckBox x:Name="StartupCheckBox" Grid.Column="2" Style="{StaticResource SettingsToggle}" VerticalAlignment="Center" Checked="StartupCheckBox_Changed" Unchecked="StartupCheckBox_Changed" />
                                 </Grid>
                             </Border>
@@ -1389,8 +1391,7 @@
                             <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                             <StackPanel><TextBlock Text="运行与诊断" Style="{StaticResource PageTitleText}" /><TextBlock Text="检查 Codex、主题运行时与本地资源状态，不会访问互联网。" Style="{StaticResource PageDescriptionText}" /></StackPanel>
                             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                <Button Style="{StaticResource QuietActionButton}" Content="复制诊断报告" Click="CopyDiagnosticReport_Click" />
-                                <Button Style="{StaticResource SecondaryActionButton}" Click="Diagnostics_Click" Margin="8,0,0,0">
+                                <Button Style="{StaticResource SecondaryActionButton}" Click="Diagnostics_Click">
                                     <StackPanel Orientation="Horizontal"><Path Width="13" Height="13" Data="M 19,7 L 19,3 L 15,3 M 19,3 C 16.5,1.2 12.8,1.5 10.5,3.2 C 8.7,4.5 7.7,6.4 7.5,8.4 M 5,17 L 5,21 L 9,21 M 5,21 C 7.5,22.8 11.2,22.5 13.5,20.8 C 15.3,19.5 16.3,17.6 16.5,15.6" Stroke="{DynamicResource Accent}" StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Fill="Transparent" Stretch="Uniform" Margin="0,0,7,0" /><TextBlock Text="重新检查" /></StackPanel>
                                 </Button>
                             </StackPanel>

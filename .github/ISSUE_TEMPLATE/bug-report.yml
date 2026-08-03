@@ -50,9 +50,8 @@ body:
   - type: textarea
     id: diagnostics
     attributes:
-      label: 诊断报告
-      description: 在“运行与诊断”页面点击“复制诊断报告”后粘贴；提交前仍请自行检查内容。
-      render: text
+      label: 诊断页状态
+      description: 请填写或截图“运行与诊断”页面显示的 Codex、端口、主题包与当前主题状态。
   - type: textarea
     id: screenshots
     attributes:
@@ -63,5 +62,5 @@ body:
     attributes:
       label: 提交确认
       options:
-        - label: 我已检查报告与截图，不包含账号、令牌或其他敏感信息。
+        - label: 我已检查填写内容与截图，不包含账号、令牌或其他敏感信息。
           required: true
