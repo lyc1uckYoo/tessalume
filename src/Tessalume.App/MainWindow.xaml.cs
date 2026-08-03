@@ -10,7 +10,6 @@ using System.Windows.Threading;
 using Tessalume.App.Infrastructure;
 using Tessalume.App.Models;
 using Tessalume.Core.Runtime;
-using Tessalume.Core.Security;
 using Tessalume.Core.Themes;
 using Microsoft.Win32;
 
@@ -42,7 +41,6 @@ public partial class MainWindow : Window, IAsyncDisposable
     private readonly ObservableCollection<ThemeCardModel> _visibleThemes = [];
     private readonly StudioStateStore _stateStore;
     private readonly UiPreferencesStore _preferencesStore;
-    private readonly ThemeTrustStore _trustStore;
     private readonly LoopbackCdpDiscovery _launcherDiscovery = new();
     private readonly CodexPackageLauncher _launcher;
     private readonly ThemeRuntime _runtime;
@@ -76,12 +74,6 @@ public partial class MainWindow : Window, IAsyncDisposable
     {
         _stateStore = new StudioStateStore(_layout.DataDirectory);
         _preferencesStore = new UiPreferencesStore(_layout.DataDirectory);
-        _trustStore = new ThemeTrustStore(
-            _layout.DataDirectory,
-            Path.Combine(
-                _layout.RootDirectory,
-                "Compatibility",
-                ThemePayloadBuilder.SharedTemplateStyleFileName));
         _launcher = new CodexPackageLauncher(_launcherDiscovery);
         _runtime = new ThemeRuntime(
             new LoopbackCdpDiscovery(),
@@ -180,7 +172,6 @@ public partial class MainWindow : Window, IAsyncDisposable
         }
         await _runtime.DisposeAsync();
         _launcherDiscovery.Dispose();
-        _trustStore.Dispose();
         GC.SuppressFinalize(this);
     }
 
@@ -1076,12 +1067,6 @@ public partial class MainWindow : Window, IAsyncDisposable
         SetBusy(true, "正在连接本机 Codex…");
         try
         {
-            if (!await EnsureTrustedAsync(package))
-            {
-                SetStatus("主题未获授权，Codex 未作改动");
-                return false;
-            }
-
             var state = await _stateStore.LoadAsync();
             var port = state?.Port ?? 0;
             if (port <= 0 || !await _launcher.IsDebugPortReadyAsync(port))
@@ -1942,12 +1927,4 @@ public partial class MainWindow : Window, IAsyncDisposable
 
     private void Runtime_StatusChanged(object? sender, string status) =>
         _ = Dispatcher.InvokeAsync(() => SetStatus(status));
-
-    private async Task<bool> EnsureTrustedAsync(ThemePackage package)
-    {
-        if (await _trustStore.IsTrustedAsync(package)) return true;
-
-        await _trustStore.TrustAsync(package);
-        return true;
-    }
 }

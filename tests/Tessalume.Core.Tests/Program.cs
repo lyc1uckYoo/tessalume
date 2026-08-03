@@ -2,7 +2,6 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using Tessalume.Core.Themes;
 using Tessalume.Core.Runtime;
-using Tessalume.Core.Security;
 
 if (args is ["--probe", var portText] && int.TryParse(portText, out var probePort))
 {
@@ -50,11 +49,6 @@ if (args is ["--apply-package", var packagePortText, var packagePath] &&
     return await ApplyPackageRuntimeAsync(packagePort, packagePath);
 }
 
-if (args is ["--trust-package", var trustDataPath, var trustedPackagePath])
-{
-    return await TrustPackageAsync(trustDataPath, trustedPackagePath);
-}
-
 var tests = new (string Name, Func<Task> Run)[]
 {
     ("valid package loads", ValidPackageLoadsAsync),
@@ -79,8 +73,8 @@ var tests = new (string Name, Func<Task> Run)[]
     ("version 1.2 product workflow is complete", Version12ProductWorkflowIsCompleteAsync),
     ("local importer copies a validated package", LocalImporterCopiesPackageAsync),
     ("bundled adapter builds a complete payload", BundledAdapterBuildsPayloadAsync),
-    ("open advanced template loads and fingerprints", OpenAdvancedTemplateLoadsAndFingerprintsAsync),
-    ("advanced import keeps script and trust follows fingerprint", AdvancedImportAndTrustFollowFingerprintAsync),
+    ("open advanced template loads with a stable revision hash", OpenAdvancedTemplateLoadsWithStableRevisionHashAsync),
+    ("advanced import keeps script and revision hash tracks changes", AdvancedImportKeepsScriptAndTracksChangesAsync),
     ("deferred main UI replays the live engine state", DeferredMainUiReplaysEngineStateAsync),
     ("startup registration migrates the predecessor brand", StartupRegistrationMigratesPredecessorBrandAsync),
     ("startup restores the last theme before first-run random selection", StartupRestoresLastThemeBeforeRandomAsync),
@@ -1016,7 +1010,7 @@ static async Task BundledAdapterBuildsPayloadAsync()
     Ensure(payload.Contains(encodedTitle, StringComparison.Ordinal), "Theme config is missing.");
 }
 
-static async Task OpenAdvancedTemplateLoadsAndFingerprintsAsync()
+static async Task OpenAdvancedTemplateLoadsWithStableRevisionHashAsync()
 {
     var repositoryRoot = FindRepositoryRoot();
     var package = (await new ThemePackageLoader().LoadAsync(
@@ -1032,20 +1026,19 @@ static async Task OpenAdvancedTemplateLoadsAndFingerprintsAsync()
         "Compatibility",
         ThemePayloadBuilder.SharedTemplateStyleFileName);
     var effective = await ThemeFingerprintCalculator.CalculateEffectiveAsync(package, sharedTemplatePath);
-    Ensure(package.IsAdvanced, "Advanced template must require script trust.");
+    Ensure(package.IsAdvanced, "Advanced template must use the scripted lifecycle.");
     Ensure(package.Manifest.Id == "example.template-v1",
         "The root example package must be the Flagship Template 1.0 example.");
     Ensure(payload.Contains("registerTheme", StringComparison.Ordinal), "Advanced lifecycle is missing.");
-    Ensure(first.Length == 64 && first == second, "Theme fingerprint must be stable SHA-256.");
+    Ensure(first.Length == 64 && first == second, "Theme revision hash must be stable SHA-256.");
     Ensure(effective.Length == 64 && effective != first,
-        "Shared themes must include the runtime template stylesheet in their effective fingerprint.");
+        "Shared themes must include the runtime template stylesheet in their effective revision hash.");
 }
 
-static async Task AdvancedImportAndTrustFollowFingerprintAsync()
+static async Task AdvancedImportKeepsScriptAndTracksChangesAsync()
 {
     var repositoryRoot = FindRepositoryRoot();
     var library = Path.Combine(Path.GetTempPath(), $"tessalume-advanced-library-{Guid.NewGuid():N}");
-    var trustData = Path.Combine(Path.GetTempPath(), $"tessalume-trust-{Guid.NewGuid():N}");
     try
     {
         var imported = await new ThemeImporter(new ThemePackageLoader()).ImportAsync(
@@ -1054,28 +1047,18 @@ static async Task AdvancedImportAndTrustFollowFingerprintAsync()
             overwrite: false);
         var scriptPath = imported.ScriptPath ?? throw new InvalidOperationException("Advanced script was not imported.");
         Ensure(File.Exists(scriptPath), "Advanced script was not imported.");
-
-        Directory.CreateDirectory(trustData);
-        var sharedTemplatePath = Path.Combine(
-            repositoryRoot,
-            "src",
-            "Tessalume.App",
-            "Compatibility",
-            ThemePayloadBuilder.SharedTemplateStyleFileName);
-        using var trustStore = new ThemeTrustStore(trustData, sharedTemplatePath);
-        Ensure(!await trustStore.IsTrustedAsync(imported), "Advanced theme must start untrusted.");
-        await trustStore.TrustAsync(imported);
-        Ensure(await trustStore.IsTrustedAsync(imported), "Trusted fingerprint was not remembered.");
+        var initialHash = await ThemeFingerprintCalculator.CalculateAsync(imported);
 
         await File.AppendAllTextAsync(scriptPath, "\n// fingerprint change");
         var changed = (await new ThemePackageLoader().LoadAsync(imported.RootDirectory)).Package
             ?? throw new InvalidOperationException("Changed advanced theme did not reload.");
-        Ensure(!await trustStore.IsTrustedAsync(changed), "Changed script must invalidate prior trust.");
+        var changedHash = await ThemeFingerprintCalculator.CalculateAsync(changed);
+        Ensure(!string.Equals(initialHash, changedHash, StringComparison.Ordinal),
+            "Changing the imported script must update its runtime revision hash.");
     }
     finally
     {
         if (Directory.Exists(library)) Directory.Delete(library, recursive: true);
-        if (Directory.Exists(trustData)) Directory.Delete(trustData, recursive: true);
     }
 }
 
@@ -1192,25 +1175,6 @@ static async Task<int> ApplyPackageRuntimeAsync(int port, string packagePath)
     await runtime.StartAsync(port, package);
     await runtime.StopAsync();
     Console.WriteLine($"Theme applied: {package.Manifest.Id}");
-    return 0;
-}
-
-static async Task<int> TrustPackageAsync(string dataPath, string packagePath)
-{
-    var repositoryRoot = FindRepositoryRoot();
-    var package = (await new ThemePackageLoader().LoadAsync(packagePath)).Package
-        ?? throw new InvalidOperationException("The requested theme package could not be loaded.");
-    Directory.CreateDirectory(dataPath);
-    using var trustStore = new ThemeTrustStore(
-        dataPath,
-        Path.Combine(
-            repositoryRoot,
-            "src",
-            "Tessalume.App",
-            "Compatibility",
-            ThemePayloadBuilder.SharedTemplateStyleFileName));
-    await trustStore.TrustAsync(package);
-    Console.WriteLine($"Theme trusted for local diagnostics: {package.Manifest.Id}");
     return 0;
 }
 

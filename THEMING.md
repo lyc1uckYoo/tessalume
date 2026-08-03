@@ -1,11 +1,11 @@
 # Tessalume 开放主题契约
 
-Tessalume 负责 Codex 启动、本机 CDP、主题加载、资源解析、实时切换、生命周期、信任和故障恢复。仓库内的沉浸式旗舰主题还统一使用 canonical host，避免每个主题重复实现页面注入和路由时序。
+Tessalume 负责 Codex 启动、本机 CDP、主题加载、资源解析、实时切换、生命周期和故障恢复。仓库内的沉浸式旗舰主题还统一使用 canonical host，避免每个主题重复实现页面注入和路由时序。
 
 ## v2 主题格式
 
 - `type` 固定为 `advanced`。
-- 必须提供 `theme.js`，可以另外提供 CSS；首次启用按包指纹确认信任。
+- 必须提供 `theme.js`，可以另外提供 CSS。
 
 Tessalume 不再提供普通 CSS 主题类型。导入成功后，主题直接保存到便携主题库的 `themes/<主题ID>`。
 

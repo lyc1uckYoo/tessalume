@@ -42,8 +42,7 @@ python .agents/skills/author-tessalume-theme/scripts/validate_theme_contract.py 
   --repo-root . themes/my-theme
 ```
 
-主题脚本第一次启用以及文件内容变化后，需要用户按 SHA-256 指纹重新确认
-信任。主题只能使用包内已声明资源，不要加入远程图片、网络请求或本机绝对路径。
+主题只能使用包内已声明资源，不要加入远程图片、网络请求或本机绝对路径。
 
 完整结构与尺寸表见
 `.agents/skills/author-tessalume-theme/references/template-v1.md`。

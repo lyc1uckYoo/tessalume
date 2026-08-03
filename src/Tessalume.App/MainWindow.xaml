@@ -1068,7 +1068,7 @@
                                 </Border>
                                 <StackPanel Grid.Column="1">
                                     <TextBlock Text="导入完整主题包" Foreground="{DynamicResource PrimaryText}" FontSize="17" FontWeight="SemiBold" />
-                                    <TextBlock Text="主题文件夹需要包含清单、样式、运行脚本和资源目录。首次启用或源码变化后，软件会重新请求本地信任确认。" TextWrapping="Wrap" Foreground="{DynamicResource MutedText}" FontSize="10.5" LineHeight="18" Margin="0,7,0,0" />
+                                    <TextBlock Text="主题文件夹需要包含清单、样式、运行脚本和资源目录。软件会在导入前检查结构、路径与本地资源。" TextWrapping="Wrap" Foreground="{DynamicResource MutedText}" FontSize="10.5" LineHeight="18" Margin="0,7,0,0" />
                                     <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
                                         <Border Background="{DynamicResource AccentSoft}" CornerRadius="8" Padding="8,4" Margin="0,0,7,0"><TextBlock Text="manifest.json" Foreground="{DynamicResource Accent}" FontFamily="Consolas" FontSize="8.5" /></Border>
                                         <Border Background="{DynamicResource AccentSoft}" CornerRadius="8" Padding="8,4" Margin="0,0,7,0"><TextBlock Text="skin.css" Foreground="{DynamicResource Accent}" FontFamily="Consolas" FontSize="8.5" /></Border>
