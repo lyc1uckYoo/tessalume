@@ -60,6 +60,7 @@ public partial class MainWindow : Window, IAsyncDisposable
     private bool _updatingStartupSetting;
     private bool _startupInitialized;
     private bool _shutdownRequested;
+    private bool _onboardingCompleted;
     private bool _uiInitialized;
     private bool _mainContentLoaded;
     private bool _editingVisualDarkMode;
@@ -85,8 +86,10 @@ public partial class MainWindow : Window, IAsyncDisposable
                     "theme-runtime-v2.js"),
             }));
 
+        var hadSavedPreferences = _preferencesStore.Exists;
         var preferences = _preferencesStore.Load();
         _darkMode = preferences.DarkMode;
+        _onboardingCompleted = preferences.OnboardingCompleted || hadSavedPreferences;
         _favoriteThemeIds.UnionWith(preferences.FavoriteThemeIds.Where(id => !string.IsNullOrWhiteSpace(id)));
         foreach (var (themeId, settings) in preferences.ThemeVisualSettings)
         {
@@ -128,14 +131,36 @@ public partial class MainWindow : Window, IAsyncDisposable
         _startupInitialized = true;
         await ReloadThemesAsync(loadPreviews: false);
         var state = await _stateStore.LoadAsync();
-        OpenQuickSwitchWindow();
-        if (state is null)
+        if (state is null && !_onboardingCompleted)
         {
-            await ApplyRandomThemeOnStartupAsync();
+            ShowMainInterface();
+            var codexInstalled = await CodexPackageLauncher.IsCodexInstalledAsync();
+            if (!FirstRunWindow.Show(this, _darkMode, codexInstalled))
+            {
+                Close();
+                return;
+            }
+
+            _onboardingCompleted = true;
+            await SavePreferencesAsync();
+            OpenQuickSwitchWindow();
+            SetEngineState("等待选择主题");
+            SetStatus(codexInstalled
+                ? "欢迎使用 Tessalume，请选择喜欢的主题后手动应用"
+                : "可以先浏览主题；应用前请先安装 Windows 版 Codex Desktop");
             return;
         }
 
-        await TryResumeAsync(state);
+        OpenQuickSwitchWindow();
+        if (state is not null)
+        {
+            await TryResumeAsync(state);
+        }
+        else
+        {
+            SetEngineState("Codex 默认外观");
+            SetStatus("请选择主题并手动应用到 Codex");
+        }
     }
 
     private async void MainWindow_Closed(object? sender, EventArgs e)
@@ -426,28 +451,6 @@ public partial class MainWindow : Window, IAsyncDisposable
         {
             SetStatus($"{theme.Name} 已恢复为上次关闭时运行的主题");
         }
-    }
-
-    private async Task<bool> ApplyRandomThemeOnStartupAsync()
-    {
-        var favorites = _themes.Where(theme => theme.IsFavorite && theme.IsValid).ToArray();
-        var candidates = GetQuickSwitchCandidates();
-        if (candidates.Length == 0)
-        {
-            return false;
-        }
-
-        var theme = candidates[Random.Shared.Next(candidates.Length)];
-        SelectTheme(theme);
-        if (_uiInitialized)
-        {
-            StatusText.Text = favorites.Length > 0
-                ? $"已随机选择收藏主题：{theme.Name}"
-                : $"收藏为空，已随机选择主题：{theme.Name}";
-        }
-
-        await ApplyThemeAsync(theme);
-        return true;
     }
 
     private ThemeCardModel[] GetQuickSwitchCandidates()
@@ -1078,7 +1081,17 @@ public partial class MainWindow : Window, IAsyncDisposable
             {
                 if (CodexPackageLauncher.IsCodexRunning())
                 {
-                    SetStatus("正在自动关闭并重启 Codex…");
+                    var confirmed = ShowProductConfirmation(
+                        "需要重新启动 Codex",
+                        "Codex 当前没有可用的主题连接。为了应用所选主题，需要关闭并重新启动 Codex。\n\n请先保存正在编辑的内容并确认当前任务可以中断。",
+                        "已保存，重新启动");
+                    if (!confirmed)
+                    {
+                        SetStatus("已取消应用，Codex 保持当前状态");
+                        return false;
+                    }
+
+                    SetStatus("正在关闭并重新启动 Codex…");
                     await CodexPackageLauncher.CloseCodexAsync();
                 }
 
@@ -1505,6 +1518,7 @@ public partial class MainWindow : Window, IAsyncDisposable
     private Task SavePreferencesAsync() => _preferencesStore.SaveAsync(new UiPreferences
     {
         DarkMode = _darkMode,
+        OnboardingCompleted = _onboardingCompleted,
         FavoriteThemeIds = _favoriteThemeIds.Order(StringComparer.OrdinalIgnoreCase).ToList(),
         ThemeVisualSettings = _themeVisualSettings.ToDictionary(
             pair => pair.Key,
@@ -1855,8 +1869,11 @@ public partial class MainWindow : Window, IAsyncDisposable
         }
     }
 
-    private Window ProductDialogOwner =>
-        _quickSwitchWindow is { IsVisible: true } ? _quickSwitchWindow : this;
+    private Window ProductDialogOwner => IsVisible
+        ? this
+        : _quickSwitchWindow is { IsVisible: true }
+            ? _quickSwitchWindow
+            : this;
 
     private bool ShowProductConfirmation(
         string title,

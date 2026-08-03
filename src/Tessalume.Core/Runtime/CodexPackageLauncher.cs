@@ -12,6 +12,23 @@ public sealed class CodexPackageLauncher(LoopbackCdpDiscovery discovery)
 {
     public static bool IsCodexRunning() => Process.GetProcessesByName("ChatGPT").Length > 0;
 
+    public static async Task<bool> IsCodexInstalledAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            _ = await FindAppUserModelIdAsync(cancellationToken);
+            return true;
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     public static int FindFreePort()
     {
         for (var port = 9340; port <= 9399; port++)

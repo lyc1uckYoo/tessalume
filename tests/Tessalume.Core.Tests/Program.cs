@@ -77,7 +77,7 @@ var tests = new (string Name, Func<Task> Run)[]
     ("advanced import keeps script and revision hash tracks changes", AdvancedImportKeepsScriptAndTracksChangesAsync),
     ("deferred main UI replays the live engine state", DeferredMainUiReplaysEngineStateAsync),
     ("startup registration migrates the predecessor brand", StartupRegistrationMigratesPredecessorBrandAsync),
-    ("startup restores the last theme before first-run random selection", StartupRestoresLastThemeBeforeRandomAsync),
+    ("first-run onboarding never applies a random theme", FirstRunOnboardingNeverAppliesRandomThemeAsync),
     ("build script launches the published executable by default", BuildScriptLaunchesPublishedExecutableAsync),
 };
 
@@ -376,7 +376,7 @@ static async Task StartupRegistrationMigratesPredecessorBrandAsync()
         "The settings checkbox and toolbar startup button must share one current registry state.");
 }
 
-static async Task StartupRestoresLastThemeBeforeRandomAsync()
+static async Task FirstRunOnboardingNeverAppliesRandomThemeAsync()
 {
     var repositoryRoot = FindRepositoryRoot();
     var source = await File.ReadAllTextAsync(Path.Combine(
@@ -384,6 +384,11 @@ static async Task StartupRestoresLastThemeBeforeRandomAsync()
         "src",
         "Tessalume.App",
         "MainWindow.xaml.cs"));
+    var onboardingXaml = await File.ReadAllTextAsync(Path.Combine(
+        repositoryRoot,
+        "src",
+        "Tessalume.App",
+        "FirstRunWindow.xaml"));
     var startupStart = source.IndexOf("internal async Task StartInQuickModeAsync()", StringComparison.Ordinal);
     var startupEnd = startupStart < 0
         ? -1
@@ -392,16 +397,24 @@ static async Task StartupRestoresLastThemeBeforeRandomAsync()
         "Quick-mode startup must remain a distinct testable block.");
     var startupBlock = source[startupStart..startupEnd];
     var loadStateIndex = startupBlock.IndexOf("var state = await _stateStore.LoadAsync();", StringComparison.Ordinal);
-    var firstRunIndex = startupBlock.IndexOf("if (state is null)", StringComparison.Ordinal);
-    var randomIndex = startupBlock.IndexOf("await ApplyRandomThemeOnStartupAsync();", StringComparison.Ordinal);
+    var firstRunIndex = startupBlock.IndexOf("if (state is null && !_onboardingCompleted)", StringComparison.Ordinal);
+    var onboardingIndex = startupBlock.IndexOf("FirstRunWindow.Show", StringComparison.Ordinal);
     var resumeIndex = startupBlock.IndexOf("await TryResumeAsync(state);", StringComparison.Ordinal);
-    Ensure(loadStateIndex >= 0 && firstRunIndex > loadStateIndex && randomIndex > firstRunIndex && resumeIndex > randomIndex,
-        "Startup must restore saved state and reserve random selection for a missing first-run state.");
-    Ensure(!startupBlock.Contains("if (!await ApplyRandomThemeOnStartupAsync())", StringComparison.Ordinal),
-        "Startup must not randomize before attempting to restore the saved theme.");
+    Ensure(loadStateIndex >= 0 && firstRunIndex > loadStateIndex && onboardingIndex > firstRunIndex && resumeIndex > onboardingIndex,
+        "Startup must show onboarding before resuming an existing theme state.");
+    Ensure(!source.Contains("ApplyRandomThemeOnStartupAsync", StringComparison.Ordinal) &&
+           !source.Contains("Random.Shared", StringComparison.Ordinal),
+        "First-run startup must never choose or apply a random theme.");
+    Ensure(source.Contains("需要重新启动 Codex", StringComparison.Ordinal) &&
+           source.Contains("ShowProductConfirmation", StringComparison.Ordinal),
+        "Restarting an existing Codex session must require an explicit confirmation.");
+    Ensure(onboardingXaml.Contains("首次启动不会自动换肤", StringComparison.Ordinal) &&
+           onboardingXaml.Contains("进入主题库", StringComparison.Ordinal) &&
+           onboardingXaml.Contains("必要时重新连接", StringComparison.Ordinal),
+        "The first-run window must explain choice, restart behavior, and the next action.");
     Ensure(source.Contains("private ThemeCardModel[] GetQuickSwitchCandidates()", StringComparison.Ordinal) &&
            source.Contains("GetQuickSwitchCandidates());", StringComparison.Ordinal),
-        "Random startup and quick switching must share the dynamic favorites-first candidate rule.");
+        "Quick switching must retain the dynamic favorites-first candidate rule.");
 }
 
 static async Task BuildScriptLaunchesPublishedExecutableAsync()
