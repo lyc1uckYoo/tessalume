@@ -2,7 +2,7 @@
 
 面向 Codex Desktop 的开源 Windows 主题工作室。Tessalume 把完整沉浸式主题、亮暗模式、收藏切换、额度信息和本机诊断集中在一个便携应用中；它通过本机回环端口连接 Codex，不修改 Codex 安装包、`app.asar` 或用户数据。
 
-[下载 Tessalume 1.1](https://github.com/lyc1uckYoo/tessalume/releases/latest) · [主题制作指南](THEMING.md) · [旗舰主题模板 1.0](examples/README.md)
+[下载 Tessalume 1.2](https://github.com/lyc1uckYoo/tessalume/releases/latest) · [版本记录](CHANGELOG.md) · [主题制作指南](THEMING.md) · [旗舰主题模板 1.0](examples/README.md)
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/tessalume-dark.png">
@@ -10,14 +10,15 @@
   <img alt="Tessalume 主题画廊" src="docs/screenshots/tessalume-light.png">
 </picture>
 
-## Tessalume 1.1
+## Tessalume 1.2
 
-1.1 完成了 Tessalume 品牌与工程结构的完整迁移，并把内置主题扩充到 8 款。本版本同时修正主题引擎状态显示、自启动迁移和主题热切换生命周期：软件可实时换肤时，主界面会同步显示真实运行状态；旧版 `CodexThemeStudio` 自启动项会自动迁移并清理；切换主题时先准备新资源，再安全替换旧运行时，减少组件延迟出现和旧主题残留。
+1.2 把 Tessalume 从主题工具进一步整理为一致的产品工作台：主题画廊支持按名称、作者、ID 和亮暗能力搜索筛选；确认弹窗、错误说明与操作完成提示采用统一视觉；新增“关于与数据”页面，集中显示版本、便携目录和本地主题状态。高级图像调节继续按主题、区域和 Codex 亮暗模式独立保存，默认展示原图。
 
 ## 主要功能
 
 - **完整主题画廊**：统一管理角色横幅、聊天背景、消息框、卡片、输入框挂件和专属动效，不只是替换颜色。
-- **八套内置旗舰主题**：8 款主题全部随 EXE 发布，均支持亮色和暗色，并遵循同一套 Template 1.0 结构、自适应规则与运行时契约。
+- **十套内置旗舰主题**：10 款主题全部随 EXE 发布，均支持亮色和暗色，并遵循同一套 Template 1.0 结构、自适应规则与运行时契约。
+- **主题搜索与筛选**：可按名称、说明、作者或主题 ID 搜索，并按亮色/暗色支持能力快速筛选主题与收藏。
 - **收藏与快速切换**：收藏喜欢的主题，在主界面或顶部浮窗中直接切换；恢复默认外观后，也可以一键回到刚才使用的主题。
 - **Codex 明暗模式控制**：Tessalume 自身和 Codex 的亮暗模式分别控制，浮窗会显示 Codex 当前状态。
 - **高级图像调节**：首页横幅、左栏人物和聊天背景可分别调整亮度、对比度、饱和度与不透明度；每个主题的亮色和暗色参数独立保存，默认保持原图。
@@ -46,15 +47,17 @@ Tessalume 默认以顶部浮窗开始工作。浮窗常驻屏幕上方，不遮�
 | 主题 | 包 ID | 亮暗形态与主题特征 |
 |---|---|---|
 | 爱弥斯 · 星海远航 | `aemeath.star-voyage` | 星炬学院晨光 / 隧者核心深空，包含机制同步面板与专属长剑「永远的启明星」 |
+| 卡提希娅 · 风潮双冕 | `cartethyia.gale-tide-crown` | 游侠逐风 / 芙露德莉斯解放形态，以风潮王冠、三柄剑影、黑潮荆棘和鸢尾花瓣构成双形态组件 |
 | 达妮娅 · 泡影虚阈 | `danya.bubble-void-duality` | 泡泡剧场伪装形态 / 寂静虚阈真形，保留双形态角色组件与专属动效 |
 | 绯雪 · 常世预见 | `hiyuki.crimson-snow` | 晨雪守愿 / 冰蓝预见，包含愿望档案、常世与预见双卡、预见铃阵及迅刀「霙霜」 |
+| 尤诺 · 月弦逆命 | `iuno.moonbow-defiance` | 新月月弓 / 弦月月环，以四方殿星历、月相历盘与逆写命运构成完整视觉系统 |
 | 清宵 · 云门剑境 | `qingxiao.cloudsword-gate` | 行剑云关 / 抚弦布阵，包含天地弦心剑、万剑归弦、云门剑痕消息框与玉案记忆组件 |
 | 守岸人 · 泰缇斯回响 | `shorekeeper.tethys-reverie` | 镜海晨曦 / 概率之海，包含潮汐演算、双卡交替与专武「星序协响」 |
 | 穗穗 · 朝晖山水卷 | `suisui.inkscape-dawn` | 朝晖山河长卷 / 夜色水墨境，包含栖霞饮露扇、重明双卡、昆明记忆水镜与流金消息框 |
 | 心 · 朝月孤城 | `xin.moonfox-sovereign` | 白玉云宫 / 赤月黑城，人形与白狐本体、红玉岁序结界和双角色卡交替动效 |
 | 秧秧 · 苍翎远音 | `yangyang.xuanling-echo` | 温柔清雪 / 玄方夜战，包含苍翎六音、苍剑与翎剑式、秧秧和玄翎鸟双卡及风轨动效 |
 
-8 款内置主题的主题包版本与旗舰模板契约均为 `1.0`，同时支持亮色与暗色。程序根据 Tessalume 当前模式自动使用对应预览，应用后可以直接在浮窗中切换 Codex 明暗形态。
+10 款内置主题的主题包版本与旗舰模板契约均为 `1.0`，同时支持亮色与暗色。程序根据 Tessalume 当前模式自动使用对应预览，应用后可以直接在浮窗中切换 Codex 明暗形态。
 
 ## 下载与使用
 
@@ -73,7 +76,7 @@ Tessalume 默认以顶部浮窗开始工作。浮窗常驻屏幕上方，不遮�
 5. Tessalume 会优先从收藏主题中随机选择一个启动；收藏为空时从全部有效主题中选择。需要建立本机调试连接时，程序会使用 `127.0.0.1` 上的 `9340–9399` 端口启动或重新启动 Codex。
 6. 在主界面选择主题并点击“启动 Codex 并应用”，之后即可通过浮窗实时切换。
 
-发布页同时提供 `SHA256SUMS.txt`，可用于核对下载的 EXE。Tessalume 1.1 当前面向安装了 Windows 版 Codex Desktop 的 x64 系统。
+发布页同时提供 `SHA256SUMS.txt`，可用于核对下载的 EXE。Tessalume 1.2 当前面向安装了 Windows 版 Codex Desktop 的 x64 系统。
 
 ## 本机运行与安全边界
 
@@ -130,11 +133,11 @@ src/Tessalume.App       WPF 主界面、顶部浮窗与本机适配
 src/Tessalume.Core      主题加载、校验、Codex 启动与 CDP 运行时
 tests/                         无外部测试框架的自动检查
 schemas/                       主题包 JSON Schema
-themes/<主题目录>/             8 款内置旗舰主题源码
+themes/<主题目录>/             10 款内置旗舰主题源码
 examples/                      可直接复制的旗舰主题模板 1.0
 .agents/skills/                主题创作规范、脚手架与契约校验
 docs/screenshots/              Tessalume 实机界面截图
 一键构建EXE.ps1               还原、测试、优化与发布入口
 ```
 
-Tessalume 1.1 的正式发布产物为 `Tessalume.exe` 与对应的 SHA-256 校验文件，不额外要求安装器或 .NET 运行环境。
+Tessalume 1.2 的正式发布产物为 `Tessalume.exe` 与对应的 SHA-256 校验文件，不额外要求安装器或 .NET 运行环境。

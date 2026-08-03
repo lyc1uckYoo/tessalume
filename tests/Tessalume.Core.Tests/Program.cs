@@ -76,6 +76,7 @@ var tests = new (string Name, Func<Task> Run)[]
     ("flagship template v1 freezes shared structure", FlagshipTemplateV1FreezesSharedStructureAsync),
     ("artwork adjustments are runtime-owned", ArtworkAdjustmentsAreRuntimeOwnedAsync),
     ("main product surfaces share the design system", MainProductSurfacesShareDesignSystemAsync),
+    ("version 1.2 product workflow is complete", Version12ProductWorkflowIsCompleteAsync),
     ("local importer copies a validated package", LocalImporterCopiesPackageAsync),
     ("bundled adapter builds a complete payload", BundledAdapterBuildsPayloadAsync),
     ("open advanced template loads and fingerprints", OpenAdvancedTemplateLoadsAndFingerprintsAsync),
@@ -919,6 +920,49 @@ static async Task MainProductSurfacesShareDesignSystemAsync()
     Ensure(!cardModel.Contains("BUILT-IN", StringComparison.Ordinal) &&
            !cardModel.Contains("LOCAL", StringComparison.Ordinal),
         "Chinese product surfaces should not fall back to legacy English theme badges.");
+}
+
+static async Task Version12ProductWorkflowIsCompleteAsync()
+{
+    var repositoryRoot = FindRepositoryRoot();
+    var appRoot = Path.Combine(repositoryRoot, "src", "Tessalume.App");
+    var xaml = await File.ReadAllTextAsync(Path.Combine(appRoot, "MainWindow.xaml"));
+    var source = await File.ReadAllTextAsync(Path.Combine(appRoot, "MainWindow.xaml.cs"));
+    var dialogXaml = await File.ReadAllTextAsync(Path.Combine(appRoot, "ProductDialogWindow.xaml"));
+    var dialogSource = await File.ReadAllTextAsync(Path.Combine(appRoot, "ProductDialogWindow.xaml.cs"));
+    var project = await File.ReadAllTextAsync(Path.Combine(appRoot, "Tessalume.App.csproj"));
+    var readme = await File.ReadAllTextAsync(Path.Combine(repositoryRoot, "README.md"));
+
+    foreach (var marker in new[]
+             {
+                 "x:Name=\"ThemeSearchBox\"",
+                 "x:Name=\"AllThemesFilterButton\"",
+                 "x:Name=\"LightThemesFilterButton\"",
+                 "x:Name=\"DarkThemesFilterButton\"",
+                 "x:Name=\"ThemeResultText\"",
+                 "x:Name=\"ToastPanel\"",
+                 "x:Name=\"AboutInfoPanel\"",
+                 "x:Name=\"AboutLibrarySummaryText\"",
+             })
+    {
+        Ensure(xaml.Contains(marker, StringComparison.Ordinal), $"The 1.2 interface is missing {marker}.");
+    }
+
+    Ensure(source.Contains("ApplyThemeLibraryFilter", StringComparison.Ordinal) &&
+           source.Contains("ShowProductConfirmation", StringComparison.Ordinal) &&
+           source.Contains("ShowToast", StringComparison.Ordinal) &&
+           !source.Contains("MessageBox.Show", StringComparison.Ordinal),
+        "The main interface must use searchable filtering and unified in-product feedback.");
+    Ensure(dialogXaml.Contains("DialogAccentBrush", StringComparison.Ordinal) &&
+           dialogXaml.Contains("IsDefault=\"True\"", StringComparison.Ordinal) &&
+           dialogXaml.Contains("IsCancel=\"True\"", StringComparison.Ordinal) &&
+           dialogSource.Contains("CancelButton.IsDefault = true", StringComparison.Ordinal),
+        "The product dialog must support consistent styling and keyboard-safe confirmation.");
+    Ensure(project.Contains("<Version>1.2.0</Version>", StringComparison.Ordinal) &&
+           readme.Contains("## Tessalume 1.2", StringComparison.Ordinal) &&
+           readme.Contains("十套内置旗舰主题", StringComparison.Ordinal) &&
+           File.Exists(Path.Combine(repositoryRoot, "CHANGELOG.md")),
+        "Version metadata and release documentation must agree on Tessalume 1.2.");
 }
 
 static async Task LocalImporterCopiesPackageAsync()

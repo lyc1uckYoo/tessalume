@@ -516,6 +516,41 @@
             <Setter Property="Padding" Value="12,0" />
             <Setter Property="FontSize" Value="9.5" />
         </Style>
+        <Style x:Key="SearchTextBox" TargetType="TextBox">
+            <Setter Property="Height" Value="38" />
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryText}" />
+            <Setter Property="Background" Value="{DynamicResource Surface}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Border}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="FontSize" Value="10.5" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="CaretBrush" Value="{DynamicResource Accent}" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="SearchChrome" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="12">
+                            <ScrollViewer x:Name="PART_ContentHost" Margin="34,0,34,0" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="SearchChrome" Property="BorderBrush" Value="{DynamicResource Accent}" />
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="SearchChrome" Property="BorderBrush" Value="{DynamicResource Accent}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="FilterChipButton" TargetType="Button" BasedOn="{StaticResource RoundButton}">
+            <Setter Property="Height" Value="34" />
+            <Setter Property="MinWidth" Value="58" />
+            <Setter Property="Padding" Value="12,0" />
+            <Setter Property="FontSize" Value="9.5" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
         <Style x:Key="MetricValueText" TargetType="TextBlock">
             <Setter Property="Foreground" Value="{DynamicResource PrimaryText}" />
             <Setter Property="FontSize" Value="18" />
@@ -585,6 +620,12 @@
                         <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="27" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
                             <Path Style="{StaticResource NavIcon}" Data="M 4,6 L 20,6 M 4,12 L 20,12 M 4,18 L 20,18 M 8,3 L 8,9 M 16,9 L 16,15 M 10,15 L 10,21" />
                             <TextBlock Grid.Column="1" Text="个性化设置" VerticalAlignment="Center" />
+                        </Grid>
+                    </Button>
+                    <Button x:Name="AboutButton" Style="{StaticResource NavButton}" Click="About_Click">
+                        <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="27" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                            <Path Style="{StaticResource NavIcon}" Data="M 12,21 A 9,9 0 1 1 12,3 A 9,9 0 1 1 12,21 M 12,10 L 12,17 M 12,7 L 12,7" />
+                            <TextBlock Grid.Column="1" Text="关于与数据" VerticalAlignment="Center" />
                         </Grid>
                     </Button>
                     <Button Style="{StaticResource NavButton}" Click="RestoreTheme_Click">
@@ -716,6 +757,42 @@
             </Border>
 
             <Grid Grid.Row="4">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="12" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="280" />
+                        <ColumnDefinition Width="14" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Grid>
+                        <TextBox x:Name="ThemeSearchBox" Style="{StaticResource SearchTextBox}" TextChanged="ThemeSearchBox_TextChanged"
+                                 AutomationProperties.Name="搜索主题" ToolTip="按主题名称、说明、作者或 ID 搜索" />
+                        <Path Width="13" Height="13" HorizontalAlignment="Left" Margin="12,0,0,0" IsHitTestVisible="False"
+                              Data="M 10.5,10.5 L 16,16 M 9,14 A 5,5 0 1 1 9,4 A 5,5 0 1 1 9,14"
+                              Stroke="{DynamicResource MutedText}" StrokeThickness="1.7" StrokeStartLineCap="Round" Fill="Transparent" />
+                        <TextBlock x:Name="ThemeSearchPlaceholder" Text="搜索名称、作者或主题 ID" Foreground="{DynamicResource SubtleText}"
+                                   FontSize="10.5" VerticalAlignment="Center" Margin="34,0,34,0" IsHitTestVisible="False" />
+                        <Button x:Name="ClearThemeSearchButton" Content="×" Width="25" Height="25" HorizontalAlignment="Right" Margin="0,0,6,0"
+                                Visibility="Collapsed" Style="{StaticResource QuietActionButton}" Padding="0" FontSize="14"
+                                ToolTip="清除搜索" AutomationProperties.Name="清除主题搜索" Click="ClearThemeSearch_Click" />
+                    </Grid>
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Button x:Name="AllThemesFilterButton" Style="{StaticResource FilterChipButton}" Content="全部" Tag="all" Click="ThemeFilter_Click" />
+                        <Button x:Name="LightThemesFilterButton" Style="{StaticResource FilterChipButton}" Content="亮色" Tag="light" Margin="7,0,0,0" Click="ThemeFilter_Click" />
+                        <Button x:Name="DarkThemesFilterButton" Style="{StaticResource FilterChipButton}" Content="暗色" Tag="dark" Margin="7,0,0,0" Click="ThemeFilter_Click" />
+                    </StackPanel>
+                    <TextBlock x:Name="ThemeResultText" Grid.Column="4" Text="显示全部主题" Foreground="{DynamicResource MutedText}"
+                               FontSize="9.5" VerticalAlignment="Center" HorizontalAlignment="Right" />
+                </Grid>
+
+                <Grid Grid.Row="2">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,2,0,10">
                     <ItemsControl x:Name="ThemeItems">
                         <ItemsControl.ItemsPanel>
@@ -911,6 +988,7 @@
                                 HorizontalAlignment="Center" MinWidth="132" Height="38" Margin="0,18,0,0" />
                     </StackPanel>
                 </Border>
+                </Grid>
             </Grid>
 
             <Border x:Name="SelectionDock" Grid.Row="6" Height="84" Background="{DynamicResource SurfaceElevated}" BorderBrush="{DynamicResource Border}"
@@ -1224,6 +1302,69 @@
                         </Grid>
                     </StackPanel>
 
+                    <StackPanel x:Name="AboutInfoPanel" Visibility="Collapsed" VerticalAlignment="Top" Margin="0,0,0,4">
+                        <Grid>
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="关于 Tessalume" Style="{StaticResource PageTitleText}" />
+                                <TextBlock Text="查看当前版本、1.2 更新重点与便携数据位置。" Style="{StaticResource PageDescriptionText}" />
+                            </StackPanel>
+                            <Border Grid.Column="1" Background="{DynamicResource AccentSoft}" BorderBrush="{DynamicResource Accent}" BorderThickness="1" CornerRadius="11" Padding="12,6" VerticalAlignment="Center">
+                                <TextBlock Text="{x:Static local:BrandInfo.VersionLabel}" Foreground="{DynamicResource Accent}" FontSize="10" FontWeight="SemiBold" />
+                            </Border>
+                        </Grid>
+
+                        <Border Style="{StaticResource ProductCard}" Margin="0,20,0,0" Padding="22">
+                            <Grid>
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="72" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                                <Border Width="60" Height="60" CornerRadius="18" Background="{DynamicResource PrimaryGradient}" VerticalAlignment="Center">
+                                    <Image Width="48" Height="48" Source="{x:Static local:BrandInfo.AppLogo}" Stretch="Uniform" />
+                                </Border>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="4,0,20,0">
+                                    <TextBlock Text="{x:Static local:BrandInfo.ProductName}" Foreground="{DynamicResource PrimaryText}" FontSize="20" FontWeight="SemiBold" />
+                                    <TextBlock Text="万棱流光 · Codex Desktop 主题工作室" Foreground="{DynamicResource MutedText}" FontSize="10.5" Margin="0,5,0,0" />
+                                    <TextBlock Text="本机运行 · 便携数据 · 不修改 Codex 安装文件" Foreground="{DynamicResource Teal}" FontSize="9.5" FontWeight="SemiBold" Margin="0,9,0,0" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                    <TextBlock Text="当前版本" Style="{StaticResource MetricLabelText}" HorizontalAlignment="Right" />
+                                    <TextBlock Text="{x:Static local:BrandInfo.VersionLabel}" Style="{StaticResource MetricValueText}" FontSize="19" Margin="0,4,0,0" HorizontalAlignment="Right" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <TextBlock Text="1.2 版本亮点" Style="{StaticResource SectionEyebrowText}" Margin="2,22,0,0" />
+                        <Grid Margin="0,10,0,0">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="12" /><ColumnDefinition Width="*" /><ColumnDefinition Width="12" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                            <Border Style="{StaticResource InsetCard}" Background="{DynamicResource AccentSoft}" BorderBrush="{DynamicResource InfoBorder}" Padding="16">
+                                <StackPanel><TextBlock Text="⌕" Foreground="{DynamicResource Accent}" FontSize="20" FontWeight="SemiBold" /><TextBlock Text="更快找到主题" Foreground="{DynamicResource PrimaryText}" FontSize="12" FontWeight="SemiBold" Margin="0,9,0,0" /><TextBlock Text="按名称、作者、ID 与亮暗能力搜索筛选。" Foreground="{DynamicResource MutedText}" FontSize="9" TextWrapping="Wrap" LineHeight="15" Margin="0,5,0,0" /></StackPanel>
+                            </Border>
+                            <Border Grid.Column="2" Style="{StaticResource InsetCard}" Background="{DynamicResource SkySoft}" BorderBrush="{DynamicResource InfoBorder}" Padding="16">
+                                <StackPanel><TextBlock Text="✓" Foreground="{DynamicResource Sky}" FontSize="19" FontWeight="SemiBold" /><TextBlock Text="统一操作反馈" Foreground="{DynamicResource PrimaryText}" FontSize="12" FontWeight="SemiBold" Margin="0,9,0,0" /><TextBlock Text="确认弹窗、错误说明与完成提示使用同一视觉语言。" Foreground="{DynamicResource MutedText}" FontSize="9" TextWrapping="Wrap" LineHeight="15" Margin="0,5,0,0" /></StackPanel>
+                            </Border>
+                            <Border Grid.Column="4" Style="{StaticResource InsetCard}" Background="{DynamicResource TealSoft}" BorderBrush="{DynamicResource InfoBorder}" Padding="16">
+                                <StackPanel><TextBlock Text="◐" Foreground="{DynamicResource Teal}" FontSize="19" FontWeight="SemiBold" /><TextBlock Text="成熟工作台体验" Foreground="{DynamicResource PrimaryText}" FontSize="12" FontWeight="SemiBold" Margin="0,9,0,0" /><TextBlock Text="亮暗模式、主题状态与高级图像参数保持联动。" Foreground="{DynamicResource MutedText}" FontSize="9" TextWrapping="Wrap" LineHeight="15" Margin="0,5,0,0" /></StackPanel>
+                            </Border>
+                        </Grid>
+
+                        <Border Style="{StaticResource ProductCard}" Margin="0,14,0,0" Padding="18">
+                            <StackPanel>
+                                <Grid>
+                                    <StackPanel><TextBlock Text="便携数据与本机目录" Foreground="{DynamicResource PrimaryText}" FontSize="13" FontWeight="SemiBold" /><TextBlock Text="所有个性化内容都可以在这里找到。" Foreground="{DynamicResource MutedText}" FontSize="9.5" Margin="0,4,0,0" /></StackPanel>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                        <Button Style="{StaticResource QuietActionButton}" Content="打开程序目录" Click="OpenRootDirectory_Click" />
+                                        <Button Style="{StaticResource SecondaryActionButton}" Content="打开数据目录" Margin="8,0,0,0" Click="OpenDataDirectory_Click" />
+                                    </StackPanel>
+                                </Grid>
+                                <Grid Margin="0,14,0,0">
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="12" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                    <Border Style="{StaticResource InsetCard}" Padding="13"><StackPanel><TextBlock Text="程序目录" Style="{StaticResource MetricLabelText}" /><TextBlock x:Name="AboutRootText" Text="—" Foreground="{DynamicResource PrimaryText}" FontFamily="Consolas" FontSize="9.5" TextTrimming="CharacterEllipsis" Margin="0,5,0,0" ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}" /></StackPanel></Border>
+                                    <Border Grid.Column="2" Style="{StaticResource InsetCard}" Padding="13"><StackPanel><TextBlock Text="数据目录" Style="{StaticResource MetricLabelText}" /><TextBlock x:Name="AboutDataText" Text="—" Foreground="{DynamicResource PrimaryText}" FontFamily="Consolas" FontSize="9.5" TextTrimming="CharacterEllipsis" Margin="0,5,0,0" ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}" /></StackPanel></Border>
+                                </Grid>
+                                <TextBlock x:Name="AboutLibrarySummaryText" Text="正在读取本地主题与收藏信息…" Foreground="{DynamicResource MutedText}" FontSize="9.5" Margin="1,11,0,0" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
                     <StackPanel x:Name="DiagnosticsInfoPanel" Visibility="Collapsed" VerticalAlignment="Top" Margin="0,0,0,4">
                         <Grid>
                             <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
@@ -1277,5 +1418,19 @@
                 </Grid>
             </ScrollViewer>
         </Grid>
+
+        <Border x:Name="ToastPanel" Grid.Column="1" Panel.ZIndex="100" Visibility="Collapsed" Opacity="0"
+                HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,28,24" MinWidth="280" MaxWidth="430"
+                Background="{DynamicResource SurfaceElevated}" BorderBrush="{DynamicResource Border}" BorderThickness="1"
+                CornerRadius="14" Padding="14,12" Effect="{StaticResource SelectedCardShadow}" IsHitTestVisible="False">
+            <Grid>
+                <Grid.ColumnDefinitions><ColumnDefinition Width="24" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                <Border Width="20" Height="20" CornerRadius="10" Background="{DynamicResource AccentSoft}" VerticalAlignment="Top">
+                    <TextBlock x:Name="ToastIconText" Text="✓" Foreground="{DynamicResource Accent}" FontSize="11" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+                <TextBlock x:Name="ToastText" Grid.Column="1" Text="操作已完成" Foreground="{DynamicResource PrimaryText}" FontSize="10.5"
+                           TextWrapping="Wrap" LineHeight="17" Margin="7,1,0,0" />
+            </Grid>
+        </Border>
     </Grid>
 </Window>

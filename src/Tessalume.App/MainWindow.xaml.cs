@@ -27,6 +27,14 @@ public partial class MainWindow : Window, IAsyncDisposable
         UsageGuide,
         Settings,
         Diagnostics,
+        About,
+    }
+
+    private enum ThemeLibraryFilter
+    {
+        All,
+        Light,
+        Dark,
     }
 
     private readonly PortableLayout _layout = PortableLayout.Create();
@@ -58,7 +66,10 @@ public partial class MainWindow : Window, IAsyncDisposable
     private bool _mainContentLoaded;
     private bool _editingVisualDarkMode;
     private bool _updatingVisualControls;
+    private ThemeLibraryFilter _themeLibraryFilter;
+    private string _themeSearchQuery = string.Empty;
     private DispatcherTimer? _visualSettingsDebounce;
+    private DispatcherTimer? _toastTimer;
     private RightPane _rightPane = RightPane.Themes;
 
     public MainWindow()
@@ -109,6 +120,11 @@ public partial class MainWindow : Window, IAsyncDisposable
             Interval = TimeSpan.FromMilliseconds(140),
         };
         _visualSettingsDebounce.Tick += VisualSettingsDebounce_Tick;
+        _toastTimer = new DispatcherTimer(DispatcherPriority.Background)
+        {
+            Interval = TimeSpan.FromSeconds(3.2),
+        };
+        _toastTimer.Tick += ToastTimer_Tick;
         ApplyStudioTheme(_darkMode);
         UpdateStartupButton();
         UpdateVisualAdjustmentControls();
@@ -151,6 +167,12 @@ public partial class MainWindow : Window, IAsyncDisposable
             _visualSettingsDebounce.Stop();
             _visualSettingsDebounce.Tick -= VisualSettingsDebounce_Tick;
             _visualSettingsDebounce = null;
+        }
+        if (_toastTimer is not null)
+        {
+            _toastTimer.Stop();
+            _toastTimer.Tick -= ToastTimer_Tick;
+            _toastTimer = null;
         }
         if (visualSettingsPending)
         {
@@ -211,12 +233,6 @@ public partial class MainWindow : Window, IAsyncDisposable
     private void ShowThemes(string? preferredId = null)
     {
         _showFavorites = false;
-        _visibleThemes.Clear();
-        foreach (var theme in _themes)
-        {
-            _visibleThemes.Add(theme);
-        }
-
         CategoryTitleText.Text = "主题画廊";
         CategoryDescriptionText.Text = "浏览本地主题，并在应用前确认完整的视觉体验。";
         ImportDeclarationTitleText.Text = "管理你的主题体验";
@@ -225,33 +241,12 @@ public partial class MainWindow : Window, IAsyncDisposable
         ImportButton.Content = "导入主题";
         ImportButton.Visibility = Visibility.Visible;
         UpdateCategoryButtons();
-        UpdateEmptyState();
-        var preferred = _visibleThemes.FirstOrDefault(theme =>
-            theme.CatalogItem.Package?.Manifest.Id == preferredId && theme.IsValid);
-        var next = preferred ?? _visibleThemes.FirstOrDefault(theme => theme.IsValid);
-        if (next is not null)
-        {
-            SelectTheme(next);
-        }
-        else
-        {
-            foreach (var theme in _themes) theme.IsSelected = false;
-            _selectedTheme = null;
-            SelectedThemeText.Text = "这里还没有可用主题";
-            ActivateButton.IsEnabled = false;
-            DeleteButton.IsEnabled = false;
-        }
+        ApplyThemeLibraryFilter(preferredId);
     }
 
     private void ShowFavorites(string? preferredId = null)
     {
         _showFavorites = true;
-        _visibleThemes.Clear();
-        foreach (var theme in _themes.Where(theme => theme.IsFavorite))
-        {
-            _visibleThemes.Add(theme);
-        }
-
         CategoryTitleText.Text = "我的收藏";
         CategoryDescriptionText.Text = "收藏会优先进入主题浮窗，方便快速切换。";
         ImportDeclarationTitleText.Text = "把常用主题留在手边";
@@ -259,10 +254,45 @@ public partial class MainWindow : Window, IAsyncDisposable
         DeclarationIconText.Text = "♥";
         ImportButton.Visibility = Visibility.Collapsed;
         UpdateCategoryButtons();
+        ApplyThemeLibraryFilter(preferredId);
+    }
+
+    private void ApplyThemeLibraryFilter(string? preferredId = null)
+    {
+        var source = _showFavorites
+            ? _themes.Where(theme => theme.IsFavorite)
+            : _themes.AsEnumerable();
+        var sourceCount = source.Count();
+        var query = _themeSearchQuery.Trim();
+
+        if (!string.IsNullOrWhiteSpace(query))
+        {
+            source = source.Where(theme =>
+                theme.Name.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                theme.Description.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                theme.Author.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                (theme.ThemeId?.Contains(query, StringComparison.OrdinalIgnoreCase) ?? false));
+        }
+
+        source = _themeLibraryFilter switch
+        {
+            ThemeLibraryFilter.Light => source.Where(theme => theme.SupportsLight),
+            ThemeLibraryFilter.Dark => source.Where(theme => theme.SupportsDark),
+            _ => source,
+        };
+
+        _visibleThemes.Clear();
+        foreach (var theme in source)
+        {
+            _visibleThemes.Add(theme);
+        }
+
+        UpdateThemeFilterUi(sourceCount);
         UpdateEmptyState();
 
+        var selectedId = preferredId ?? _selectedTheme?.ThemeId ?? _activeThemeId;
         var preferred = _visibleThemes.FirstOrDefault(theme =>
-            theme.CatalogItem.Package?.Manifest.Id == preferredId && theme.IsValid);
+            string.Equals(theme.ThemeId, selectedId, StringComparison.OrdinalIgnoreCase) && theme.IsValid);
         var next = preferred ?? _visibleThemes.FirstOrDefault(theme => theme.IsValid);
         if (next is not null)
         {
@@ -272,9 +302,65 @@ public partial class MainWindow : Window, IAsyncDisposable
 
         foreach (var theme in _themes) theme.IsSelected = false;
         _selectedTheme = null;
-        SelectedThemeText.Text = "还没有收藏的主题";
+        SelectedThemeText.Text = _showFavorites ? "还没有可用的收藏主题" : "这里还没有可用主题";
         ActivateButton.IsEnabled = false;
         DeleteButton.IsEnabled = false;
+    }
+
+    private void UpdateThemeFilterUi(int sourceCount)
+    {
+        if (!_uiInitialized || AllThemesFilterButton is null) return;
+
+        ThemeSearchPlaceholder.Visibility = string.IsNullOrEmpty(ThemeSearchBox.Text)
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+        ClearThemeSearchButton.Visibility = string.IsNullOrEmpty(ThemeSearchBox.Text)
+            ? Visibility.Collapsed
+            : Visibility.Visible;
+
+        UpdateThemeFilterButton(AllThemesFilterButton, _themeLibraryFilter == ThemeLibraryFilter.All);
+        UpdateThemeFilterButton(LightThemesFilterButton, _themeLibraryFilter == ThemeLibraryFilter.Light);
+        UpdateThemeFilterButton(DarkThemesFilterButton, _themeLibraryFilter == ThemeLibraryFilter.Dark);
+
+        var filtered = HasActiveThemeFilter;
+        ThemeResultText.Text = filtered
+            ? $"找到 {_visibleThemes.Count} / {sourceCount} 个主题"
+            : $"共 {sourceCount} 个主题";
+    }
+
+    private void UpdateThemeFilterButton(Button button, bool active)
+    {
+        button.Background = active ? (Brush)Resources["ActiveNav"] : (Brush)Resources["Surface"];
+        button.BorderBrush = active ? (Brush)Resources["Accent"] : (Brush)Resources["Border"];
+        button.Foreground = active ? (Brush)Resources["Accent"] : (Brush)Resources["MutedText"];
+    }
+
+    private bool HasActiveThemeFilter =>
+        !string.IsNullOrWhiteSpace(_themeSearchQuery) || _themeLibraryFilter != ThemeLibraryFilter.All;
+
+    private void ThemeSearchBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (!_uiInitialized) return;
+        _themeSearchQuery = ThemeSearchBox.Text;
+        ApplyThemeLibraryFilter();
+    }
+
+    private void ClearThemeSearch_Click(object sender, RoutedEventArgs e)
+    {
+        ThemeSearchBox.Clear();
+        ThemeSearchBox.Focus();
+    }
+
+    private void ThemeFilter_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: string filter }) return;
+        _themeLibraryFilter = filter switch
+        {
+            "light" => ThemeLibraryFilter.Light,
+            "dark" => ThemeLibraryFilter.Dark,
+            _ => ThemeLibraryFilter.All,
+        };
+        ApplyThemeLibraryFilter();
     }
 
     private void UpdateEmptyState()
@@ -282,6 +368,14 @@ public partial class MainWindow : Window, IAsyncDisposable
         var isEmpty = _visibleThemes.Count == 0;
         EmptyState.Visibility = isEmpty ? Visibility.Visible : Visibility.Collapsed;
         SelectionDock.Visibility = isEmpty ? Visibility.Collapsed : Visibility.Visible;
+        if (HasActiveThemeFilter)
+        {
+            EmptyStateTitleText.Text = "没有匹配的主题";
+            EmptyStateBodyText.Text = "可以更换搜索词，或清除亮暗模式筛选后再试。";
+            EmptyStateActionButton.Content = "清除筛选";
+            return;
+        }
+
         EmptyStateTitleText.Text = _showFavorites ? "还没有收藏的主题" : "这里还没有主题";
         EmptyStateBodyText.Text = _showFavorites
             ? "从主题画廊收藏常用主题，它们也会优先出现在主题浮窗中。"
@@ -291,6 +385,14 @@ public partial class MainWindow : Window, IAsyncDisposable
 
     private void EmptyStateAction_Click(object sender, RoutedEventArgs e)
     {
+        if (HasActiveThemeFilter)
+        {
+            _themeLibraryFilter = ThemeLibraryFilter.All;
+            ThemeSearchBox.Clear();
+            ApplyThemeLibraryFilter();
+            return;
+        }
+
         if (_showFavorites)
         {
             ShowThemes_Click(sender, e);
@@ -410,6 +512,7 @@ public partial class MainWindow : Window, IAsyncDisposable
         StatusText.Text = theme.IsFavorite
             ? $"{theme.Name} 已加入我的收藏"
             : $"{theme.Name} 已移出我的收藏";
+        ShowToast(theme.IsFavorite ? $"已收藏 {theme.Name}" : $"已取消收藏 {theme.Name}");
         RefreshQuickSwitchWindow();
     }
 
@@ -460,11 +563,10 @@ public partial class MainWindow : Window, IAsyncDisposable
             if (Directory.Exists(destination) &&
                 !string.Equals(Path.GetFullPath(dialog.FolderName), Path.GetFullPath(destination), StringComparison.OrdinalIgnoreCase))
             {
-                overwrite = MessageBox.Show(
-                    $"本地库中已有“{result.Package.Manifest.Name}”。是否替换为所选版本？",
+                overwrite = ShowProductConfirmation(
                     "替换本地主题",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Question) == MessageBoxResult.Yes;
+                    $"本地库中已有“{result.Package.Manifest.Name}”。是否替换为所选版本？",
+                    "替换主题");
                 if (!overwrite) return;
             }
 
@@ -472,10 +574,11 @@ public partial class MainWindow : Window, IAsyncDisposable
             _showFavorites = false;
             await ReloadThemesAsync(imported.Manifest.Id);
             StatusText.Text = $"{imported.Manifest.Name} 已加入主题库";
+            ShowToast($"{imported.Manifest.Name} 已加入主题库");
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
         {
-            MessageBox.Show(exception.Message, "无法导入主题", MessageBoxButton.OK, MessageBoxImage.Error);
+            ShowProductMessage("无法导入主题", exception.Message, ProductDialogKind.Error);
         }
     }
 
@@ -483,6 +586,7 @@ public partial class MainWindow : Window, IAsyncDisposable
     {
         await ReloadThemesAsync();
         StatusText.Text = $"本地主题库已刷新，共 {_themes.Count} 个主题";
+        ShowToast($"主题库已刷新，共 {_themes.Count} 个主题");
     }
 
     private async void DeleteTheme_Click(object sender, RoutedEventArgs e)
@@ -501,11 +605,7 @@ public partial class MainWindow : Window, IAsyncDisposable
         var message = isActive
             ? $"“{themeName}”当前正在使用。删除后将先恢复 Codex 默认外观。\n\n确定永久删除这个本地主题吗？"
             : $"确定永久删除本地主题“{themeName}”吗？\n\n此操作不会删除 Codex 数据，但主题文件夹将从本地库移除。";
-        if (MessageBox.Show(
-                message,
-                "删除本地主题",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Warning) != MessageBoxResult.Yes)
+        if (!ShowProductConfirmation("删除本地主题", message, "永久删除", dangerous: true))
         {
             return;
         }
@@ -544,12 +644,13 @@ public partial class MainWindow : Window, IAsyncDisposable
             _selectedTheme = null;
             await ReloadThemesAsync();
             StatusText.Text = $"{themeName} 已从本地主题库删除";
+            ShowToast($"{themeName} 已从本地主题库删除", warning: true);
             RefreshQuickSwitchWindow();
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
         {
             StatusText.Text = exception.Message;
-            MessageBox.Show(exception.Message, "无法删除主题", MessageBoxButton.OK, MessageBoxImage.Error);
+            ShowProductMessage("无法删除主题", exception.Message, ProductDialogKind.Error);
         }
         finally
         {
@@ -561,6 +662,30 @@ public partial class MainWindow : Window, IAsyncDisposable
     private void ImportGuide_Click(object sender, RoutedEventArgs e) => ShowInfoPage(RightPane.ImportGuide);
 
     private void UsageGuide_Click(object sender, RoutedEventArgs e) => ShowInfoPage(RightPane.UsageGuide);
+
+    private void About_Click(object sender, RoutedEventArgs e)
+    {
+        AboutRootText.Text = _layout.RootDirectory;
+        AboutDataText.Text = _layout.DataDirectory;
+        var validCount = _themes.Count(theme => theme.IsValid);
+        var favoriteCount = _themes.Count(theme => theme.IsFavorite);
+        AboutLibrarySummaryText.Text =
+            $"本地库共 {_themes.Count} 个主题 · {validCount} 个通过校验 · {favoriteCount} 个收藏";
+        ShowInfoPage(RightPane.About);
+    }
+
+    private void OpenRootDirectory_Click(object sender, RoutedEventArgs e) =>
+        OpenDirectory(_layout.RootDirectory);
+
+    private void OpenDataDirectory_Click(object sender, RoutedEventArgs e) =>
+        OpenDirectory(_layout.DataDirectory);
+
+    private void OpenDirectory(string path)
+    {
+        Directory.CreateDirectory(path);
+        Process.Start(new ProcessStartInfo("explorer.exe", $"\"{path}\"") { UseShellExecute = true });
+        ShowToast("已在文件资源管理器中打开目录");
+    }
 
     private void Settings_Click(object sender, RoutedEventArgs e)
     {
@@ -656,7 +781,7 @@ public partial class MainWindow : Window, IAsyncDisposable
                 StatusText.Text = $"无法打开主题浮窗：{exception.Message}";
             }
 
-            MessageBox.Show(exception.Message, "无法打开主题浮窗", MessageBoxButton.OK, MessageBoxImage.Error);
+            ShowProductMessage("无法打开主题浮窗", exception.Message, ProductDialogKind.Error);
         }
     }
 
@@ -719,11 +844,12 @@ public partial class MainWindow : Window, IAsyncDisposable
             StartupRegistration.SetEnabled(enabled);
             UpdateStartupButton();
             StatusText.Text = enabled ? "已启用开机自动启动" : "已关闭开机自动启动";
+            ShowToast(enabled ? "已启用开机自动启动" : "已关闭开机自动启动");
         }
         catch (Exception exception)
         {
             UpdateStartupButton();
-            MessageBox.Show(exception.Message, "无法更新开机启动设置", MessageBoxButton.OK, MessageBoxImage.Error);
+            ShowProductMessage("无法更新开机启动设置", exception.Message, ProductDialogKind.Error);
         }
     }
 
@@ -772,7 +898,7 @@ public partial class MainWindow : Window, IAsyncDisposable
             StartupCheckBox.IsChecked = StartupRegistration.IsEnabled();
             _updatingStartupSetting = false;
             UpdateStartupButton();
-            MessageBox.Show(exception.Message, "无法更新开机启动设置", MessageBoxButton.OK, MessageBoxImage.Error);
+            ShowProductMessage("无法更新开机启动设置", exception.Message, ProductDialogKind.Error);
         }
     }
 
@@ -794,6 +920,7 @@ public partial class MainWindow : Window, IAsyncDisposable
         UsageInfoPanel.Visibility = page == RightPane.UsageGuide ? Visibility.Visible : Visibility.Collapsed;
         SettingsInfoPanel.Visibility = page == RightPane.Settings ? Visibility.Visible : Visibility.Collapsed;
         DiagnosticsInfoPanel.Visibility = page == RightPane.Diagnostics ? Visibility.Visible : Visibility.Collapsed;
+        AboutInfoPanel.Visibility = page == RightPane.About ? Visibility.Visible : Visibility.Collapsed;
         UpdateCategoryButtons();
         AnimatePage(InfoPage);
     }
@@ -803,7 +930,7 @@ public partial class MainWindow : Window, IAsyncDisposable
         var path = GetTemplatePath();
         if (!Directory.Exists(path))
         {
-            MessageBox.Show("模板文件尚未释放，请重启应用后再试。", "找不到模板", MessageBoxButton.OK, MessageBoxImage.Error);
+            ShowProductMessage("找不到模板", "模板文件尚未释放，请重启应用后再试。", ProductDialogKind.Error);
             return;
         }
 
@@ -815,7 +942,7 @@ public partial class MainWindow : Window, IAsyncDisposable
         var source = GetTemplatePath();
         if (!Directory.Exists(source))
         {
-            MessageBox.Show("模板文件尚未释放，请重启应用后再试。", "找不到模板", MessageBoxButton.OK, MessageBoxImage.Error);
+            ShowProductMessage("找不到模板", "模板文件尚未释放，请重启应用后再试。", ProductDialogKind.Error);
             return;
         }
 
@@ -826,12 +953,13 @@ public partial class MainWindow : Window, IAsyncDisposable
         var destination = Path.Combine(dialog.FolderName, name);
         if (Directory.Exists(destination))
         {
-            MessageBox.Show($"目标位置已存在文件夹：\n{destination}", "无法复制模板", MessageBoxButton.OK, MessageBoxImage.Warning);
+            ShowProductMessage("无法复制模板", $"目标位置已存在文件夹：\n{destination}", ProductDialogKind.Warning);
             return;
         }
 
         CopyDirectory(source, destination);
         Process.Start(new ProcessStartInfo("explorer.exe", $"\"{destination}\"") { UseShellExecute = true });
+        ShowToast("主题模板已复制并打开");
     }
 
     private string GetTemplatePath() => Path.Combine(
@@ -989,7 +1117,7 @@ public partial class MainWindow : Window, IAsyncDisposable
         {
             SetEngineState("启动失败");
             SetStatus(exception.Message);
-            MessageBox.Show(exception.Message, "无法应用主题", MessageBoxButton.OK, MessageBoxImage.Error);
+            ShowProductMessage("无法应用主题", exception.Message, ProductDialogKind.Error);
             return false;
         }
         finally
@@ -1059,7 +1187,7 @@ public partial class MainWindow : Window, IAsyncDisposable
         catch (Exception exception)
         {
             SetStatus(exception.Message);
-            MessageBox.Show(exception.Message, "恢复失败", MessageBoxButton.OK, MessageBoxImage.Error);
+            ShowProductMessage("恢复失败", exception.Message, ProductDialogKind.Error);
             return false;
         }
         finally
@@ -1112,7 +1240,7 @@ public partial class MainWindow : Window, IAsyncDisposable
         catch (Exception exception)
         {
             SetStatus(exception.Message);
-            MessageBox.Show(exception.Message, "无法切换 Codex 明暗色", MessageBoxButton.OK, MessageBoxImage.Error);
+            ShowProductMessage("无法切换 Codex 明暗色", exception.Message, ProductDialogKind.Error);
             return null;
         }
         finally
@@ -1248,6 +1376,12 @@ public partial class MainWindow : Window, IAsyncDisposable
         UpdateStartupButton();
         UpdateQuickSwitchButton();
         UpdateCodexModeButton();
+        if (_uiInitialized && AllThemesFilterButton is not null)
+        {
+            UpdateThemeFilterUi(_showFavorites
+                ? _themes.Count(theme => theme.IsFavorite)
+                : _themes.Count);
+        }
     }
 
     private void SetBrush(string key, string color) =>
@@ -1288,6 +1422,7 @@ public partial class MainWindow : Window, IAsyncDisposable
         UpdateInfoNavigationButton(SettingsButton, _rightPane == RightPane.Settings);
         UpdateInfoNavigationButton(ImportGuideButton, _rightPane == RightPane.ImportGuide);
         UpdateInfoNavigationButton(UsageGuideButton, _rightPane == RightPane.UsageGuide);
+        UpdateInfoNavigationButton(AboutButton, _rightPane == RightPane.About);
     }
 
     private void UpdateLibraryMetrics()
@@ -1724,6 +1859,59 @@ public partial class MainWindow : Window, IAsyncDisposable
         {
             StatusText.Text = status;
         }
+    }
+
+    private Window ProductDialogOwner =>
+        _quickSwitchWindow is { IsVisible: true } ? _quickSwitchWindow : this;
+
+    private bool ShowProductConfirmation(
+        string title,
+        string message,
+        string confirmText,
+        bool dangerous = false) =>
+        ProductDialogWindow.Confirm(
+            ProductDialogOwner,
+            title,
+            message,
+            confirmText,
+            dangerous: dangerous,
+            darkMode: _darkMode);
+
+    private void ShowProductMessage(string title, string message, ProductDialogKind kind) =>
+        ProductDialogWindow.ShowMessage(ProductDialogOwner, title, message, kind, _darkMode);
+
+    private void ShowToast(string message, bool warning = false)
+    {
+        if (!_uiInitialized || !IsVisible || ToastPanel is null || _toastTimer is null)
+        {
+            return;
+        }
+
+        _toastTimer.Stop();
+        ToastPanel.BeginAnimation(OpacityProperty, null);
+        ToastText.Text = message;
+        ToastIconText.Text = warning ? "!" : "✓";
+        ToastIconText.Foreground = (Brush)Resources[warning ? "Amber" : "Accent"];
+        ToastPanel.BorderBrush = (Brush)Resources[warning ? "Amber" : "Border"];
+        ToastPanel.Visibility = Visibility.Visible;
+        ToastPanel.BeginAnimation(
+            OpacityProperty,
+            new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(160))
+            {
+                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut },
+            });
+        _toastTimer.Start();
+    }
+
+    private void ToastTimer_Tick(object? sender, EventArgs e)
+    {
+        _toastTimer?.Stop();
+        var animation = new DoubleAnimation(0, TimeSpan.FromMilliseconds(180))
+        {
+            EasingFunction = new CubicEase { EasingMode = EasingMode.EaseIn },
+        };
+        animation.Completed += (_, _) => ToastPanel.Visibility = Visibility.Collapsed;
+        ToastPanel.BeginAnimation(OpacityProperty, animation);
     }
 
     private void SetEngineState(string status)

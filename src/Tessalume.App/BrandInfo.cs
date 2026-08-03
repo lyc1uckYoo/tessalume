@@ -8,6 +8,9 @@ public static class BrandInfo
         typeof(BrandInfo).Assembly.GetName().Name ?? "Application";
 
     public const string ChineseName = "万棱流光";
+    public static string Version { get; } =
+        typeof(BrandInfo).Assembly.GetName().Version?.ToString(3) ?? "1.2.0";
+    public static string VersionLabel { get; } = "v" + Version;
     public static string WindowTitle { get; } = ProductName + " · " + ChineseName;
     public static string DiagnosticsTitle { get; } = ProductName + " · 本机诊断";
     public static string QuickSwitchTitle { get; } = ProductName + " 浮窗";
