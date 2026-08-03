@@ -32,28 +32,32 @@
             <GradientStop Color="#FFFFFF" Offset="0" />
             <GradientStop Color="#E9E7F8" Offset="1" />
         </LinearGradientBrush>
-        <SolidColorBrush x:Key="WindowBackground" Color="#F5F6F8" />
-        <SolidColorBrush x:Key="SidebarBackground" Color="#FAFAFB" />
+        <SolidColorBrush x:Key="WindowBackground" Color="#F5F7FB" />
+        <SolidColorBrush x:Key="SidebarBackground" Color="#FBFCFE" />
         <SolidColorBrush x:Key="Surface" Color="#FFFFFF" />
-        <SolidColorBrush x:Key="SurfaceAlt" Color="#F0F1F6" />
+        <SolidColorBrush x:Key="SurfaceAlt" Color="#F2F4F8" />
         <SolidColorBrush x:Key="SurfaceElevated" Color="#FFFFFF" />
-        <SolidColorBrush x:Key="HoverSurface" Color="#E9EAF2" />
-        <SolidColorBrush x:Key="InfoSurface" Color="#F0EDFF" />
-        <SolidColorBrush x:Key="InfoBorder" Color="#DDD6FF" />
-        <SolidColorBrush x:Key="PrimaryText" Color="#171821" />
-        <SolidColorBrush x:Key="MutedText" Color="#696B78" />
-        <SolidColorBrush x:Key="SubtleText" Color="#989AA7" />
-        <SolidColorBrush x:Key="Border" Color="#E1E3EA" />
-        <SolidColorBrush x:Key="Accent" Color="#5365E8" />
-        <SolidColorBrush x:Key="AccentSoft" Color="#E9ECFF" />
-        <SolidColorBrush x:Key="ActiveNav" Color="#ECEEF5" />
-        <SolidColorBrush x:Key="Positive" Color="#30B982" />
+        <SolidColorBrush x:Key="HoverSurface" Color="#E9ECF3" />
+        <SolidColorBrush x:Key="InfoSurface" Color="#F0EFFF" />
+        <SolidColorBrush x:Key="InfoBorder" Color="#DAD8F7" />
+        <SolidColorBrush x:Key="PrimaryText" Color="#171927" />
+        <SolidColorBrush x:Key="MutedText" Color="#62697A" />
+        <SolidColorBrush x:Key="SubtleText" Color="#9299AA" />
+        <SolidColorBrush x:Key="Border" Color="#DDE2EC" />
+        <SolidColorBrush x:Key="Accent" Color="#675CF0" />
+        <SolidColorBrush x:Key="AccentSoft" Color="#EFEDFF" />
+        <SolidColorBrush x:Key="ActiveNav" Color="#EFEEFF" />
+        <SolidColorBrush x:Key="Positive" Color="#24B987" />
         <SolidColorBrush x:Key="Danger" Color="#D94C70" />
         <SolidColorBrush x:Key="DangerSoft" Color="#FFF0F4" />
-        <SolidColorBrush x:Key="Sky" Color="#3989C9" />
-        <SolidColorBrush x:Key="SkySoft" Color="#EDF7FF" />
-        <SolidColorBrush x:Key="Amber" Color="#D58A22" />
-        <SolidColorBrush x:Key="AmberSoft" Color="#FFF6E6" />
+        <SolidColorBrush x:Key="Sky" Color="#4D7FE8" />
+        <SolidColorBrush x:Key="SkySoft" Color="#EEF4FF" />
+        <SolidColorBrush x:Key="Amber" Color="#D88A24" />
+        <SolidColorBrush x:Key="AmberSoft" Color="#FFF5E7" />
+        <SolidColorBrush x:Key="Rose" Color="#D9598C" />
+        <SolidColorBrush x:Key="RoseSoft" Color="#FFF0F7" />
+        <SolidColorBrush x:Key="Teal" Color="#159A9C" />
+        <SolidColorBrush x:Key="TealSoft" Color="#EAF9F7" />
         <SolidColorBrush x:Key="SettingsBarBorder" Color="#BAC4D8" />
         <SolidColorBrush x:Key="SettingsBarPrimaryText" Color="#25293B" />
         <SolidColorBrush x:Key="SettingsBarMutedText" Color="#697087" />
@@ -131,6 +135,9 @@
             <Setter Property="BorderBrush" Value="{DynamicResource Border}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Padding" Value="14,9" />
+            <Setter Property="MinHeight" Value="36" />
+            <Setter Property="FontSize" Value="10.5" />
+            <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
@@ -143,6 +150,7 @@
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource HoverSurface}" />
+                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource Accent}" />
                                 <Trigger.EnterActions>
                                     <BeginStoryboard><Storyboard>
                                         <DoubleAnimation Storyboard.TargetName="ButtonScale" Storyboard.TargetProperty="ScaleX" To="1.025" Duration="0:0:0.167" />
@@ -467,16 +475,66 @@
             <Setter Property="Stroke" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
             <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
+        <Style x:Key="PageTitleText" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryText}" />
+            <Setter Property="FontSize" Value="27" />
+            <Setter Property="FontWeight" Value="Bold" />
+        </Style>
+        <Style x:Key="PageDescriptionText" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource MutedText}" />
+            <Setter Property="FontSize" Value="11.5" />
+            <Setter Property="Margin" Value="1,6,0,0" />
+        </Style>
+        <Style x:Key="SectionEyebrowText" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource Accent}" />
+            <Setter Property="FontSize" Value="9" />
+            <Setter Property="FontWeight" Value="Bold" />
+        </Style>
+        <Style x:Key="ProductCard" TargetType="Border">
+            <Setter Property="Background" Value="{DynamicResource Surface}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Border}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="18" />
+            <Setter Property="Padding" Value="20" />
+            <Setter Property="Effect" Value="{StaticResource CardShadow}" />
+        </Style>
+        <Style x:Key="InsetCard" TargetType="Border">
+            <Setter Property="Background" Value="{DynamicResource SurfaceAlt}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Border}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="13" />
+            <Setter Property="Padding" Value="14" />
+        </Style>
+        <Style x:Key="SecondaryActionButton" TargetType="Button" BasedOn="{StaticResource RoundButton}">
+            <Setter Property="Height" Value="38" />
+            <Setter Property="Padding" Value="14,0" />
+        </Style>
+        <Style x:Key="QuietActionButton" TargetType="Button" BasedOn="{StaticResource RoundButton}">
+            <Setter Property="Background" Value="{DynamicResource SurfaceAlt}" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Height" Value="34" />
+            <Setter Property="Padding" Value="12,0" />
+            <Setter Property="FontSize" Value="9.5" />
+        </Style>
+        <Style x:Key="MetricValueText" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryText}" />
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style x:Key="MetricLabelText" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource MutedText}" />
+            <Setter Property="FontSize" Value="9" />
+        </Style>
     </Window.Resources>
 
     <Grid Background="{DynamicResource WindowBackground}">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="218" />
+            <ColumnDefinition Width="226" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
         <Border Grid.Column="0" Background="{DynamicResource SidebarBackground}" BorderBrush="{DynamicResource Border}" BorderThickness="0,0,1,0">
-            <Grid Margin="15,19,15,16">
+            <Grid Margin="16,19,16,16">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="27" />
@@ -491,12 +549,12 @@
                     </Border>
                     <StackPanel Grid.Column="1" Margin="10,1,0,0">
                         <TextBlock Text="{x:Static local:BrandInfo.ProductName}" Foreground="{DynamicResource PrimaryText}" FontWeight="SemiBold" FontSize="15.5" />
-                        <TextBlock Text="万棱流光 · THEME LAB" Foreground="{DynamicResource Accent}" FontSize="8.5" FontWeight="SemiBold" Margin="0,2,0,0" />
+                        <TextBlock Text="万棱流光 · THEME STUDIO" Foreground="{DynamicResource Accent}" FontSize="8.5" FontWeight="SemiBold" Margin="0,2,0,0" />
                     </StackPanel>
                 </Grid>
 
                 <StackPanel Grid.Row="2">
-                    <TextBlock Text="LIBRARY" Foreground="{DynamicResource Accent}" Opacity="0.76" FontSize="8.5" FontWeight="SemiBold" Margin="13,0,0,7" />
+                    <TextBlock Text="主题" Foreground="{DynamicResource Accent}" Opacity="0.82" FontSize="8.5" FontWeight="SemiBold" Margin="13,0,0,7" />
                     <Button x:Name="ThemesButton" Style="{StaticResource NavButton}" Click="ShowThemes_Click">
                         <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="27" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
                             <Path Style="{StaticResource NavIcon}" Data="M 2,2 L 9,2 L 9,9 L 2,9 Z M 13,2 L 20,2 L 20,9 L 13,9 Z M 2,13 L 9,13 L 9,20 L 2,20 Z M 13,13 L 20,13 L 20,20 L 13,20 Z" />
@@ -516,7 +574,7 @@
                         </Grid>
                     </Button>
                     <Border Height="1" Background="{DynamicResource Border}" Margin="10,13,10,12" />
-                    <TextBlock Text="SYSTEM" Foreground="{DynamicResource Accent}" Opacity="0.72" FontSize="8.5" FontWeight="SemiBold" Margin="12,0,0,7" />
+                    <TextBlock Text="系统" Foreground="{DynamicResource Accent}" Opacity="0.82" FontSize="8.5" FontWeight="SemiBold" Margin="12,0,0,7" />
                     <Button x:Name="DiagnosticsButton" Style="{StaticResource NavButton}" Click="Diagnostics_Click">
                         <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="27" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
                             <Path Style="{StaticResource NavIcon}" Data="M 3,13 L 7,13 L 9.5,7 L 13,18 L 15.5,11 L 21,11" />
@@ -526,7 +584,7 @@
                     <Button x:Name="SettingsButton" Style="{StaticResource NavButton}" Click="Settings_Click">
                         <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="27" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
                             <Path Style="{StaticResource NavIcon}" Data="M 4,6 L 20,6 M 4,12 L 20,12 M 4,18 L 20,18 M 8,3 L 8,9 M 16,9 L 16,15 M 10,15 L 10,21" />
-                            <TextBlock Grid.Column="1" Text="偏好设置" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="1" Text="个性化设置" VerticalAlignment="Center" />
                         </Grid>
                     </Button>
                     <Button Style="{StaticResource NavButton}" Click="RestoreTheme_Click">
@@ -536,7 +594,7 @@
                         </Grid>
                     </Button>
                     <Border Height="1" Background="{DynamicResource Border}" Margin="10,13,10,12" />
-                    <TextBlock Text="DEVELOPER" Foreground="{DynamicResource Amber}" Opacity="0.78" FontSize="8.5" FontWeight="SemiBold" Margin="12,0,0,7" />
+                    <TextBlock Text="创作" Foreground="{DynamicResource Amber}" Opacity="0.88" FontSize="8.5" FontWeight="SemiBold" Margin="12,0,0,7" />
                     <Button x:Name="ImportGuideButton" Style="{StaticResource NavButton}" Click="ImportGuide_Click">
                         <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="27" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
                             <Path Style="{StaticResource NavIcon}" Data="M 12,3 L 12,15 M 7.5,10.5 L 12,15 L 16.5,10.5 M 4,18 L 4,21 L 20,21 L 20,18" />
@@ -556,8 +614,8 @@
                         <Grid.ColumnDefinitions><ColumnDefinition Width="9" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
                         <Ellipse Width="7" Height="7" Fill="{DynamicResource Positive}" VerticalAlignment="Top" Margin="0,4,0,0" />
                         <StackPanel Grid.Column="1" Margin="7,0,0,0">
-                            <TextBlock Text="LOCAL RUNTIME" Foreground="{DynamicResource PrimaryText}" FontWeight="SemiBold" FontSize="9.5" />
-                            <TextBlock Text="主题只在本机运行，不修改 Codex 安装文件。" TextWrapping="Wrap" Foreground="{DynamicResource MutedText}" FontSize="9.5" LineHeight="15" Margin="0,4,0,0" />
+                            <TextBlock Text="本地安全运行" Foreground="{DynamicResource PrimaryText}" FontWeight="SemiBold" FontSize="9.5" />
+                            <TextBlock Text="主题仅注入当前会话，不修改 Codex 安装文件。" TextWrapping="Wrap" Foreground="{DynamicResource MutedText}" FontSize="9.5" LineHeight="15" Margin="0,4,0,0" />
                         </StackPanel>
                     </Grid>
                 </Border>
@@ -589,7 +647,7 @@
                 </Grid.ColumnDefinitions>
                 <StackPanel>
                     <TextBlock x:Name="CategoryTitleText" Text="主题画廊" Foreground="{DynamicResource PrimaryText}" FontSize="27" FontWeight="SemiBold" />
-                    <TextBlock x:Name="CategoryDescriptionText" Text="为 Codex 选择一个完整的视觉世界。" Foreground="{DynamicResource MutedText}" FontSize="11.5" Margin="1,4,0,0" />
+                    <TextBlock x:Name="CategoryDescriptionText" Text="浏览本地主题，并在应用前确认完整的视觉体验。" Foreground="{DynamicResource MutedText}" FontSize="11.5" Margin="1,4,0,0" />
                 </StackPanel>
                 <Border Grid.Column="1" Height="34" VerticalAlignment="Center" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="11" Padding="11,0">
                     <StackPanel Orientation="Horizontal">
@@ -849,6 +907,8 @@
                         <TextBlock x:Name="EmptyStateTitleText" Text="这里还没有主题" Foreground="{DynamicResource PrimaryText}" FontSize="19" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,16,0,0" />
                         <TextBlock x:Name="EmptyStateBodyText" Text="使用上方按钮导入一个本地主题文件夹。" Foreground="{DynamicResource MutedText}" FontSize="11.5"
                                    TextWrapping="Wrap" TextAlignment="Center" MaxWidth="340" LineHeight="19" HorizontalAlignment="Center" Margin="0,7,0,0" />
+                        <Button x:Name="EmptyStateActionButton" Style="{StaticResource PrimaryActionButton}" Content="导入主题" Click="EmptyStateAction_Click"
+                                HorizontalAlignment="Center" MinWidth="132" Height="38" Margin="0,18,0,0" />
                     </StackPanel>
                 </Border>
             </Grid>
@@ -899,7 +959,7 @@
                             <TextBlock x:Name="CodexModeText" Text="检测 Codex 明暗" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
-                    <Button x:Name="ActivateButton" Grid.Column="9" Width="188" Height="48" Style="{StaticResource PrimaryActionButton}" FontSize="11.5" Content="启动 Codex 并应用" Click="ActivateButton_Click" />
+                    <Button x:Name="ActivateButton" Grid.Column="9" Width="188" Height="48" Style="{StaticResource PrimaryActionButton}" FontSize="11.5" Content="应用主题到 Codex" Click="ActivateButton_Click" />
                 </Grid>
             </Border>
         </Grid>
@@ -907,44 +967,91 @@
         <Grid x:Name="InfoPage" Grid.Column="1" Margin="32,25,32,22" Visibility="Collapsed">
             <ScrollViewer x:Name="InfoScroll" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                 <Grid Width="{Binding ViewportWidth, ElementName=InfoScroll}" MinHeight="{Binding ViewportHeight, ElementName=InfoScroll}" MaxWidth="940" HorizontalAlignment="Center">
-                    <StackPanel x:Name="ImportInfoPanel" VerticalAlignment="Center">
-                        <TextBlock Text="导入说明" Foreground="{DynamicResource PrimaryText}" FontSize="27" FontWeight="Bold" />
-                        <TextBlock Text="软件只接收完整的沉浸式主题包，让角色视觉、动效与交互保持一致。" Foreground="{DynamicResource MutedText}" FontSize="12" Margin="1,6,0,20" />
-                        <Border Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="16" Padding="22">
+                    <StackPanel x:Name="ImportInfoPanel" VerticalAlignment="Top" Margin="0,0,0,4">
+                        <Grid>
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="导入主题" Style="{StaticResource PageTitleText}" />
+                                <TextBlock Text="选择一个完整的本地主题包；软件会先校验结构，再允许应用。" Style="{StaticResource PageDescriptionText}" />
+                            </StackPanel>
+                            <Border Grid.Column="1" Background="{DynamicResource TealSoft}" BorderBrush="{DynamicResource Teal}" BorderThickness="1" CornerRadius="11" Padding="11,6" VerticalAlignment="Center">
+                                <StackPanel Orientation="Horizontal"><Ellipse Width="6" Height="6" Fill="{DynamicResource Teal}" Margin="0,0,7,0" /><TextBlock Text="全程本地处理" Foreground="{DynamicResource Teal}" FontSize="9.5" FontWeight="SemiBold" /></StackPanel>
+                            </Border>
+                        </Grid>
+
+                        <Border Style="{StaticResource ProductCard}" Margin="0,20,0,0">
                             <Grid>
-                                <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="24" /><ColumnDefinition Width="280" /></Grid.ColumnDefinitions>
-                                <StackPanel>
-                                    <TextBlock Text="旗舰主题模板 1.0 · CSS + JS" Foreground="{DynamicResource Accent}" FontWeight="SemiBold" FontSize="13" />
-                                    <TextBlock Text="统一结构，只替换角色视觉与主题表达" Foreground="{DynamicResource PrimaryText}" FontWeight="SemiBold" FontSize="17" Margin="0,12,0,0" />
-                                    <TextBlock Text="主题沿用固定的横幅、卡片、状态面板、聊天区和输入区结构，只替换已声明的图片、文案、配色、纹样与专属动效。首次启用或源码变化时，软件会重新请求信任确认。" TextWrapping="Wrap" Foreground="{DynamicResource MutedText}" FontSize="11" LineHeight="19" Margin="0,8,0,0" />
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="58" /><ColumnDefinition Width="*" /><ColumnDefinition Width="22" /><ColumnDefinition Width="218" /></Grid.ColumnDefinitions>
+                                <Border Width="48" Height="48" CornerRadius="15" Background="{DynamicResource PrimaryGradient}" VerticalAlignment="Top">
+                                    <Path Width="22" Height="22" Data="M 12,3 L 12,15 M 7.5,10.5 L 12,15 L 16.5,10.5 M 4,18 L 4,21 L 20,21 L 20,18" Stroke="White" StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Fill="Transparent" Stretch="Uniform" />
+                                </Border>
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="导入完整主题包" Foreground="{DynamicResource PrimaryText}" FontSize="17" FontWeight="SemiBold" />
+                                    <TextBlock Text="主题文件夹需要包含清单、样式、运行脚本和资源目录。首次启用或源码变化后，软件会重新请求本地信任确认。" TextWrapping="Wrap" Foreground="{DynamicResource MutedText}" FontSize="10.5" LineHeight="18" Margin="0,7,0,0" />
+                                    <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                                        <Border Background="{DynamicResource AccentSoft}" CornerRadius="8" Padding="8,4" Margin="0,0,7,0"><TextBlock Text="manifest.json" Foreground="{DynamicResource Accent}" FontFamily="Consolas" FontSize="8.5" /></Border>
+                                        <Border Background="{DynamicResource AccentSoft}" CornerRadius="8" Padding="8,4" Margin="0,0,7,0"><TextBlock Text="skin.css" Foreground="{DynamicResource Accent}" FontFamily="Consolas" FontSize="8.5" /></Border>
+                                        <Border Background="{DynamicResource AccentSoft}" CornerRadius="8" Padding="8,4" Margin="0,0,7,0"><TextBlock Text="theme.js" Foreground="{DynamicResource Accent}" FontFamily="Consolas" FontSize="8.5" /></Border>
+                                        <Border Background="{DynamicResource AccentSoft}" CornerRadius="8" Padding="8,4"><TextBlock Text="assets/" Foreground="{DynamicResource Accent}" FontFamily="Consolas" FontSize="8.5" /></Border>
+                                    </StackPanel>
                                 </StackPanel>
-                                <Border Grid.Column="2" Background="{DynamicResource SurfaceAlt}" CornerRadius="12" Padding="14">
-                                    <TextBlock Text="manifest.json&#10;skin.css&#10;theme.js&#10;assets/" FontFamily="Consolas" Foreground="{DynamicResource PrimaryText}" FontSize="11" LineHeight="19" />
+                                <Border Grid.Column="3" Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="14" Padding="16">
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock Text="准备好主题文件夹了吗？" Foreground="{DynamicResource PrimaryText}" FontSize="11" FontWeight="SemiBold" />
+                                        <TextBlock Text="导入前不会修改任何 Codex 文件。" Foreground="{DynamicResource MutedText}" FontSize="9" Margin="0,4,0,12" />
+                                        <Button Style="{StaticResource PrimaryActionButton}" Click="ImportTheme_Click" Content="选择主题文件夹" Height="38" />
+                                    </StackPanel>
                                 </Border>
                             </Grid>
                         </Border>
-                        <Border Background="{DynamicResource InfoSurface}" BorderBrush="{DynamicResource InfoBorder}" BorderThickness="1" CornerRadius="14" Padding="18" Margin="0,18,0,0">
-                            <StackPanel><TextBlock Text="导入步骤" Foreground="{DynamicResource PrimaryText}" FontWeight="SemiBold" FontSize="14" /><TextBlock Text="1. 复制模板并完成设计  →  2. 返回主题画廊  →  3. 点击导入并选择主题文件夹  →  4. 选中卡片后应用" TextWrapping="Wrap" Foreground="{DynamicResource MutedText}" FontSize="11" LineHeight="19" Margin="0,8,0,0" /></StackPanel>
+
+                        <TextBlock Text="导入流程" Style="{StaticResource SectionEyebrowText}" Margin="1,18,0,9" />
+                        <Grid>
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="10" /><ColumnDefinition Width="*" /><ColumnDefinition Width="10" /><ColumnDefinition Width="*" /><ColumnDefinition Width="10" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                            <Border Style="{StaticResource InsetCard}"><StackPanel><TextBlock Text="01" Foreground="{DynamicResource Accent}" FontSize="10" FontWeight="Bold" /><TextBlock Text="选择文件夹" Foreground="{DynamicResource PrimaryText}" FontSize="11.5" FontWeight="SemiBold" Margin="0,8,0,0" /><TextBlock Text="定位完整主题源码" TextWrapping="Wrap" Foreground="{DynamicResource MutedText}" FontSize="9" Margin="0,4,0,0" /></StackPanel></Border>
+                            <Border Grid.Column="2" Style="{StaticResource InsetCard}"><StackPanel><TextBlock Text="02" Foreground="{DynamicResource Sky}" FontSize="10" FontWeight="Bold" /><TextBlock Text="结构校验" Foreground="{DynamicResource PrimaryText}" FontSize="11.5" FontWeight="SemiBold" Margin="0,8,0,0" /><TextBlock Text="检查脚本、资源与安全规则" TextWrapping="Wrap" Foreground="{DynamicResource MutedText}" FontSize="9" Margin="0,4,0,0" /></StackPanel></Border>
+                            <Border Grid.Column="4" Style="{StaticResource InsetCard}"><StackPanel><TextBlock Text="03" Foreground="{DynamicResource Amber}" FontSize="10" FontWeight="Bold" /><TextBlock Text="加入主题库" Foreground="{DynamicResource PrimaryText}" FontSize="11.5" FontWeight="SemiBold" Margin="0,8,0,0" /><TextBlock Text="安全复制到便携版目录" TextWrapping="Wrap" Foreground="{DynamicResource MutedText}" FontSize="9" Margin="0,4,0,0" /></StackPanel></Border>
+                            <Border Grid.Column="6" Style="{StaticResource InsetCard}"><StackPanel><TextBlock Text="04" Foreground="{DynamicResource Teal}" FontSize="10" FontWeight="Bold" /><TextBlock Text="预览并应用" Foreground="{DynamicResource PrimaryText}" FontSize="11.5" FontWeight="SemiBold" Margin="0,8,0,0" /><TextBlock Text="从画廊选择并实时切换" TextWrapping="Wrap" Foreground="{DynamicResource MutedText}" FontSize="9" Margin="0,4,0,0" /></StackPanel></Border>
+                        </Grid>
+
+                        <Border Background="{DynamicResource InfoSurface}" BorderBrush="{DynamicResource InfoBorder}" BorderThickness="1" CornerRadius="13" Padding="14,11" Margin="0,16,0,0">
+                            <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="28" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions><Border Width="22" Height="22" CornerRadius="7" Background="{DynamicResource Surface}"><Path Width="11" Height="11" Data="M 12,2 L 20,6 L 20,12 C 20,17 16.8,20.3 12,22 C 7.2,20.3 4,17 4,12 L 4,6 Z M 9,12 L 11,14 L 15.5,9.5" Stroke="{DynamicResource Positive}" StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Fill="Transparent" Stretch="Uniform" /></Border><TextBlock Grid.Column="1" Text="主题仅在当前用户的本地会话中运行；导入和应用都不会修改 Codex 安装文件。" Foreground="{DynamicResource MutedText}" FontSize="9.5" VerticalAlignment="Center" /></Grid>
                         </Border>
                     </StackPanel>
 
-                    <StackPanel x:Name="UsageInfoPanel" Visibility="Collapsed" VerticalAlignment="Center">
-                        <TextBlock Text="使用说明" Foreground="{DynamicResource PrimaryText}" FontSize="27" FontWeight="Bold" />
-                        <TextBlock Text="从旗舰模板 1.0 开始，复制后只修改主题允许替换的部分。" Foreground="{DynamicResource MutedText}" FontSize="12" Margin="1,6,0,20" />
-                        <Border Background="{DynamicResource InfoSurface}" BorderBrush="{DynamicResource InfoBorder}" BorderThickness="1" CornerRadius="14" Padding="18"><TextBlock Text="推荐顺序：先修改 manifest.json 中唯一的 id、名称和作者；再替换标准资源槽位与角色文案；最后调整 skin.css 中的配色、纹样和专属动效。公共 DOM、表面规则与几何由 Template 1.0 运行时统一提供。" TextWrapping="Wrap" Foreground="{DynamicResource PrimaryText}" FontSize="11" LineHeight="19" /></Border>
-                        <Border Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="16" Padding="20" Margin="0,18,0,0">
+                    <StackPanel x:Name="UsageInfoPanel" Visibility="Collapsed" VerticalAlignment="Top" Margin="0,0,0,4">
+                        <Grid>
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                            <StackPanel><TextBlock Text="开发指南" Style="{StaticResource PageTitleText}" /><TextBlock Text="从旗舰模板 1.0 开始，把角色视觉放进稳定、可验证的主题结构。" Style="{StaticResource PageDescriptionText}" /></StackPanel>
+                            <Border Grid.Column="1" Background="{DynamicResource AmberSoft}" BorderBrush="{DynamicResource Amber}" BorderThickness="1" CornerRadius="11" Padding="11,6" VerticalAlignment="Center"><TextBlock Text="Template 1.0" Foreground="{DynamicResource Amber}" FontSize="9.5" FontWeight="SemiBold" /></Border>
+                        </Grid>
+
+                        <Border Style="{StaticResource ProductCard}" Margin="0,20,0,0">
                             <Grid>
-                                <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="16" /><ColumnDefinition Width="190" /></Grid.ColumnDefinitions>
-                                <StackPanel>
-                                    <TextBlock Text="旗舰主题模板 1.0" Foreground="{DynamicResource PrimaryText}" FontSize="16" FontWeight="SemiBold" />
-                                    <TextBlock Text="以「心 · 朝月孤城」为验收结构基准" Foreground="{DynamicResource Accent}" FontSize="11" Margin="0,5,0,0" />
-                                    <TextBlock Text="公共运行时负责路由、注入、清理和自适应显隐；模板冻结组件大小与位置。新主题只保留角色资源、文案、配色和专属动效。" TextWrapping="Wrap" Foreground="{DynamicResource MutedText}" FontSize="11" LineHeight="18" Margin="0,12,0,0" />
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="58" /><ColumnDefinition Width="*" /><ColumnDefinition Width="18" /><ColumnDefinition Width="210" /></Grid.ColumnDefinitions>
+                                <Border Width="48" Height="48" CornerRadius="15" Background="{DynamicResource PrimaryGradient}" VerticalAlignment="Top"><Path Width="22" Height="22" Data="M 4,4 C 8,3 10,4 12,6 L 12,20 C 10,18 8,17 4,18 Z M 20,4 C 16,3 14,4 12,6 L 12,20 C 14,18 16,17 20,18 Z" Stroke="White" StrokeThickness="1.8" StrokeLineJoin="Round" Fill="Transparent" Stretch="Uniform" /></Border>
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="从官方模板开始创作" Foreground="{DynamicResource PrimaryText}" FontSize="17" FontWeight="SemiBold" />
+                                    <TextBlock Text="公共运行时负责路由、注入、清理与自适应显隐；你只需要专注角色图片、文案、配色、纹样和专属动效。" TextWrapping="Wrap" Foreground="{DynamicResource MutedText}" FontSize="10.5" LineHeight="18" Margin="0,7,0,0" />
+                                    <TextBlock Text="验收结构：心 · 朝月孤城" Foreground="{DynamicResource Accent}" FontSize="9.5" FontWeight="SemiBold" Margin="0,10,0,0" />
                                 </StackPanel>
-                                <StackPanel Grid.Column="2" VerticalAlignment="Center">
-                                    <Button Style="{StaticResource RoundButton}" Click="OpenTemplate_Click" Content="打开模板文件夹" />
-                                    <Button Style="{StaticResource RoundButton}" Click="CopyTemplate_Click" Content="复制一份开始设计" Margin="0,8,0,0" />
+                                <StackPanel Grid.Column="3" VerticalAlignment="Center">
+                                    <Button Style="{StaticResource SecondaryActionButton}" Click="OpenTemplate_Click"><StackPanel Orientation="Horizontal"><Path Width="13" Height="13" Data="M 3,6 L 10,6 L 12,8 L 21,8 L 21,20 L 3,20 Z M 3,8 L 3,4 L 10,4 L 12,6" Stroke="{DynamicResource Accent}" StrokeThickness="1.7" StrokeLineJoin="Round" Fill="Transparent" Stretch="Uniform" Margin="0,0,7,0" /><TextBlock Text="打开模板文件夹" /></StackPanel></Button>
+                                    <Button Style="{StaticResource PrimaryActionButton}" Click="CopyTemplate_Click" Content="复制一份开始设计" Height="38" Margin="0,8,0,0" />
                                 </StackPanel>
                             </Grid>
+                        </Border>
+
+                        <TextBlock Text="推荐工作流" Style="{StaticResource SectionEyebrowText}" Margin="1,18,0,9" />
+                        <Grid>
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="12" /><ColumnDefinition Width="*" /><ColumnDefinition Width="12" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                            <Border Style="{StaticResource InsetCard}" Padding="16"><StackPanel><Border Width="30" Height="30" CornerRadius="9" Background="{DynamicResource AccentSoft}" HorizontalAlignment="Left"><TextBlock Text="01" Foreground="{DynamicResource Accent}" FontSize="9" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border><TextBlock Text="定义主题身份" Foreground="{DynamicResource PrimaryText}" FontSize="12" FontWeight="SemiBold" Margin="0,12,0,0" /><TextBlock Text="先设置唯一 id、名称、作者和版本，建立清晰可追踪的主题信息。" TextWrapping="Wrap" Foreground="{DynamicResource MutedText}" FontSize="9.5" LineHeight="16" Margin="0,6,0,0" /></StackPanel></Border>
+                            <Border Grid.Column="2" Style="{StaticResource InsetCard}" Padding="16"><StackPanel><Border Width="30" Height="30" CornerRadius="9" Background="{DynamicResource SkySoft}" HorizontalAlignment="Left"><TextBlock Text="02" Foreground="{DynamicResource Sky}" FontSize="9" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border><TextBlock Text="完成角色表达" Foreground="{DynamicResource PrimaryText}" FontSize="12" FontWeight="SemiBold" Margin="0,12,0,0" /><TextBlock Text="替换标准资源槽位与角色文案，再完善配色、纹样和专属动效。" TextWrapping="Wrap" Foreground="{DynamicResource MutedText}" FontSize="9.5" LineHeight="16" Margin="0,6,0,0" /></StackPanel></Border>
+                            <Border Grid.Column="4" Style="{StaticResource InsetCard}" Padding="16"><StackPanel><Border Width="30" Height="30" CornerRadius="9" Background="{DynamicResource TealSoft}" HorizontalAlignment="Left"><TextBlock Text="03" Foreground="{DynamicResource Teal}" FontSize="9" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border><TextBlock Text="校验并构建" Foreground="{DynamicResource PrimaryText}" FontSize="12" FontWeight="SemiBold" Margin="0,12,0,0" /><TextBlock Text="检查亮暗两态、资源引用和模板契约，通过完整构建后再交付。" TextWrapping="Wrap" Foreground="{DynamicResource MutedText}" FontSize="9.5" LineHeight="16" Margin="0,6,0,0" /></StackPanel></Border>
+                        </Grid>
+
+                        <Border Background="{DynamicResource InfoSurface}" BorderBrush="{DynamicResource InfoBorder}" BorderThickness="1" CornerRadius="13" Padding="15,12" Margin="0,16,0,0">
+                            <TextBlock Text="模板统一的是结构、几何和运行时生命周期，不是角色皮肤。保留每个角色独有的构图、组件、纹样与动效，才能让主题真正有辨识度。" TextWrapping="Wrap" Foreground="{DynamicResource PrimaryText}" FontSize="9.5" LineHeight="16" />
                         </Border>
                     </StackPanel>
 
@@ -1117,42 +1224,55 @@
                         </Grid>
                     </StackPanel>
 
-                    <StackPanel x:Name="DiagnosticsInfoPanel" Visibility="Collapsed" VerticalAlignment="Center">
-                        <TextBlock Text="运行与诊断" Foreground="{DynamicResource PrimaryText}" FontSize="27" FontWeight="Bold" />
-                        <TextBlock Text="仅检查本机主题库、Codex 进程与本机回环端口，不访问互联网。" Foreground="{DynamicResource MutedText}" FontSize="12" Margin="1,6,0,20" />
-                        <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="14" /><ColumnDefinition Width="*" /><ColumnDefinition Width="14" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                            <Border Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="14" Padding="16"><StackPanel><TextBlock Text="CODEX" Foreground="{DynamicResource Accent}" FontSize="10" FontWeight="Bold" /><TextBlock x:Name="DiagnosticCodexText" Text="正在检查…" Foreground="{DynamicResource PrimaryText}" FontSize="16" FontWeight="SemiBold" Margin="0,7,0,0" /></StackPanel></Border>
-                            <Border Grid.Column="2" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="14" Padding="16"><StackPanel><TextBlock Text="本机端口" Foreground="{DynamicResource Accent}" FontSize="10" FontWeight="Bold" /><TextBlock x:Name="DiagnosticPortText" Text="正在检查…" Foreground="{DynamicResource PrimaryText}" FontSize="16" FontWeight="SemiBold" Margin="0,7,0,0" /></StackPanel></Border>
-                            <Border Grid.Column="4" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="14" Padding="16"><StackPanel><TextBlock Text="主题包" Foreground="{DynamicResource Accent}" FontSize="10" FontWeight="Bold" /><TextBlock x:Name="DiagnosticThemesText" Text="正在检查…" Foreground="{DynamicResource PrimaryText}" FontSize="16" FontWeight="SemiBold" Margin="0,7,0,0" /></StackPanel></Border>
+                    <StackPanel x:Name="DiagnosticsInfoPanel" Visibility="Collapsed" VerticalAlignment="Top" Margin="0,0,0,4">
+                        <Grid>
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                            <StackPanel><TextBlock Text="运行与诊断" Style="{StaticResource PageTitleText}" /><TextBlock Text="检查 Codex、主题运行时与本地资源状态，不会访问互联网。" Style="{StaticResource PageDescriptionText}" /></StackPanel>
+                            <Button Grid.Column="1" Style="{StaticResource SecondaryActionButton}" Click="Diagnostics_Click" VerticalAlignment="Center">
+                                <StackPanel Orientation="Horizontal"><Path Width="13" Height="13" Data="M 19,7 L 19,3 L 15,3 M 19,3 C 16.5,1.2 12.8,1.5 10.5,3.2 C 8.7,4.5 7.7,6.4 7.5,8.4 M 5,17 L 5,21 L 9,21 M 5,21 C 7.5,22.8 11.2,22.5 13.5,20.8 C 15.3,19.5 16.3,17.6 16.5,15.6" Stroke="{DynamicResource Accent}" StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Fill="Transparent" Stretch="Uniform" Margin="0,0,7,0" /><TextBlock Text="重新检查" /></StackPanel>
+                            </Button>
                         </Grid>
-                        <Border Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="16" Padding="20" Margin="0,18,0,0">
+
+                        <Border Style="{StaticResource ProductCard}" Margin="0,20,0,0" Padding="18">
+                            <Grid>
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="48" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                                <Grid Width="38" Height="38" VerticalAlignment="Center">
+                                    <Ellipse Fill="{DynamicResource TealSoft}" />
+                                    <Ellipse x:Name="DiagnosticHealthDot" Width="10" Height="10" Fill="{DynamicResource Positive}" />
+                                </Grid>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock x:Name="DiagnosticHealthTitleText" Text="正在检查运行状态" Foreground="{DynamicResource PrimaryText}" FontSize="15" FontWeight="SemiBold" />
+                                    <TextBlock x:Name="DiagnosticHealthBodyText" Text="正在读取本机进程、回环端口和主题包。" Foreground="{DynamicResource MutedText}" FontSize="9.5" Margin="0,4,0,0" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                    <Border Background="{DynamicResource TealSoft}" BorderBrush="{DynamicResource Teal}" BorderThickness="1" CornerRadius="9" Padding="9,5"><TextBlock Text="本地诊断" Foreground="{DynamicResource Teal}" FontSize="8.5" FontWeight="SemiBold" /></Border>
+                                    <TextBlock x:Name="DiagnosticUpdatedText" Text="尚未刷新" Foreground="{DynamicResource SubtleText}" FontSize="8.5" HorizontalAlignment="Right" Margin="0,5,0,0" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <Grid Margin="0,14,0,0">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="12" /><ColumnDefinition Width="*" /><ColumnDefinition Width="12" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                            <Border Style="{StaticResource InsetCard}" Background="{DynamicResource AccentSoft}" BorderBrush="{DynamicResource InfoBorder}" Padding="16"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="34" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions><Border Width="28" Height="28" CornerRadius="9" Background="{DynamicResource Surface}"><Path Width="14" Height="14" Data="M 4,5 L 20,5 L 20,18 L 4,18 Z M 8,21 L 16,21 M 12,18 L 12,21" Stroke="{DynamicResource Accent}" StrokeThickness="1.7" StrokeLineJoin="Round" Fill="Transparent" Stretch="Uniform" /></Border><StackPanel Grid.Column="1" Margin="8,0,0,0"><TextBlock Text="CODEX" Style="{StaticResource MetricLabelText}" /><TextBlock x:Name="DiagnosticCodexText" Text="正在检查…" Style="{StaticResource MetricValueText}" FontSize="15" Margin="0,4,0,0" /></StackPanel></Grid></Border>
+                            <Border Grid.Column="2" Style="{StaticResource InsetCard}" Background="{DynamicResource SkySoft}" BorderBrush="{DynamicResource InfoBorder}" Padding="16"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="34" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions><Border Width="28" Height="28" CornerRadius="9" Background="{DynamicResource Surface}"><Path Width="14" Height="14" Data="M 5,8 C 3,10 3,14 5,16 M 19,8 C 21,10 21,14 19,16 M 8,10 C 7,11 7,13 8,14 M 16,10 C 17,11 17,13 16,14 M 12,12 L 12,12" Stroke="{DynamicResource Sky}" StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Fill="Transparent" Stretch="Uniform" /></Border><StackPanel Grid.Column="1" Margin="8,0,0,0"><TextBlock Text="本机端口" Style="{StaticResource MetricLabelText}" /><TextBlock x:Name="DiagnosticPortText" Text="正在检查…" Style="{StaticResource MetricValueText}" FontSize="15" Margin="0,4,0,0" /></StackPanel></Grid></Border>
+                            <Border Grid.Column="4" Style="{StaticResource InsetCard}" Background="{DynamicResource TealSoft}" BorderBrush="{DynamicResource InfoBorder}" Padding="16"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="34" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions><Border Width="28" Height="28" CornerRadius="9" Background="{DynamicResource Surface}"><Path Width="14" Height="14" Data="M 4,4 L 10,4 L 10,10 L 4,10 Z M 14,4 L 20,4 L 20,10 L 14,10 Z M 4,14 L 10,14 L 10,20 L 4,20 Z M 14,14 L 20,14 L 20,20 L 14,20 Z" Stroke="{DynamicResource Teal}" StrokeThickness="1.6" Fill="Transparent" Stretch="Uniform" /></Border><StackPanel Grid.Column="1" Margin="8,0,0,0"><TextBlock Text="主题包" Style="{StaticResource MetricLabelText}" /><TextBlock x:Name="DiagnosticThemesText" Text="正在检查…" Style="{StaticResource MetricValueText}" FontSize="15" Margin="0,4,0,0" /></StackPanel></Grid></Border>
+                        </Grid>
+
+                        <Border Style="{StaticResource ProductCard}" Margin="0,14,0,0" Padding="18">
                             <StackPanel>
-                                <TextBlock Text="诊断详情" Foreground="{DynamicResource PrimaryText}" FontSize="14" FontWeight="SemiBold" />
-                                <Grid Margin="0,14,0,0">
-                                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="18" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                                    <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="12" /><RowDefinition Height="Auto" /><RowDefinition Height="12" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
-                                    <Border Background="{DynamicResource SurfaceAlt}" CornerRadius="11" Padding="14">
-                                        <StackPanel><TextBlock Text="STUDIO 根目录" Foreground="{DynamicResource SubtleText}" FontSize="9" FontWeight="SemiBold" /><TextBlock x:Name="DiagnosticRootText" Text="—" Foreground="{DynamicResource PrimaryText}" FontSize="10.5" TextWrapping="Wrap" Margin="0,6,0,0" /></StackPanel>
-                                    </Border>
-                                    <Border Grid.Column="2" Background="{DynamicResource SurfaceAlt}" CornerRadius="11" Padding="14">
-                                        <StackPanel><TextBlock Text="本地主题库" Foreground="{DynamicResource SubtleText}" FontSize="9" FontWeight="SemiBold" /><TextBlock x:Name="DiagnosticLibraryText" Text="—" Foreground="{DynamicResource PrimaryText}" FontSize="10.5" TextWrapping="Wrap" Margin="0,6,0,0" /></StackPanel>
-                                    </Border>
-                                    <Border Grid.Row="2" Background="{DynamicResource SurfaceAlt}" CornerRadius="11" Padding="14">
-                                        <StackPanel><TextBlock Text="CODEX 进程" Foreground="{DynamicResource SubtleText}" FontSize="9" FontWeight="SemiBold" /><TextBlock x:Name="DiagnosticProcessText" Text="—" Foreground="{DynamicResource PrimaryText}" FontSize="11" FontWeight="SemiBold" Margin="0,6,0,0" /></StackPanel>
-                                    </Border>
-                                    <Border Grid.Row="2" Grid.Column="2" Background="{DynamicResource SurfaceAlt}" CornerRadius="11" Padding="14">
-                                        <StackPanel><TextBlock Text="本机回环连接" Foreground="{DynamicResource SubtleText}" FontSize="9" FontWeight="SemiBold" /><TextBlock x:Name="DiagnosticLoopbackText" Text="—" Foreground="{DynamicResource PrimaryText}" FontSize="11" FontWeight="SemiBold" Margin="0,6,0,0" /></StackPanel>
-                                    </Border>
-                                    <Border Grid.Row="4" Background="{DynamicResource InfoSurface}" BorderBrush="{DynamicResource InfoBorder}" BorderThickness="1" CornerRadius="11" Padding="14">
-                                        <StackPanel><TextBlock Text="主题状态" Foreground="{DynamicResource Accent}" FontSize="9" FontWeight="SemiBold" /><TextBlock x:Name="DiagnosticThemeStateText" Text="—" Foreground="{DynamicResource PrimaryText}" FontSize="11" FontWeight="SemiBold" Margin="0,6,0,0" /><TextBlock x:Name="DiagnosticCurrentThemeText" Text="当前主题：—" Foreground="{DynamicResource MutedText}" FontSize="10" Margin="0,4,0,0" /></StackPanel>
-                                    </Border>
-                                    <Border Grid.Row="4" Grid.Column="2" Background="{DynamicResource InfoSurface}" BorderBrush="{DynamicResource InfoBorder}" BorderThickness="1" CornerRadius="11" Padding="14">
-                                        <StackPanel><TextBlock Text="主题包校验" Foreground="{DynamicResource Accent}" FontSize="9" FontWeight="SemiBold" /><TextBlock x:Name="DiagnosticValidationText" Text="—" Foreground="{DynamicResource PrimaryText}" FontSize="11" FontWeight="SemiBold" Margin="0,6,0,0" /><TextBlock Text="仅本机注入 · 无公网请求" Foreground="{DynamicResource MutedText}" FontSize="10" Margin="0,4,0,0" /></StackPanel>
-                                    </Border>
+                                <Grid><TextBlock Text="诊断详情" Foreground="{DynamicResource PrimaryText}" FontSize="13" FontWeight="SemiBold" /><TextBlock Text="设备与主题运行时" HorizontalAlignment="Right" Foreground="{DynamicResource SubtleText}" FontSize="9" /></Grid>
+                                <Grid Margin="0,13,0,0">
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="12" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="10" /><RowDefinition Height="Auto" /><RowDefinition Height="10" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                                    <Border Style="{StaticResource InsetCard}" Padding="13"><StackPanel><TextBlock Text="应用目录" Style="{StaticResource MetricLabelText}" /><TextBlock x:Name="DiagnosticRootText" Text="—" Foreground="{DynamicResource PrimaryText}" FontFamily="Consolas" FontSize="9.5" TextTrimming="CharacterEllipsis" Margin="0,5,0,0" /></StackPanel></Border>
+                                    <Border Grid.Column="2" Style="{StaticResource InsetCard}" Padding="13"><StackPanel><TextBlock Text="本地主题库" Style="{StaticResource MetricLabelText}" /><TextBlock x:Name="DiagnosticLibraryText" Text="—" Foreground="{DynamicResource PrimaryText}" FontFamily="Consolas" FontSize="9.5" TextTrimming="CharacterEllipsis" Margin="0,5,0,0" /></StackPanel></Border>
+                                    <Border Grid.Row="2" Style="{StaticResource InsetCard}" Padding="13"><StackPanel><TextBlock Text="Codex 进程" Style="{StaticResource MetricLabelText}" /><TextBlock x:Name="DiagnosticProcessText" Text="—" Foreground="{DynamicResource PrimaryText}" FontSize="10.5" FontWeight="SemiBold" Margin="0,5,0,0" /></StackPanel></Border>
+                                    <Border Grid.Row="2" Grid.Column="2" Style="{StaticResource InsetCard}" Padding="13"><StackPanel><TextBlock Text="本机回环连接" Style="{StaticResource MetricLabelText}" /><TextBlock x:Name="DiagnosticLoopbackText" Text="—" Foreground="{DynamicResource PrimaryText}" FontSize="10.5" FontWeight="SemiBold" Margin="0,5,0,0" /></StackPanel></Border>
+                                    <Border Grid.Row="4" Background="{DynamicResource InfoSurface}" BorderBrush="{DynamicResource InfoBorder}" BorderThickness="1" CornerRadius="12" Padding="13"><StackPanel><TextBlock Text="主题状态" Foreground="{DynamicResource Accent}" FontSize="8.5" FontWeight="SemiBold" /><TextBlock x:Name="DiagnosticThemeStateText" Text="—" Foreground="{DynamicResource PrimaryText}" FontSize="10.5" FontWeight="SemiBold" Margin="0,5,0,0" /><TextBlock x:Name="DiagnosticCurrentThemeText" Text="当前主题：—" Foreground="{DynamicResource MutedText}" FontSize="9" Margin="0,3,0,0" /></StackPanel></Border>
+                                    <Border Grid.Row="4" Grid.Column="2" Background="{DynamicResource InfoSurface}" BorderBrush="{DynamicResource InfoBorder}" BorderThickness="1" CornerRadius="12" Padding="13"><StackPanel><TextBlock Text="主题包校验" Foreground="{DynamicResource Accent}" FontSize="8.5" FontWeight="SemiBold" /><TextBlock x:Name="DiagnosticValidationText" Text="—" Foreground="{DynamicResource PrimaryText}" FontSize="10.5" FontWeight="SemiBold" Margin="0,5,0,0" /><TextBlock Text="仅本机注入 · 无公网请求" Foreground="{DynamicResource MutedText}" FontSize="9" Margin="0,3,0,0" /></StackPanel></Border>
                                 </Grid>
                             </StackPanel>
                         </Border>
-                        <Button Style="{StaticResource RoundButton}" Click="Diagnostics_Click" Content="↻ 刷新诊断" HorizontalAlignment="Left" Margin="0,18,0,0" />
                     </StackPanel>
                 </Grid>
             </ScrollViewer>

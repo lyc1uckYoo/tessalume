@@ -75,6 +75,7 @@ var tests = new (string Name, Func<Task> Run)[]
     ("published themes use canonical injection contract", PublishedThemesUseCanonicalInjectionContractAsync),
     ("flagship template v1 freezes shared structure", FlagshipTemplateV1FreezesSharedStructureAsync),
     ("artwork adjustments are runtime-owned", ArtworkAdjustmentsAreRuntimeOwnedAsync),
+    ("main product surfaces share the design system", MainProductSurfacesShareDesignSystemAsync),
     ("local importer copies a validated package", LocalImporterCopiesPackageAsync),
     ("bundled adapter builds a complete payload", BundledAdapterBuildsPayloadAsync),
     ("open advanced template loads and fingerprints", OpenAdvancedTemplateLoadsAndFingerprintsAsync),
@@ -876,6 +877,48 @@ static async Task ArtworkAdjustmentsAreRuntimeOwnedAsync()
                 $"{directory} hard-codes artwork correction inside {rule.Groups["selector"].Value.Trim()}.");
         }
     }
+}
+
+static async Task MainProductSurfacesShareDesignSystemAsync()
+{
+    var repositoryRoot = FindRepositoryRoot();
+    var xaml = await File.ReadAllTextAsync(Path.Combine(
+        repositoryRoot,
+        "src",
+        "Tessalume.App",
+        "MainWindow.xaml"));
+    var source = await File.ReadAllTextAsync(Path.Combine(
+        repositoryRoot,
+        "src",
+        "Tessalume.App",
+        "MainWindow.xaml.cs"));
+    var cardModel = await File.ReadAllTextAsync(Path.Combine(
+        repositoryRoot,
+        "src",
+        "Tessalume.App",
+        "Models",
+        "ThemeCardModel.cs"));
+
+    foreach (var marker in new[]
+             {
+                 "x:Key=\"PageTitleText\"",
+                 "x:Key=\"ProductCard\"",
+                 "x:Name=\"EmptyStateActionButton\"",
+                 "x:Name=\"DiagnosticHealthTitleText\"",
+                 "Content=\"选择主题文件夹\"",
+                 "Text=\"推荐工作流\"",
+             })
+    {
+        Ensure(xaml.Contains(marker, StringComparison.Ordinal),
+            $"The unified product surface is missing {marker}.");
+    }
+
+    Ensure(source.Contains("DiagnosticHealthBodyText", StringComparison.Ordinal) &&
+           source.Contains("EmptyStateAction_Click", StringComparison.Ordinal),
+        "Product surfaces must expose live diagnostic summaries and useful empty-state actions.");
+    Ensure(!cardModel.Contains("BUILT-IN", StringComparison.Ordinal) &&
+           !cardModel.Contains("LOCAL", StringComparison.Ordinal),
+        "Chinese product surfaces should not fall back to legacy English theme badges.");
 }
 
 static async Task LocalImporterCopiesPackageAsync()

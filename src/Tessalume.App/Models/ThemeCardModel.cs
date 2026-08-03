@@ -68,7 +68,7 @@ internal sealed class ThemeCardModel : INotifyPropertyChanged
 
     public bool CanDelete => Directory.Exists(CatalogItem.Directory);
 
-    public string TypeLabel => $"{(IsBuiltIn ? "BUILT-IN" : "LOCAL")} · THEME";
+    public string TypeLabel => IsBuiltIn ? "内置主题" : "本地主题";
 
     public bool HasPreview => Preview is not null;
 

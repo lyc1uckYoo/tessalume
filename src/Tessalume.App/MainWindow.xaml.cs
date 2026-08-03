@@ -218,9 +218,9 @@ public partial class MainWindow : Window, IAsyncDisposable
         }
 
         CategoryTitleText.Text = "主题画廊";
-        CategoryDescriptionText.Text = "沉浸式角色主题、动态组件与完整交互，都集中在这里。";
-        ImportDeclarationTitleText.Text = "你的视觉工作台";
-        ImportDeclarationBodyText.Text = "浏览、收藏并一键应用完整主题；导入前会检查本地源码。";
+        CategoryDescriptionText.Text = "浏览本地主题，并在应用前确认完整的视觉体验。";
+        ImportDeclarationTitleText.Text = "管理你的主题体验";
+        ImportDeclarationBodyText.Text = "导入、收藏与实时切换都在本机完成，Codex 安装文件保持不变。";
         DeclarationIconText.Text = "✦";
         ImportButton.Content = "导入主题";
         ImportButton.Visibility = Visibility.Visible;
@@ -253,9 +253,9 @@ public partial class MainWindow : Window, IAsyncDisposable
         }
 
         CategoryTitleText.Text = "我的收藏";
-        CategoryDescriptionText.Text = "集中查看你喜欢的角色主题，可直接选择并应用。";
-        ImportDeclarationTitleText.Text = "只留下真正喜欢的主题";
-        ImportDeclarationBodyText.Text = "收藏仅保存在本机，在卡片右上角即可随时加入或移出。";
+        CategoryDescriptionText.Text = "收藏会优先进入主题浮窗，方便快速切换。";
+        ImportDeclarationTitleText.Text = "把常用主题留在手边";
+        ImportDeclarationBodyText.Text = "收藏仅保存在本机，可从卡片右上角随时加入或移除。";
         DeclarationIconText.Text = "♥";
         ImportButton.Visibility = Visibility.Collapsed;
         UpdateCategoryButtons();
@@ -284,8 +284,20 @@ public partial class MainWindow : Window, IAsyncDisposable
         SelectionDock.Visibility = isEmpty ? Visibility.Collapsed : Visibility.Visible;
         EmptyStateTitleText.Text = _showFavorites ? "还没有收藏的主题" : "这里还没有主题";
         EmptyStateBodyText.Text = _showFavorites
-            ? "点击任意主题卡片右上角的爱心，把它加入我的收藏。"
-            : "使用上方按钮导入一个本地主题文件夹。";
+            ? "从主题画廊收藏常用主题，它们也会优先出现在主题浮窗中。"
+            : "导入一个完整主题包，即可开始预览和应用。";
+        EmptyStateActionButton.Content = _showFavorites ? "浏览主题画廊" : "导入主题";
+    }
+
+    private void EmptyStateAction_Click(object sender, RoutedEventArgs e)
+    {
+        if (_showFavorites)
+        {
+            ShowThemes_Click(sender, e);
+            return;
+        }
+
+        ImportTheme_Click(sender, e);
     }
 
     private async Task TryResumeAsync(StudioState state)
@@ -865,7 +877,7 @@ public partial class MainWindow : Window, IAsyncDisposable
         var port = _activePort ?? state?.Port;
         var portReady = port is not null && await _launcher.IsDebugPortReadyAsync(port.Value);
         var validThemes = _themes.Count(theme => theme.IsValid);
-        var activeTheme = state is not null
+        var activeTheme = state?.Enabled == true
             ? _themes.FirstOrDefault(theme => theme.CatalogItem.Package?.Manifest.Id == state.ThemeId)?.Name
             : null;
         var codexRunning = CodexPackageLauncher.IsCodexRunning();
@@ -884,6 +896,32 @@ public partial class MainWindow : Window, IAsyncDisposable
         DiagnosticThemeStateText.Text = state?.Enabled == true ? "沉浸式主题已启用" : "Codex 默认外观";
         DiagnosticCurrentThemeText.Text = $"当前主题：{activeTheme ?? "无"}";
         DiagnosticValidationText.Text = $"{validThemes} 个通过 · {_themes.Count - validThemes} 个异常";
+        var invalidThemes = _themes.Count - validThemes;
+        if (codexRunning && portReady && invalidThemes == 0)
+        {
+            DiagnosticHealthTitleText.Text = "运行状态良好";
+            DiagnosticHealthBodyText.Text = "Codex、本机运行时与全部主题包均处于可用状态。";
+            DiagnosticHealthDot.Fill = (Brush)Resources["Positive"];
+        }
+        else if (!codexRunning)
+        {
+            DiagnosticHealthTitleText.Text = "Codex 尚未运行";
+            DiagnosticHealthBodyText.Text = "应用任意主题时，软件会自动启动并建立本地连接。";
+            DiagnosticHealthDot.Fill = (Brush)Resources["Amber"];
+        }
+        else if (!portReady)
+        {
+            DiagnosticHealthTitleText.Text = "本机运行时需要重新连接";
+            DiagnosticHealthBodyText.Text = "Codex 正在运行，但当前回环端口不可用；重新应用主题即可修复。";
+            DiagnosticHealthDot.Fill = (Brush)Resources["Amber"];
+        }
+        else
+        {
+            DiagnosticHealthTitleText.Text = "发现需要处理的主题包";
+            DiagnosticHealthBodyText.Text = $"{invalidThemes} 个主题未通过本地校验，请检查对应主题源码。";
+            DiagnosticHealthDot.Fill = (Brush)Resources["Danger"];
+        }
+        DiagnosticUpdatedText.Text = $"刚刚更新 · {DateTime.Now:HH:mm:ss}";
         ShowInfoPage(RightPane.Diagnostics);
     }
 
@@ -1130,12 +1168,12 @@ public partial class MainWindow : Window, IAsyncDisposable
     {
         SetGradientBrush(
             "WindowBackground",
-            dark ? "#0D1015" : "#F7F8FA",
-            dark ? "#11151B" : "#F1F3F6");
+            dark ? "#0D1017" : "#F6F8FC",
+            dark ? "#111620" : "#F0F3F8");
         SetGradientBrush(
             "SidebarBackground",
-            dark ? "#13161D" : "#FBFBFC",
-            dark ? "#171B23" : "#F6F7F9");
+            dark ? "#12161F" : "#FCFDFE",
+            dark ? "#171C26" : "#F7F9FC");
         SetGradientBrush(
             "PrimaryGradient",
             dark ? "#7480F4" : "#5968EA",
@@ -1156,26 +1194,30 @@ public partial class MainWindow : Window, IAsyncDisposable
             "SettingsCurrentThemeGradient",
             dark ? "#3A2B45" : "#FFFFFF",
             dark ? "#2A233A" : "#E9E7F8");
-        SetBrush("Surface", dark ? "#20242C" : "#FFFFFF");
-        SetBrush("SurfaceAlt", dark ? "#282D36" : "#EFF1F4");
-        SetBrush("SurfaceElevated", dark ? "#242933" : "#FFFFFF");
-        SetBrush("HoverSurface", dark ? "#303641" : "#E9EBEF");
-        SetBrush("InfoSurface", dark ? "#272C3D" : "#EEF2FF");
-        SetBrush("InfoBorder", dark ? "#414962" : "#D9E0FA");
-        SetBrush("PrimaryText", dark ? "#E8ECF2" : "#191B20");
-        SetBrush("MutedText", dark ? "#B1B8C3" : "#626670");
-        SetBrush("SubtleText", dark ? "#858D99" : "#9297A1");
-        SetBrush("Border", dark ? "#3A414C" : "#DFE2E7");
-        SetBrush("Accent", dark ? "#8493FA" : "#5365E8");
-        SetBrush("AccentSoft", dark ? "#29304B" : "#E9ECFF");
-        SetBrush("ActiveNav", dark ? "#292D43" : "#EEF0FF");
-        SetBrush("Positive", dark ? "#52CEA0" : "#2EB47F");
+        SetBrush("Surface", dark ? "#1C222C" : "#FFFFFF");
+        SetBrush("SurfaceAlt", dark ? "#252C37" : "#F2F4F8");
+        SetBrush("SurfaceElevated", dark ? "#202732" : "#FFFFFF");
+        SetBrush("HoverSurface", dark ? "#2C3441" : "#E9ECF3");
+        SetBrush("InfoSurface", dark ? "#292D46" : "#F0EFFF");
+        SetBrush("InfoBorder", dark ? "#464C71" : "#DAD8F7");
+        SetBrush("PrimaryText", dark ? "#EFF2F8" : "#171927");
+        SetBrush("MutedText", dark ? "#ADB6C6" : "#62697A");
+        SetBrush("SubtleText", dark ? "#858FA1" : "#9299AA");
+        SetBrush("Border", dark ? "#353E4E" : "#DDE2EC");
+        SetBrush("Accent", dark ? "#978BFF" : "#675CF0");
+        SetBrush("AccentSoft", dark ? "#332F58" : "#EFEDFF");
+        SetBrush("ActiveNav", dark ? "#302D50" : "#EFEEFF");
+        SetBrush("Positive", dark ? "#55D6A6" : "#24B987");
         SetBrush("Danger", dark ? "#FF829E" : "#D94C70");
         SetBrush("DangerSoft", dark ? "#38232B" : "#FFF0F4");
-        SetBrush("Sky", dark ? "#8F9BFF" : "#6272E8");
-        SetBrush("SkySoft", dark ? "#2C324D" : "#EDF0FF");
-        SetBrush("Amber", dark ? "#F1B85B" : "#D58A22");
-        SetBrush("AmberSoft", dark ? "#3A3020" : "#FFF6E6");
+        SetBrush("Sky", dark ? "#8EAAFF" : "#4D7FE8");
+        SetBrush("SkySoft", dark ? "#293752" : "#EEF4FF");
+        SetBrush("Amber", dark ? "#F1B85B" : "#D88A24");
+        SetBrush("AmberSoft", dark ? "#3A3020" : "#FFF5E7");
+        SetBrush("Rose", dark ? "#F58CB6" : "#D9598C");
+        SetBrush("RoseSoft", dark ? "#412737" : "#FFF0F7");
+        SetBrush("Teal", dark ? "#55D4D1" : "#159A9C");
+        SetBrush("TealSoft", dark ? "#203B3D" : "#EAF9F7");
         SetBrush("SettingsBarBorder", dark ? "#61815B8C" : "#BAC4D8");
         SetBrush("SettingsBarPrimaryText", dark ? "#FFF7FA" : "#25293B");
         SetBrush("SettingsBarMutedText", dark ? "#B8DFD4E5" : "#697087");
