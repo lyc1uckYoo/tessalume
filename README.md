@@ -2,7 +2,7 @@
 
 面向 Codex Desktop 的开源 Windows 主题工作室。Tessalume 把完整沉浸式主题、亮暗模式、收藏切换、额度信息和本机诊断集中在一个便携应用中；它通过本机回环端口连接 Codex，不修改 Codex 安装包、`app.asar` 或用户数据。
 
-[下载 Tessalume 1.2](https://github.com/lyc1uckYoo/tessalume/releases/latest) · [版本记录](CHANGELOG.md) · [主题制作指南](THEMING.md) · [旗舰主题模板 1.0](examples/README.md)
+[下载 Tessalume 1.2](https://github.com/lyc1uckYoo/tessalume/releases/latest) · [问题反馈](https://github.com/lyc1uckYoo/tessalume/issues/new?template=bug-report.yml) · [版本记录](CHANGELOG.md) · [主题制作指南](THEMING.md) · [安全与隐私](SECURITY.md)
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/tessalume-dark.png">
@@ -77,7 +77,7 @@ Tessalume 默认以顶部浮窗开始工作。浮窗常驻屏幕上方，不遮�
 5. 首次启动会先显示欢迎引导，不会自动应用主题或中断正在运行的 Codex。进入主题库后，由你选择想使用的主题。
 6. 在主界面选择主题并点击“应用主题到 Codex”。需要重新启动 Codex 时，软件会先提醒保存当前工作并等待确认；连接成功后即可通过浮窗实时切换。
 
-发布页同时提供 `SHA256SUMS.txt`，可用于核对下载的 EXE。Tessalume 1.2 当前面向安装了 Windows 版 Codex Desktop 的 x64 系统。
+发布页同时提供 `SHA256SUMS.txt`，可用于核对下载的 EXE。Tessalume 1.2 当前面向安装了 Windows 版 Codex Desktop 的 x64 系统。当前构建没有商业代码签名，首次下载时 Microsoft Defender SmartScreen 可能显示提示；请只从本仓库 Releases 下载并核对 SHA-256。
 
 ## 本机运行与安全边界
 

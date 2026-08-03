@@ -83,6 +83,7 @@ var tests = new (string Name, Func<Task> Run)[]
     ("startup registration migrates the predecessor brand", StartupRegistrationMigratesPredecessorBrandAsync),
     ("first-run onboarding never applies a random theme", FirstRunOnboardingNeverAppliesRandomThemeAsync),
     ("build script launches the published executable by default", BuildScriptLaunchesPublishedExecutableAsync),
+    ("release artifacts and feedback paths are documented", ReleaseReadinessAssetsAreDocumentedAsync),
 };
 
 var failures = new List<string>();
@@ -429,6 +430,26 @@ static async Task BuildScriptLaunchesPublishedExecutableAsync()
            source.Contains("if (-not $NoLaunch)", StringComparison.Ordinal) &&
            source.Contains("Start-Process -FilePath $finalExe -WorkingDirectory $output", StringComparison.Ordinal),
         "The one-click build must launch the newly published EXE by default and retain an explicit opt-out.");
+}
+
+static async Task ReleaseReadinessAssetsAreDocumentedAsync()
+{
+    var repositoryRoot = FindRepositoryRoot();
+    var buildScript = await File.ReadAllTextAsync(Path.Combine(repositoryRoot, "一键构建EXE.ps1"));
+    var readme = await File.ReadAllTextAsync(Path.Combine(repositoryRoot, "README.md"));
+    var securityPath = Path.Combine(repositoryRoot, "SECURITY.md");
+    var issueTemplatePath = Path.Combine(repositoryRoot, ".github", "ISSUE_TEMPLATE", "bug-report.yml");
+    var releaseChecklistPath = Path.Combine(repositoryRoot, "docs", "RELEASE_CHECKLIST.md");
+
+    Ensure(buildScript.Contains("Get-FileHash -LiteralPath $finalExe -Algorithm SHA256", StringComparison.Ordinal) &&
+           buildScript.Contains("SHA256SUMS.txt", StringComparison.Ordinal),
+        "The release build must create a SHA-256 manifest beside the executable.");
+    Ensure(File.Exists(securityPath) && File.Exists(issueTemplatePath) && File.Exists(releaseChecklistPath),
+        "Public testing requires security guidance, a structured bug form, and a release checklist.");
+    Ensure(readme.Contains("issues/new?template=bug-report.yml", StringComparison.Ordinal) &&
+           readme.Contains("Microsoft Defender SmartScreen", StringComparison.Ordinal) &&
+           readme.Contains("SHA256SUMS.txt", StringComparison.Ordinal),
+        "The download guide must expose feedback, signature status, and checksum verification.");
 }
 
 static async Task RuntimeRemovesNativeComposerFadeAsync()
@@ -1089,7 +1110,9 @@ static async Task DiagnosticsRecoveryIsAvailableAsync()
            mainSource.Contains("LocalLog.ReadTail", StringComparison.Ordinal) &&
            mainSource.Contains("RestoreBuiltInThemes_Click", StringComparison.Ordinal) &&
            mainSource.Contains("TrySetClipboardTextAsync", StringComparison.Ordinal) &&
-           mainSource.Contains("attempt <= 5", StringComparison.Ordinal),
+           mainSource.Contains("attempt <= 5", StringComparison.Ordinal) &&
+           mainSource.Contains("RedactDiagnosticText(line)", StringComparison.Ordinal) &&
+           mainSource.Contains("%USERPROFILE%", StringComparison.Ordinal),
         "The diagnostics page must expose a copyable local report and built-in theme recovery.");
     Ensure(appSource.Contains("LocalLog.Initialize(layout.DataDirectory)", StringComparison.Ordinal) &&
            appSource.IndexOf("LocalLog.Initialize(layout.DataDirectory)", StringComparison.Ordinal) <

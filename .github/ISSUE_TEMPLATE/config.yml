@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 私密报告安全问题
+    url: https://github.com/lyc1uckYoo/tessalume/security/advisories/new
+    about: 安全漏洞或涉及敏感信息的问题请使用此入口。

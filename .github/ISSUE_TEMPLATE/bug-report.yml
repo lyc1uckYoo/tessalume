@@ -1,0 +1,67 @@
+name: Bug 报告
+description: 报告可复现的 Tessalume 运行、导入或界面问题
+title: "[Bug] "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢反馈。请先更新到最新版本，并确认问题可以重复出现。
+        安全漏洞请使用 Security Advisory 私密入口，不要发布在公开 Issue。
+  - type: input
+    id: version
+    attributes:
+      label: Tessalume 版本
+      description: 可在“关于与数据”页面查看。
+      placeholder: 1.2.0
+    validations:
+      required: true
+  - type: input
+    id: windows
+    attributes:
+      label: Windows 版本
+      placeholder: Windows 11 24H2 x64
+    validations:
+      required: true
+  - type: input
+    id: codex
+    attributes:
+      label: Codex Desktop 版本
+      description: 如果无法确认，请填写“不确定”。
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      placeholder: |
+        1. 打开……
+        2. 选择……
+        3. 出现……
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 预期结果与实际结果
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: 诊断报告
+      description: 在“运行与诊断”页面点击“复制诊断报告”后粘贴；提交前仍请自行检查内容。
+      render: text
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: 截图或补充说明
+      description: 可直接拖入截图；请遮挡不希望公开的信息。
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: 提交确认
+      options:
+        - label: 我已检查报告与截图，不包含账号、令牌或其他敏感信息。
+          required: true

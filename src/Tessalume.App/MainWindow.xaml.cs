@@ -1169,14 +1169,14 @@ public partial class MainWindow : Window, IAsyncDisposable
             .AppendLine(CultureInfo.InvariantCulture, $"主题包：{DiagnosticThemesText.Text}")
             .AppendLine(CultureInfo.InvariantCulture, $"主题状态：{DiagnosticThemeStateText.Text}")
             .AppendLine(DiagnosticCurrentThemeText.Text)
-            .AppendLine(CultureInfo.InvariantCulture, $"应用目录：{_layout.RootDirectory}")
-            .AppendLine(CultureInfo.InvariantCulture, $"主题目录：{_layout.ThemesDirectory}")
-            .AppendLine(CultureInfo.InvariantCulture, $"日志目录：{LocalLog.LogDirectory}")
+            .AppendLine(CultureInfo.InvariantCulture, $"应用目录：{RedactDiagnosticText(_layout.RootDirectory)}")
+            .AppendLine(CultureInfo.InvariantCulture, $"主题目录：{RedactDiagnosticText(_layout.ThemesDirectory)}")
+            .AppendLine(CultureInfo.InvariantCulture, $"日志目录：{RedactDiagnosticText(LocalLog.LogDirectory)}")
             .AppendLine()
             .AppendLine("最近日志：");
         foreach (var line in LocalLog.ReadTail())
         {
-            report.AppendLine(line);
+            report.AppendLine(RedactDiagnosticText(line));
         }
 
         if (await TrySetClipboardTextAsync(report.ToString(), "无法复制诊断报告"))
@@ -1209,6 +1209,24 @@ public partial class MainWindow : Window, IAsyncDisposable
         LocalLog.Write($"{errorTitle}: the Windows clipboard remained unavailable.", lastException);
         ShowProductMessage(errorTitle, lastException?.Message ?? "Windows 剪贴板暂时不可用，请稍后重试。", ProductDialogKind.Error);
         return false;
+    }
+
+    private static string RedactDiagnosticText(string value)
+    {
+        var replacements = new (string Path, string Token)[]
+        {
+            (Path.GetTempPath().TrimEnd(Path.DirectorySeparatorChar), "%TEMP%"),
+            (Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "%LOCALAPPDATA%"),
+            (Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "%USERPROFILE%"),
+        };
+        foreach (var (path, token) in replacements
+                     .Where(item => !string.IsNullOrWhiteSpace(item.Path))
+                     .DistinctBy(item => item.Path, StringComparer.OrdinalIgnoreCase)
+                     .OrderByDescending(item => item.Path.Length))
+        {
+            value = value.Replace(path, token, StringComparison.OrdinalIgnoreCase);
+        }
+        return value;
     }
 
     private async void RestoreBuiltInThemes_Click(object sender, RoutedEventArgs e)

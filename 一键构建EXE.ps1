@@ -296,7 +296,12 @@ Remove-GeneratedDirectory (Join-Path $root '.test-output')
 
 $finalExe = Join-Path $output $executableName
 $size = [Math]::Round((Get-Item -LiteralPath $finalExe).Length / 1MB, 1)
+$checksumPath = Join-Path $output 'SHA256SUMS.txt'
+$checksum = (Get-FileHash -LiteralPath $finalExe -Algorithm SHA256).Hash.ToLowerInvariant()
+$checksumLine = "$checksum *$executableName$([Environment]::NewLine)"
+[IO.File]::WriteAllText($checksumPath, $checksumLine, [Text.UTF8Encoding]::new($false))
 Write-Host "Build complete: $finalExe ($size MB)" -ForegroundColor Green
+Write-Host "Checksum: $checksumPath" -ForegroundColor Green
 Write-Host 'Built-in themes are embedded and will be extracted on first launch.' -ForegroundColor Green
 
 if (-not $NoLaunch) {
