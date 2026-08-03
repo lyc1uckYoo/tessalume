@@ -1273,9 +1273,12 @@ static async Task PortableCreatorWorkspaceIsSelfContainedAsync()
     Ensure(mainSource.Contains("PrepareCreatorWorkspace_Click", StringComparison.Ordinal) &&
            mainXaml.Contains("准备 Codex 创作工作区", StringComparison.Ordinal) &&
            mainXaml.Contains("请使用 $author-tessalume-theme", StringComparison.Ordinal) &&
-           !mainSource.Contains("Clipboard", StringComparison.Ordinal) &&
-           !mainXaml.Contains("复制一句话创作指令", StringComparison.Ordinal),
-        "The product guide must expose the complete Codex prompt without automatic clipboard access.");
+           mainXaml.Contains("x:Name=\"CreatorPromptText\"", StringComparison.Ordinal) &&
+           mainXaml.Contains("AutomationProperties.Name=\"复制提示词\"", StringComparison.Ordinal) &&
+           mainXaml.Contains("FocusVisualStyle=\"{x:Null}\"", StringComparison.Ordinal) &&
+           mainSource.Contains("Clipboard.SetText(CreatorPromptText.Text)", StringComparison.Ordinal) &&
+           !mainSource.Contains("ShowProductMessage(\"复制", StringComparison.Ordinal),
+        "The creator guide must show a larger complete prompt with one direct, non-modal copy action.");
     Ensure(skill.Contains("TESSALUME_CREATOR_WORKSPACE.md", StringComparison.Ordinal) &&
            skill.Contains("portable creator mode", StringComparison.Ordinal),
         "The authoring Skill must distinguish the portable workspace from the app repository.");

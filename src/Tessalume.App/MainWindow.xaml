@@ -1058,7 +1058,7 @@
         </Grid>
 
         <Grid x:Name="InfoPage" Grid.Column="1" Margin="32,25,32,22" Visibility="Collapsed">
-            <ScrollViewer x:Name="InfoScroll" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <ScrollViewer x:Name="InfoScroll" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" FocusVisualStyle="{x:Null}">
                 <Grid Width="{Binding ViewportWidth, ElementName=InfoScroll}" MinHeight="{Binding ViewportHeight, ElementName=InfoScroll}" MaxWidth="940" HorizontalAlignment="Center">
                     <StackPanel x:Name="ImportInfoPanel" VerticalAlignment="Top" Margin="0,0,0,4">
                         <Grid>
@@ -1122,22 +1122,27 @@
 
                         <Border Style="{StaticResource ProductCard}" Margin="0,20,0,0">
                             <Grid>
+                                <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="58" /><ColumnDefinition Width="*" /><ColumnDefinition Width="18" /><ColumnDefinition Width="210" /></Grid.ColumnDefinitions>
                                 <Border Width="48" Height="48" CornerRadius="15" Background="{DynamicResource PrimaryGradient}" VerticalAlignment="Top"><Path Width="22" Height="22" Data="M 4,4 C 8,3 10,4 12,6 L 12,20 C 10,18 8,17 4,18 Z M 20,4 C 16,3 14,4 12,6 L 12,20 C 14,18 16,17 20,18 Z" Stroke="White" StrokeThickness="1.8" StrokeLineJoin="Round" Fill="Transparent" Stretch="Uniform" /></Border>
                                 <StackPanel Grid.Column="1">
                                     <TextBlock Text="使用 Codex 自动创作主题" Foreground="{DynamicResource PrimaryText}" FontSize="17" FontWeight="SemiBold" />
                                     <TextBlock Text="工作区已经内置 Template 1.0、11 张素材规范和校验脚本。你只需在 Codex 中打开它，并说出作品与角色。" TextWrapping="Wrap" Foreground="{DynamicResource MutedText}" FontSize="10.5" LineHeight="18" Margin="0,7,0,0" />
-                                    <Border Background="{DynamicResource AccentSoft}" BorderBrush="{DynamicResource InfoBorder}" BorderThickness="1" CornerRadius="10" Padding="12,10" Margin="0,11,0,0">
-                                        <StackPanel>
-                                            <TextBlock Text="提示词示例" Foreground="{DynamicResource Accent}" FontSize="8.5" FontWeight="Bold" />
-                                            <TextBlock Text="请使用 $author-tessalume-theme 为《鸣潮》的椿制作一套 Tessalume 主题；先完成角色研究和 11 张素材计划，等我确认后再生成、校验并交付可导入的主题文件夹。" TextWrapping="Wrap" Foreground="{DynamicResource PrimaryText}" FontSize="9.5" LineHeight="16" Margin="0,5,0,0" />
-                                        </StackPanel>
-                                    </Border>
                                 </StackPanel>
                                 <StackPanel Grid.Column="3" VerticalAlignment="Center">
                                     <Button Style="{StaticResource PrimaryActionButton}" Click="PrepareCreatorWorkspace_Click" Content="准备 Codex 创作工作区" Height="40" />
                                     <Button Style="{StaticResource QuietActionButton}" Click="CopyTemplate_Click" Content="仅复制手动模板" Margin="0,8,0,0" />
                                 </StackPanel>
+                                <Border Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Background="{DynamicResource AccentSoft}" BorderBrush="{DynamicResource InfoBorder}" BorderThickness="1" CornerRadius="11" Padding="15,13" Margin="0,15,0,0" MinHeight="78">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                                        <StackPanel VerticalAlignment="Center">
+                                            <TextBlock Text="提示词示例" Foreground="{DynamicResource Accent}" FontSize="9.5" FontWeight="Bold" />
+                                            <TextBlock x:Name="CreatorPromptText" Text="请使用 $author-tessalume-theme 为《鸣潮》的椿制作一套 Tessalume 主题；先完成角色研究和 11 张素材计划，等我确认后再生成、校验并交付可导入的主题文件夹。" TextWrapping="Wrap" Foreground="{DynamicResource PrimaryText}" FontSize="11.5" LineHeight="19" Margin="0,6,0,0" />
+                                        </StackPanel>
+                                        <Button x:Name="CopyCreatorPromptButton" Grid.Column="1" Style="{StaticResource QuietActionButton}" Content="复制" Width="68" Height="34" Margin="16,0,0,0" VerticalAlignment="Center" Click="CopyCreatorPrompt_Click" AutomationProperties.Name="复制提示词" />
+                                    </Grid>
+                                </Border>
                             </Grid>
                         </Border>
 

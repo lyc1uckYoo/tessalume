@@ -1298,6 +1298,19 @@ public partial class MainWindow : Window, IAsyncDisposable
         }
     }
 
+    private void CopyCreatorPrompt_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            Clipboard.SetText(CreatorPromptText.Text);
+            ShowToast("提示词已复制");
+        }
+        catch (System.Runtime.InteropServices.ExternalException)
+        {
+            ShowToast("剪贴板正忙，请再点一次");
+        }
+    }
+
     private static string GetAvailableCreatorWorkspacePath(string parentDirectory)
     {
         var first = Path.Combine(parentDirectory, CreatorWorkspaceFolderName);
