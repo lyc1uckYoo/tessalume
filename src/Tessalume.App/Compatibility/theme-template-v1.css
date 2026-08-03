@@ -152,6 +152,37 @@ html.tessalume-theme-active:not(.electron-dark) [data-tessalume-surface="sidebar
   opacity:1!important;
 }
 
+/* User-owned artwork correction. Theme packages own only the source image and crop. */
+html.tessalume-theme-active:not(.electron-dark).tessalume-is-home [data-tessalume-surface="home"]>div:first-child>div:first-child>div:first-child::before {
+  filter:var(--tessalume-visual-hero-light-filter,brightness(1) contrast(1) saturate(1))!important;
+  opacity:var(--tessalume-visual-hero-light-opacity,1)!important;
+}
+
+html.tessalume-theme-active.electron-dark.tessalume-is-home [data-tessalume-surface="home"]>div:first-child>div:first-child>div:first-child::before {
+  filter:var(--tessalume-visual-hero-dark-filter,brightness(1) contrast(1) saturate(1))!important;
+  opacity:var(--tessalume-visual-hero-dark-opacity,1)!important;
+}
+
+html.tessalume-theme-active:not(.electron-dark) [data-tessalume-surface="sidebar"]::after {
+  filter:var(--tessalume-visual-sidebar-light-filter,brightness(1) contrast(1) saturate(1))!important;
+  opacity:var(--tessalume-visual-sidebar-light-opacity,1)!important;
+}
+
+html.tessalume-theme-active.electron-dark [data-tessalume-surface="sidebar"]::after {
+  filter:var(--tessalume-visual-sidebar-dark-filter,brightness(1) contrast(1) saturate(1))!important;
+  opacity:var(--tessalume-visual-sidebar-dark-opacity,1)!important;
+}
+
+html.tessalume-theme-active:not(.electron-dark).tessalume-is-task main[data-tessalume-surface="main"]::before {
+  filter:var(--tessalume-visual-chat-light-filter,brightness(1) contrast(1) saturate(1))!important;
+  opacity:var(--tessalume-visual-chat-light-opacity,1)!important;
+}
+
+html.tessalume-theme-active.electron-dark.tessalume-is-task main[data-tessalume-surface="main"]::before {
+  filter:var(--tessalume-visual-chat-dark-filter,brightness(1) contrast(1) saturate(1))!important;
+  opacity:var(--tessalume-visual-chat-dark-opacity,1)!important;
+}
+
 html.tessalume-theme-active:not(.electron-dark) [data-tessalume-surface="sidebar"] :is([data-app-action-sidebar-project-row],[data-app-action-sidebar-thread-row]):is(:hover,[aria-current="page"],[data-sidebar-thread-active="true"]) {
   background:var(--tessalume-v1-light-sidebar-row-active,linear-gradient(90deg,rgba(255,255,255,.86),rgba(255,255,255,.56) 72%,transparent))!important;
 }

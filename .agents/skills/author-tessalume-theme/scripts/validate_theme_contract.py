@@ -257,6 +257,31 @@ def validate_theme(
                 match.group(1).lower()
                 for match in re.finditer(r"(?:^|;)\s*([\w-]+)\s*:", body)
             }
+            artwork_layer = None
+            if "aside.app-shell-left-panel::after" in normalized_selector:
+                artwork_layer = "sidebar"
+            elif (f".{namespace}-home" in normalized_selector and
+                  "div:first-child>div:first-child>div:first-child::before" in normalized_selector):
+                artwork_layer = "hero"
+            elif (f"-is-task main.{namespace}-main::before" in normalized_selector):
+                artwork_layer = "chat"
+            if artwork_layer:
+                hard_coded_correction = properties & {"filter", "opacity"}
+                if hard_coded_correction:
+                    errors.append(
+                        f"{label}: {artwork_layer} artwork correction belongs to Tessalume settings, "
+                        f"not {normalized_selector}: {', '.join(sorted(hard_coded_correction))}"
+                    )
+            artwork_owners = {
+                f"var(--{namespace}-hero)": f".{namespace}-home",
+                f"var(--{namespace}-sidebar-art)": "aside.app-shell-left-panel::after",
+                f"var(--{namespace}-chat-art)": f"main.{namespace}-main::before",
+            }
+            for artwork_token, owner_selector in artwork_owners.items():
+                if artwork_token in body and owner_selector not in normalized_selector:
+                    errors.append(
+                        f"{label}: {artwork_token} must be painted only by {owner_selector}"
+                    )
             if f"main.{namespace}-main::before" in normalized_selector or f"main.{namespace}-main::after" in normalized_selector:
                 shared = properties & {"content", "position", "inset", "z-index", "pointer-events", "isolation"}
                 if shared:

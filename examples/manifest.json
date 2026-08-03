@@ -39,6 +39,7 @@
     "memory-dark": "assets/placeholder.svg"
   },
   "config": {
+    "qualityGate": "flagship-complete-1",
     "title": "旗舰主题模板 1.0",
     "subtitle": "在这里填写角色主题副标题。",
     "status": "THEME ONLINE",

@@ -150,19 +150,11 @@ html.qxo-theme aside.app-shell-left-panel::after {
   z-index:0;
   inset:0;
   pointer-events:none;
-  background:linear-gradient(90deg,rgba(239,248,247,.73) 0%,rgba(239,248,247,.38) 0%,rgba(239,248,247,.04) 0%,transparent 100%),
-  linear-gradient(180deg,rgba(244,250,249,.42),transparent 0%,transparent 100%,rgba(225,239,239,.66)),
-  var(--qxo-sidebar-art) 45% -186px/258% auto no-repeat;
-  opacity:.96;
-  filter:brightness(1.06) saturate(1.10) contrast(1.02);
+  background:var(--qxo-sidebar-art) 45% -186px/258% auto no-repeat;
 }
 
 html.qxo-theme.electron-dark aside.app-shell-left-panel::after {
-  background:linear-gradient(90deg,rgba(5,13,22,.94) 0%,rgba(5,13,22,.67) 0%,rgba(5,13,22,.12) 0%,transparent 0%),
-  linear-gradient(180deg,rgba(5,14,24,.72),transparent 0%,transparent 100%,rgba(4,11,19,.82)),
-  var(--qxo-sidebar-art) 40% -68px/188% auto no-repeat;
-  opacity:.98;
-  filter:brightness(1.20) saturate(1.12) contrast(1.05);
+  background:var(--qxo-sidebar-art) 40% -68px/188% auto no-repeat;
 }
 
 html.qxo-theme.qxo-is-task main.qxo-main {
@@ -307,7 +299,7 @@ html.qxo-theme aside [data-app-action-sidebar-thread-row][aria-current="page"],h
 
 .qxo-theme .qxo-home>div:first-child>div:first-child>div:first-child::before {
   content:"";
-  background:linear-gradient(90deg,color-mix(in srgb,var(--qxo-solid) 78%,transparent) 0%,color-mix(in srgb,var(--qxo-solid) 30%,transparent) 33%,transparent 53%),var(--qxo-hero) center/cover no-repeat!important;
+  background:var(--qxo-hero) center/cover no-repeat!important;
   transform:scale(1.012);
   transform-origin:72% 50%;
   animation:qxo-breathe 18s ease-in-out infinite alternate;
@@ -386,10 +378,14 @@ html.qxo-theme aside [data-app-action-sidebar-thread-row][aria-current="page"],h
   border:1px solid color-mix(in srgb,var(--qxo-gold) 38%,transparent);
   border-radius:3px 23px 3px 23px;
   box-shadow:inset 0 0 42px color-mix(in srgb,var(--qxo-solid) 9%,transparent);
-  background:linear-gradient(90deg,var(--qxo-gold),transparent) left top/72px 1px no-repeat,
+  background:linear-gradient(90deg,rgba(242,249,248,.82) 0%,rgba(238,247,247,.43) 31%,rgba(236,246,248,.08) 49%,transparent 64%),linear-gradient(90deg,var(--qxo-gold),transparent) left top/72px 1px no-repeat,
     linear-gradient(180deg,var(--qxo-red),transparent) left top/1px 72px no-repeat,
     linear-gradient(270deg,var(--qxo-red),transparent) right bottom/72px 1px no-repeat,
     linear-gradient(0deg,var(--qxo-gold),transparent) right bottom/1px 72px no-repeat;
+}
+
+.qxo-theme.electron-dark .qxo-home>div:first-child>div:first-child>div:first-child::after {
+  background:linear-gradient(90deg,rgba(4,13,22,.78) 0%,rgba(5,17,29,.39) 32%,rgba(5,17,29,.07) 50%,transparent 65%),linear-gradient(90deg,var(--qxo-gold),transparent) left top/72px 1px no-repeat,linear-gradient(180deg,var(--qxo-red),transparent) left top/1px 72px no-repeat,linear-gradient(270deg,var(--qxo-red),transparent) right bottom/72px 1px no-repeat,linear-gradient(0deg,var(--qxo-gold),transparent) right bottom/1px 72px no-repeat;
 }
 
 .qxo-home .group\/home-suggestions button>div::after {
@@ -629,16 +625,14 @@ html.qxo-theme.electron-dark .qxo-score-form-dark {
 }
 
 .qxo-theme:not(.electron-dark) .qxo-home>div:first-child>div:first-child>div:first-child::before {
-  background:linear-gradient(90deg,rgba(242,249,248,.82) 0%,rgba(238,247,247,.43) 31%,rgba(236,246,248,.08) 49%,transparent 64%),var(--qxo-hero) 58% 42%/cover no-repeat!important;
+  background:var(--qxo-hero) 58% 42%/cover no-repeat!important;
   transform:scale(1.08)!important;
   transform-origin:58% 42%!important;
   animation:none!important;
-  filter:saturate(1.02) contrast(1.015)!important;
 }
 
 .qxo-theme.electron-dark .qxo-home>div:first-child>div:first-child>div:first-child::before {
-  background:linear-gradient(90deg,rgba(4,13,22,.78) 0%,rgba(5,17,29,.39) 32%,rgba(5,17,29,.07) 50%,transparent 65%),var(--qxo-hero) 58% 40%/cover no-repeat!important;
-  filter:saturate(1.1) contrast(1.045)!important;
+  background:var(--qxo-hero) 58% 40%/cover no-repeat!important;
   transform:scale(1.08)!important;
   transform-origin:58% 40%!important;
   animation:none!important;

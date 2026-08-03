@@ -1,4 +1,5 @@
 /* 01 Light and dark tokens */
+/* 01 亮暗色令牌：统一管理亮色与暗色主题变量。 */
 html.example-theme {
   --example-bg:#f1f3f7;
   --example-bg-2:#f8f9fb;
@@ -46,6 +47,11 @@ html.example-theme.electron-dark {
   color-scheme:dark;
 }
 
+html.example-theme:not(.electron-dark) .example-dark-only,
+html.example-theme.electron-dark .example-light-only {
+  display:none!important;
+}
+
 .example-theme {
   --color-background:var(--example-bg)!important;
   --color-background-secondary:var(--example-bg-2)!important;
@@ -64,6 +70,7 @@ html.example-theme.electron-dark {
 }
 
 /* 02 App and native planes */
+/* 02 应用与原生平面：应用底色、窗口栏与原生页面承载层。 */
 html.example-theme,.example-theme body,.example-theme #root {
   background:var(--example-bg)!important;
   color:var(--example-text)!important;
@@ -79,16 +86,35 @@ html.example-theme main.example-main {
 }
 
 html.example-theme aside.app-shell-left-panel {
+  position:relative;
   isolation:isolate;
+  overflow:hidden;
   border-right:1px solid var(--example-line)!important;
-  background:linear-gradient(90deg,color-mix(in srgb,var(--example-sidebar) 98%,transparent),color-mix(in srgb,var(--example-sidebar) 72%,transparent) 30%,transparent 100%),
-    var(--example-sidebar-art) 80% -92px/202% auto no-repeat!important;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--example-sidebar) 98%,transparent),color-mix(in srgb,var(--example-sidebar) 72%,transparent) 30%,transparent 100%)!important;
   box-shadow:12px 0 40px color-mix(in srgb,var(--example-accent) 14%,transparent)!important;
 }
 
 html.example-theme aside.app-shell-left-panel>* {
   position:relative;
   z-index:1;
+}
+
+html.example-theme aside.app-shell-left-panel::before {
+  content:"";
+  position:absolute;
+  z-index:2;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--example-sidebar) 82%,transparent),transparent 72%);
+}
+
+html.example-theme aside.app-shell-left-panel::after {
+  content:"";
+  position:absolute;
+  z-index:0;
+  inset:0;
+  pointer-events:none;
+  background:var(--example-sidebar-art) 80% -92px/202% auto no-repeat;
 }
 
 html.example-theme.example-is-task main.example-main {
@@ -112,6 +138,7 @@ html.example-theme.example-is-settings .example-settings-surface {
 }
 
 /* 03 Sidebar skin */
+/* 03 左栏皮肤：左栏背景、项目行、会话行与分组标题。 */
 html.example-theme aside [data-app-action-sidebar-project-row] {
   --phase:var(--example-accent);
   border:1px solid color-mix(in srgb,var(--phase) 45%,var(--example-line))!important;
@@ -133,11 +160,22 @@ html.example-theme aside [data-app-action-sidebar-thread-row]:hover,html.example
   background:color-mix(in srgb,var(--example-solid) 82%,transparent)!important;
 }
 
+html.example-theme aside [data-app-action-sidebar-project-row] :is(button,svg),
+html.example-theme aside [data-app-action-sidebar-thread-row] :is(button,svg) {
+  color:inherit!important;
+}
+
+html.example-theme aside :is([data-sidebar-section-heading],[class*="sectionHeading"],[class*="section-title"]) {
+  color:var(--example-text-3)!important;
+  font-family:var(--example-mono)!important;
+  letter-spacing:.08em;
+}
+
 /* 04 Home skin */
+/* 04 首页皮肤：首页横幅、主标题、路线装饰与快捷卡片。 */
 .example-theme .example-home>div:first-child>div:first-child>div:first-child::before {
   content:"";
-  background:linear-gradient(90deg,color-mix(in srgb,var(--example-solid) 78%,transparent),color-mix(in srgb,var(--example-solid) 24%,transparent) 40%,transparent 62%),
-    var(--example-hero) center/cover no-repeat!important;
+  background:var(--example-hero) center/cover no-repeat!important;
   transform:scale(1.008);
   animation:example-hero-breathe 18s ease-in-out infinite alternate;
 }
@@ -146,6 +184,7 @@ html.example-theme aside [data-app-action-sidebar-thread-row]:hover,html.example
   content:"";
   border:1px solid color-mix(in srgb,var(--example-gold) 44%,transparent);
   border-radius:20px 2px 20px 2px;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--example-solid) 78%,transparent),color-mix(in srgb,var(--example-solid) 24%,transparent) 40%,transparent 62%);
 }
 
 .example-home .group\/home-suggestions button {
@@ -214,6 +253,7 @@ html.example-theme aside [data-app-action-sidebar-thread-row]:hover,html.example
 }
 
 /* 05 Identity skin */
+/* 05 身份组件皮肤：主题身份牌与状态标记。 */
 html.example-theme .example-window-bar {
   border-bottom:1px solid var(--example-line)!important;
   background:color-mix(in srgb,var(--example-solid) 94%,transparent)!important;
@@ -262,6 +302,7 @@ html.example-theme .example-window-bar {
 }
 
 /* 06 Task-card skin */
+/* 06 任务卡皮肤：左卡与右侧双任务卡。 */
 .example-task-card {
   border:1px solid var(--example-line-strong);
   background:var(--example-panel);
@@ -328,6 +369,7 @@ html.example-theme .example-window-bar {
 }
 
 /* 07 Memory skin */
+/* 07 记忆组件皮肤：记忆卡、心印 SVG 与相关动效样式。 */
 .example-memory {
   border:1px solid var(--example-line);
   border-radius:18px 3px 18px 3px;
@@ -379,6 +421,7 @@ html.example-theme .example-window-bar {
 }
 
 /* 08 Sync-panel skin */
+/* 08 同步面板皮肤：同步率、核心环、频谱与状态读数。 */
 .example-sync-panel {
   border:1px solid color-mix(in srgb,var(--example-accent) 58%,var(--example-gold));
   border-radius:5px 20px 5px 20px;
@@ -463,13 +506,32 @@ html.example-theme .example-window-bar {
 }
 
 /* 09 Message and output frames */
+/* 09 消息与输出框架：任务标题、消息气泡、聊天背景与环境信息。 */
 .example-task-header {
   border:1px solid var(--example-line-strong)!important;
   border-radius:18px 3px 18px 3px!important;
   background:color-mix(in srgb,var(--example-solid) 90%,transparent)!important;
 }
 
+html.example-theme .example-task-title {
+  color:var(--example-text)!important;
+  border:1px solid var(--example-line-strong)!important;
+  border-radius:16px 3px 16px 3px!important;
+  background:linear-gradient(100deg,color-mix(in srgb,var(--example-accent) 10%,var(--example-solid)),color-mix(in srgb,var(--example-gold) 8%,transparent))!important;
+  box-shadow:inset 3px 0 var(--example-accent),0 6px 20px color-mix(in srgb,var(--example-accent) 16%,transparent)!important;
+}
+
+html.example-theme .example-task-title :is(button,svg) {
+  color:inherit!important;
+}
+
+html.example-theme .example-task-title button:hover,
+html.example-theme .example-task-title button:focus-visible {
+  color:var(--example-accent)!important;
+}
+
 .example-message-assistant .example-markdown {
+  padding:21px 34px 38px!important;
   color:var(--example-text)!important;
   border:1px solid var(--example-line-strong)!important;
   border-left:3px solid var(--example-accent-2)!important;
@@ -477,6 +539,7 @@ html.example-theme .example-window-bar {
 }
 
 .example-message-user [data-user-message-bubble="true"] {
+  padding:28px 30px 22px!important;
   color:var(--example-text)!important;
   border:1px solid var(--example-line-strong)!important;
   border-radius:24px 6px 24px 24px!important;
@@ -487,7 +550,41 @@ html.example-theme .example-window-bar {
   border-right:1px solid color-mix(in srgb,var(--example-gold) 34%,transparent);
 }
 
+.example-output-panel {
+  color:var(--example-text)!important;
+  border:1px solid var(--example-line-strong)!important;
+  border-radius:22px 5px 22px 5px!important;
+  background:linear-gradient(145deg,color-mix(in srgb,var(--example-solid) 94%,var(--example-accent) 6%),color-mix(in srgb,var(--example-panel) 92%,var(--example-gold) 8%))!important;
+  box-shadow:var(--example-shadow)!important;
+}
+
+.example-output-panel>div>section {
+  border:1px solid var(--example-line)!important;
+  border-radius:15px 3px 15px 3px!important;
+  background:color-mix(in srgb,var(--example-panel) 92%,transparent)!important;
+}
+
+.example-output-panel>div>section>header {
+  color:var(--example-gold)!important;
+  border-bottom:1px solid color-mix(in srgb,var(--example-gold) 42%,var(--example-line))!important;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--example-accent) 10%,var(--example-solid)),color-mix(in srgb,var(--example-gold) 8%,var(--example-panel)))!important;
+}
+
+.example-output-panel [data-slot="thread-summary-panel-item-button"] {
+  color:var(--example-text-2)!important;
+  border:1px solid transparent!important;
+  border-left:2px solid var(--example-accent-2)!important;
+  border-radius:9px 3px 9px 3px!important;
+  background:color-mix(in srgb,var(--example-solid) 76%,transparent)!important;
+}
+
+.example-output-panel [data-slot="thread-summary-panel-item-button"]:hover {
+  color:var(--example-text)!important;
+  border-color:var(--example-line-strong)!important;
+}
+
 /* 10 Composer skin */
+/* 10 输入框皮肤：输入区、占位文字与发送控件。 */
 .example-composer-accessory {
   border:1px solid var(--example-line-strong);
   border-radius:50%;
@@ -531,9 +628,61 @@ html.example-theme .composer-surface-chrome {
   box-shadow:var(--example-shadow)!important;
 }
 
+html.example-theme .composer-surface-chrome:focus-within {
+  border-color:var(--example-accent-2)!important;
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--example-accent-2) 12%,transparent),var(--example-shadow)!important;
+}
+
+html.example-theme .composer-surface-chrome :is(textarea,input,[contenteditable="true"],[class*="placeholder"]) {
+  color:var(--example-text)!important;
+  caret-color:var(--example-accent-2)!important;
+}
+
+html.example-theme .composer-surface-chrome :is(textarea,input)::placeholder,
+html.example-theme .composer-surface-chrome [contenteditable="true"]:empty::before {
+  color:var(--example-text-3)!important;
+  opacity:1!important;
+}
+
+html.example-theme .composer-surface-chrome [class*="_footer_"] button {
+  color:var(--example-text-2)!important;
+  border-color:var(--example-line)!important;
+}
+
+html.example-theme .composer-surface-chrome [class*="_footer_"] button:hover {
+  color:var(--example-accent)!important;
+  border-color:var(--example-line-strong)!important;
+}
+
+html.example-theme .composer-surface-chrome button:has([class*="_ModelPickerTrigger"]),
+html.example-theme .composer-surface-chrome button:has([class*="_labelXs_"]) {
+  color:var(--example-text)!important;
+  background:color-mix(in srgb,var(--example-solid) 88%,var(--example-accent) 12%)!important;
+}
+
+html.example-theme .composer-surface-chrome button:is([aria-label*="添加"],[aria-label*="Add" i]) {
+  color:var(--example-accent)!important;
+}
+
+html.example-theme .composer-surface-chrome :is([role="img"][aria-label*="上下文"],[role="img"][aria-label*="context" i],[role="img"][aria-label*="%"]):has(svg) {
+  color:var(--example-gold)!important;
+}
+
+html.example-theme .composer-surface-chrome button:is([aria-label*="听写"],[aria-label*="dictation" i]) {
+  color:var(--example-accent-2)!important;
+}
+
+html.example-theme .composer-surface-chrome :is(button[aria-label*="发送"],button[aria-label*="send" i],button[class~="bg-token-foreground"]) {
+  color:#fff!important;
+  border-color:var(--example-gold)!important;
+  background:linear-gradient(145deg,var(--example-accent-2),var(--example-accent))!important;
+}
+
 /* 11 Character components */
+/* 11 角色专属组件：角色专属装饰与组件。 */
 
 /* 12 Theme-only media behavior */
+/* 12 主题专属响应式与动效降级：尺寸适配与减少动效。 */
 @media (prefers-reduced-motion:reduce) {
   #tessalume-theme-root[data-tessalume-template-version="1.0"] * {
     animation:none!important;
@@ -541,6 +690,7 @@ html.example-theme .composer-surface-chrome {
 }
 
 /* 13 Character keyframes */
+/* 13 角色专属关键帧：主题动画时间轴。 */
 @keyframes example-pulse {
   0%,100% {
     opacity:.55;

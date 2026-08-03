@@ -148,19 +148,11 @@ html.sui-theme aside.app-shell-left-panel::after {
   z-index:0;
   inset:0;
   pointer-events:none;
-  background:linear-gradient(90deg,rgba(247,246,236,.72) 0%,rgba(247,246,236,.39) 0%,rgba(247,246,236,.05) 0%,transparent 100%),
-    linear-gradient(180deg,rgba(250,248,239,.38),transparent 0%,transparent 100%,rgba(230,239,232,.68)),
-    var(--sui-sidebar-art) 80% -168px/230% auto no-repeat;
-  opacity:.96;
-  filter:brightness(1.04) saturate(1.05) contrast(1.01);
+  background:var(--sui-sidebar-art) 80% -168px/230% auto no-repeat;
 }
 
 html.sui-theme.electron-dark aside.app-shell-left-panel::after {
-  background:linear-gradient(90deg,rgba(5,16,22,.93) 0%,rgba(5,16,22,.65) 0%,rgba(5,16,22,.12) 30%,transparent 100%),
-    linear-gradient(180deg,rgba(6,18,25,.70),transparent 0%,transparent 100%,rgba(4,13,19,.84)),
-    var(--sui-sidebar-art) 80% -188px/232% auto no-repeat;
-  opacity:.98;
-  filter:brightness(1.16) saturate(1.09) contrast(1.05);
+  background:var(--sui-sidebar-art) 80% -188px/232% auto no-repeat;
 }
 
 html.sui-theme.sui-is-task main.sui-main {
@@ -173,10 +165,6 @@ html.sui-theme.electron-dark.sui-is-task main.sui-main {
 
 html.sui-theme.sui-is-task main.sui-main::before {
   background:var(--sui-chat-art) center center/cover no-repeat;
-}
-
-html.sui-theme.electron-dark.sui-is-task main.sui-main::before {
-  filter:brightness(.90) saturate(.88);
 }
 
 html.sui-theme.sui-is-task main.sui-main::after {
@@ -304,23 +292,26 @@ html.sui-theme aside [data-app-action-sidebar-thread-row][aria-current="page"],h
 
 .sui-theme .sui-home>div:first-child>div:first-child>div:first-child::before {
   content:"";
-  background:linear-gradient(90deg,color-mix(in srgb,var(--sui-solid) 76%,transparent),color-mix(in srgb,var(--sui-solid) 22%,transparent) 38%,transparent 58%),var(--sui-hero) 58% 42%/cover no-repeat!important;
+  background:var(--sui-hero) 58% 42%/cover no-repeat!important;
   transform:scale(1.08);
   transform-origin:58% 42%;
   animation:none;
 }
 
 .sui-theme.electron-dark .sui-home>div:first-child>div:first-child>div:first-child::before {
-  background:linear-gradient(90deg,rgba(7,18,25,.74),rgba(7,18,25,.24) 39%,transparent 59%),var(--sui-hero) 58% 40%/cover no-repeat!important;
+  background:var(--sui-hero) 58% 40%/cover no-repeat!important;
   transform-origin:58% 40%;
-  filter:saturate(1.06) contrast(1.04);
 }
 
 .sui-theme .sui-home>div:first-child>div:first-child>div:first-child::after {
   content:"";
   border:1px solid color-mix(in srgb,var(--sui-gold) 42%,transparent);
   border-radius:2px 23px 2px 23px;
-  background:linear-gradient(90deg,var(--sui-gold),transparent) left top/76px 1px no-repeat,linear-gradient(180deg,var(--sui-jade),transparent) left top/1px 76px no-repeat,linear-gradient(270deg,var(--sui-jade),transparent) right bottom/76px 1px no-repeat,linear-gradient(0deg,var(--sui-gold),transparent) right bottom/1px 76px no-repeat;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--sui-solid) 76%,transparent),color-mix(in srgb,var(--sui-solid) 22%,transparent) 38%,transparent 58%),linear-gradient(90deg,var(--sui-gold),transparent) left top/76px 1px no-repeat,linear-gradient(180deg,var(--sui-jade),transparent) left top/1px 76px no-repeat,linear-gradient(270deg,var(--sui-jade),transparent) right bottom/76px 1px no-repeat,linear-gradient(0deg,var(--sui-gold),transparent) right bottom/1px 76px no-repeat;
+}
+
+.sui-theme.electron-dark .sui-home>div:first-child>div:first-child>div:first-child::after {
+  background:linear-gradient(90deg,rgba(7,18,25,.74),rgba(7,18,25,.24) 39%,transparent 59%),linear-gradient(90deg,var(--sui-gold),transparent) left top/76px 1px no-repeat,linear-gradient(180deg,var(--sui-jade),transparent) left top/1px 76px no-repeat,linear-gradient(270deg,var(--sui-jade),transparent) right bottom/76px 1px no-repeat,linear-gradient(0deg,var(--sui-gold),transparent) right bottom/1px 76px no-repeat;
 }
 
 .sui-home .group\/home-suggestions button {

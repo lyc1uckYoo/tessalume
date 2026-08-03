@@ -120,10 +120,6 @@ html.sk3-theme.sk3-is-task main.sk3-main::before {
   background:var(--sk3-chat-art) center center/cover no-repeat;
 }
 
-html.sk3-theme.electron-dark.sk3-is-task main.sk3-main::before {
-  filter:brightness(.90) saturate(.88);
-}
-
 html.sk3-theme.sk3-is-task main.sk3-main::after {
   background:linear-gradient(180deg,rgba(245,251,253,.12),rgba(245,251,253,.06) 62%,rgba(230,243,248,.14));
 }
@@ -161,19 +157,11 @@ html.sk3-theme aside.app-shell-left-panel::after {
   z-index:0;
   inset:0;
   pointer-events:none;
-  background:linear-gradient(90deg,rgba(232,242,248,.72) 0%,rgba(232,242,248,.36) 0%,rgba(232,242,248,.03) 0%,transparent 100%),
-  linear-gradient(180deg,rgba(239,247,251,.52),transparent 0%,transparent 100%,rgba(222,237,245,.72)),
-  var(--sk3-sidebar-art) 86% -212px/282% auto no-repeat;
-  opacity:1;
-  filter:none;
+  background:var(--sk3-sidebar-art) 86% -212px/282% auto no-repeat;
 }
 
 html.sk3-theme.electron-dark aside.app-shell-left-panel::after {
-  background:linear-gradient(90deg,rgba(4,13,29,.99) 0%,rgba(4,13,29,.82) 0%,rgba(4,13,29,.15) 0%,transparent 0%),
-  linear-gradient(180deg,rgba(4,13,29,.95),rgba(4,13,29,.15) 0%,transparent 100%,rgba(4,13,29,.93)),
-  var(--sk3-sidebar-art) 75% -152px/282% auto no-repeat;
-  opacity:1;
-  filter:none;
+  background:var(--sk3-sidebar-art) 75% -152px/282% auto no-repeat;
 }
 
 html.sk3-theme aside.app-shell-left-panel>* {
@@ -325,22 +313,25 @@ html.sk3-theme aside [data-app-action-sidebar-thread-row][aria-current="page"],h
 
 .sk3-theme .sk3-home>div:first-child>div:first-child>div:first-child::before {
   content:"";
-  background:linear-gradient(90deg,color-mix(in srgb,var(--sk3-solid) 77%,transparent),color-mix(in srgb,var(--sk3-solid) 25%,transparent) 38%,transparent 60%),var(--sk3-hero) center top/cover no-repeat!important;
+  background:var(--sk3-hero) center top/cover no-repeat!important;
   transform:scale(1.003);
   transform-origin:78% 28%;
   animation:sk3-hero-breathe 17s ease-in-out infinite alternate;
 }
 
 .sk3-theme.electron-dark .sk3-home>div:first-child>div:first-child>div:first-child::before {
-  background:linear-gradient(90deg,rgba(5,12,27,.76),rgba(5,12,27,.26) 39%,transparent 61%),var(--sk3-hero) center top/cover no-repeat!important;
-  filter:saturate(1.08) contrast(1.05);
+  background:var(--sk3-hero) center top/cover no-repeat!important;
 }
 
 .sk3-theme .sk3-home>div:first-child>div:first-child>div:first-child::after {
   content:"";
   border:1px solid color-mix(in srgb,var(--sk3-cyan) 40%,transparent);
   border-radius:22px 4px 22px 4px;
-  background:repeating-linear-gradient(90deg,var(--sk3-pink) 0 8px,transparent 8px 18px) top/100% 1px no-repeat,repeating-linear-gradient(90deg,var(--sk3-cyan) 0 8px,transparent 8px 18px) bottom/100% 1px no-repeat;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--sk3-solid) 77%,transparent),color-mix(in srgb,var(--sk3-solid) 25%,transparent) 38%,transparent 60%),repeating-linear-gradient(90deg,var(--sk3-pink) 0 8px,transparent 8px 18px) top/100% 1px no-repeat,repeating-linear-gradient(90deg,var(--sk3-cyan) 0 8px,transparent 8px 18px) bottom/100% 1px no-repeat;
+}
+
+.sk3-theme.electron-dark .sk3-home>div:first-child>div:first-child>div:first-child::after {
+  background:linear-gradient(90deg,rgba(5,12,27,.76),rgba(5,12,27,.26) 39%,transparent 61%),repeating-linear-gradient(90deg,var(--sk3-pink) 0 8px,transparent 8px 18px) top/100% 1px no-repeat,repeating-linear-gradient(90deg,var(--sk3-cyan) 0 8px,transparent 8px 18px) bottom/100% 1px no-repeat;
 }
 
 .sk3-home .group\/home-suggestions button {

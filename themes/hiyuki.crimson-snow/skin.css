@@ -150,17 +150,11 @@ html.hy3-theme aside.app-shell-left-panel::after {
   z-index:0;
   inset:0;
   pointer-events:none;
-  background:linear-gradient(90deg,rgba(244,248,251,.72) 0%,rgba(244,248,251,.36) 0%,rgba(244,248,251,.03) 0%,transparent 100%),
-  linear-gradient(180deg,rgba(247,250,252,.52),transparent 20%,transparent 90%,rgba(231,239,245,.72)),
-  var(--hy3-sidebar-art) 52% -28px/258% auto no-repeat;
-  filter:none;
-  opacity:1;
+  background:var(--hy3-sidebar-art) 52% -28px/258% auto no-repeat;
 }
 
 html.hy3-theme.electron-dark aside.app-shell-left-panel::after {
-  background:linear-gradient(90deg,rgba(4,8,18,.99) 0%,rgba(4,8,18,.82) 0%,rgba(4,8,18,.15) 0%,transparent 0%),linear-gradient(180deg,rgba(4,8,18,.95),rgba(4,8,18,.15) 0%,transparent 67%,rgba(4,8,18,.93)),var(--hy3-sidebar-art) 44% -10px/258% auto no-repeat;
-  filter:none;
-  opacity:1;
+  background:var(--hy3-sidebar-art) 44% -10px/258% auto no-repeat;
 }
 
 html.hy3-theme:not(.electron-dark) aside.app-shell-left-panel :is(button,[role="button"]) {
@@ -183,11 +177,6 @@ html.hy3-theme.electron-dark.hy3-is-task main.hy3-main {
 
 html.hy3-theme.hy3-is-task main.hy3-main::before {
   background:var(--hy3-chat-art) center center/cover no-repeat!important;
-  filter:brightness(.90) saturate(.96) contrast(1.03);
-}
-
-html.hy3-theme.electron-dark.hy3-is-task main.hy3-main::before {
-  filter:brightness(.80) saturate(.88);
 }
 
 html.hy3-theme.hy3-is-task main.hy3-main::after {
@@ -347,22 +336,25 @@ html.hy3-theme aside [data-app-action-sidebar-thread-row][aria-current="page"],h
 
 .hy3-theme .hy3-home>div:first-child>div:first-child>div:first-child::before {
   content:"";
-  background:linear-gradient(90deg,rgba(249,252,254,.94),rgba(249,252,254,.56) 39%,rgba(249,252,254,.08) 62%,transparent 76%),var(--hy3-hero) center/cover no-repeat!important;
+  background:var(--hy3-hero) center/cover no-repeat!important;
   transform:scale(1.012);
   transform-origin:73% 50%;
   animation:hy3-hero-breathe 17s ease-in-out infinite alternate;
 }
 
 .hy3-theme.electron-dark .hy3-home>div:first-child>div:first-child>div:first-child::before {
-  background:linear-gradient(90deg,rgba(5,8,17,.93),rgba(5,8,17,.58) 40%,rgba(5,8,17,.10) 64%,transparent 78%),var(--hy3-hero) center/cover no-repeat!important;
-  filter:saturate(1.09) contrast(1.06);
+  background:var(--hy3-hero) center/cover no-repeat!important;
 }
 
 .hy3-theme .hy3-home>div:first-child>div:first-child>div:first-child::after {
   content:"";
   border:1px solid color-mix(in srgb,var(--hy3-cyan) 40%,transparent);
   border-radius:22px 4px 22px 4px;
-  background:repeating-linear-gradient(90deg,var(--hy3-pink) 0 8px,transparent 8px 18px) top/100% 1px no-repeat,repeating-linear-gradient(90deg,var(--hy3-cyan) 0 8px,transparent 8px 18px) bottom/100% 1px no-repeat;
+  background:linear-gradient(90deg,rgba(249,252,254,.94),rgba(249,252,254,.56) 39%,rgba(249,252,254,.08) 62%,transparent 76%),repeating-linear-gradient(90deg,var(--hy3-pink) 0 8px,transparent 8px 18px) top/100% 1px no-repeat,repeating-linear-gradient(90deg,var(--hy3-cyan) 0 8px,transparent 8px 18px) bottom/100% 1px no-repeat;
+}
+
+.hy3-theme.electron-dark .hy3-home>div:first-child>div:first-child>div:first-child::after {
+  background:linear-gradient(90deg,rgba(5,8,17,.93),rgba(5,8,17,.58) 40%,rgba(5,8,17,.10) 64%,transparent 78%),repeating-linear-gradient(90deg,var(--hy3-pink) 0 8px,transparent 8px 18px) top/100% 1px no-repeat,repeating-linear-gradient(90deg,var(--hy3-cyan) 0 8px,transparent 8px 18px) bottom/100% 1px no-repeat;
 }
 
 .hy3-home .group\/home-suggestions button {

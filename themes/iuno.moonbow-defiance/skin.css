@@ -103,12 +103,6 @@ html.iun-theme.iun-is-task main.iun-main { background:linear-gradient(145deg,var
 
 html.iun-theme.iun-is-task main.iun-main::before {
   background:var(--iun-chat-art) center center/cover no-repeat;
-  filter:none;
-  opacity:1;
-}
-
-html.iun-theme.electron-dark.iun-is-task main.iun-main::before {
-  filter:brightness(.80) saturate(.88);
 }
 
 html.iun-theme.iun-is-task main.iun-main::after {
@@ -130,12 +124,12 @@ html.iun-theme aside.app-shell-left-panel {
   overflow:hidden;
   color:var(--iun-text)!important;
   border-right:1px solid var(--iun-line)!important;
-  background:var(--iun-sidebar-art) 56% 60%/auto 122% no-repeat!important;
+  background:var(--iun-sidebar)!important;
   box-shadow:14px 0 42px color-mix(in srgb,var(--iun-blue) 14%,transparent),inset -1px 0 rgba(255,255,255,.72)!important;
 }
 
 html.iun-theme.electron-dark aside.app-shell-left-panel {
-  background:var(--iun-sidebar-art) 51% 48%/auto 107% no-repeat!important;
+  background:var(--iun-sidebar)!important;
   box-shadow:14px 0 44px rgba(0,0,0,.58),inset -1px 0 rgba(99,220,236,.12)!important;
 }
 
@@ -144,10 +138,14 @@ html.iun-theme aside.app-shell-left-panel>* { position:relative; z-index:2; }
 html.iun-theme aside.app-shell-left-panel::after {
   content:"";
   position:absolute;
-  z-index:1;
+  z-index:0;
   inset:0;
   pointer-events:none;
-  background:linear-gradient(90deg,transparent 72%,color-mix(in srgb,var(--iun-cyan) 8%,transparent));
+  background:var(--iun-sidebar-art) 56% 60%/auto 122% no-repeat;
+}
+
+html.iun-theme.electron-dark aside.app-shell-left-panel::after {
+  background:var(--iun-sidebar-art) 51% 48%/auto 107% no-repeat;
 }
 
 html.iun-theme aside.app-shell-left-panel::before {
@@ -355,14 +353,11 @@ html.iun-theme.electron-dark aside :is(button,a) { text-shadow:0 1px 3px rgba(0,
 .iun-theme .iun-home>div:first-child>div:first-child>div:first-child::before {
   content:"";
   background:var(--iun-hero) center/cover no-repeat!important;
-  filter:saturate(.98) contrast(1.01) brightness(1.01);
   animation:iun-hero-drift 22s ease-in-out infinite alternate;
 }
 
 .iun-theme.electron-dark .iun-home>div:first-child>div:first-child>div:first-child::before {
-  background:linear-gradient(rgba(53,73,94,.24),rgba(53,73,94,.24)),var(--iun-hero) center/cover no-repeat!important;
-  background-blend-mode:screen,normal;
-  filter:saturate(.94) contrast(1.01) brightness(1.03);
+  background:var(--iun-hero) center/cover no-repeat!important;
 }
 
 .iun-theme .iun-home>div:first-child>div:first-child>div:first-child::after {
@@ -371,6 +366,10 @@ html.iun-theme.electron-dark aside :is(button,a) { text-shadow:0 1px 3px rgba(0,
   border-radius:22px 3px 22px 3px;
   background:linear-gradient(135deg,transparent 0 77%,color-mix(in srgb,var(--iun-cyan) 12%,transparent));
   box-shadow:inset 0 0 36px color-mix(in srgb,var(--iun-cyan) 8%,transparent);
+}
+
+.iun-theme.electron-dark .iun-home>div:first-child>div:first-child>div:first-child::after {
+  background:linear-gradient(rgba(53,73,94,.24),rgba(53,73,94,.24)),linear-gradient(135deg,transparent 0 77%,color-mix(in srgb,var(--iun-cyan) 12%,transparent));
 }
 
 .iun-home .group\/home-suggestions button {

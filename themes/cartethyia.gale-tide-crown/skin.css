@@ -141,14 +141,10 @@ html.cthy-theme aside.app-shell-left-panel::after {
   inset:0;
   pointer-events:none;
   background:var(--cthy-sidebar-art) 40% -148px/312% auto no-repeat;
-  opacity:.98;
-  filter:brightness(1.02) saturate(1.04) contrast(1.02);
 }
 
 html.cthy-theme.electron-dark aside.app-shell-left-panel::after {
   background:var(--cthy-sidebar-art) 52% -200px/355% auto no-repeat;
-  opacity:.98;
-  filter:brightness(.88) saturate(.94) contrast(1.07);
 }
 
 html.cthy-theme.cthy-is-task main.cthy-main {
@@ -161,11 +157,6 @@ html.cthy-theme.electron-dark.cthy-is-task main.cthy-main {
 
 html.cthy-theme.cthy-is-task main.cthy-main::before {
   background:var(--cthy-chat-art) center center/cover no-repeat;
-  filter:saturate(1.04) contrast(1.02);
-}
-
-html.cthy-theme.electron-dark.cthy-is-task main.cthy-main::before {
-  filter:brightness(.90) saturate(.88);
 }
 
 html.cthy-theme.cthy-is-task main.cthy-main::after {
@@ -335,22 +326,26 @@ html.cthy-theme.electron-dark aside :is(button,a) {
 /* 04 首页皮肤：右侧角色横幅、风潮双冕、三剑轨迹和形态文案。 */
 .cthy-theme .cthy-home>div:first-child>div:first-child>div:first-child::before {
   content:"";
-  background:linear-gradient(90deg,color-mix(in srgb,var(--cthy-solid) 83%,transparent),color-mix(in srgb,var(--cthy-solid) 34%,transparent) 39%,transparent 61%),var(--cthy-hero) center/cover no-repeat!important;
+  background:var(--cthy-hero) center/cover no-repeat!important;
   transform:scale(1.006);
   animation:cthy-hero-drift 19s ease-in-out infinite alternate;
 }
 
 .cthy-theme.electron-dark .cthy-home>div:first-child>div:first-child>div:first-child::before {
-  background:linear-gradient(90deg,rgba(4,9,23,.88),rgba(4,9,23,.37) 40%,transparent 62%),var(--cthy-hero) center/cover no-repeat!important;
+  background:var(--cthy-hero) center/cover no-repeat!important;
 }
 
 .cthy-theme .cthy-home>div:first-child>div:first-child>div:first-child::after {
   content:"";
   border:1px solid color-mix(in srgb,var(--cthy-gold) 45%,var(--cthy-line));
   border-radius:22px 3px 22px 3px;
-  background:linear-gradient(135deg,transparent 0 48%,color-mix(in srgb,var(--cthy-cyan) 16%,transparent) 49% 50%,transparent 51%);
+  background:linear-gradient(90deg,color-mix(in srgb,var(--cthy-solid) 83%,transparent),color-mix(in srgb,var(--cthy-solid) 34%,transparent) 39%,transparent 61%),linear-gradient(135deg,transparent 0 48%,color-mix(in srgb,var(--cthy-cyan) 16%,transparent) 49% 50%,transparent 51%);
   box-shadow:inset 0 0 38px color-mix(in srgb,var(--cthy-blue) 8%,transparent);
   animation:cthy-banner-lattice 7.2s ease-in-out infinite;
+}
+
+.cthy-theme.electron-dark .cthy-home>div:first-child>div:first-child>div:first-child::after {
+  background:linear-gradient(90deg,rgba(4,9,23,.88),rgba(4,9,23,.37) 40%,transparent 62%),linear-gradient(135deg,transparent 0 48%,color-mix(in srgb,var(--cthy-cyan) 16%,transparent) 49% 50%,transparent 51%);
 }
 
 .cthy-home .group\/home-suggestions button {

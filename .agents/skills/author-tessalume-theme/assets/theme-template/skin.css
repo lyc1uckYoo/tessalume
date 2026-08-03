@@ -90,8 +90,7 @@ html.__NS__-theme aside.app-shell-left-panel {
   isolation:isolate;
   overflow:hidden;
   border-right:1px solid var(--__NS__-line)!important;
-  background:linear-gradient(90deg,color-mix(in srgb,var(--__NS__-sidebar) 98%,transparent),color-mix(in srgb,var(--__NS__-sidebar) 72%,transparent) 30%,transparent 100%),
-    var(--__NS__-sidebar-art) 80% -92px/202% auto no-repeat!important;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--__NS__-sidebar) 98%,transparent),color-mix(in srgb,var(--__NS__-sidebar) 72%,transparent) 30%,transparent 100%)!important;
   box-shadow:12px 0 40px color-mix(in srgb,var(--__NS__-accent) 14%,transparent)!important;
 }
 
@@ -115,8 +114,7 @@ html.__NS__-theme aside.app-shell-left-panel::after {
   z-index:0;
   inset:0;
   pointer-events:none;
-  background:var(--__NS__-sidebar-art) center top/cover no-repeat;
-  filter:saturate(1.02) contrast(1.02);
+  background:var(--__NS__-sidebar-art) 80% -92px/202% auto no-repeat;
 }
 
 html.__NS__-theme.__NS__-is-task main.__NS__-main {
@@ -177,8 +175,7 @@ html.__NS__-theme aside :is([data-sidebar-section-heading],[class*="sectionHeadi
 /* 04 首页皮肤：首页横幅、主标题、路线装饰与快捷卡片。 */
 .__NS__-theme .__NS__-home>div:first-child>div:first-child>div:first-child::before {
   content:"";
-  background:linear-gradient(90deg,color-mix(in srgb,var(--__NS__-solid) 78%,transparent),color-mix(in srgb,var(--__NS__-solid) 24%,transparent) 40%,transparent 62%),
-    var(--__NS__-hero) center/cover no-repeat!important;
+  background:var(--__NS__-hero) center/cover no-repeat!important;
   transform:scale(1.008);
   animation:__NS__-hero-breathe 18s ease-in-out infinite alternate;
 }
@@ -187,6 +184,7 @@ html.__NS__-theme aside :is([data-sidebar-section-heading],[class*="sectionHeadi
   content:"";
   border:1px solid color-mix(in srgb,var(--__NS__-gold) 44%,transparent);
   border-radius:20px 2px 20px 2px;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--__NS__-solid) 78%,transparent),color-mix(in srgb,var(--__NS__-solid) 24%,transparent) 40%,transparent 62%);
 }
 
 .__NS__-home .group\/home-suggestions button {

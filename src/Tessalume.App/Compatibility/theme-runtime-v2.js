@@ -5,7 +5,9 @@
   const cssText = __TESSALUME_PAYLOAD_CSS_JSON__;
   const scriptText = __TESSALUME_PAYLOAD_SCRIPT_JSON__;
   const stagedAssetDataUrls = window.__TESSALUME_STAGED_ASSETS__;
+  const stagedVisualSettings = window.__TESSALUME_STAGED_VISUAL_SETTINGS__;
   delete window.__TESSALUME_STAGED_ASSETS__;
+  delete window.__TESSALUME_STAGED_VISUAL_SETTINGS__;
   const assetDataUrls = stagedAssetDataUrls || __TESSALUME_PAYLOAD_ASSETS_JSON__;
   const config = __TESSALUME_PAYLOAD_CONFIG_JSON__;
   const allowPetOverlay = __TESSALUME_PAYLOAD_ALLOW_PET_OVERLAY__;
@@ -62,6 +64,7 @@
   const assetVariables = [];
   const assetAssignments = [];
   const assetObjectUrls = [];
+  const visualSettingVariables = new Set();
   let definition = null;
   let disposed = false;
 
@@ -69,6 +72,33 @@
     if (typeof cleanup !== "function") throw new TypeError("cleanup must be a function");
     managedCleanups.push(cleanup);
     return cleanup;
+  };
+
+  const setVisualSettings = (settings = {}) => {
+    const html = document.documentElement;
+    const readPercent = (value, fallback, minimum, maximum) => {
+      const number = Number(value);
+      return Number.isFinite(number) ? Math.min(maximum, Math.max(minimum, number)) : fallback;
+    };
+    for (const mode of ["light", "dark"]) {
+      for (const region of ["hero", "sidebar", "chat"]) {
+        const adjustment = settings?.[mode]?.[region] || {};
+        const brightness = readPercent(adjustment.brightness, 100, 20, 180) / 100;
+        const contrast = readPercent(adjustment.contrast, 100, 20, 180) / 100;
+        const saturation = readPercent(adjustment.saturation, 100, 0, 200) / 100;
+        const opacity = readPercent(adjustment.opacity, 100, 0, 100) / 100;
+        const filterVariable = `--tessalume-visual-${region}-${mode}-filter`;
+        const opacityVariable = `--tessalume-visual-${region}-${mode}-opacity`;
+        html.style.setProperty(
+          filterVariable,
+          `brightness(${brightness}) contrast(${contrast}) saturate(${saturation})`,
+        );
+        html.style.setProperty(opacityVariable, String(opacity));
+        visualSettingVariables.add(filterVariable);
+        visualSettingVariables.add(opacityVariable);
+      }
+    }
+    return true;
   };
 
   const assetDataUrl = (name) => {
@@ -120,6 +150,8 @@
     document.documentElement.style.setProperty(variable, `url("${objectUrl}")`);
     assetVariables.push(variable);
   }
+
+  setVisualSettings(stagedVisualSettings || {});
 
   document.documentElement.classList.add("tessalume-theme-active", `tessalume-theme-${safeThemeId}`);
 
@@ -891,6 +923,7 @@
       root.remove();
       document.documentElement.classList.remove("tessalume-theme-active", `tessalume-theme-${safeThemeId}`);
       for (const variable of assetVariables) document.documentElement.style.removeProperty(variable);
+      for (const variable of visualSettingVariables) document.documentElement.style.removeProperty(variable);
       for (const objectUrl of assetObjectUrls) URL.revokeObjectURL(objectUrl);
       if (window.__TESSALUME_THEME_ID__ === themeId) {
         delete window.__TESSALUME_THEME_ID__;
@@ -900,7 +933,7 @@
     return true;
   };
 
-  window[RUNTIME_KEY] = { themeId, fingerprint, dispose, context };
+  window[RUNTIME_KEY] = { themeId, fingerprint, dispose, context, setVisualSettings };
 
   try {
     // Theme packages can add floating task cards and companion instruments.

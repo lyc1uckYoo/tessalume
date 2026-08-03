@@ -1,5 +1,6 @@
 using System.IO;
 using System.Text.Json;
+using Tessalume.Core.Runtime;
 
 namespace Tessalume.App.Infrastructure;
 
@@ -8,6 +9,9 @@ internal sealed record UiPreferences
     public bool DarkMode { get; init; }
 
     public List<string> FavoriteThemeIds { get; init; } = [];
+
+    public Dictionary<string, ThemeVisualSettings> ThemeVisualSettings { get; init; } =
+        new(StringComparer.OrdinalIgnoreCase);
 }
 
 internal sealed class UiPreferencesStore(string dataDirectory)
@@ -23,7 +27,7 @@ internal sealed class UiPreferencesStore(string dataDirectory)
                 ? JsonSerializer.Deserialize<UiPreferences>(File.ReadAllText(_path), _options) ?? new UiPreferences()
                 : new UiPreferences();
         }
-        catch (JsonException)
+        catch (Exception exception) when (exception is IOException or JsonException)
         {
             return new UiPreferences();
         }
@@ -32,6 +36,8 @@ internal sealed class UiPreferencesStore(string dataDirectory)
     public async Task SaveAsync(UiPreferences preferences)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(_path)!);
-        await File.WriteAllTextAsync(_path, JsonSerializer.Serialize(preferences, _options));
+        var temporaryPath = _path + ".tmp";
+        await File.WriteAllTextAsync(temporaryPath, JsonSerializer.Serialize(preferences, _options));
+        File.Move(temporaryPath, _path, overwrite: true);
     }
 }

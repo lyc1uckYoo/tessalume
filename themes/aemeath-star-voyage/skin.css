@@ -127,16 +127,28 @@ html.ae3-theme :is(button,[role="button"],input,textarea,[contenteditable="true"
 html.ae3-theme aside.app-shell-left-panel {
   position:relative;
   isolation:isolate;
-  background:linear-gradient(90deg,rgba(248,241,247,.76) 0%,rgba(248,241,247,.42) 0%,rgba(248,241,247,.05) 0%,transparent 0%),
-  var(--ae3-sidebar-art) 62% -108px/228% auto no-repeat!important;
+  overflow:hidden;
+  background:linear-gradient(90deg,rgba(248,241,247,.76) 0%,rgba(248,241,247,.42) 0%,rgba(248,241,247,.05) 0%,transparent 0%)!important;
   box-shadow:14px 0 46px rgba(82,53,88,.21),inset -1px 0 rgba(255,255,255,.86),inset -5px 0 22px rgba(70,184,207,.08)!important;
 }
 
 html.ae3-theme.electron-dark aside.app-shell-left-panel {
   background:linear-gradient(90deg,rgba(4,8,19,.94) 0%,rgba(4,8,19,.67) 0%,rgba(4,8,19,.14) 0%,transparent 0%),
-  linear-gradient(180deg,rgba(4,8,19,.78) 0%,transparent 0%,transparent 100%,rgba(4,8,19,.96) 100%),
-  var(--ae3-sidebar-art) 82% -150px/225% auto no-repeat!important;
+  linear-gradient(180deg,rgba(4,8,19,.78) 0%,transparent 0%,transparent 100%,rgba(4,8,19,.96) 100%)!important;
   box-shadow:14px 0 50px rgba(0,0,0,.76),inset -1px 0 rgba(91,215,235,.22),inset -5px 0 25px rgba(255,130,189,.07)!important;
+}
+
+html.ae3-theme aside.app-shell-left-panel::after {
+  content:"";
+  position:absolute;
+  z-index:0;
+  inset:0;
+  pointer-events:none;
+  background:var(--ae3-sidebar-art) 62% -108px/228% auto no-repeat;
+}
+
+html.ae3-theme.electron-dark aside.app-shell-left-panel::after {
+  background:var(--ae3-sidebar-art) 82% -150px/225% auto no-repeat;
 }
 
 html.ae3-theme aside.app-shell-left-panel>* {
@@ -162,10 +174,6 @@ html.ae3-theme.ae3-is-task main.ae3-main::before {
 
 html.ae3-theme.ae3-is-task main.ae3-main::after {
   background:linear-gradient(90deg,rgba(255,250,253,.42),rgba(255,250,253,.27) 54%,rgba(255,250,253,.10) 78%,rgba(255,250,253,.03));
-}
-
-html.ae3-theme.electron-dark.ae3-is-task main.ae3-main::before {
-  filter:brightness(.80) saturate(1.28);
 }
 
 html.ae3-theme.electron-dark.ae3-is-task main.ae3-main::after {
@@ -332,23 +340,22 @@ html.ae3-theme aside [data-app-action-sidebar-thread-row][aria-current="page"],h
 
 .ae3-theme .ae3-home>div:first-child>div:first-child>div:first-child::before {
   content:"";
-  background:linear-gradient(90deg,rgba(255,250,253,.58) 0%,rgba(255,250,253,.30) 0%,rgba(255,250,253,.08) 0%,transparent 100%),var(--ae3-hero) center 46%/cover no-repeat!important;
+  background:var(--ae3-hero) center 46%/cover no-repeat!important;
   transform-origin:73% 50%;
   animation:ae3-hero-breathe 17s ease-in-out infinite alternate;
 }
 
 .ae3-theme.electron-dark .ae3-home>div:first-child>div:first-child>div:first-child::before {
-  background:linear-gradient(90deg,rgba(5,9,22,.72) 0%,rgba(5,9,22,.42) 0%,rgba(5,9,22,.12) 0%,transparent 0%),var(--ae3-hero) center 46%/cover no-repeat!important;
-  filter:saturate(1) contrast(1.06) ;
+  background:var(--ae3-hero) center 46%/cover no-repeat!important;
 }
 
 .ae3-theme .ae3-home>div:first-child>div:first-child>div:first-child::after {
-  background:none!important;
+  background:linear-gradient(90deg,rgba(255,250,253,.58) 0%,rgba(255,250,253,.30) 0%,rgba(255,250,253,.08) 0%,transparent 100%)!important;
   box-shadow:none!important;
 }
 
 .ae3-theme.electron-dark .ae3-home>div:first-child>div:first-child>div:first-child::after {
-  background:none!important;
+  background:linear-gradient(90deg,rgba(5,9,22,.72) 0%,rgba(5,9,22,.42) 0%,rgba(5,9,22,.12) 0%,transparent 0%)!important;
   box-shadow:none!important;
 }
 

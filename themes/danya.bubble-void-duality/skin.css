@@ -312,17 +312,16 @@ html.dny-theme.electron-dark main.dny-main [class*="text-token-secondary"],html.
 html.dny-theme aside.app-shell-left-panel {
   position:relative;
   isolation:isolate;
+  overflow:hidden;
   border-right:1px solid var(--dny-line)!important;
   background:linear-gradient(90deg,rgba(237,247,251,.97) 0%,rgba(237,247,251,.80) 24%,rgba(237,247,251,.14) 46%,rgba(237,247,251,.02) 100%),
-  linear-gradient(180deg,rgba(237,247,251,.90) 0%,rgba(237,247,251,.20) 20%,rgba(237,247,251,.03) 57%,rgba(237,247,251,.25) 79%,rgba(237,247,251,.74) 100%),
-  var(--dny-sidebar-art) 86% -260px/210% auto no-repeat!important;
+  linear-gradient(180deg,rgba(237,247,251,.90) 0%,rgba(237,247,251,.20) 20%,rgba(237,247,251,.03) 57%,rgba(237,247,251,.25) 79%,rgba(237,247,251,.74) 100%)!important;
   box-shadow:9px 0 30px rgba(30,91,121,.09),inset -1px 0 rgba(255,255,255,.52)!important;
 }
 
 html.dny-theme.electron-dark aside.app-shell-left-panel {
   background:linear-gradient(90deg,rgba(3,6,15,.89) 0%,rgba(3,6,15,.54) 0%,rgba(3,6,15,.08) 0%,rgba(3,6,15,.01) 0%),
-  linear-gradient(180deg,rgba(3,6,15,.78) 0%,rgba(3,6,15,.11) 0%,rgba(3,6,15,.01) 0%,rgba(3,6,15,.14) 100%,rgba(3,6,15,.58) 100%),
-  var(--dny-sidebar-art) 86% -90px/260% auto no-repeat!important;
+  linear-gradient(180deg,rgba(3,6,15,.78) 0%,rgba(3,6,15,.11) 0%,rgba(3,6,15,.01) 0%,rgba(3,6,15,.14) 100%,rgba(3,6,15,.58) 100%)!important;
   box-shadow:10px 0 36px rgba(0,0,0,.42),inset -1px 0 rgba(111,151,255,.19)!important;
 }
 
@@ -340,10 +339,22 @@ html.dny-theme:not(.electron-dark) main.dny-main {
 
 html.dny-theme:not(.electron-dark) aside.app-shell-left-panel {
   background-color:#d9e8ef!important;
-  background:linear-gradient(90deg,rgba(220,235,242,.82) 0%,rgba(220,235,242,.48) 0%,rgba(220,235,242,.07) 0%,rgba(220,235,242,.01) 100%),
-  var(--dny-sidebar-art) 76% -140px/222% auto no-repeat!important;
+  background:linear-gradient(90deg,rgba(220,235,242,.82) 0%,rgba(220,235,242,.48) 0%,rgba(220,235,242,.07) 0%,rgba(220,235,242,.01) 100%)!important;
   background-blend-mode:normal;
   box-shadow:10px 0 34px rgba(26,82,111,.13),inset -1px 0 rgba(255,255,255,.62)!important;
+}
+
+html.dny-theme aside.app-shell-left-panel::after {
+  content:"";
+  position:absolute;
+  z-index:0;
+  inset:0;
+  pointer-events:none;
+  background:var(--dny-sidebar-art) 76% -140px/222% auto no-repeat;
+}
+
+html.dny-theme.electron-dark aside.app-shell-left-panel::after {
+  background:var(--dny-sidebar-art) 86% -90px/260% auto no-repeat;
 }
 
 html.dny-theme.dny-is-task main.dny-main {
@@ -608,10 +619,15 @@ html.dny-theme .dny-home>div:first-child>div:first-child>div:first-child {
 
 html.dny-theme .dny-home>div:first-child>div:first-child>div:first-child::before {
   content:"";
-  background:linear-gradient(90deg,color-mix(in srgb,var(--dny-solid) 69%,transparent) 0%,color-mix(in srgb,var(--dny-solid) 28%,transparent) 30%,transparent 51%),var(--dny-hero) center/cover no-repeat!important;
+  background:var(--dny-hero) center/cover no-repeat!important;
   transform:scale(1.015);
   transform-origin:70% 50%;
   animation:dny-hero-breathe 19s ease-in-out infinite alternate;
+}
+
+html.dny-theme .dny-home>div:first-child>div:first-child>div:first-child::after {
+  content:"";
+  background:linear-gradient(90deg,color-mix(in srgb,var(--dny-solid) 69%,transparent) 0%,color-mix(in srgb,var(--dny-solid) 28%,transparent) 30%,transparent 51%);
 }
 
 html.dny-theme.electron-dark .dny-hero-copy h1 {
@@ -795,9 +811,12 @@ html.dny-theme:not(.electron-dark) .dny-home>div:first-child>div:first-child>div
 }
 
 html.dny-theme.electron-dark .dny-home>div:first-child>div:first-child>div:first-child::before {
-  background:linear-gradient(90deg,rgba(7,10,24,.60) 0%,rgba(7,10,24,.25) 31%,transparent 51%),var(--dny-hero) center/cover no-repeat!important;
-  filter:brightness(.98) saturate(1.08);
+  background:var(--dny-hero) center/cover no-repeat!important;
   animation:dny-hero-dark-collapse 12s ease-in-out infinite alternate;
+}
+
+html.dny-theme.electron-dark .dny-home>div:first-child>div:first-child>div:first-child::after {
+  background:linear-gradient(90deg,rgba(7,10,24,.60) 0%,rgba(7,10,24,.25) 31%,transparent 51%);
 }
 
 .dny-is-home .dny-bubbles {

@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Tessalume.Core.Themes;
 using Tessalume.Core.Runtime;
 using Tessalume.Core.Security;
@@ -73,6 +74,7 @@ var tests = new (string Name, Func<Task> Run)[]
     ("runtime decorates task surfaces before deferred repair", RuntimeDecoratesTaskSurfacesBeforeDeferredRepairAsync),
     ("published themes use canonical injection contract", PublishedThemesUseCanonicalInjectionContractAsync),
     ("flagship template v1 freezes shared structure", FlagshipTemplateV1FreezesSharedStructureAsync),
+    ("artwork adjustments are runtime-owned", ArtworkAdjustmentsAreRuntimeOwnedAsync),
     ("local importer copies a validated package", LocalImporterCopiesPackageAsync),
     ("bundled adapter builds a complete payload", BundledAdapterBuildsPayloadAsync),
     ("open advanced template loads and fingerprints", OpenAdvancedTemplateLoadsAndFingerprintsAsync),
@@ -782,6 +784,97 @@ static async Task FlagshipTemplateV1FreezesSharedStructureAsync()
                !css.Contains("height:502px!important", StringComparison.Ordinal) &&
                !css.Contains("flex:0 0 526px!important", StringComparison.Ordinal),
             $"{Path.GetFileName(root)} has duplicated runtime-owned Template 1.0 structure.");
+    }
+}
+
+static async Task ArtworkAdjustmentsAreRuntimeOwnedAsync()
+{
+    var repositoryRoot = FindRepositoryRoot();
+    var runtimeSource = await File.ReadAllTextAsync(Path.Combine(
+        repositoryRoot,
+        "src",
+        "Tessalume.App",
+        "Compatibility",
+        "theme-runtime-v2.js"));
+    var sharedCss = await File.ReadAllTextAsync(Path.Combine(
+        repositoryRoot,
+        "src",
+        "Tessalume.App",
+        "Compatibility",
+        ThemePayloadBuilder.SharedTemplateStyleFileName));
+    var mainWindowXaml = await File.ReadAllTextAsync(Path.Combine(
+        repositoryRoot,
+        "src",
+        "Tessalume.App",
+        "MainWindow.xaml"));
+    var mainWindowSource = await File.ReadAllTextAsync(Path.Combine(
+        repositoryRoot,
+        "src",
+        "Tessalume.App",
+        "MainWindow.xaml.cs"));
+    Ensure(runtimeSource.Contains("setVisualSettings", StringComparison.Ordinal) &&
+           runtimeSource.Contains("__TESSALUME_STAGED_VISUAL_SETTINGS__", StringComparison.Ordinal),
+        "The runtime must stage and live-update persisted artwork settings.");
+    Ensure(mainWindowXaml.Contains("x:Name=\"SettingsThemeControlBar\"", StringComparison.Ordinal) &&
+           mainWindowXaml.Contains("Click=\"SettingsPreviousTheme_Click\"", StringComparison.Ordinal) &&
+           mainWindowXaml.Contains("Click=\"SettingsNextTheme_Click\"", StringComparison.Ordinal) &&
+           mainWindowXaml.Contains("Click=\"SettingsColorMode_Click\"", StringComparison.Ordinal) &&
+           mainWindowXaml.Contains("x:Name=\"VisualEditingModeText\"", StringComparison.Ordinal),
+        "Advanced artwork settings must expose the compact live theme and color-mode controls.");
+    Ensure(mainWindowSource.Contains("ApplyRelativeSettingsThemeAsync", StringComparison.Ordinal) &&
+           mainWindowSource.Contains("ToggleCodexColorSchemeAsync", StringComparison.Ordinal) &&
+           !mainWindowXaml.Contains("VisualLightModeButton", StringComparison.Ordinal) &&
+           !mainWindowXaml.Contains("VisualDarkModeButton", StringComparison.Ordinal),
+        "The settings editor must follow the real Codex mode instead of a detached parameter-only toggle.");
+    foreach (var region in new[] { "hero", "sidebar", "chat" })
+    {
+        foreach (var mode in new[] { "light", "dark" })
+        {
+            Ensure(sharedCss.Contains($"--tessalume-visual-{region}-{mode}-filter", StringComparison.Ordinal) &&
+                   sharedCss.Contains($"--tessalume-visual-{region}-{mode}-opacity", StringComparison.Ordinal),
+                $"The shared template is missing {mode} {region} adjustment variables.");
+        }
+    }
+
+    var normalized = new ThemeVisualSettings
+    {
+        Light = new ThemeVisualModeSettings
+        {
+            Hero = new ThemeArtworkAdjustment
+            {
+                Brightness = -1,
+                Contrast = 900,
+                Saturation = -5,
+                Opacity = 400,
+            },
+        },
+    }.Normalize();
+    Ensure(normalized.Light.Hero.Brightness == 20 &&
+           normalized.Light.Hero.Contrast == 180 &&
+           normalized.Light.Hero.Saturation == 0 &&
+           normalized.Light.Hero.Opacity == 100,
+        "Persisted artwork values must be normalized before entering the renderer.");
+
+    var rulePattern = new Regex(@"(?<selector>[^{}]+)\{(?<body>[^{}]*)\}", RegexOptions.CultureInvariant);
+    foreach (var directory in Directory.EnumerateDirectories(Path.Combine(repositoryRoot, "themes")))
+    {
+        var cssPath = Path.Combine(directory, "skin.css");
+        var css = await File.ReadAllTextAsync(cssPath);
+        var rules = rulePattern.Matches(css).Cast<Match>().Where(match =>
+        {
+            var selector = match.Groups["selector"].Value;
+            return selector.Contains("aside.app-shell-left-panel::after", StringComparison.Ordinal) ||
+                   selector.Contains("-is-task main.", StringComparison.Ordinal) && selector.Contains("-main::before", StringComparison.Ordinal) ||
+                   selector.Contains("-home>div:first-child>div:first-child>div:first-child::before", StringComparison.Ordinal);
+        }).ToArray();
+        Ensure(rules.Length >= 3, $"{directory} must expose all three adjustable artwork layers.");
+        foreach (var rule in rules)
+        {
+            var body = rule.Groups["body"].Value;
+            Ensure(!body.Contains("filter:", StringComparison.OrdinalIgnoreCase) &&
+                   !body.Contains("opacity:", StringComparison.OrdinalIgnoreCase),
+                $"{directory} hard-codes artwork correction inside {rule.Groups["selector"].Value.Trim()}.");
+        }
     }
 }
 

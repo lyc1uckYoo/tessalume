@@ -106,10 +106,10 @@ html.xyl-theme main.xyl-main>header.app-header-tint {
 html.xyl-theme aside.app-shell-left-panel {
   position:relative;
   isolation:isolate;
+  overflow:hidden;
   border-right:1px solid var(--xyl-line)!important;
   background:linear-gradient(90deg,rgba(239,247,248,.88),rgba(239,247,248,.48) 0%,rgba(239,247,248,.12) 0%,transparent 100%),
-    linear-gradient(180deg,rgba(241,248,249,.62),rgba(241,248,249,.10) 0%,transparent 100%,rgba(230,241,244,.72)),
-    var(--xyl-sidebar-art) 80% -72px/212% auto no-repeat!important;
+    linear-gradient(180deg,rgba(241,248,249,.62),rgba(241,248,249,.10) 0%,transparent 100%,rgba(230,241,244,.72))!important;
   box-shadow:14px 0 44px rgba(37,91,119,.20),inset -1px 0 rgba(255,255,255,.76)!important;
 }
 
@@ -143,8 +143,15 @@ html.xyl-theme.electron-dark aside.app-shell-left-panel::after {
   inset:0;
   pointer-events:none;
   background:var(--xyl-sidebar-art) 84% -124px/220% auto no-repeat;
-  filter:brightness(.92) saturate(1.05) contrast(1.08);
-  opacity:.90;
+}
+
+html.xyl-theme:not(.electron-dark) aside.app-shell-left-panel::after {
+  content:"";
+  position:absolute;
+  z-index:0;
+  inset:0;
+  pointer-events:none;
+  background:var(--xyl-sidebar-art) 80% -72px/212% auto no-repeat;
 }
 
 html.xyl-theme:not(.electron-dark) aside.app-shell-left-panel :is(button,[role="button"]) {
@@ -177,10 +184,6 @@ html.xyl-theme.electron-dark.xyl-is-task main.xyl-main {
 
 html.xyl-theme.xyl-is-task main.xyl-main::before {
   background:var(--xyl-chat-art) center center/contain no-repeat;
-}
-
-html.xyl-theme.electron-dark.xyl-is-task main.xyl-main::before {
-  filter:brightness(.80) saturate(.88);
 }
 
 html.xyl-theme.xyl-is-task main.xyl-main::after {
@@ -345,22 +348,25 @@ html.xyl-theme aside [data-app-action-sidebar-thread-row][aria-current="page"],h
 
 .xyl-theme .xyl-home>div:first-child>div:first-child>div:first-child::before {
   content:"";
-  background:linear-gradient(90deg,color-mix(in srgb,var(--xyl-solid) 77%,transparent),color-mix(in srgb,var(--xyl-solid) 25%,transparent) 38%,transparent 59%),var(--xyl-hero) center/cover no-repeat!important;
+  background:var(--xyl-hero) center/cover no-repeat!important;
   transform:scale(1.012);
   transform-origin:73% 50%;
   animation:xyl-orbit-breathe 18s ease-in-out infinite alternate;
 }
 
 .xyl-theme.electron-dark .xyl-home>div:first-child>div:first-child>div:first-child::before {
-  background:linear-gradient(90deg,rgba(6,11,27,.76),rgba(6,11,27,.26) 39%,transparent 60%),var(--xyl-hero) center/cover no-repeat!important;
-  filter:saturate(1.08) contrast(1.04);
+  background:var(--xyl-hero) center/cover no-repeat!important;
 }
 
 .xyl-theme .xyl-home>div:first-child>div:first-child>div:first-child::after {
   content:"";
   border:1px solid color-mix(in srgb,var(--xyl-gold) 42%,transparent);
   border-radius:20px 2px 20px 2px;
-  background:radial-gradient(circle at 18px 18px,transparent 0 8px,var(--xyl-gold) 9px 10px,transparent 11px),radial-gradient(circle at calc(100% - 18px) calc(100% - 18px),transparent 0 8px,var(--xyl-cyan) 9px 10px,transparent 11px);
+  background:linear-gradient(90deg,color-mix(in srgb,var(--xyl-solid) 77%,transparent),color-mix(in srgb,var(--xyl-solid) 25%,transparent) 38%,transparent 59%),radial-gradient(circle at 18px 18px,transparent 0 8px,var(--xyl-gold) 9px 10px,transparent 11px),radial-gradient(circle at calc(100% - 18px) calc(100% - 18px),transparent 0 8px,var(--xyl-cyan) 9px 10px,transparent 11px);
+}
+
+.xyl-theme.electron-dark .xyl-home>div:first-child>div:first-child>div:first-child::after {
+  background:linear-gradient(90deg,rgba(6,11,27,.76),rgba(6,11,27,.26) 39%,transparent 60%),radial-gradient(circle at 18px 18px,transparent 0 8px,var(--xyl-gold) 9px 10px,transparent 11px),radial-gradient(circle at calc(100% - 18px) calc(100% - 18px),transparent 0 8px,var(--xyl-cyan) 9px 10px,transparent 11px);
 }
 
 .xyl-home .group\/home-suggestions button {
@@ -467,10 +473,13 @@ html.xyl-theme aside [data-app-action-sidebar-thread-row][aria-current="page"],h
 }
 
 html.xyl-theme:not(.electron-dark) .xyl-home>div:first-child>div:first-child>div:first-child::before {
-  background:linear-gradient(90deg,rgba(251,254,255,.82) 0%,rgba(251,254,255,.45) 34%,rgba(251,254,255,.06) 58%,transparent 73%),
-    var(--xyl-hero) center 20%/cover no-repeat!important;
+  background:var(--xyl-hero) center 20%/cover no-repeat!important;
   transform:scale(1.012);
   transform-origin:73% 42%;
+}
+
+html.xyl-theme:not(.electron-dark) .xyl-home>div:first-child>div:first-child>div:first-child::after {
+  background:linear-gradient(90deg,rgba(251,254,255,.82) 0%,rgba(251,254,255,.45) 34%,rgba(251,254,255,.06) 58%,transparent 73%),radial-gradient(circle at 18px 18px,transparent 0 8px,var(--xyl-gold) 9px 10px,transparent 11px),radial-gradient(circle at calc(100% - 18px) calc(100% - 18px),transparent 0 8px,var(--xyl-cyan) 9px 10px,transparent 11px);
 }
 
 .xyl-phases {

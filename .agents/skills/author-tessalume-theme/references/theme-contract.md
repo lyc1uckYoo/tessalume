@@ -8,11 +8,14 @@ The Studio runtime owns:
 - the persistent main, sidebar, home, window-bar, chat, message, output, and task-header bindings;
 - mutation observation, resize handling, debounce timing, periodic repair, data cleanup, and unmount cleanup;
 - stage geometry, composer-accessory placement, and optional panel-above-cards placement.
+- persisted per-theme light/dark artwork correction for the home hero, sidebar
+  artwork and stable chat background.
 
 The theme package owns:
 
 - manifest metadata and declared local assets;
 - light/dark color variables and artwork selection;
+- the original hero/sidebar/chat assets and their crop, size and position only;
 - markup inside `#tessalume-theme-root`;
 - character-specific home effects, sidebar art, cards, message frames, memory
   display, sync instrument, composer accessory, internal SVG, copy, symbols,
@@ -21,6 +24,12 @@ The theme package owns:
 
 Do not move runtime-owned work back into a theme.
 Do not move character-owned visual identity into a generic template skin.
+
+The three user-adjustable artwork layers must not declare `filter` or `opacity`
+in theme CSS. Their default is the uncorrected original image. Tessalume applies
+brightness, contrast, saturation and opacity through shared light/dark runtime
+variables. Readability veils and decorative borders belong on separate layers
+so user correction never changes text, controls or card surfaces.
 
 Flagship Template 1.0 additionally freezes shared DOM parts, sizes, positions,
 alignment and adaptive priorities. Read

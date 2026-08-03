@@ -24,6 +24,14 @@
             <GradientStop Color="#312254" Offset="0.55" />
             <GradientStop Color="#8B3F78" Offset="1" />
         </LinearGradientBrush>
+        <LinearGradientBrush x:Key="SettingsControlBar" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#F0F2F8" Offset="0" />
+            <GradientStop Color="#E7EAF4" Offset="1" />
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="SettingsCurrentThemeGradient" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#FFFFFF" Offset="0" />
+            <GradientStop Color="#E9E7F8" Offset="1" />
+        </LinearGradientBrush>
         <SolidColorBrush x:Key="WindowBackground" Color="#F5F6F8" />
         <SolidColorBrush x:Key="SidebarBackground" Color="#FAFAFB" />
         <SolidColorBrush x:Key="Surface" Color="#FFFFFF" />
@@ -46,9 +54,17 @@
         <SolidColorBrush x:Key="SkySoft" Color="#EDF7FF" />
         <SolidColorBrush x:Key="Amber" Color="#D58A22" />
         <SolidColorBrush x:Key="AmberSoft" Color="#FFF6E6" />
+        <SolidColorBrush x:Key="SettingsBarBorder" Color="#BAC4D8" />
+        <SolidColorBrush x:Key="SettingsBarPrimaryText" Color="#25293B" />
+        <SolidColorBrush x:Key="SettingsBarMutedText" Color="#697087" />
+        <SolidColorBrush x:Key="SettingsControlSurface" Color="#F9FBFE" />
+        <SolidColorBrush x:Key="SettingsControlBorder" Color="#C7CDDE" />
+        <SolidColorBrush x:Key="SettingsControlHover" Color="#FFFFFF" />
+        <SolidColorBrush x:Key="SettingsTrack" Color="#D9DDE8" />
         <DropShadowEffect x:Key="CardShadow" Color="#17151F" BlurRadius="14" ShadowDepth="2" Opacity="0.055" />
         <DropShadowEffect x:Key="SelectedCardShadow" Color="#665FD8" BlurRadius="20" ShadowDepth="4" Opacity="0.15" />
         <DropShadowEffect x:Key="PrimaryButtonShadow" Color="#5149C8" BlurRadius="18" ShadowDepth="4" Opacity="0.26" />
+        <DropShadowEffect x:Key="SettingsBarShadow" Color="#59637A" BlurRadius="24" ShadowDepth="7" Opacity="0.18" />
 
         <Style TargetType="Button">
             <Setter Property="Cursor" Value="Hand" />
@@ -184,6 +200,129 @@
                             <Trigger Property="IsKeyboardFocused" Value="True">
                                 <Setter TargetName="ModeChrome" Property="BorderBrush" Value="{DynamicResource Accent}" />
                             </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="SettingsIconButton" TargetType="Button">
+            <Setter Property="Width" Value="40" />
+            <Setter Property="Height" Value="40" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Foreground" Value="{DynamicResource SettingsBarPrimaryText}" />
+            <Setter Property="Background" Value="{DynamicResource SettingsControlSurface}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource SettingsControlBorder}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid x:Name="MotionRoot" RenderTransformOrigin="0.5,0.5">
+                            <Grid.RenderTransform><ScaleTransform ScaleX="1" ScaleY="1" /></Grid.RenderTransform>
+                            <Border x:Name="Chrome" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="13">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="{TemplateBinding Padding}" />
+                            </Border>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource SettingsControlHover}" />
+                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource Accent}" />
+                                <Trigger.EnterActions><BeginStoryboard><Storyboard>
+                                    <DoubleAnimation Storyboard.TargetName="MotionRoot" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1.07" Duration="0:0:0.16" />
+                                    <DoubleAnimation Storyboard.TargetName="MotionRoot" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1.07" Duration="0:0:0.16" />
+                                </Storyboard></BeginStoryboard></Trigger.EnterActions>
+                                <Trigger.ExitActions><BeginStoryboard><Storyboard>
+                                    <DoubleAnimation Storyboard.TargetName="MotionRoot" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1" Duration="0:0:0.18" />
+                                    <DoubleAnimation Storyboard.TargetName="MotionRoot" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1" Duration="0:0:0.18" />
+                                </Storyboard></BeginStoryboard></Trigger.ExitActions>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="MotionRoot" Property="Opacity" Value="0.72" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="MotionRoot" Property="Opacity" Value="0.36" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="SettingsWideControlButton" TargetType="Button" BasedOn="{StaticResource SettingsIconButton}">
+            <Setter Property="Width" Value="146" />
+            <Setter Property="Height" Value="44" />
+            <Setter Property="Padding" Value="10,0" />
+        </Style>
+        <Style x:Key="SettingsMiniButton" TargetType="Button" BasedOn="{StaticResource SettingsIconButton}">
+            <Setter Property="Width" Value="28" />
+            <Setter Property="Height" Value="28" />
+        </Style>
+        <Style x:Key="SettingsSlider" TargetType="Slider">
+            <Setter Property="Height" Value="22" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Slider">
+                        <Grid Height="22" VerticalAlignment="Center">
+                            <Border Height="5" Background="{DynamicResource SettingsTrack}" CornerRadius="2.5" VerticalAlignment="Center" />
+                            <Track x:Name="PART_Track" Height="22" IsDirectionReversed="{TemplateBinding IsDirectionReversed}">
+                                <Track.DecreaseRepeatButton>
+                                    <RepeatButton Command="{x:Static Slider.DecreaseLarge}" IsTabStop="False">
+                                        <RepeatButton.Template><ControlTemplate TargetType="RepeatButton"><Border Height="5" Background="{DynamicResource Accent}" CornerRadius="2.5" VerticalAlignment="Center" /></ControlTemplate></RepeatButton.Template>
+                                    </RepeatButton>
+                                </Track.DecreaseRepeatButton>
+                                <Track.Thumb>
+                                    <Thumb Width="16" Height="16">
+                                        <Thumb.Template>
+                                            <ControlTemplate TargetType="Thumb">
+                                                <Grid x:Name="ThumbMotion" RenderTransformOrigin="0.5,0.5">
+                                                    <Grid.RenderTransform><ScaleTransform ScaleX="1" ScaleY="1" /></Grid.RenderTransform>
+                                                    <Ellipse Fill="{DynamicResource Surface}" Stroke="{DynamicResource Accent}" StrokeThickness="2" />
+                                                    <Ellipse Width="5" Height="5" Fill="{DynamicResource Accent}" />
+                                                </Grid>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="ThumbMotion" Property="RenderTransform"><Setter.Value><ScaleTransform ScaleX="1.15" ScaleY="1.15" /></Setter.Value></Setter>
+                                                    </Trigger>
+                                                    <Trigger Property="IsDragging" Value="True">
+                                                        <Setter TargetName="ThumbMotion" Property="RenderTransform"><Setter.Value><ScaleTransform ScaleX="1.24" ScaleY="1.24" /></Setter.Value></Setter>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Thumb.Template>
+                                    </Thumb>
+                                </Track.Thumb>
+                                <Track.IncreaseRepeatButton>
+                                    <RepeatButton Command="{x:Static Slider.IncreaseLarge}" IsTabStop="False" Background="Transparent" BorderThickness="0" />
+                                </Track.IncreaseRepeatButton>
+                            </Track>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="SettingsToggle" TargetType="CheckBox">
+            <Setter Property="Width" Value="50" />
+            <Setter Property="Height" Value="28" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <Grid Width="50" Height="28">
+                            <Border x:Name="Track" Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="14" />
+                            <Ellipse x:Name="Knob" Width="20" Height="20" Margin="4,0,0,0" HorizontalAlignment="Left" Fill="{DynamicResource Surface}" Stroke="{DynamicResource Border}" StrokeThickness="1" />
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Track" Property="BorderBrush" Value="{DynamicResource Accent}" /></Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Track" Property="Background" Value="{DynamicResource Accent}" />
+                                <Setter TargetName="Track" Property="BorderBrush" Value="{DynamicResource Accent}" />
+                                <Setter TargetName="Knob" Property="HorizontalAlignment" Value="Right" />
+                                <Setter TargetName="Knob" Property="Margin" Value="0,0,4,0" />
+                                <Setter TargetName="Knob" Property="Stroke" Value="#44FFFFFF" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.45" /></Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
@@ -809,11 +948,173 @@
                         </Border>
                     </StackPanel>
 
-                    <StackPanel x:Name="SettingsInfoPanel" Visibility="Collapsed" VerticalAlignment="Center">
-                        <TextBlock Text="设置" Foreground="{DynamicResource PrimaryText}" FontSize="27" FontWeight="Bold" />
-                        <TextBlock Text="{x:Static local:BrandInfo.RuntimeSettingsDescription}" Foreground="{DynamicResource MutedText}" FontSize="12" Margin="1,6,0,20" />
-                        <Border Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="16" Padding="20"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><StackPanel><TextBlock Text="开机自动启动" Foreground="{DynamicResource PrimaryText}" FontWeight="SemiBold" FontSize="15" /><TextBlock Text="{x:Static local:BrandInfo.StartupDescription}" TextWrapping="Wrap" Foreground="{DynamicResource MutedText}" FontSize="11" LineHeight="18" Margin="0,7,18,0" /></StackPanel><CheckBox x:Name="StartupCheckBox" Grid.Column="1" VerticalAlignment="Center" Checked="StartupCheckBox_Changed" Unchecked="StartupCheckBox_Changed" Content="启用" Foreground="{DynamicResource PrimaryText}" FontSize="12" /></Grid></Border>
-                        <Border Background="{DynamicResource InfoSurface}" BorderBrush="{DynamicResource InfoBorder}" BorderThickness="1" CornerRadius="14" Padding="18" Margin="0,18,0,0"><TextBlock Text="{x:Static local:BrandInfo.PortableDataDescription}" TextWrapping="Wrap" Foreground="{DynamicResource MutedText}" FontSize="11" LineHeight="19" /></Border>
+                    <StackPanel x:Name="SettingsInfoPanel" Visibility="Collapsed" VerticalAlignment="Top" Margin="0,0,0,4">
+                        <Grid>
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="个性化设置" Foreground="{DynamicResource PrimaryText}" FontSize="27" FontWeight="Bold" />
+                                <TextBlock Text="先切换到想调整的主题与显示模式，再让每一张原图呈现到刚好的状态。" Foreground="{DynamicResource MutedText}" FontSize="12" Margin="1,6,0,0" />
+                            </StackPanel>
+                            <Border Grid.Column="1" Background="{DynamicResource AccentSoft}" BorderBrush="{DynamicResource InfoBorder}" BorderThickness="1" CornerRadius="12" Padding="11,6" VerticalAlignment="Center">
+                                <StackPanel Orientation="Horizontal">
+                                    <Ellipse Width="6" Height="6" Fill="{DynamicResource Positive}" Margin="0,0,7,0" />
+                                    <TextBlock Text="实时预览已开启" Foreground="{DynamicResource Accent}" FontSize="10" FontWeight="SemiBold" />
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+
+                        <Border x:Name="SettingsThemeControlBar" Height="92" Margin="0,20,0,0" Background="{DynamicResource SettingsControlBar}"
+                                BorderBrush="{DynamicResource SettingsBarBorder}" BorderThickness="1" CornerRadius="21" Effect="{StaticResource SettingsBarShadow}" SnapsToDevicePixels="True">
+                            <Grid x:Name="SettingsThemeSwitchPanel" Margin="16,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="40" /><ColumnDefinition Width="10" /><ColumnDefinition Width="*" /><ColumnDefinition Width="10" />
+                                    <ColumnDefinition Width="40" /><ColumnDefinition Width="18" /><ColumnDefinition Width="1" /><ColumnDefinition Width="18" /><ColumnDefinition Width="166" />
+                                </Grid.ColumnDefinitions>
+                                <Button x:Name="SettingsPreviousThemeButton" Style="{StaticResource SettingsIconButton}" Click="SettingsPreviousTheme_Click" ToolTip="应用上一个可切换主题">
+                                    <Viewbox Width="18" Height="18"><Canvas Width="24" Height="24"><Rectangle Canvas.Left="4" Canvas.Top="6" Width="2.4" Height="12" RadiusX="1.2" Fill="{DynamicResource SettingsBarPrimaryText}" /><Path Data="M 19,6 L 9,12 L 19,18 Z" Fill="{DynamicResource SettingsBarPrimaryText}" /></Canvas></Viewbox>
+                                </Button>
+                                <Border Grid.Column="2" Height="60" Background="{DynamicResource SettingsCurrentThemeGradient}" BorderBrush="{DynamicResource SettingsControlBorder}" BorderThickness="1" CornerRadius="16" Padding="14,0" VerticalAlignment="Center">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="34" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                                        <Grid Width="26" Height="26" VerticalAlignment="Center">
+                                            <Ellipse x:Name="SettingsOrbPulse" Width="26" Height="26" Fill="#66E05DA4" Opacity="0.5"><Ellipse.Effect><BlurEffect Radius="5" /></Ellipse.Effect></Ellipse>
+                                            <Border Width="21" Height="21" CornerRadius="10.5" Background="{DynamicResource PrimaryGradient}" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                <Path Width="10" Height="10" Data="M 5,0 L 6.2,3.8 L 10,5 L 6.2,6.2 L 5,10 L 3.8,6.2 L 0,5 L 3.8,3.8 Z" Stretch="Uniform" Fill="White" />
+                                            </Border>
+                                        </Grid>
+                                        <StackPanel Grid.Column="1" Margin="8,0,0,0" VerticalAlignment="Center">
+                                            <TextBlock Text="当前主题" Foreground="{DynamicResource SettingsBarMutedText}" FontSize="9" FontWeight="SemiBold" />
+                                            <TextBlock x:Name="SettingsCurrentThemeNameText" Text="Codex 默认外观" Foreground="{DynamicResource SettingsBarPrimaryText}" FontSize="14" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                            <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+                                                <Ellipse x:Name="SettingsLiveDot" Width="5" Height="5" Fill="{DynamicResource Positive}" Margin="0,0,5,0" />
+                                                <TextBlock x:Name="SettingsThemeStateText" Text="正在读取状态…" Foreground="{DynamicResource SettingsBarMutedText}" FontSize="8.5" />
+                                            </StackPanel>
+                                        </StackPanel>
+                                        <Border Grid.Column="2" Background="{DynamicResource SettingsControlSurface}" BorderBrush="{DynamicResource SettingsControlBorder}" BorderThickness="1" CornerRadius="8" Padding="8,4" VerticalAlignment="Center" Margin="12,0,0,0">
+                                            <TextBlock x:Name="SettingsThemePositionText" Text="— / —" Foreground="{DynamicResource SettingsBarMutedText}" FontSize="8.5" FontWeight="SemiBold" />
+                                        </Border>
+                                    </Grid>
+                                </Border>
+                                <Button x:Name="SettingsNextThemeButton" Grid.Column="4" Style="{StaticResource SettingsIconButton}" Click="SettingsNextTheme_Click" ToolTip="应用下一个可切换主题">
+                                    <Viewbox Width="18" Height="18"><Canvas Width="24" Height="24"><Path Data="M 5,6 L 15,12 L 5,18 Z" Fill="{DynamicResource SettingsBarPrimaryText}" /><Rectangle Canvas.Left="17.6" Canvas.Top="6" Width="2.4" Height="12" RadiusX="1.2" Fill="{DynamicResource SettingsBarPrimaryText}" /></Canvas></Viewbox>
+                                </Button>
+                                <Border Grid.Column="6" Width="1" Height="42" Background="{DynamicResource SettingsControlBorder}" VerticalAlignment="Center" />
+                                <Button x:Name="SettingsColorModeButton" Grid.Column="8" Width="166" Style="{StaticResource SettingsWideControlButton}" Click="SettingsColorMode_Click" ToolTip="切换 Codex 亮暗模式">
+                                    <Grid Width="140">
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="30" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                        <Grid Width="24" Height="24" VerticalAlignment="Center">
+                                            <Path x:Name="SettingsModeMoonIcon" Visibility="Collapsed" Data="M 15,3 C 9,4 7,9 8.5,13.5 C 10,18 14.5,19.5 19,17 C 17,20.5 12.5,22 8.5,20 C 4,17.8 2,12.5 4,8 C 6,3.8 11,1.7 15,3 Z" Fill="{DynamicResource SettingsBarPrimaryText}" Stretch="Uniform" Width="18" Height="18" />
+                                            <Grid x:Name="SettingsModeSunIcon" Visibility="Collapsed">
+                                                <Ellipse Width="8" Height="8" Stroke="{DynamicResource SettingsBarPrimaryText}" StrokeThickness="2" />
+                                                <Path Data="M 12,1 L 12,4 M 12,20 L 12,23 M 1,12 L 4,12 M 20,12 L 23,12 M 4.2,4.2 L 6.2,6.2 M 17.8,17.8 L 19.8,19.8 M 19.8,4.2 L 17.8,6.2 M 6.2,17.8 L 4.2,19.8" Stroke="{DynamicResource SettingsBarPrimaryText}" StrokeThickness="1.8" StrokeStartLineCap="Round" Stretch="Uniform" />
+                                            </Grid>
+                                            <TextBlock x:Name="SettingsModeUnknownText" Text="?" Foreground="{DynamicResource SettingsBarPrimaryText}" FontWeight="Bold" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        </Grid>
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="7,0,0,0">
+                                            <TextBlock x:Name="SettingsColorModeText" Text="检测显示模式" Foreground="{DynamicResource SettingsBarPrimaryText}" FontSize="11" FontWeight="SemiBold" />
+                                            <TextBlock x:Name="SettingsColorModeHintText" Text="点击读取并切换" Foreground="{DynamicResource SettingsBarMutedText}" FontSize="8.5" Margin="0,2,0,0" />
+                                        </StackPanel>
+                                    </Grid>
+                                </Button>
+                            </Grid>
+                        </Border>
+
+                        <Border x:Name="VisualAdjustmentEditor" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="20" Padding="20" Margin="0,18,0,0" Effect="{StaticResource CardShadow}">
+                            <StackPanel>
+                                <Grid>
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="10" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                                    <Border Width="38" Height="38" CornerRadius="12" Background="{DynamicResource PrimaryGradient}" VerticalAlignment="Center">
+                                        <Path Width="18" Height="18" Data="M 3,18 L 8.5,12.5 L 12.5,16.5 L 15.5,13.5 L 21,19 M 5,4 L 19,4 C 20.1,4 21,4.9 21,6 L 21,19 C 21,20.1 20.1,21 19,21 L 5,21 C 3.9,21 3,20.1 3,19 L 3,6 C 3,4.9 3.9,4 5,4 Z M 15.5,7 A 2,2 0 1 1 15.4,7" Stroke="White" StrokeThickness="1.7" StrokeLineJoin="Round" Fill="Transparent" Stretch="Uniform" />
+                                    </Border>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="高级图像调节" Foreground="{DynamicResource PrimaryText}" FontWeight="SemiBold" FontSize="16" />
+                                        <TextBlock x:Name="VisualThemeNameText" Text="调节对象：—" Foreground="{DynamicResource MutedText}" FontSize="10.5" Margin="0,4,0,0" />
+                                    </StackPanel>
+                                    <Border x:Name="VisualEditingModeBadge" Grid.Column="2" Background="{DynamicResource AccentSoft}" BorderBrush="{DynamicResource Accent}" BorderThickness="1" CornerRadius="10" Padding="10,6" VerticalAlignment="Center">
+                                        <StackPanel Orientation="Horizontal">
+                                            <Ellipse Width="6" Height="6" Fill="{DynamicResource Accent}" Margin="0,0,6,0" />
+                                            <TextBlock x:Name="VisualEditingModeText" Text="亮色参数" Foreground="{DynamicResource Accent}" FontSize="9.5" FontWeight="SemiBold" />
+                                        </StackPanel>
+                                    </Border>
+                                    <Button Grid.Column="4" Style="{StaticResource RoundButton}" Click="ResetAllVisualSettings_Click" Padding="11,7" ToolTip="恢复当前主题亮色与暗色的全部原图参数">
+                                        <StackPanel Orientation="Horizontal"><Path Width="13" Height="13" Data="M 7,8 L 3,8 L 3,4 M 3.5,8 C 5.8,3.5 11,2 15.5,4.2 C 20,6.5 21.5,12 19,16.5 C 16.5,21 10.8,22 6.7,19.2" Stroke="{DynamicResource MutedText}" StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Fill="Transparent" Stretch="Uniform" Margin="0,0,7,0" /><TextBlock Text="全部恢复原图" FontSize="9.5" FontWeight="SemiBold" /></StackPanel>
+                                    </Button>
+                                </Grid>
+                                <Border Background="{DynamicResource InfoSurface}" BorderBrush="{DynamicResource InfoBorder}" BorderThickness="1" CornerRadius="11" Padding="12,8" Margin="0,14,0,14">
+                                    <TextBlock Text="当前滑块只编辑上方显示的主题与真实显示模式。默认 100% 保留原图；切换主题或亮暗后会自动载入各自保存的参数。" TextWrapping="Wrap" Foreground="{DynamicResource MutedText}" FontSize="9.5" />
+                                </Border>
+                                <Grid>
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="12" /><ColumnDefinition Width="*" /><ColumnDefinition Width="12" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+
+                                    <Border Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="15" Padding="14">
+                                        <StackPanel>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions><ColumnDefinition Width="34" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                                                <Border Width="28" Height="28" CornerRadius="9" Background="{DynamicResource SkySoft}"><Path Width="14" Height="14" Data="M 3,16 L 8,11 L 12,15 L 15,12 L 21,18 M 5,4 L 19,4 C 20,4 21,5 21,6 L 21,19 C 21,20 20,21 19,21 L 5,21 C 4,21 3,20 3,19 L 3,6 C 3,5 4,4 5,4 Z" Stroke="{DynamicResource Sky}" StrokeThickness="1.8" Fill="Transparent" Stretch="Uniform" /></Border>
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center"><TextBlock Text="首页横幅" Foreground="{DynamicResource PrimaryText}" FontWeight="SemiBold" FontSize="12.5" /><TextBlock Text="首页主视觉原图" Foreground="{DynamicResource SubtleText}" FontSize="8.5" /></StackPanel>
+                                                <Button Grid.Column="2" Style="{StaticResource SettingsMiniButton}" Tag="hero" Click="ResetVisualRegion_Click" ToolTip="重置首页横幅"><Path Width="13" Height="13" Data="M 7,8 L 3,8 L 3,4 M 3.5,8 C 5.8,3.5 11,2 15.5,4.2 C 20,6.5 21.5,12 19,16.5" Stroke="{DynamicResource MutedText}" StrokeThickness="1.8" Fill="Transparent" Stretch="Uniform" /></Button>
+                                            </Grid>
+                                            <Border Height="1" Background="{DynamicResource Border}" Margin="0,11,0,7" />
+                                            <Grid Margin="0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /><ColumnDefinition Width="44" /></Grid.ColumnDefinitions><TextBlock Text="亮度" Foreground="{DynamicResource MutedText}" FontSize="9.5" VerticalAlignment="Center" /><Slider x:Name="HeroBrightnessSlider" Grid.Column="1" Style="{StaticResource SettingsSlider}" Tag="hero.brightness" Minimum="20" Maximum="180" Value="100" ValueChanged="VisualAdjustmentSlider_ValueChanged" AutoToolTipPlacement="TopLeft" /><Border Grid.Column="2" Background="{DynamicResource Surface}" CornerRadius="7" Padding="4,3" Margin="5,0,0,0"><TextBlock x:Name="HeroBrightnessValue" Text="100%" Foreground="{DynamicResource PrimaryText}" FontSize="8.5" TextAlignment="Center" /></Border></Grid>
+                                            <Grid Margin="0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /><ColumnDefinition Width="44" /></Grid.ColumnDefinitions><TextBlock Text="对比" Foreground="{DynamicResource MutedText}" FontSize="9.5" VerticalAlignment="Center" /><Slider x:Name="HeroContrastSlider" Grid.Column="1" Style="{StaticResource SettingsSlider}" Tag="hero.contrast" Minimum="20" Maximum="180" Value="100" ValueChanged="VisualAdjustmentSlider_ValueChanged" AutoToolTipPlacement="TopLeft" /><Border Grid.Column="2" Background="{DynamicResource Surface}" CornerRadius="7" Padding="4,3" Margin="5,0,0,0"><TextBlock x:Name="HeroContrastValue" Text="100%" Foreground="{DynamicResource PrimaryText}" FontSize="8.5" TextAlignment="Center" /></Border></Grid>
+                                            <Grid Margin="0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /><ColumnDefinition Width="44" /></Grid.ColumnDefinitions><TextBlock Text="饱和" Foreground="{DynamicResource MutedText}" FontSize="9.5" VerticalAlignment="Center" /><Slider x:Name="HeroSaturationSlider" Grid.Column="1" Style="{StaticResource SettingsSlider}" Tag="hero.saturation" Minimum="0" Maximum="200" Value="100" ValueChanged="VisualAdjustmentSlider_ValueChanged" AutoToolTipPlacement="TopLeft" /><Border Grid.Column="2" Background="{DynamicResource Surface}" CornerRadius="7" Padding="4,3" Margin="5,0,0,0"><TextBlock x:Name="HeroSaturationValue" Text="100%" Foreground="{DynamicResource PrimaryText}" FontSize="8.5" TextAlignment="Center" /></Border></Grid>
+                                            <Grid Margin="0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /><ColumnDefinition Width="44" /></Grid.ColumnDefinitions><TextBlock Text="透明" Foreground="{DynamicResource MutedText}" FontSize="9.5" VerticalAlignment="Center" /><Slider x:Name="HeroOpacitySlider" Grid.Column="1" Style="{StaticResource SettingsSlider}" Tag="hero.opacity" Minimum="0" Maximum="100" Value="100" ValueChanged="VisualAdjustmentSlider_ValueChanged" AutoToolTipPlacement="TopLeft" /><Border Grid.Column="2" Background="{DynamicResource Surface}" CornerRadius="7" Padding="4,3" Margin="5,0,0,0"><TextBlock x:Name="HeroOpacityValue" Text="100%" Foreground="{DynamicResource PrimaryText}" FontSize="8.5" TextAlignment="Center" /></Border></Grid>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <Border Grid.Column="2" Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="15" Padding="14">
+                                        <StackPanel>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions><ColumnDefinition Width="34" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                                                <Border Width="28" Height="28" CornerRadius="9" Background="{DynamicResource AccentSoft}"><Path Width="14" Height="14" Data="M 4,3 L 10,3 L 10,21 L 4,21 Z M 12,6 L 20,6 L 20,21 L 12,21 Z M 6.8,12 L 7.2,12" Stroke="{DynamicResource Accent}" StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Fill="Transparent" Stretch="Uniform" /></Border>
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center"><TextBlock Text="左栏图片" Foreground="{DynamicResource PrimaryText}" FontWeight="SemiBold" FontSize="12.5" /><TextBlock Text="导航区域人物原图" Foreground="{DynamicResource SubtleText}" FontSize="8.5" /></StackPanel>
+                                                <Button Grid.Column="2" Style="{StaticResource SettingsMiniButton}" Tag="sidebar" Click="ResetVisualRegion_Click" ToolTip="重置左栏图片"><Path Width="13" Height="13" Data="M 7,8 L 3,8 L 3,4 M 3.5,8 C 5.8,3.5 11,2 15.5,4.2 C 20,6.5 21.5,12 19,16.5" Stroke="{DynamicResource MutedText}" StrokeThickness="1.8" Fill="Transparent" Stretch="Uniform" /></Button>
+                                            </Grid>
+                                            <Border Height="1" Background="{DynamicResource Border}" Margin="0,11,0,7" />
+                                            <Grid Margin="0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /><ColumnDefinition Width="44" /></Grid.ColumnDefinitions><TextBlock Text="亮度" Foreground="{DynamicResource MutedText}" FontSize="9.5" VerticalAlignment="Center" /><Slider x:Name="SidebarBrightnessSlider" Grid.Column="1" Style="{StaticResource SettingsSlider}" Tag="sidebar.brightness" Minimum="20" Maximum="180" Value="100" ValueChanged="VisualAdjustmentSlider_ValueChanged" AutoToolTipPlacement="TopLeft" /><Border Grid.Column="2" Background="{DynamicResource Surface}" CornerRadius="7" Padding="4,3" Margin="5,0,0,0"><TextBlock x:Name="SidebarBrightnessValue" Text="100%" Foreground="{DynamicResource PrimaryText}" FontSize="8.5" TextAlignment="Center" /></Border></Grid>
+                                            <Grid Margin="0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /><ColumnDefinition Width="44" /></Grid.ColumnDefinitions><TextBlock Text="对比" Foreground="{DynamicResource MutedText}" FontSize="9.5" VerticalAlignment="Center" /><Slider x:Name="SidebarContrastSlider" Grid.Column="1" Style="{StaticResource SettingsSlider}" Tag="sidebar.contrast" Minimum="20" Maximum="180" Value="100" ValueChanged="VisualAdjustmentSlider_ValueChanged" AutoToolTipPlacement="TopLeft" /><Border Grid.Column="2" Background="{DynamicResource Surface}" CornerRadius="7" Padding="4,3" Margin="5,0,0,0"><TextBlock x:Name="SidebarContrastValue" Text="100%" Foreground="{DynamicResource PrimaryText}" FontSize="8.5" TextAlignment="Center" /></Border></Grid>
+                                            <Grid Margin="0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /><ColumnDefinition Width="44" /></Grid.ColumnDefinitions><TextBlock Text="饱和" Foreground="{DynamicResource MutedText}" FontSize="9.5" VerticalAlignment="Center" /><Slider x:Name="SidebarSaturationSlider" Grid.Column="1" Style="{StaticResource SettingsSlider}" Tag="sidebar.saturation" Minimum="0" Maximum="200" Value="100" ValueChanged="VisualAdjustmentSlider_ValueChanged" AutoToolTipPlacement="TopLeft" /><Border Grid.Column="2" Background="{DynamicResource Surface}" CornerRadius="7" Padding="4,3" Margin="5,0,0,0"><TextBlock x:Name="SidebarSaturationValue" Text="100%" Foreground="{DynamicResource PrimaryText}" FontSize="8.5" TextAlignment="Center" /></Border></Grid>
+                                            <Grid Margin="0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /><ColumnDefinition Width="44" /></Grid.ColumnDefinitions><TextBlock Text="透明" Foreground="{DynamicResource MutedText}" FontSize="9.5" VerticalAlignment="Center" /><Slider x:Name="SidebarOpacitySlider" Grid.Column="1" Style="{StaticResource SettingsSlider}" Tag="sidebar.opacity" Minimum="0" Maximum="100" Value="100" ValueChanged="VisualAdjustmentSlider_ValueChanged" AutoToolTipPlacement="TopLeft" /><Border Grid.Column="2" Background="{DynamicResource Surface}" CornerRadius="7" Padding="4,3" Margin="5,0,0,0"><TextBlock x:Name="SidebarOpacityValue" Text="100%" Foreground="{DynamicResource PrimaryText}" FontSize="8.5" TextAlignment="Center" /></Border></Grid>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <Border Grid.Column="4" Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="15" Padding="14">
+                                        <StackPanel>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions><ColumnDefinition Width="34" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                                                <Border Width="28" Height="28" CornerRadius="9" Background="{DynamicResource AmberSoft}"><Path Width="14" Height="14" Data="M 4,5 C 4,3.9 4.9,3 6,3 L 18,3 C 19.1,3 20,3.9 20,5 L 20,15 C 20,16.1 19.1,17 18,17 L 10,17 L 6,21 L 6,17 C 4.9,17 4,16.1 4,15 Z M 8,8 L 16,8 M 8,12 L 13,12" Stroke="{DynamicResource Amber}" StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Fill="Transparent" Stretch="Uniform" /></Border>
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center"><TextBlock Text="聊天背景" Foreground="{DynamicResource PrimaryText}" FontWeight="SemiBold" FontSize="12.5" /><TextBlock Text="对话主区域背景原图" Foreground="{DynamicResource SubtleText}" FontSize="8.5" /></StackPanel>
+                                                <Button Grid.Column="2" Style="{StaticResource SettingsMiniButton}" Tag="chat" Click="ResetVisualRegion_Click" ToolTip="重置聊天背景"><Path Width="13" Height="13" Data="M 7,8 L 3,8 L 3,4 M 3.5,8 C 5.8,3.5 11,2 15.5,4.2 C 20,6.5 21.5,12 19,16.5" Stroke="{DynamicResource MutedText}" StrokeThickness="1.8" Fill="Transparent" Stretch="Uniform" /></Button>
+                                            </Grid>
+                                            <Border Height="1" Background="{DynamicResource Border}" Margin="0,11,0,7" />
+                                            <Grid Margin="0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /><ColumnDefinition Width="44" /></Grid.ColumnDefinitions><TextBlock Text="亮度" Foreground="{DynamicResource MutedText}" FontSize="9.5" VerticalAlignment="Center" /><Slider x:Name="ChatBrightnessSlider" Grid.Column="1" Style="{StaticResource SettingsSlider}" Tag="chat.brightness" Minimum="20" Maximum="180" Value="100" ValueChanged="VisualAdjustmentSlider_ValueChanged" AutoToolTipPlacement="TopLeft" /><Border Grid.Column="2" Background="{DynamicResource Surface}" CornerRadius="7" Padding="4,3" Margin="5,0,0,0"><TextBlock x:Name="ChatBrightnessValue" Text="100%" Foreground="{DynamicResource PrimaryText}" FontSize="8.5" TextAlignment="Center" /></Border></Grid>
+                                            <Grid Margin="0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /><ColumnDefinition Width="44" /></Grid.ColumnDefinitions><TextBlock Text="对比" Foreground="{DynamicResource MutedText}" FontSize="9.5" VerticalAlignment="Center" /><Slider x:Name="ChatContrastSlider" Grid.Column="1" Style="{StaticResource SettingsSlider}" Tag="chat.contrast" Minimum="20" Maximum="180" Value="100" ValueChanged="VisualAdjustmentSlider_ValueChanged" AutoToolTipPlacement="TopLeft" /><Border Grid.Column="2" Background="{DynamicResource Surface}" CornerRadius="7" Padding="4,3" Margin="5,0,0,0"><TextBlock x:Name="ChatContrastValue" Text="100%" Foreground="{DynamicResource PrimaryText}" FontSize="8.5" TextAlignment="Center" /></Border></Grid>
+                                            <Grid Margin="0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /><ColumnDefinition Width="44" /></Grid.ColumnDefinitions><TextBlock Text="饱和" Foreground="{DynamicResource MutedText}" FontSize="9.5" VerticalAlignment="Center" /><Slider x:Name="ChatSaturationSlider" Grid.Column="1" Style="{StaticResource SettingsSlider}" Tag="chat.saturation" Minimum="0" Maximum="200" Value="100" ValueChanged="VisualAdjustmentSlider_ValueChanged" AutoToolTipPlacement="TopLeft" /><Border Grid.Column="2" Background="{DynamicResource Surface}" CornerRadius="7" Padding="4,3" Margin="5,0,0,0"><TextBlock x:Name="ChatSaturationValue" Text="100%" Foreground="{DynamicResource PrimaryText}" FontSize="8.5" TextAlignment="Center" /></Border></Grid>
+                                            <Grid Margin="0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /><ColumnDefinition Width="44" /></Grid.ColumnDefinitions><TextBlock Text="透明" Foreground="{DynamicResource MutedText}" FontSize="9.5" VerticalAlignment="Center" /><Slider x:Name="ChatOpacitySlider" Grid.Column="1" Style="{StaticResource SettingsSlider}" Tag="chat.opacity" Minimum="0" Maximum="100" Value="100" ValueChanged="VisualAdjustmentSlider_ValueChanged" AutoToolTipPlacement="TopLeft" /><Border Grid.Column="2" Background="{DynamicResource Surface}" CornerRadius="7" Padding="4,3" Margin="5,0,0,0"><TextBlock x:Name="ChatOpacityValue" Text="100%" Foreground="{DynamicResource PrimaryText}" FontSize="8.5" TextAlignment="Center" /></Border></Grid>
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <Grid Margin="0,18,0,0">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="14" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                            <Border Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="16" Padding="17">
+                                <Grid>
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="38" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                                    <Border Width="32" Height="32" CornerRadius="10" Background="{DynamicResource AccentSoft}"><Path Width="16" Height="16" Data="M 12,2 L 12,7 M 7.5,4.5 A 8,8 0 1 0 16.5,4.5" Stroke="{DynamicResource Accent}" StrokeThickness="2" StrokeStartLineCap="Round" Fill="Transparent" Stretch="Uniform" /></Border>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center"><TextBlock Text="开机自动启动" Foreground="{DynamicResource PrimaryText}" FontWeight="SemiBold" FontSize="12.5" /><TextBlock Text="登录 Windows 后自动显示主题悬浮窗" Foreground="{DynamicResource MutedText}" FontSize="9" Margin="0,3,12,0" /></StackPanel>
+                                    <CheckBox x:Name="StartupCheckBox" Grid.Column="2" Style="{StaticResource SettingsToggle}" VerticalAlignment="Center" Checked="StartupCheckBox_Changed" Unchecked="StartupCheckBox_Changed" />
+                                </Grid>
+                            </Border>
+                            <Border Grid.Column="2" Background="{DynamicResource InfoSurface}" BorderBrush="{DynamicResource InfoBorder}" BorderThickness="1" CornerRadius="16" Padding="17">
+                                <Grid>
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="38" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                    <Border Width="32" Height="32" CornerRadius="10" Background="{DynamicResource Surface}"><Path Width="16" Height="16" Data="M 12,2 L 20,6 L 20,12 C 20,17 16.8,20.3 12,22 C 7.2,20.3 4,17 4,12 L 4,6 Z M 9,12 L 11,14 L 15.5,9.5" Stroke="{DynamicResource Positive}" StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Fill="Transparent" Stretch="Uniform" /></Border>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center"><TextBlock Text="本地保存 · 安全生效" Foreground="{DynamicResource PrimaryText}" FontWeight="SemiBold" FontSize="12.5" /><TextBlock Text="主题参数仅保存在便携版 data 目录，不修改 Codex 安装文件。" TextWrapping="Wrap" Foreground="{DynamicResource MutedText}" FontSize="9" Margin="0,3,0,0" /></StackPanel>
+                                </Grid>
+                            </Border>
+                        </Grid>
                     </StackPanel>
 
                     <StackPanel x:Name="DiagnosticsInfoPanel" Visibility="Collapsed" VerticalAlignment="Center">
