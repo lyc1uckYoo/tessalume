@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Net.Http;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -275,6 +276,7 @@ public partial class MainWindow : Window, IAsyncDisposable
         {
             await SavePreferencesAsync();
         }
+        _preferencesStore.Dispose();
         await _runtime.DisposeAsync();
         _launcherDiscovery.Dispose();
         GC.SuppressFinalize(this);
@@ -1145,13 +1147,14 @@ public partial class MainWindow : Window, IAsyncDisposable
         catch (Exception exception)
         {
             LocalLog.Write("Update check or installation failed.", exception);
-            _updateStatusMessage = $"更新失败 · {exception.Message}";
+            var errorMessage = DescribeUpdateError(exception);
+            _updateStatusMessage = $"更新失败 · {errorMessage}";
             UpdateUpdateControls();
             if (!automatic || IsVisible)
             {
                 ShowProductMessage(
                     "无法完成软件更新",
-                    $"当前版本没有被修改，可以继续使用。\n\n{exception.Message}",
+                    $"当前版本没有被修改，可以继续使用。\n\n{errorMessage}",
                     ProductDialogKind.Error);
             }
         }
@@ -1223,6 +1226,15 @@ public partial class MainWindow : Window, IAsyncDisposable
         var summary = lines.Length == 0 ? "此版本包含稳定性与体验改进。" : string.Join("\n", lines);
         return summary.Length <= 700 ? summary : summary[..700] + "…";
     }
+
+    private static string DescribeUpdateError(Exception exception) => exception switch
+    {
+        HttpRequestException => "无法连接 GitHub 更新服务，请检查网络后重试。",
+        TaskCanceledException => "连接 GitHub 更新服务超时，请稍后重试。",
+        UnauthorizedAccessException => "无法写入更新文件，请确认 Tessalume 所在文件夹可写。",
+        IOException when string.IsNullOrWhiteSpace(exception.Message) => "更新文件处理失败，请稍后重试。",
+        _ => exception.Message,
+    };
 
     private static string FormatBytes(long bytes)
     {

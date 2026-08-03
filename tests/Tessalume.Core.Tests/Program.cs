@@ -542,11 +542,16 @@ static async Task AutomaticUpdateWorkflowIsConnectedAsync()
            xaml.Contains("x:Name=\"UpdateProgressBar\"", StringComparison.Ordinal),
         "Settings must expose automatic checks, a manual check, and download progress.");
     Ensure(preferences.Contains("AutomaticUpdateChecks { get; init; } = true", StringComparison.Ordinal) &&
-           preferences.Contains("LastUpdateCheckAt", StringComparison.Ordinal),
-        "Automatic update checks must default on and retain their last-check timestamp.");
+           preferences.Contains("LastUpdateCheckAt", StringComparison.Ordinal) &&
+           preferences.Contains("SemaphoreSlim _saveGate", StringComparison.Ordinal) &&
+           preferences.Contains("preferences.FavoriteThemeIds ?? []", StringComparison.Ordinal) &&
+           preferences.Contains("preferences.ThemeVisualSettings ??", StringComparison.Ordinal),
+        "Preferences must retain update state, normalize older data, and serialize concurrent writes.");
     Ensure(mainSource.Contains("ScheduleAutomaticUpdateCheck", StringComparison.Ordinal) &&
            mainSource.Contains("DownloadAndInstallUpdateAsync", StringComparison.Ordinal) &&
-           mainSource.Contains("UpdateBootstrapper.StartHelper", StringComparison.Ordinal),
+           mainSource.Contains("UpdateBootstrapper.StartHelper", StringComparison.Ordinal) &&
+           mainSource.Contains("DescribeUpdateError", StringComparison.Ordinal) &&
+           mainSource.Contains("无法连接 GitHub 更新服务", StringComparison.Ordinal),
         "The main product flow must check, download, verify, and hand off installation.");
     Ensure(appSource.Contains("UpdateBootstrapper.TryParseHelperArguments", StringComparison.Ordinal) &&
            bootstrapper.Contains("PortableUpdateInstaller.ApplyAndWriteResultAsync", StringComparison.Ordinal) &&
@@ -620,18 +625,21 @@ static async Task ReleaseReadinessAssetsAreDocumentedAsync()
     var licensePath = Path.Combine(repositoryRoot, "LICENSE");
     var issueTemplatePath = Path.Combine(repositoryRoot, ".github", "ISSUE_TEMPLATE", "bug-report.yml");
     var releaseChecklistPath = Path.Combine(repositoryRoot, "docs", "RELEASE_CHECKLIST.md");
+    var releaseNotesPath = Path.Combine(repositoryRoot, "docs", "RELEASE_NOTES_1.2.0.md");
     var license = await File.ReadAllTextAsync(licensePath);
 
     Ensure(buildScript.Contains("Get-FileHash -LiteralPath $finalExe -Algorithm SHA256", StringComparison.Ordinal) &&
            buildScript.Contains("SHA256SUMS.txt", StringComparison.Ordinal),
         "The release build must create a SHA-256 manifest beside the executable.");
     Ensure(File.Exists(securityPath) && File.Exists(issueTemplatePath) && File.Exists(releaseChecklistPath) &&
+           File.Exists(releaseNotesPath) &&
            license.Contains("MIT License", StringComparison.Ordinal) &&
            license.Contains("Permission is hereby granted", StringComparison.Ordinal),
         "Public testing requires an MIT license, security guidance, a structured bug form, and a release checklist.");
     Ensure(readme.Contains("issues/new?template=bug-report.yml", StringComparison.Ordinal) &&
            readme.Contains("Microsoft Defender SmartScreen", StringComparison.Ordinal) &&
            readme.Contains("SHA256SUMS.txt", StringComparison.Ordinal) &&
+           readme.Contains("从 1.1 升级到 1.2", StringComparison.Ordinal) &&
            readme.Contains("[MIT License](LICENSE)", StringComparison.Ordinal),
         "The download guide must expose feedback, signature status, checksum verification, and licensing.");
 }
