@@ -29,6 +29,10 @@ public sealed class CodexPackageLauncher(LoopbackCdpDiscovery discovery)
         }
     }
 
+    public static async Task<string> FindInstalledVersionAsync(
+        CancellationToken cancellationToken = default) =>
+        (await FindPackageInfoAsync(cancellationToken)).Version;
+
     public static int FindFreePort()
     {
         for (var port = 9340; port <= 9399; port++)
@@ -104,13 +108,16 @@ public sealed class CodexPackageLauncher(LoopbackCdpDiscovery discovery)
     }
 
     private static async Task<string> FindAppUserModelIdAsync(CancellationToken cancellationToken)
+        => (await FindPackageInfoAsync(cancellationToken)).AppUserModelId;
+
+    private static async Task<CodexPackageInfo> FindPackageInfoAsync(CancellationToken cancellationToken)
     {
         const string command = "$p=Get-AppxPackage OpenAI.Codex|Sort-Object Version -Descending|Select-Object -First 1;" +
             "if(-not $p){throw 'OpenAI Codex Store package is not installed.'};" +
             "$m=Get-AppxPackageManifest -Package $p.PackageFullName;" +
             "$a=@($m.Package.Applications.Application)|Where-Object{$_.Executable -match 'ChatGPT\\.exe$'}|Select-Object -First 1;" +
             "if(-not $a){throw 'Codex application entry was not found.'};" +
-            "[pscustomobject]@{aumid=\"$($p.PackageFamilyName)!$($a.Id)\"}|ConvertTo-Json -Compress";
+            "[pscustomobject]@{aumid=\"$($p.PackageFamilyName)!$($a.Id)\";version=\"$($p.Version)\"}|ConvertTo-Json -Compress";
 
         var startInfo = new ProcessStartInfo
         {
@@ -138,9 +145,14 @@ public sealed class CodexPackageLauncher(LoopbackCdpDiscovery discovery)
         }
 
         using var document = JsonDocument.Parse(stdout);
-        return document.RootElement.GetProperty("aumid").GetString()
+        var appUserModelId = document.RootElement.GetProperty("aumid").GetString()
             ?? throw new InvalidOperationException("Codex 应用标识为空。");
+        var version = document.RootElement.GetProperty("version").GetString()
+            ?? throw new InvalidOperationException("Codex 版本为空。");
+        return new CodexPackageInfo(appUserModelId, version);
     }
+
+    private sealed record CodexPackageInfo(string AppUserModelId, string Version);
 
     [Flags]
     private enum ActivateOptions

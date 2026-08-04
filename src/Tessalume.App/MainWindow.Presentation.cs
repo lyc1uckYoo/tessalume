@@ -149,7 +149,7 @@ public partial class MainWindow
         UpdateInfoNavigationButton(DiagnosticsButton, _rightPane == RightPane.Diagnostics);
         UpdateInfoNavigationButton(SettingsButton, _rightPane == RightPane.Settings);
         UpdateInfoNavigationButton(ImportGuideButton, _rightPane == RightPane.ImportGuide);
-        UpdateInfoNavigationButton(UsageGuideButton, _rightPane == RightPane.UsageGuide);
+        UpdateInfoNavigationButton(CreatorCenterButton, _rightPane == RightPane.Creator);
         UpdateInfoNavigationButton(AboutButton, _rightPane == RightPane.About);
     }
 

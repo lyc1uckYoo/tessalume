@@ -9,6 +9,8 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
+using Tessalume.App.Creator;
+using Tessalume.App.Diagnostics;
 using Tessalume.App.Infrastructure;
 using Tessalume.App.Models;
 using Tessalume.Core.Runtime;
@@ -31,73 +33,286 @@ public partial class MainWindow
     private async Task<bool> ApplyThemeAsync(ThemeCardModel theme)
     {
         if (theme.CatalogItem.Package is not { } package) return false;
+        var result = await ApplyPackageAsync(
+            package,
+            allowCodexStart: true,
+            showFailureDialog: true,
+            CancellationToken.None);
+        return result.Succeeded;
+    }
+
+    private async Task<ThemeApplicationResult> ApplyPackageAsync(
+        ThemePackage package,
+        bool allowCodexStart,
+        bool showFailureDialog,
+        CancellationToken cancellationToken)
+    {
         SetBusy(true, "正在连接本机 Codex…");
+        StudioState? previousState = null;
+        int? resolvedPort = null;
         try
         {
-            var state = await _stateStore.LoadAsync();
-            var port = state?.Port ?? 0;
-            if (port <= 0 || !await _launcher.IsDebugPortReadyAsync(port))
+            previousState = await _stateStore.LoadAsync(cancellationToken);
+            var port = await ResolveThemeRuntimePortAsync(allowCodexStart, cancellationToken);
+            if (port is null)
             {
-                port = await _launcher.FindRunningDebugPortAsync() ?? 0;
+                var unavailableMessage = allowCodexStart
+                    ? "已取消应用，Codex 保持当前状态"
+                    : "Codex 当前没有可用的本地主题连接";
+                SetStatus(unavailableMessage);
+                if (!allowCodexStart)
+                {
+                    await RecordCompatibilityFailureAsync(
+                        previousState,
+                        ThemeRuntimeFailureStage.PortUnavailable,
+                        unavailableMessage,
+                        cancellationToken);
+                }
+                return new ThemeApplicationResult(false, unavailableMessage);
             }
 
-            if (port <= 0)
+            resolvedPort = port.Value;
+            var compatibility = await CompatibilityHealthService.InspectAsync(
+                previousState,
+                cancellationToken);
+            if (compatibility.RequiresPreflight || previousState?.LastSuccessfulApplyAt is null)
             {
-                if (CodexPackageLauncher.IsCodexRunning())
-                {
-                    var confirmed = ShowProductConfirmation(
-                        "需要重新启动 Codex",
-                        "Codex 当前没有可用的主题连接。为了应用所选主题，需要关闭并重新启动 Codex。\n\n请先保存正在编辑的内容并确认当前任务可以中断。",
-                        "已保存，重新启动");
-                    if (!confirmed)
-                    {
-                        SetStatus("已取消应用，Codex 保持当前状态");
-                        return false;
-                    }
-
-                    SetStatus("正在关闭并重新启动 Codex…");
-                    await CodexPackageLauncher.CloseCodexAsync();
-                }
-
-                port = CodexPackageLauncher.FindFreePort();
-                SetStatus($"正在本机端口 {port} 启动 Codex…");
-                await _launcher.LaunchAndWaitAsync(port);
+                SetStatus(compatibility.RequiresPreflight
+                    ? "检测到 Codex 或主题运行时版本变化，正在重新预检…"
+                    : "正在完成首次兼容性预检…");
+                await _runtime.PreflightAsync(port.Value, package, cancellationToken);
             }
 
             SetStatus("正在应用本地主题…");
-            await _runtime.StartAsync(port, package, GetVisualSettings(package.Manifest.Id));
-            await LegacyInjectorMigrator.TryStopAsync();
-            await _stateStore.SaveAsync(new StudioState
+            await _runtime.StartAsync(
+                port.Value,
+                package,
+                GetVisualSettings(package.Manifest.Id),
+                cancellationToken);
+            await LegacyInjectorMigrator.TryStopAsync(cancellationToken);
+            await _stateStore.SaveAsync((previousState ?? new StudioState()) with
             {
-                Port = port,
+                Port = port.Value,
                 ThemeId = package.Manifest.Id,
                 UpdatedAt = DateTimeOffset.Now,
                 Enabled = true,
-            });
-            _activePort = port;
+                LastSuccessfulApplyAt = DateTimeOffset.Now,
+                CodexVersionAtLastApply = compatibility.InstalledCodexVersion ??
+                    previousState?.CodexVersionAtLastApply,
+                RuntimeContractVersion = ThemeRuntime.ContractVersion,
+                LastFailureStage = ThemeRuntimeFailureStage.None,
+                LastFailureMessage = null,
+                LastFailureAt = null,
+            }, cancellationToken);
+            _activePort = port.Value;
             _activeThemeId = package.Manifest.Id;
             _lastThemeId = _activeThemeId;
             UpdateAppliedThemeState();
-            SetEngineState($"运行中 · 本机 {port}");
-            SetStatus($"{package.Manifest.Name} 已应用，可继续实时切换");
-            LocalLog.Write($"Applied theme {package.Manifest.Id} on port {port}.");
+            SetEngineState($"运行中 · 本机 {port.Value}");
+            var message = $"{package.Manifest.Name} 已应用，可继续实时切换";
+            SetStatus(message);
+            LocalLog.Write($"Applied theme {package.Manifest.Id} on port {port.Value}.");
             RefreshQuickSwitchWindow();
             UpdateVisualAdjustmentControls();
-            return true;
+            return new ThemeApplicationResult(true, message);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
         }
         catch (Exception exception)
         {
+            var failureStage = ClassifyRuntimeFailure(exception);
+            await RecordCompatibilityFailureAsync(
+                previousState,
+                failureStage,
+                exception.Message,
+                cancellationToken,
+                resolvedPort);
             LocalLog.Write($"Applying theme {package.Manifest.Id} failed.", exception);
             SetEngineState("启动失败");
             SetStatus(exception.Message);
-            ShowProductMessage("无法应用主题", exception.Message, ProductDialogKind.Error);
-            return false;
+            if (showFailureDialog)
+            {
+                ShowProductMessage(
+                    "无法应用主题",
+                    $"{exception.Message}\n\n建议：{CompatibilityHealthService.GetRecommendation(failureStage)}",
+                    ProductDialogKind.Error);
+            }
+            return new ThemeApplicationResult(false, exception.Message);
         }
         finally
         {
             SetBusy(false, null);
             IdleMemoryTrimmer.Schedule();
         }
+    }
+
+    private async Task RecordCompatibilityFailureAsync(
+        StudioState? previousState,
+        ThemeRuntimeFailureStage stage,
+        string message,
+        CancellationToken cancellationToken,
+        int? port = null)
+    {
+        try
+        {
+            await _stateStore.SaveAsync((previousState ?? new StudioState()) with
+            {
+                Port = port ?? previousState?.Port ?? 0,
+                UpdatedAt = DateTimeOffset.Now,
+                LastFailureStage = stage,
+                LastFailureMessage = message,
+                LastFailureAt = DateTimeOffset.Now,
+            }, cancellationToken);
+        }
+        catch (Exception exception) when (
+            exception is IOException or UnauthorizedAccessException or InvalidOperationException)
+        {
+            LocalLog.Write("Persisting compatibility failure state failed.", exception);
+        }
+    }
+
+    private static ThemeRuntimeFailureStage ClassifyRuntimeFailure(Exception exception)
+    {
+        if (exception is ThemeRuntimeException runtimeException)
+        {
+            return runtimeException.Stage;
+        }
+
+        if (exception is TimeoutException or System.Net.Sockets.SocketException)
+        {
+            return ThemeRuntimeFailureStage.PortUnavailable;
+        }
+
+        if (exception.Message.Contains("not installed", StringComparison.OrdinalIgnoreCase) ||
+            exception.Message.Contains("未找到 Codex", StringComparison.OrdinalIgnoreCase))
+        {
+            return ThemeRuntimeFailureStage.CodexNotFound;
+        }
+
+        return ThemeRuntimeFailureStage.RuntimeInjectionFailed;
+    }
+
+    private async Task<int?> ResolveThemeRuntimePortAsync(
+        bool allowCodexStart,
+        CancellationToken cancellationToken)
+    {
+        var state = await _stateStore.LoadAsync(cancellationToken);
+        var port = state?.Port ?? 0;
+        if (port <= 0 || !await _launcher.IsDebugPortReadyAsync(port, cancellationToken))
+        {
+            port = await _launcher.FindRunningDebugPortAsync(cancellationToken) ?? 0;
+        }
+
+        if (port > 0) return port;
+        if (!allowCodexStart) return null;
+
+        if (CodexPackageLauncher.IsCodexRunning())
+        {
+            var confirmed = ShowProductConfirmation(
+                "需要重新启动 Codex",
+                "Codex 当前没有可用的主题连接。为了应用所选主题，需要关闭并重新启动 Codex。\n\n请先保存正在编辑的内容并确认当前任务可以中断。",
+                "已保存，重新启动");
+            if (!confirmed) return null;
+
+            SetStatus("正在关闭并重新启动 Codex…");
+            await CodexPackageLauncher.CloseCodexAsync(cancellationToken);
+        }
+
+        port = CodexPackageLauncher.FindFreePort();
+        SetStatus($"正在本机端口 {port} 启动 Codex…");
+        await _launcher.LaunchAndWaitAsync(port, cancellationToken);
+        return port;
+    }
+
+    private async Task<CreatorRuntimeActionResult> ApplyCreatorProjectAsync(
+        string projectDirectory,
+        bool automatic,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var loadResult = await new ThemePackageLoader().LoadAsync(projectDirectory, cancellationToken);
+            if (!loadResult.Validation.IsValid || loadResult.Package is not { } package)
+            {
+                var issue = loadResult.Validation.Issues.FirstOrDefault(item =>
+                    item.Severity == ThemeValidationSeverity.Error);
+                var message = issue is null
+                    ? "主题项目未能生成可应用的运行时包。"
+                    : $"{issue.Message}{(string.IsNullOrWhiteSpace(issue.Path) ? string.Empty : $"\n{issue.Path}")}";
+                return new CreatorRuntimeActionResult(
+                    false,
+                    await ReadCreatorRuntimeStatusAsync(cancellationToken),
+                    message);
+            }
+
+            var result = await ApplyPackageAsync(
+                package,
+                allowCodexStart: !automatic,
+                showFailureDialog: false,
+                cancellationToken);
+            return new CreatorRuntimeActionResult(
+                result.Succeeded,
+                await ReadCreatorRuntimeStatusAsync(cancellationToken),
+                result.Message);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
+        {
+            return new CreatorRuntimeActionResult(
+                false,
+                CreatorRuntimeStatus.Disconnected(exception.Message),
+                exception.Message);
+        }
+    }
+
+    private async Task<CreatorRuntimeStatus> ReadCreatorRuntimeStatusAsync(
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var port = await ResolveThemeRuntimePortAsync(
+                allowCodexStart: false,
+                cancellationToken);
+            if (port is null)
+            {
+                return CreatorRuntimeStatus.Disconnected();
+            }
+
+            _activePort = port.Value;
+            try
+            {
+                var dark = await _runtime.ReadColorSchemeAsync(port.Value, cancellationToken);
+                _codexDarkMode = dark;
+                UpdateCodexModeButton();
+                return new CreatorRuntimeStatus(true, port.Value, dark);
+            }
+            catch (Exception exception) when (exception is not OperationCanceledException)
+            {
+                return new CreatorRuntimeStatus(true, port.Value, null, exception.Message);
+            }
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            return CreatorRuntimeStatus.Disconnected(exception.Message);
+        }
+    }
+
+    private async Task<CreatorRuntimeStatus> ToggleCreatorRuntimeColorSchemeAsync(
+        CancellationToken cancellationToken)
+    {
+        var dark = await ToggleCodexColorSchemeAsync(showFailureDialog: false, cancellationToken);
+        return dark is null
+            ? await ReadCreatorRuntimeStatusAsync(cancellationToken)
+            : new CreatorRuntimeStatus(true, _activePort, dark);
     }
 
     private async void RestoreTheme_Click(object sender, RoutedEventArgs e)
@@ -138,7 +353,7 @@ public partial class MainWindow
         {
             await LegacyInjectorMigrator.TryStopAsync();
             await _runtime.RemoveAsync(port.Value);
-            await _stateStore.SaveAsync(new StudioState
+            await _stateStore.SaveAsync((state ?? new StudioState()) with
             {
                 Port = port.Value,
                 ThemeId = _selectedTheme?.CatalogItem.Package?.Manifest.Id ?? state?.ThemeId ?? string.Empty,
@@ -181,11 +396,17 @@ public partial class MainWindow
         await ToggleCodexColorSchemeAsync();
     }
 
-    private async Task<bool?> ToggleCodexColorSchemeAsync()
+    private Task<bool?> ToggleCodexColorSchemeAsync() =>
+        ToggleCodexColorSchemeAsync(showFailureDialog: true, CancellationToken.None);
+
+    private async Task<bool?> ToggleCodexColorSchemeAsync(
+        bool showFailureDialog,
+        CancellationToken cancellationToken)
     {
-        var state = await _stateStore.LoadAsync();
-        var port = _activePort ?? state?.Port ?? await _launcher.FindRunningDebugPortAsync();
-        if (port is null || !await _launcher.IsDebugPortReadyAsync(port.Value))
+        var port = await ResolveThemeRuntimePortAsync(
+            allowCodexStart: false,
+            cancellationToken);
+        if (port is null)
         {
             SetStatus($"请先用 {BrandInfo.ProductName} 启动 Codex");
             return null;
@@ -195,7 +416,7 @@ public partial class MainWindow
         try
         {
             _activePort = port.Value;
-            var dark = await _runtime.ToggleColorSchemeAsync(port.Value);
+            var dark = await _runtime.ToggleColorSchemeAsync(port.Value, cancellationToken);
             _codexDarkMode = dark;
             if (_rightPane == RightPane.Settings)
             {
@@ -210,10 +431,17 @@ public partial class MainWindow
             SetStatus(dark ? "Codex 已切换为暗色" : "Codex 已切换为亮色");
             return dark;
         }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
         catch (Exception exception)
         {
             SetStatus(exception.Message);
-            ShowProductMessage("无法切换 Codex 明暗色", exception.Message, ProductDialogKind.Error);
+            if (showFailureDialog)
+            {
+                ShowProductMessage("无法切换 Codex 明暗色", exception.Message, ProductDialogKind.Error);
+            }
             return null;
         }
         finally
@@ -226,9 +454,10 @@ public partial class MainWindow
     {
         try
         {
-            var state = await _stateStore.LoadAsync();
-            var port = _activePort ?? state?.Port ?? await _launcher.FindRunningDebugPortAsync();
-            if (port is null || !await _launcher.IsDebugPortReadyAsync(port.Value))
+            var port = await ResolveThemeRuntimePortAsync(
+                allowCodexStart: false,
+                CancellationToken.None);
+            if (port is null)
             {
                 return null;
             }
@@ -264,5 +493,7 @@ public partial class MainWindow
         _codexDarkMode = dark;
         UpdateCodexModeButton();
     }
+
+    private sealed record ThemeApplicationResult(bool Succeeded, string Message);
 
 }

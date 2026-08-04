@@ -21,21 +21,26 @@ internal static partial class TestSuite
         var issueTemplatePath = Path.Combine(repositoryRoot, ".github", "ISSUE_TEMPLATE", "bug-report.yml");
         var license = await File.ReadAllTextAsync(licensePath);
         var changelog = await File.ReadAllTextAsync(changelogPath);
+        var security = await File.ReadAllTextAsync(securityPath);
 
         Ensure(buildScript.Contains("Get-FileHash -LiteralPath $finalExe -Algorithm SHA256", StringComparison.Ordinal) &&
                buildScript.Contains("SHA256SUMS.txt", StringComparison.Ordinal),
             "The release build must create a SHA-256 manifest beside the executable.");
         Ensure(File.Exists(securityPath) && File.Exists(issueTemplatePath) && File.Exists(changelogPath) &&
-               changelog.Contains("## 1.2.1", StringComparison.Ordinal) &&
+               changelog.Contains("## 1.3.0", StringComparison.Ordinal) &&
                license.Contains("MIT License", StringComparison.Ordinal) &&
                license.Contains("Permission is hereby granted", StringComparison.Ordinal),
             "Public testing requires an MIT license, security guidance, a structured bug form, and a public changelog.");
         Ensure(readme.Contains("issues/new?template=bug-report.yml", StringComparison.Ordinal) &&
                readme.Contains("Microsoft Defender SmartScreen", StringComparison.Ordinal) &&
                readme.Contains("SHA256SUMS.txt", StringComparison.Ordinal) &&
-               readme.Contains("从 1.2.0 升级到 1.2.1", StringComparison.Ordinal) &&
+               readme.Contains("从 1.2.x 升级到 1.3.0", StringComparison.Ordinal) &&
+               readme.Contains("项目化主题创作", StringComparison.Ordinal) &&
+               readme.Contains("便携备份与恢复", StringComparison.Ordinal) &&
                readme.Contains("从 1.1 升级到 1.2", StringComparison.Ordinal) &&
-               readme.Contains("[MIT License](LICENSE)", StringComparison.Ordinal),
+               readme.Contains("[MIT License](LICENSE)", StringComparison.Ordinal) &&
+               security.Contains("最新的 `1.3.x`", StringComparison.Ordinal) &&
+               security.Contains("备份 ZIP", StringComparison.Ordinal),
             "The download guide must expose feedback, signature status, checksum verification, and licensing.");
     }
 
@@ -56,6 +61,7 @@ internal static partial class TestSuite
             "MainWindow.Creator.cs",
             "MainWindow.Updates.cs",
             "MainWindow.Diagnostics.cs",
+            "MainWindow.Backup.cs",
         };
         foreach (var fileName in expectedMainWindowParts)
         {
@@ -84,9 +90,37 @@ internal static partial class TestSuite
             "The quick-switch root must retain only state, construction, refresh, and shell theming.");
         Ensure(File.Exists(Path.Combine(appRoot, "Styles", "MainWindowResources.xaml")),
             "MainWindow styles must remain in their dedicated resource dictionary.");
+        foreach (var fileName in new[]
+                 {
+                     "CreatorCenterView.xaml",
+                     "CreatorCenterView.xaml.cs",
+                     "CreatorCenterViewModel.cs",
+                     "CreatorWorkspaceProvisioner.cs",
+                     "CreatorWorkspaceStore.cs",
+                 })
+        {
+            Ensure(File.Exists(Path.Combine(appRoot, "Creator", fileName)),
+                $"The Creator Center boundary is missing {fileName}.");
+        }
+        var creatorShell = await File.ReadAllTextAsync(Path.Combine(appRoot, "MainWindow.Creator.cs"));
+        Ensure(!creatorShell.Contains("OpenFolderDialog", StringComparison.Ordinal) &&
+               !creatorShell.Contains("ThemeProjectScanner", StringComparison.Ordinal) &&
+               !creatorShell.Contains("ThemeArchiveWriter", StringComparison.Ordinal),
+            "MainWindow.Creator must remain a navigation shell instead of reclaiming project logic.");
         Ensure(!File.Exists(Path.Combine(appRoot, "DiagnosticsWindow.xaml")) &&
                !File.Exists(Path.Combine(appRoot, "DiagnosticsWindow.xaml.cs")),
             "The obsolete duplicate diagnostics window must not return.");
+        Ensure(File.Exists(Path.Combine(
+                   appRoot,
+                   "Diagnostics",
+                   "CompatibilityHealthService.cs")) &&
+               File.Exists(Path.Combine(
+                   repositoryRoot,
+                   "src",
+                   "Tessalume.Core",
+                   "Backup",
+                   "PortableBackupService.cs")),
+            "Compatibility presentation and portable backup algorithms must remain in dedicated feature boundaries.");
 
         var testRoot = Path.Combine(repositoryRoot, "tests", "Tessalume.Tests");
         var program = await File.ReadAllTextAsync(Path.Combine(testRoot, "Program.cs"));

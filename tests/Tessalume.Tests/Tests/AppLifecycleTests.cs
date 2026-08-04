@@ -22,8 +22,44 @@ internal static partial class TestSuite
         Ensure(!migratedPreferences.AutomaticUpdateChecks,
             "The UI preferences migration must preserve explicit opt-out values.");
         Ensure(migratedPreferences.FavoriteThemeIds.Count == 0 &&
-               migratedPreferences.ThemeVisualSettings.Count == 0,
+               migratedPreferences.ThemeVisualSettings.Count == 0 &&
+               migratedPreferences.RecentCreatorWorkspaces.Count == 0,
             "The UI preferences migration must normalize legacy null collections.");
+
+        const string versionOneJson = """
+            {
+              "SchemaVersion": 1,
+              "DarkMode": false,
+              "OnboardingCompleted": true,
+              "AutomaticUpdateChecks": false,
+              "LastUpdateCheckAt": "2026-08-03T10:30:00+08:00",
+              "FavoriteThemeIds": ["sample.theme"],
+              "ThemeVisualSettings": {
+                "sample.theme": {
+                  "Light": {
+                    "Hero": { "Brightness": 91, "Contrast": 103, "Saturation": 88, "Opacity": 96 }
+                  },
+                  "Dark": {
+                    "Chat": { "Brightness": 82, "Contrast": 110, "Saturation": 94, "Opacity": 87 }
+                  }
+                }
+              }
+            }
+            """;
+        var versionOnePreferences = UiPreferencesMigration.Deserialize(
+            versionOneJson,
+            options,
+            out var versionOneMigrated);
+        Ensure(versionOneMigrated &&
+               versionOnePreferences.SchemaVersion == UiPreferences.CurrentSchemaVersion,
+            "Schema-one UI preferences must migrate to the current schema.");
+        Ensure(versionOnePreferences.FavoriteThemeIds.SequenceEqual(["sample.theme"]) &&
+               !versionOnePreferences.AutomaticUpdateChecks &&
+               versionOnePreferences.LastUpdateCheckAt is not null &&
+               versionOnePreferences.ThemeVisualSettings["sample.theme"].Light.Hero.Brightness == 91 &&
+               versionOnePreferences.ThemeVisualSettings["sample.theme"].Dark.Chat.Opacity == 87 &&
+               versionOnePreferences.RecentCreatorWorkspaces.Count == 0,
+            "The 1.2 schema migration must preserve favorites, updates, and image adjustments while initializing workspace history.");
 
         var currentJson = JsonSerializer.Serialize(migratedPreferences, options);
         var currentPreferences = UiPreferencesMigration.Deserialize(currentJson, options, out var currentMigrated);
@@ -41,6 +77,37 @@ internal static partial class TestSuite
         }
         catch (JsonException)
         {
+        }
+
+        var storeRoot = Path.Combine(Path.GetTempPath(), $"tessalume-preferences-migration-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(storeRoot);
+        try
+        {
+            var preferencesPath = Path.Combine(storeRoot, "ui-settings.json");
+            File.WriteAllText(preferencesPath, legacyJson);
+            using (var store = new UiPreferencesStore(storeRoot))
+            {
+                _ = store.Load();
+            }
+            var snapshotPath = Path.Combine(
+                storeRoot,
+                "backups",
+                "latest-before-preferences-migration.json");
+            Ensure(File.Exists(snapshotPath) && File.ReadAllText(snapshotPath) == legacyJson,
+                "Preferences migration must preserve the latest original JSON before normalization.");
+
+            File.Delete(snapshotPath);
+            File.WriteAllText(preferencesPath, currentJson);
+            using (var store = new UiPreferencesStore(storeRoot))
+            {
+                _ = store.Load();
+            }
+            Ensure(!File.Exists(snapshotPath),
+                "Current-schema preferences must not overwrite the migration recovery snapshot.");
+        }
+        finally
+        {
+            Directory.Delete(storeRoot, recursive: true);
         }
 
         return Task.CompletedTask;
@@ -65,6 +132,17 @@ internal static partial class TestSuite
             "Engine state must be cached before the deferred main UI guard.");
         Ensure(source.Contains("SetEngineState(_engineStateText);", StringComparison.Ordinal),
             "Main UI initialization and recoloring must replay the cached live engine state.");
+    }
+
+    static async Task MainWindowDisposalIsIdempotentAsync()
+    {
+        var repositoryRoot = FindRepositoryRoot();
+        var source = await ReadMainWindowSourceAsync(Path.Combine(
+            repositoryRoot,
+            "src",
+            "Tessalume.App"));
+        Ensure(source.Contains("Interlocked.Exchange(ref _disposeStarted, 1)", StringComparison.Ordinal),
+            "MainWindow disposal must guard against simultaneous close and explicit cleanup.");
     }
 
     static async Task StartupRegistrationStaysOptInAsync()

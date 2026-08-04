@@ -79,6 +79,7 @@ public sealed partial class ThemePackageLoader
             return new ThemeLoadResult(null, validation);
         }
 
+        manifest = NormalizeManifestSections(manifest, validation);
         ValidateManifest(manifest, validation);
 
         string? cssPath = null;
@@ -226,6 +227,44 @@ public sealed partial class ThemePackageLoader
                 "manifest.template.unsupported",
                 "Shared themes must declare template id 'flagship', version '1.0', and style 'shared'.");
         }
+    }
+
+    private static ThemeManifest NormalizeManifestSections(
+        ThemeManifest manifest,
+        ThemeValidationResult validation)
+    {
+        if (manifest.Capabilities is null)
+        {
+            validation.AddError("manifest.capabilities.missing", "Theme capabilities must be an object.");
+        }
+        if (manifest.EntryPoints is null)
+        {
+            validation.AddError("manifest.entry-points.missing", "Theme entryPoints must be an object.");
+        }
+        if (manifest.Assets is null)
+        {
+            validation.AddError("manifest.assets.missing", "Theme assets must be an object.");
+        }
+        if (manifest.Previews is null)
+        {
+            validation.AddWarning("manifest.previews.missing", "Theme previews should be an object.");
+        }
+
+        return manifest with
+        {
+            Id = manifest.Id ?? string.Empty,
+            Name = manifest.Name ?? string.Empty,
+            Version = manifest.Version ?? string.Empty,
+            Author = manifest.Author ?? string.Empty,
+            Description = manifest.Description ?? string.Empty,
+            Type = manifest.Type ?? string.Empty,
+            Capabilities = manifest.Capabilities ?? new ThemeCapabilities { Light = false, Dark = false },
+            EntryPoints = manifest.EntryPoints ?? new ThemeEntryPoints(),
+            Previews = manifest.Previews ?? new ThemePreviews(),
+            Assets = manifest.Assets ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase),
+            Config = manifest.Config ?? new Dictionary<string, JsonElement>(StringComparer.OrdinalIgnoreCase),
+            Compatibility = manifest.Compatibility ?? new ThemeCompatibility(),
+        };
     }
 
     private static string? ValidatePreview(

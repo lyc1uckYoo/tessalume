@@ -1,11 +1,12 @@
 using System.Text.Json;
+using Tessalume.App.Creator;
 using Tessalume.Core.Runtime;
 
 namespace Tessalume.App.Infrastructure;
 
 internal sealed record UiPreferences
 {
-    public const int CurrentSchemaVersion = 1;
+    public const int CurrentSchemaVersion = 2;
 
     public int SchemaVersion { get; init; } = CurrentSchemaVersion;
 
@@ -21,6 +22,8 @@ internal sealed record UiPreferences
 
     public Dictionary<string, ThemeVisualSettings> ThemeVisualSettings { get; init; } =
         new(StringComparer.OrdinalIgnoreCase);
+
+    public List<CreatorWorkspaceRecord> RecentCreatorWorkspaces { get; init; } = [];
 }
 
 internal static class UiPreferencesMigration
@@ -47,6 +50,7 @@ internal static class UiPreferencesMigration
         var preferences = sourceVersion switch
         {
             0 => DeserializeVersionZero(json, options),
+            1 => DeserializeVersionOne(json, options),
             UiPreferences.CurrentSchemaVersion => DeserializeCurrent(json, options),
             _ => throw new JsonException($"Unsupported UI preferences schema {sourceVersion}."),
         };
@@ -77,6 +81,10 @@ internal static class UiPreferencesMigration
         JsonSerializer.Deserialize<UiPreferences>(json, options)
         ?? throw new JsonException("UI preferences could not be read.");
 
+    private static UiPreferences DeserializeVersionOne(string json, JsonSerializerOptions options) =>
+        JsonSerializer.Deserialize<UiPreferences>(json, options)
+        ?? throw new JsonException("UI preferences could not be read.");
+
     private static UiPreferences DeserializeCurrent(string json, JsonSerializerOptions options) =>
         JsonSerializer.Deserialize<UiPreferences>(json, options)
         ?? throw new JsonException("UI preferences could not be read.");
@@ -87,5 +95,8 @@ internal static class UiPreferencesMigration
         FavoriteThemeIds = preferences.FavoriteThemeIds ?? [],
         ThemeVisualSettings = preferences.ThemeVisualSettings ??
             new Dictionary<string, ThemeVisualSettings>(StringComparer.OrdinalIgnoreCase),
+        RecentCreatorWorkspaces = CreatorWorkspaceStore
+            .Normalize(preferences.RecentCreatorWorkspaces)
+            .ToList(),
     };
 }

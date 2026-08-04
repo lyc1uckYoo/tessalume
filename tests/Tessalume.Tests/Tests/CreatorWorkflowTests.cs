@@ -11,6 +11,26 @@ internal static partial class TestSuite
         var appRoot = Path.Combine(repositoryRoot, "src", "Tessalume.App");
         var mainSource = await ReadMainWindowSourceAsync(appRoot);
         var mainXaml = await ReadMainWindowXamlAsync(appRoot);
+        var creatorSource = await File.ReadAllTextAsync(Path.Combine(
+            appRoot,
+            "Creator",
+            "CreatorCenterView.xaml.cs"));
+        var creatorViewModel = await File.ReadAllTextAsync(Path.Combine(
+            appRoot,
+            "Creator",
+            "CreatorCenterViewModel.cs"));
+        var creatorDevelopment = await File.ReadAllTextAsync(Path.Combine(
+            appRoot,
+            "Creator",
+            "CreatorCenterViewModel.Development.cs"));
+        var creatorWatcher = await File.ReadAllTextAsync(Path.Combine(
+            appRoot,
+            "Creator",
+            "ThemeProjectWatcher.cs"));
+        var creatorProvisioner = await File.ReadAllTextAsync(Path.Combine(
+            appRoot,
+            "Creator",
+            "CreatorWorkspaceProvisioner.cs"));
         var installerSource = await File.ReadAllTextAsync(Path.Combine(
             repositoryRoot,
             "src",
@@ -45,15 +65,28 @@ internal static partial class TestSuite
         Ensure(appSource.Contains("--export-creator-workspace", StringComparison.Ordinal) &&
                appSource.Contains("BuiltInAssetInstaller.CreateCreatorWorkspace(destination)", StringComparison.Ordinal),
             "The published EXE must expose a testable creator-workspace export path.");
-        Ensure(mainSource.Contains("PrepareCreatorWorkspace_Click", StringComparison.Ordinal) &&
-               mainXaml.Contains("准备 Codex 创作工作区", StringComparison.Ordinal) &&
+        Ensure(mainSource.Contains("CreatorCenter.ActivateAsync", StringComparison.Ordinal) &&
+               mainXaml.Contains("创建新工作区", StringComparison.Ordinal) &&
                mainXaml.Contains("请使用 $author-tessalume-theme", StringComparison.Ordinal) &&
                mainXaml.Contains("x:Name=\"CreatorPromptText\"", StringComparison.Ordinal) &&
-               mainXaml.Contains("AutomationProperties.Name=\"复制提示词\"", StringComparison.Ordinal) &&
+               mainXaml.Contains("AutomationProperties.Name=\"复制创作提示词\"", StringComparison.Ordinal) &&
                mainXaml.Contains("FocusVisualStyle=\"{x:Null}\"", StringComparison.Ordinal) &&
-               mainSource.Contains("Clipboard.SetText(CreatorPromptText.Text)", StringComparison.Ordinal) &&
-               !mainSource.Contains("ShowProductMessage(\"复制", StringComparison.Ordinal),
+               creatorSource.Contains("Clipboard.SetText(CreatorPromptText.Text)", StringComparison.Ordinal) &&
+               !creatorSource.Contains("ShowMessage(\"复制", StringComparison.Ordinal),
             "The creator guide must show a larger complete prompt with one direct, non-modal copy action.");
+        Ensure(mainXaml.Contains("CreatorCenterView", StringComparison.Ordinal) &&
+               creatorViewModel.Contains("ThemeProjectScanner", StringComparison.Ordinal) &&
+               creatorViewModel.Contains("ThemeArchiveWriter", StringComparison.Ordinal) &&
+               creatorProvisioner.Contains("ResolveExistingWorkspace", StringComparison.Ordinal) &&
+               mainSource.Contains("CreatorCenter?.Dispose()", StringComparison.Ordinal),
+            "The creator center must own workspace scanning, health, export, and lifecycle outside MainWindow.");
+        Ensure(mainXaml.Contains("本地开发会话", StringComparison.Ordinal) &&
+               mainXaml.Contains("AutomationProperties.Name=\"校验通过后自动应用\"", StringComparison.Ordinal) &&
+               creatorWatcher.Contains("FileSystemWatcher", StringComparison.Ordinal) &&
+               creatorWatcher.Contains("WaitForStableFileAsync", StringComparison.Ordinal) &&
+               creatorDevelopment.Contains("automatic: true", StringComparison.Ordinal) &&
+               creatorDevelopment.Contains("StopProjectWatcher", StringComparison.Ordinal),
+            "Creator live development must expose stable watching, explicit auto-apply, and reliable lifecycle cleanup.");
         Ensure(skill.Contains("TESSALUME_CREATOR_WORKSPACE.md", StringComparison.Ordinal) &&
                skill.Contains("portable creator mode", StringComparison.Ordinal),
             "The authoring Skill must distinguish the portable workspace from the app repository.");

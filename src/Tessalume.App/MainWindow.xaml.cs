@@ -9,8 +9,10 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
+using Tessalume.App.Creator;
 using Tessalume.App.Infrastructure;
 using Tessalume.App.Models;
+using Tessalume.Core.Backup;
 using Tessalume.Core.Runtime;
 using Tessalume.Core.Themes;
 using Tessalume.Core.Updates;
@@ -20,17 +22,14 @@ namespace Tessalume.App;
 
 public partial class MainWindow : Window, IAsyncDisposable
 {
-    private const string BuiltInTemplateFolderName = "theme-template-v1";
-    private const string CreatorWorkspaceFolderName = "Tessalume-Creator";
-
     private enum RightPane
     {
         Themes,
         ImportGuide,
-        UsageGuide,
         Settings,
         Diagnostics,
         About,
+        Creator,
     }
 
     private enum ThemeLibraryFilter
@@ -45,12 +44,15 @@ public partial class MainWindow : Window, IAsyncDisposable
     private readonly ObservableCollection<ThemeCardModel> _visibleThemes = [];
     private readonly StudioStateStore _stateStore;
     private readonly UiPreferencesStore _preferencesStore;
+    private readonly CreatorWorkspaceStore _creatorWorkspaces;
+    private readonly PortableBackupService _backupService;
     private readonly LoopbackCdpDiscovery _launcherDiscovery = new();
     private readonly CodexPackageLauncher _launcher;
     private readonly ThemeRuntime _runtime;
     private readonly CodexUsageReader _usageReader = new();
     private readonly ReleaseUpdateClient _updateClient;
     private readonly CancellationTokenSource _updateCancellation = new();
+    private readonly CancellationTokenSource _backupCancellation = new();
     private readonly HashSet<string> _favoriteThemeIds = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, ThemeVisualSettings> _themeVisualSettings =
         new(StringComparer.OrdinalIgnoreCase);
@@ -69,6 +71,8 @@ public partial class MainWindow : Window, IAsyncDisposable
     private bool _updateCheckInProgress;
     private bool _startupInitialized;
     private bool _shutdownRequested;
+    private bool _userDataRestoreCompleted;
+    private int _disposeStarted;
     private bool _onboardingCompleted;
     private bool _uiInitialized;
     private bool _mainContentLoaded;
@@ -110,6 +114,12 @@ public partial class MainWindow : Window, IAsyncDisposable
         _onboardingCompleted = preferences.OnboardingCompleted || hadSavedPreferences;
         _automaticUpdateChecks = preferences.AutomaticUpdateChecks;
         _lastUpdateCheckAt = preferences.LastUpdateCheckAt;
+        _creatorWorkspaces = new CreatorWorkspaceStore(preferences.RecentCreatorWorkspaces);
+        _backupService = new PortableBackupService(
+            _layout.RootDirectory,
+            _layout.DataDirectory,
+            _layout.ThemesDirectory,
+            BuiltInAssetInstaller.ThemeIds);
         _favoriteThemeIds.UnionWith(preferences.FavoriteThemeIds.Where(id => !string.IsNullOrWhiteSpace(id)));
         foreach (var (themeId, settings) in preferences.ThemeVisualSettings)
         {
@@ -128,6 +138,16 @@ public partial class MainWindow : Window, IAsyncDisposable
 
         InitializeComponent();
         _uiInitialized = true;
+        CreatorCenter.Configure(
+            _layout.RootDirectory,
+            _creatorWorkspaces,
+            SavePreferencesAsync,
+            new CreatorRuntimeBridge(
+                ApplyCreatorProjectAsync,
+                ReadCreatorRuntimeStatusAsync,
+                ToggleCreatorRuntimeColorSchemeAsync),
+            () => _darkMode,
+            message => ShowToast(message));
         FitWindowToWorkArea();
         SourceInitialized += (_, _) => NativeTitleBar.Apply(this, _darkMode);
         ThemeItems.ItemsSource = _visibleThemes;
@@ -253,6 +273,8 @@ public partial class MainWindow : Window, IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        if (Interlocked.Exchange(ref _disposeStarted, 1) != 0) return;
+
         _quickSwitchWindow?.Close();
         _quickSwitchWindow = null;
         _runtime.StatusChanged -= Runtime_StatusChanged;
@@ -271,8 +293,11 @@ public partial class MainWindow : Window, IAsyncDisposable
         }
         _updateCancellation.Cancel();
         _updateCancellation.Dispose();
+        _backupCancellation.Cancel();
+        _backupCancellation.Dispose();
         _updateClient.Dispose();
-        if (visualSettingsPending)
+        CreatorCenter?.Dispose();
+        if (visualSettingsPending && !_userDataRestoreCompleted)
         {
             await SavePreferencesAsync();
         }

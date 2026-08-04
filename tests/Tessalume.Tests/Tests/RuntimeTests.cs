@@ -106,6 +106,67 @@ internal static partial class TestSuite
             "Failed theme preflight must release every prepared object URL.");
     }
 
+    static async Task RuntimeFailuresAreClassifiedAndRolledBackAsync()
+    {
+        var repositoryRoot = FindRepositoryRoot();
+        var runtimeAdapterPath = Path.Combine(
+            repositoryRoot,
+            "src",
+            "Tessalume.App",
+            "Compatibility",
+            "theme-runtime-v2.js");
+        var runtimeSource = await File.ReadAllTextAsync(Path.Combine(
+            repositoryRoot,
+            "src",
+            "Tessalume.Core",
+            "Runtime",
+            "ThemeRuntime.cs"));
+        var adapterSource = await File.ReadAllTextAsync(runtimeAdapterPath);
+        Ensure(ThemeRuntime.ContractVersion == 2 &&
+               adapterSource.Contains("TESSALUME_THEME_SCRIPT:", StringComparison.Ordinal),
+            "The compatibility contract and theme-script failure marker must be explicit.");
+        Ensure(runtimeSource.Contains("await CleanupTargetsAsync(targets);", StringComparison.Ordinal) &&
+               runtimeSource.Contains("ThemeRuntimeFailureStage.ThemeScriptFailed", StringComparison.Ordinal),
+            "Any partial multi-page application must roll every target back with a classified failure.");
+
+        using var fixture = await ThemeFixture.CreateAsync();
+        var package = (await new ThemePackageLoader().LoadAsync(fixture.Root)).Package
+            ?? throw new InvalidOperationException("Runtime fixture did not load.");
+        File.Delete(package.AssetPaths["hero"]);
+        await using var runtime = new ThemeRuntime(
+            new LoopbackCdpDiscovery(),
+            new ThemePayloadBuilder(new Dictionary<string, string>
+            {
+                [ThemePayloadBuilder.OpenRuntimeAdapterKey] = runtimeAdapterPath,
+            }));
+        ThemeRuntimeException? resourceFailure = null;
+        try
+        {
+            await runtime.PreflightAsync(CodexPackageLauncher.FindFreePort(), package);
+        }
+        catch (ThemeRuntimeException exception)
+        {
+            resourceFailure = exception;
+        }
+        Ensure(resourceFailure?.Stage == ThemeRuntimeFailureStage.ResourcePreflightFailed,
+            "Unreadable local assets must fail before any Codex page is changed.");
+
+        using var validFixture = await ThemeFixture.CreateAsync();
+        var validPackage = (await new ThemePackageLoader().LoadAsync(validFixture.Root)).Package
+            ?? throw new InvalidOperationException("Valid runtime fixture did not load.");
+        ThemeRuntimeException? pageFailure = null;
+        try
+        {
+            await runtime.PreflightAsync(CodexPackageLauncher.FindFreePort(), validPackage);
+        }
+        catch (ThemeRuntimeException exception)
+        {
+            pageFailure = exception;
+        }
+        Ensure(pageFailure?.Stage == ThemeRuntimeFailureStage.PageTargetsMissing,
+            "A reachable test port without Codex pages must report the page-discovery stage.");
+    }
+
     static async Task RestoreRemovesPredecessorRuntimeBrandsAsync()
     {
         var repositoryRoot = FindRepositoryRoot();

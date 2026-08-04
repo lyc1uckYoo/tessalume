@@ -35,6 +35,44 @@ internal static partial class TestSuite
         Ensure(result.Validation.Issues.Any(issue => issue.Code == "css.import.forbidden"), "Remote import issue was not reported.");
     }
 
+    static async Task NullManifestSectionsProduceValidationAsync()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"tessalume-null-manifest-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(root);
+        try
+        {
+            await File.WriteAllTextAsync(
+                Path.Combine(root, ThemePackageLoader.ManifestFileName),
+                """
+                {
+                  "schemaVersion": 2,
+                  "id": "null.sections",
+                  "name": "Null Sections",
+                  "version": "1.0",
+                  "engineVersion": 2,
+                  "type": "advanced",
+                  "capabilities": null,
+                  "entryPoints": null,
+                  "previews": null,
+                  "assets": null,
+                  "config": null,
+                  "compatibility": null
+                }
+                """);
+            var result = await new ThemePackageLoader().LoadAsync(root);
+            Ensure(!result.Validation.IsValid && result.Package is null,
+                "Null manifest sections must produce a rejected package instead of an exception.");
+            Ensure(result.Validation.Issues.Any(issue => issue.Code == "manifest.capabilities.missing") &&
+                   result.Validation.Issues.Any(issue => issue.Code == "manifest.entry-points.missing") &&
+                   result.Validation.Issues.Any(issue => issue.Code == "manifest.assets.missing"),
+                "Null manifest sections must produce actionable validation codes.");
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
     static async Task CatalogIncludesInvalidPackagesAsync()
     {
         var root = Path.Combine(Path.GetTempPath(), $"tessalume-catalog-{Guid.NewGuid():N}");
@@ -229,7 +267,11 @@ internal static partial class TestSuite
             appRoot,
             "Styles",
             "MainWindowResources.xaml"));
-        return mainWindow + "\n" + resources;
+        var creatorCenter = await File.ReadAllTextAsync(Path.Combine(
+            appRoot,
+            "Creator",
+            "CreatorCenterView.xaml"));
+        return mainWindow + "\n" + resources + "\n" + creatorCenter;
     }
 
     static async Task<string> ReadUiPreferencesSourceAsync(string appRoot)

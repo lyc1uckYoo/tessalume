@@ -78,7 +78,7 @@ internal static partial class TestSuite
                         "这是一段用于验证更新说明排版和滚动区域的长文本，标题栏与关闭按钮必须保持固定。",
                         24));
                 dialog = new ProductDialogWindow(
-                    "发现 Tessalume v1.2.1",
+                    "发现 Tessalume v1.3.0",
                     longMessage,
                     ProductDialogKind.Confirmation,
                     darkMode: false,
@@ -253,7 +253,8 @@ internal static partial class TestSuite
                      "x:Name=\"EmptyStateActionButton\"",
                      "x:Name=\"DiagnosticHealthTitleText\"",
                      "Content=\"选择主题文件夹\"",
-                     "Text=\"推荐工作流\"",
+                     "Text=\"创作项目中心\"",
+                     "x:Name=\"ProjectDetailCard\"",
                  })
         {
             Ensure(xaml.Contains(marker, StringComparison.Ordinal),
@@ -302,7 +303,7 @@ internal static partial class TestSuite
             "The Windows application manifest must opt into per-monitor DPI scaling.");
     }
 
-    static async Task Version12ProductWorkflowIsCompleteAsync()
+    static async Task Version13ProductWorkflowIsCompleteAsync()
     {
         var repositoryRoot = FindRepositoryRoot();
         var appRoot = Path.Combine(repositoryRoot, "src", "Tessalume.App");
@@ -324,9 +325,10 @@ internal static partial class TestSuite
                      "x:Name=\"ToastPanel\"",
                      "x:Name=\"AboutInfoPanel\"",
                      "x:Name=\"AboutLibrarySummaryText\"",
+                     "1.3 版本亮点",
                  })
         {
-            Ensure(xaml.Contains(marker, StringComparison.Ordinal), $"The 1.2 interface is missing {marker}.");
+            Ensure(xaml.Contains(marker, StringComparison.Ordinal), $"The product interface is missing {marker}.");
         }
 
         Ensure(source.Contains("ApplyThemeLibraryFilter", StringComparison.Ordinal) &&
@@ -343,13 +345,13 @@ internal static partial class TestSuite
                dialogXaml.Contains("IsCancel=\"True\"", StringComparison.Ordinal) &&
                dialogSource.Contains("CancelButton.IsDefault = true", StringComparison.Ordinal),
             "The product dialog must support consistent styling and keyboard-safe confirmation.");
-        Ensure(project.Contains("<Version>1.2.1</Version>", StringComparison.Ordinal) &&
+        Ensure(project.Contains("<Version>1.3.0</Version>", StringComparison.Ordinal) &&
                firstRunXaml.Contains("{x:Static local:BrandInfo.VersionLabel}", StringComparison.Ordinal) &&
                !firstRunXaml.Contains("Text=\"v1.2\"", StringComparison.Ordinal) &&
-               readme.Contains("## Tessalume 1.2.1", StringComparison.Ordinal) &&
+               readme.Contains("## Tessalume 1.3.0", StringComparison.Ordinal) &&
                readme.Contains("十套内置旗舰主题", StringComparison.Ordinal) &&
                File.Exists(Path.Combine(repositoryRoot, "CHANGELOG.md")),
-            "Version metadata and release documentation must agree on Tessalume 1.2.1.");
+            "Version metadata and release documentation must agree on Tessalume 1.3.0.");
     }
 
 

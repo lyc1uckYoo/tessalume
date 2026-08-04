@@ -55,11 +55,38 @@ internal static partial class TestSuite
             return await CheckLiveUpdateAsync(currentVersion);
         }
 
+        if (args is [
+                "--creator-snapshots",
+                var workspacePath,
+                var lightSnapshotPath,
+                var detailSnapshotPath,
+                var darkSnapshotPath])
+        {
+            return await RenderCreatorCenterSnapshotsAsync(
+                workspacePath,
+                lightSnapshotPath,
+                detailSnapshotPath,
+                darkSnapshotPath);
+        }
+
+        if (args is [
+                "--stage-d-snapshots",
+                var aboutSnapshotPath,
+                var diagnosticsSnapshotPath,
+                var diagnosticsDarkSnapshotPath])
+        {
+            return await RenderStageDSnapshotsAsync(
+                aboutSnapshotPath,
+                diagnosticsSnapshotPath,
+                diagnosticsDarkSnapshotPath);
+        }
+
         var tests = new (string Name, Func<Task> Run)[]
         {
             ("valid package loads", ValidPackageLoadsAsync),
             ("path traversal is rejected", PathTraversalIsRejectedAsync),
             ("remote CSS is rejected", RemoteCssIsRejectedAsync),
+            ("null manifest sections produce validation", NullManifestSectionsProduceValidationAsync),
             ("catalog keeps invalid packages visible", CatalogIncludesInvalidPackagesAsync),
             ("representative open theme loads", RepresentativeOpenThemeLoadsAsync),
             ("published theme library loads and builds", PublishedThemeLibraryLoadsAndBuildsAsync),
@@ -67,6 +94,7 @@ internal static partial class TestSuite
             ("runtime payload stages large assets separately", RuntimePayloadStagesLargeAssetsSeparatelyAsync),
             ("runtime disposes compatible predecessor injection", RuntimeDisposesCompatiblePredecessorInjectionAsync),
             ("runtime preflights assets before replacing the active theme", RuntimePreflightsAssetsBeforeReplacementAsync),
+            ("runtime failures are classified and partial pages roll back", RuntimeFailuresAreClassifiedAndRolledBackAsync),
             ("restore removes predecessor runtime brands", RestoreRemovesPredecessorRuntimeBrandsAsync),
             ("runtime diagnostics use Tessalume markers", RuntimeDiagnosticsUseTessalumeMarkersAsync),
             ("skipped pet overlays retain the processed marker", SkippedPetOverlaysRetainProcessedMarkerAsync),
@@ -80,8 +108,18 @@ internal static partial class TestSuite
             ("WPF shell loads split resources", WpfShellLoadsSplitResourcesAsync),
             ("long product dialogs keep a fixed header and scrollable body", LongProductDialogUsesScrollableBodyAsync),
             ("adaptive layout and keyboard accessibility are available", AdaptiveLayoutAndKeyboardAccessibilityAsync),
-            ("version 1.2.1 product workflow is complete", Version12ProductWorkflowIsCompleteAsync),
+            ("version 1.3.0 product workflow is complete", Version13ProductWorkflowIsCompleteAsync),
             ("portable Codex creator workspace is self-contained", PortableCreatorWorkspaceIsSelfContainedAsync),
+            ("creator workspace history is normalized and bounded", CreatorWorkspaceHistoryIsNormalizedAsync),
+            ("creator center orchestrates workspace projects", CreatorCenterOrchestratesWorkspaceProjectsAsync),
+            ("creator watcher debounces stable changes and releases", CreatorWatcherDebouncesStableChangesAndReleasesAsync),
+            ("creator center auto-applies only healthy stable projects", CreatorCenterAutoAppliesOnlyHealthyStableProjectsAsync),
+            ("creator project scanner produces structured health", CreatorProjectScannerProducesStructuredHealthAsync),
+            ("theme archive export is deterministic and round-trips", ThemeArchiveExportIsDeterministicAndRoundTripsAsync),
+            ("portable backup round-trips user data and imported themes", PortableBackupRoundTripsUserDataAndImportedThemesAsync),
+            ("portable backup rejects corruption, cancellation, and rolls back", PortableBackupRejectsCorruptionCancellationAndRollsBackAsync),
+            ("compatibility health state survives restart", CompatibilityHealthStateIsDurableAsync),
+            ("version 1.3 isolated creator-to-recovery flow completes", Version13IsolatedCreatorToRecoveryFlowAsync),
             ("local diagnostics and built-in recovery are available", DiagnosticsRecoveryIsAvailableAsync),
             ("local importer copies a validated package", LocalImporterCopiesPackageAsync),
             ("ZIP theme import is bounded and rejects traversal", ZipThemeImportIsBoundedAsync),
@@ -89,6 +127,7 @@ internal static partial class TestSuite
             ("open advanced template loads with a stable revision hash", OpenAdvancedTemplateLoadsWithStableRevisionHashAsync),
             ("advanced import keeps script and revision hash tracks changes", AdvancedImportKeepsScriptAndTracksChangesAsync),
             ("deferred main UI replays the live engine state", DeferredMainUiReplaysEngineStateAsync),
+            ("main window disposal is idempotent", MainWindowDisposalIsIdempotentAsync),
             ("startup stays opt-in and cleans the predecessor brand", StartupRegistrationStaysOptInAsync),
             ("release updater checks downloads and verifies SHA-256", ReleaseUpdaterChecksAndDownloadsAsync),
             ("portable updater replaces and preserves a rollback backup", PortableUpdaterReplacesAndBacksUpAsync),

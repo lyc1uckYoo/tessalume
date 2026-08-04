@@ -160,6 +160,7 @@ public partial class MainWindow
         OnboardingCompleted = _onboardingCompleted,
         AutomaticUpdateChecks = _automaticUpdateChecks,
         LastUpdateCheckAt = _lastUpdateCheckAt,
+        RecentCreatorWorkspaces = _creatorWorkspaces.Snapshot(),
         FavoriteThemeIds = _favoriteThemeIds.Order(StringComparer.OrdinalIgnoreCase).ToList(),
         ThemeVisualSettings = _themeVisualSettings.ToDictionary(
             pair => pair.Key,

@@ -14,7 +14,7 @@ body:
     attributes:
       label: Tessalume 版本
       description: 可在“关于与数据”页面查看。
-      placeholder: 1.2.1
+      placeholder: 1.3.0
     validations:
       required: true
   - type: input

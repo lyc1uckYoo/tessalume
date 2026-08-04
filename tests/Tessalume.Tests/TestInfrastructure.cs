@@ -61,6 +61,86 @@ internal sealed class StubHttpHandler(Func<HttpRequestMessage, HttpResponseMessa
         Task.FromResult(respond(request));
 }
 
+internal sealed class CreatorThemeFixture : IDisposable
+{
+    private static readonly string[] AssetNames =
+    [
+        "hero-light", "hero-dark", "sidebar-light", "sidebar-dark", "chat-light", "chat-dark",
+        "task-left", "task-right-secondary", "task-right-primary", "memory-light", "memory-dark",
+    ];
+
+    private CreatorThemeFixture(string root) => Root = root;
+
+    public string Root { get; }
+
+    public static async Task<CreatorThemeFixture> CreateAsync(string? root = null)
+    {
+        root ??= Path.Combine(Path.GetTempPath(), $"tessalume-creator-theme-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(root);
+        var assetsDirectory = Path.Combine(root, "assets");
+        Directory.CreateDirectory(assetsDirectory);
+
+        var assets = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var name in AssetNames)
+        {
+            var relativePath = $"assets/{name}.png";
+            assets[name] = relativePath;
+            await File.WriteAllBytesAsync(
+                Path.Combine(assetsDirectory, $"{name}.png"),
+                [0x89, 0x50, 0x4e, 0x47]);
+        }
+
+        var css = new StringBuilder(":root {\n");
+        foreach (var name in AssetNames)
+        {
+            css.Append("  --fixture-")
+                .Append(name)
+                .Append(": var(--tessalume-asset-")
+                .Append(name)
+                .AppendLine(");");
+        }
+        css.AppendLine("}");
+        await File.WriteAllTextAsync(Path.Combine(root, "skin.css"), css.ToString());
+        await File.WriteAllTextAsync(
+            Path.Combine(root, "theme.js"),
+            """
+            registerTheme({
+              mount(context) {
+                context.renderTemplateV1({ stageClass: "fixture-stage" });
+                context.mountCanonicalTheme({ templateVersion: "1.0", preserveRoot: true });
+              },
+              unmount() {}
+            });
+            """);
+
+        var manifest = new
+        {
+            schemaVersion = 2,
+            id = "fixture.creator-theme",
+            name = "Fixture Creator Theme",
+            version = "1.0",
+            author = "Tests",
+            engineVersion = 2,
+            type = "advanced",
+            template = new { id = "flagship", version = "1.0", style = "shared" },
+            capabilities = new { light = true, dark = true },
+            entryPoints = new { css = "skin.css", script = "theme.js" },
+            previews = new { light = "assets/hero-light.png", dark = "assets/hero-dark.png" },
+            assets,
+            config = new { character = "Fixture Character", title = "Fixture Theme" },
+        };
+        await File.WriteAllTextAsync(
+            Path.Combine(root, ThemePackageLoader.ManifestFileName),
+            JsonSerializer.Serialize(manifest));
+        return new CreatorThemeFixture(root);
+    }
+
+    public void Dispose()
+    {
+        if (Directory.Exists(Root)) Directory.Delete(Root, recursive: true);
+    }
+}
+
 internal sealed class ThemeFixture : IDisposable
 {
     private ThemeFixture(string root) => Root = root;

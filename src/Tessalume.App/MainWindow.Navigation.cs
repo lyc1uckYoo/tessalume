@@ -22,8 +22,6 @@ public partial class MainWindow
 {
     private void ImportGuide_Click(object sender, RoutedEventArgs e) => ShowInfoPage(RightPane.ImportGuide);
 
-    private void UsageGuide_Click(object sender, RoutedEventArgs e) => ShowInfoPage(RightPane.UsageGuide);
-
     private void About_Click(object sender, RoutedEventArgs e)
     {
         AboutRootText.Text = _layout.RootDirectory;
@@ -64,7 +62,7 @@ public partial class MainWindow
         ThemeLibraryPage.Visibility = Visibility.Collapsed;
         InfoPage.Visibility = Visibility.Visible;
         ImportInfoPanel.Visibility = page == RightPane.ImportGuide ? Visibility.Visible : Visibility.Collapsed;
-        UsageInfoPanel.Visibility = page == RightPane.UsageGuide ? Visibility.Visible : Visibility.Collapsed;
+        CreatorCenter.Visibility = page == RightPane.Creator ? Visibility.Visible : Visibility.Collapsed;
         SettingsInfoPanel.Visibility = page == RightPane.Settings ? Visibility.Visible : Visibility.Collapsed;
         DiagnosticsInfoPanel.Visibility = page == RightPane.Diagnostics ? Visibility.Visible : Visibility.Collapsed;
         AboutInfoPanel.Visibility = page == RightPane.About ? Visibility.Visible : Visibility.Collapsed;

@@ -7,6 +7,10 @@ public sealed class ThemeRuntime(
     LoopbackCdpDiscovery discovery,
     ThemePayloadBuilder payloadBuilder) : IAsyncDisposable
 {
+    public const int ContractVersion = 2;
+
+    private const string ThemeScriptFailureMarker = "TESSALUME_THEME_SCRIPT:";
+
     private const string RemoveCompatibleRuntimesScript = """
         (async () => {
           const candidates = new Set();
@@ -59,7 +63,7 @@ public sealed class ThemeRuntime(
         ThemeVisualSettings visualSettings,
         CancellationToken cancellationToken = default)
     {
-        var payload = await payloadBuilder.BuildRuntimeAsync(package, cancellationToken);
+        var payload = await BuildPayloadAsync(package, cancellationToken);
         await ApplyToAllAsync(
             port,
             package,
@@ -70,6 +74,52 @@ public sealed class ThemeRuntime(
             cancellationToken);
 
         StatusChanged?.Invoke(this, $"{package.Manifest.Name} 已应用");
+    }
+
+    public async Task PreflightAsync(
+        int port,
+        ThemePackage package,
+        CancellationToken cancellationToken = default)
+    {
+        _ = await BuildPayloadAsync(package, cancellationToken);
+
+        await _applyLock.WaitAsync(cancellationToken);
+        try
+        {
+            var targets = await discovery.DiscoverAsync(port, cancellationToken);
+            if (targets.Count == 0)
+            {
+                throw new ThemeRuntimeException(
+                    ThemeRuntimeFailureStage.PageTargetsMissing,
+                    $"本机端口 {port} 已打开，但没有发现可注入的 Codex 页面。");
+            }
+
+            foreach (var target in targets)
+            {
+                await using var session = new CdpSession();
+                await session.ConnectAsync(target.WebSocketDebuggerUrl, cancellationToken);
+                _ = await session.EvaluateAsync("!!document.documentElement", cancellationToken);
+            }
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (ThemeRuntimeException)
+        {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            throw new ThemeRuntimeException(
+                ThemeRuntimeFailureStage.RuntimeInjectionFailed,
+                "已发现 Codex 页面，但主题运行时无法建立安全的本机连接。",
+                exception);
+        }
+        finally
+        {
+            _applyLock.Release();
+        }
     }
 
     public async Task ApplyVisualSettingsAsync(
@@ -375,13 +425,16 @@ public sealed class ThemeRuntime(
         CancellationToken cancellationToken)
     {
         await _applyLock.WaitAsync(cancellationToken);
+        IReadOnlyList<CdpTarget> targets = [];
         try
         {
             var themeId = package.Manifest.Id;
-            var targets = await discovery.DiscoverAsync(port, cancellationToken);
+            targets = await discovery.DiscoverAsync(port, cancellationToken);
             if (targets.Count == 0)
             {
-                throw new InvalidOperationException($"本机端口 {port} 尚未发现 Codex 页面");
+                throw new ThemeRuntimeException(
+                    ThemeRuntimeFailureStage.PageTargetsMissing,
+                    $"本机端口 {port} 已打开，但没有发现可注入的 Codex 页面。");
             }
 
             if (processedTargets is not null)
@@ -421,18 +474,113 @@ public sealed class ThemeRuntime(
                     }
                 }
 
-                await StageAssetsAsync(session, package.AssetPaths, cancellationToken);
+                try
+                {
+                    await StageAssetsAsync(session, package.AssetPaths, cancellationToken);
+                }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                    throw;
+                }
+                catch (Exception exception)
+                {
+                    throw new ThemeRuntimeException(
+                        ThemeRuntimeFailureStage.ResourcePreflightFailed,
+                        "主题素材在发送到 Codex 前未能完整读取，当前页面已统一恢复默认外观。",
+                        exception);
+                }
+
                 await session.EvaluateAsync(
                     $"window.__TESSALUME_STAGED_VISUAL_SETTINGS__ = {visualSettingsJson}; true",
                     cancellationToken);
 
-                await session.EvaluateAsync(payload, cancellationToken);
+                try
+                {
+                    await session.EvaluateAsync(payload, cancellationToken);
+                }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                    throw;
+                }
+                catch (Exception exception)
+                {
+                    var themeScriptFailed = exception.Message.Contains(
+                        ThemeScriptFailureMarker,
+                        StringComparison.Ordinal);
+                    throw new ThemeRuntimeException(
+                        themeScriptFailed
+                            ? ThemeRuntimeFailureStage.ThemeScriptFailed
+                            : ThemeRuntimeFailureStage.RuntimeInjectionFailed,
+                        themeScriptFailed
+                            ? "主题脚本执行失败，所有 Codex 页面已统一恢复默认外观。"
+                            : "主题运行时注入失败，所有 Codex 页面已统一恢复默认外观。",
+                        exception);
+                }
                 processedTargets?.Add(targetKey);
             }
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            await CleanupTargetsAsync(targets);
+            throw;
+        }
+        catch (ThemeRuntimeException)
+        {
+            await CleanupTargetsAsync(targets);
+            throw;
+        }
+        catch (Exception exception)
+        {
+            await CleanupTargetsAsync(targets);
+            throw new ThemeRuntimeException(
+                ThemeRuntimeFailureStage.RuntimeInjectionFailed,
+                "主题运行时无法完成本机注入，所有 Codex 页面已统一恢复默认外观。",
+                exception);
         }
         finally
         {
             _applyLock.Release();
+        }
+    }
+
+    private async Task<string> BuildPayloadAsync(
+        ThemePackage package,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await payloadBuilder.BuildRuntimeAsync(package, cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            throw new ThemeRuntimeException(
+                ThemeRuntimeFailureStage.ResourcePreflightFailed,
+                "主题源码或素材未能完整读取，尚未更改 Codex 当前外观。",
+                exception);
+        }
+    }
+
+    private static async Task CleanupTargetsAsync(IReadOnlyList<CdpTarget> targets)
+    {
+        foreach (var target in targets)
+        {
+            try
+            {
+                using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+                await using var session = new CdpSession();
+                await session.ConnectAsync(target.WebSocketDebuggerUrl, timeout.Token);
+                _ = await session.EvaluateAsync(RemoveCompatibleRuntimesScript, timeout.Token);
+            }
+            catch (Exception exception) when (
+                exception is InvalidOperationException or UriFormatException or
+                    System.Net.WebSockets.WebSocketException or OperationCanceledException)
+            {
+                // Best effort: another Codex page may already have closed while rollback runs.
+            }
         }
     }
 

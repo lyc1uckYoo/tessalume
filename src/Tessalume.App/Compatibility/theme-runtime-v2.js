@@ -1019,11 +1019,19 @@
         }
         definition = candidate;
       };
-      eval(scriptText);
-      if (!definition || typeof definition.mount !== "function") {
-        throw new Error("Advanced theme script must call registerTheme({ mount, unmount? })");
+      try {
+        eval(scriptText);
+      } catch (error) {
+        throw new Error(`TESSALUME_THEME_SCRIPT: ${error?.message || String(error)}`);
       }
-      await definition.mount(context);
+      if (!definition || typeof definition.mount !== "function") {
+        throw new Error("TESSALUME_THEME_SCRIPT: Advanced theme script must call registerTheme({ mount, unmount? })");
+      }
+      try {
+        await definition.mount(context);
+      } catch (error) {
+        throw new Error(`TESSALUME_THEME_SCRIPT: ${error?.message || String(error)}`);
+      }
     }
 
     window.__TESSALUME_THEME_ID__ = themeId;

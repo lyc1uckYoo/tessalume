@@ -15,13 +15,36 @@ internal sealed class UiPreferencesStore(string dataDirectory) : IDisposable
     {
         try
         {
-            return File.Exists(_path)
-                ? UiPreferencesMigration.Deserialize(File.ReadAllText(_path), _options, out _)
-                : new UiPreferences();
+            if (!File.Exists(_path)) return new UiPreferences();
+            var json = File.ReadAllText(_path);
+            var preferences = UiPreferencesMigration.Deserialize(json, _options, out var migrated);
+            if (migrated)
+            {
+                PreserveMigrationSnapshot(json);
+            }
+            return preferences;
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or JsonException)
         {
             return new UiPreferences();
+        }
+    }
+
+    private void PreserveMigrationSnapshot(string json)
+    {
+        var backupsDirectory = Path.Combine(Path.GetDirectoryName(_path)!, "backups");
+        var snapshotPath = Path.Combine(backupsDirectory, "latest-before-preferences-migration.json");
+        var temporaryPath = snapshotPath + ".tmp";
+        try
+        {
+            Directory.CreateDirectory(backupsDirectory);
+            File.WriteAllText(temporaryPath, json);
+            File.Move(temporaryPath, snapshotPath, overwrite: true);
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            try { File.Delete(temporaryPath); }
+            catch (Exception cleanupException) when (cleanupException is IOException or UnauthorizedAccessException) { }
         }
     }
 
