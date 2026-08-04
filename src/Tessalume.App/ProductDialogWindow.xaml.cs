@@ -14,7 +14,7 @@ public enum ProductDialogKind
 
 public partial class ProductDialogWindow : Window
 {
-    private ProductDialogWindow(
+    internal ProductDialogWindow(
         string title,
         string message,
         ProductDialogKind kind,

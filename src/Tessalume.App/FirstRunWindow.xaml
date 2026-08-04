@@ -75,7 +75,7 @@
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="欢迎使用 Tessalume" Foreground="{DynamicResource WelcomeText}" FontSize="23" FontWeight="Bold" />
                         <Border Background="{DynamicResource WelcomeAccentSoft}" CornerRadius="8" Padding="8,3" Margin="10,2,0,0" VerticalAlignment="Top">
-                            <TextBlock Text="v1.2" Foreground="{DynamicResource WelcomeAccent}" FontSize="9" FontWeight="Bold" />
+                            <TextBlock Text="{x:Static local:BrandInfo.VersionLabel}" Foreground="{DynamicResource WelcomeAccent}" FontSize="9" FontWeight="Bold" />
                         </Border>
                     </StackPanel>
                     <TextBlock Text="先了解三个关键动作，再开始选择你的第一套主题。" Foreground="{DynamicResource WelcomeMuted}" FontSize="11" Margin="0,6,0,0" />

@@ -17,7 +17,7 @@ $root = [IO.Path]::GetFullPath($PSScriptRoot)
 $globalJsonPath = Join-Path $root 'global.json'
 $solution = Join-Path $root 'Tessalume.sln'
 $project = Join-Path $root 'src\Tessalume.App\Tessalume.App.csproj'
-$tests = Join-Path $root 'tests\Tessalume.Core.Tests\Tessalume.Core.Tests.csproj'
+$tests = Join-Path $root 'tests\Tessalume.Tests\Tessalume.Tests.csproj'
 
 if (-not [IO.File]::Exists($globalJsonPath)) {
     throw "Missing SDK configuration: $globalJsonPath"

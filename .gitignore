@@ -22,6 +22,9 @@ backups/
 /Prompt.md
 AGENTS.md
 
+# Local project records (intentionally excluded from the public repository)
+docs/
+
 # Every direct child of themes/ is a publishable theme package. Design sources
 # and historical working copies inside a package are not release assets.
 themes/*/.legacy/

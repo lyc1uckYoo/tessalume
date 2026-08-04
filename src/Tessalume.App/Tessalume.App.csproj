@@ -13,7 +13,7 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <Description>Open-source visual theme studio for Codex desktop</Description>
     <Authors>$(AssemblyName) Contributors</Authors>
-    <Version>1.2.0</Version>
+    <Version>1.2.1</Version>
     <BuiltInThemesRoot Condition="'$(BuiltInThemesRoot)' == ''">..\..\themes</BuiltInThemesRoot>
   </PropertyGroup>
 
@@ -21,6 +21,15 @@
     <ProjectReference Include="..\Tessalume.Core\Tessalume.Core.csproj" />
     <Resource Include="Assets\$(AssemblyName).ico" />
     <Resource Include="Assets\$(AssemblyName).png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="MainWindow.*.cs">
+      <DependentUpon>MainWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="ThemeQuickSwitchWindow.*.cs">
+      <DependentUpon>ThemeQuickSwitchWindow.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>

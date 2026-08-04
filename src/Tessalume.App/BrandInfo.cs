@@ -11,10 +11,9 @@ public static class BrandInfo
     public const string RepositoryOwner = "lyc1uckYoo";
     public const string RepositoryName = "tessalume";
     public static string Version { get; } =
-        typeof(BrandInfo).Assembly.GetName().Version?.ToString(3) ?? "1.2.0";
+        typeof(BrandInfo).Assembly.GetName().Version?.ToString(3) ?? "1.2.1";
     public static string VersionLabel { get; } = "v" + Version;
     public static string WindowTitle { get; } = ProductName + " · " + ChineseName;
-    public static string DiagnosticsTitle { get; } = ProductName + " · 本机诊断";
     public static string QuickSwitchTitle { get; } = ProductName + " 浮窗";
     public static string ProtocolClientName { get; } = ProductName.ToLowerInvariant();
     public static BitmapImage AppIcon { get; } = LoadImage("ico");

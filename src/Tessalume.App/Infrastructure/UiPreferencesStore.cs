@@ -1,24 +1,7 @@
 using System.IO;
 using System.Text.Json;
-using Tessalume.Core.Runtime;
 
 namespace Tessalume.App.Infrastructure;
-
-internal sealed record UiPreferences
-{
-    public bool DarkMode { get; init; }
-
-    public bool OnboardingCompleted { get; init; }
-
-    public bool AutomaticUpdateChecks { get; init; } = true;
-
-    public DateTimeOffset? LastUpdateCheckAt { get; init; }
-
-    public List<string> FavoriteThemeIds { get; init; } = [];
-
-    public Dictionary<string, ThemeVisualSettings> ThemeVisualSettings { get; init; } =
-        new(StringComparer.OrdinalIgnoreCase);
-}
 
 internal sealed class UiPreferencesStore(string dataDirectory) : IDisposable
 {
@@ -32,15 +15,9 @@ internal sealed class UiPreferencesStore(string dataDirectory) : IDisposable
     {
         try
         {
-            var preferences = File.Exists(_path)
-                ? JsonSerializer.Deserialize<UiPreferences>(File.ReadAllText(_path), _options) ?? new UiPreferences()
+            return File.Exists(_path)
+                ? UiPreferencesMigration.Deserialize(File.ReadAllText(_path), _options, out _)
                 : new UiPreferences();
-            return preferences with
-            {
-                FavoriteThemeIds = preferences.FavoriteThemeIds ?? [],
-                ThemeVisualSettings = preferences.ThemeVisualSettings ??
-                    new Dictionary<string, ThemeVisualSettings>(StringComparer.OrdinalIgnoreCase),
-            };
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or JsonException)
         {
@@ -50,6 +27,7 @@ internal sealed class UiPreferencesStore(string dataDirectory) : IDisposable
 
     public async Task SaveAsync(UiPreferences preferences)
     {
+        preferences = UiPreferencesMigration.PrepareForSave(preferences);
         await _saveGate.WaitAsync();
         var temporaryPath = _path + ".tmp";
         try

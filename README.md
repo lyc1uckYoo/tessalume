@@ -2,15 +2,17 @@
 
 面向 Codex Desktop 的开源 Windows 主题工作室。Tessalume 把完整沉浸式主题、亮暗模式、收藏切换、额度信息、本机诊断和官方自动更新集中在一个便携应用中；主题运行通过本机回环端口连接 Codex，不修改 Codex 安装包、`app.asar` 或用户数据。
 
-[下载 Tessalume 1.2](https://github.com/lyc1uckYoo/tessalume/releases/latest) · [问题反馈](https://github.com/lyc1uckYoo/tessalume/issues/new?template=bug-report.yml) · [版本记录](CHANGELOG.md) · [主题制作指南](THEMING.md) · [安全与隐私](SECURITY.md) · [MIT 许可证](LICENSE)
+[下载 Tessalume 1.2.1](https://github.com/lyc1uckYoo/tessalume/releases/latest) · [问题反馈](https://github.com/lyc1uckYoo/tessalume/issues/new?template=bug-report.yml) · [版本记录](CHANGELOG.md) · [主题制作指南](THEMING.md) · [安全与隐私](SECURITY.md) · [MIT 许可证](LICENSE)
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/tessalume-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="docs/screenshots/tessalume-light.png">
-  <img alt="Tessalume 主题画廊" src="docs/screenshots/tessalume-light.png">
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/screenshots/tessalume-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset=".github/assets/screenshots/tessalume-light.png">
+  <img alt="Tessalume 主题画廊" src=".github/assets/screenshots/tessalume-light.png">
 </picture>
 
-## Tessalume 1.2
+## Tessalume 1.2.1
+
+1.2.1 是 1.3 开发前的维护更新：完成主窗口、主题库、设置、创作、更新、诊断和顶部浮窗的内部拆分，为便携配置加入明确的迁移版本，并扩充真实项目回归检查。界面功能和主题表现保持 1.2 基线，更新只替换 EXE，已有主题、收藏和个性化参数不会被重置。
 
 1.2 已把 Tessalume 从单纯的换皮工具整理为可交付给新用户的完整主题工作台：首次启动不会擅自应用主题或关闭 Codex；主题画廊、设置、诊断、导入、主题创作和统一弹窗形成同一套产品界面；文件夹与 ZIP 导入、Codex 一句话创作、高级图像调节、自动更新和本机恢复链路均已接通。
 
@@ -43,7 +45,7 @@ Tessalume 默认以顶部浮窗开始工作。浮窗常驻屏幕上方，不遮�
 - Codex 亮色/暗色切换；
 - 打开 Tessalume 主界面与关闭浮窗。
 
-![Tessalume 顶部主题浮窗](docs/screenshots/tessalume-quick-switch.png)
+![Tessalume 顶部主题浮窗](.github/assets/screenshots/tessalume-quick-switch.png)
 
 如果 Codex 暂时没有返回某个额度，圆环会显示 `--`，不会阻塞主题切换。点击浮窗中的主页按钮，或再次运行 `Tessalume.exe`，即可打开完整主题画廊。
 
@@ -83,6 +85,10 @@ Tessalume 默认以顶部浮窗开始工作。浮窗常驻屏幕上方，不遮�
 
 软件默认每 12 小时至多自动检查一次官方 Releases；发现新版本后会先展示版本号、说明和下载大小，只有确认后才下载并安装。可在“个性化设置 → 软件自动更新”关闭自动检查，手动检查始终可用。更新仅替换 `Tessalume.exe`，不会删除 `data/`、用户主题或个性化参数。
 
+### 从 1.2.0 升级到 1.2.1
+
+打开“个性化设置 → 软件自动更新”，点击“立即检查”；确认版本说明后，Tessalume 会下载并校验 `1.2.1`、备份旧 EXE、安全替换并重新启动。整个过程不会删除程序旁边的便携数据与用户主题。
+
 ### 从 1.1 升级到 1.2
 
 1. 退出正在运行的 Tessalume。
@@ -92,7 +98,7 @@ Tessalume 默认以顶部浮窗开始工作。浮窗常驻屏幕上方，不遮�
 
 不要把新 EXE 放进另一个空文件夹后再期待旧配置自动迁移；Tessalume 是便携应用，用户数据始终跟随 EXE 所在目录。
 
-发布页同时提供 `SHA256SUMS.txt`，可用于核对下载的 EXE。Tessalume 1.2 当前面向安装了 Windows 版 Codex Desktop 的 x64 系统。当前构建没有商业代码签名，首次下载时 Microsoft Defender SmartScreen 可能显示提示；请只从本仓库 Releases 下载并核对 SHA-256。
+发布页同时提供 `SHA256SUMS.txt`，可用于核对下载的 EXE。Tessalume 1.2.1 当前面向安装了 Windows 版 Codex Desktop 的 x64 系统。当前构建没有商业代码签名，首次下载时 Microsoft Defender SmartScreen 可能显示提示；请只从本仓库 Releases 下载并核对 SHA-256。
 
 ## 本机运行与安全边界
 
@@ -107,7 +113,7 @@ Tessalume 自带的主题运行链路保持在本机；程序自身只有软件�
 - 主题运行时根据完整包内容识别当前加载版本，切换和恢复均在当前本机会话内完成；
 - 删除主题只作用于 Tessalume 自己的本地主题库；删除正在使用的主题前会先恢复 Codex 默认外观。
 
-![Tessalume 本机运行与诊断](docs/screenshots/tessalume-diagnostics.png)
+![Tessalume 本机运行与诊断](.github/assets/screenshots/tessalume-diagnostics.png)
 
 诊断页区分 Codex 进程、本机端口、有效主题数量、当前主题和包校验结果，便于判断问题发生在主题包、Codex 启动还是本机连接阶段。日志只保存在 `data/logs/`，超过 1 MiB 后自动轮换，不会上传；需要排查时可从诊断页打开日志目录。误删内置主题时，可在同一页面恢复全部已删除的内置主题，用户导入和自制主题不会受到影响。
 
@@ -123,7 +129,7 @@ Codex 会先展示角色身份卡和
 
 ## 已知边界与排查顺序
 
-- 1.2 当前只发布 Windows x64 自包含单文件，没有 macOS、Linux 或 ARM64 构建。
+- 1.2.1 当前只发布 Windows x64 自包含单文件，没有 macOS、Linux 或 ARM64 构建。
 - 当前 EXE 没有商业代码签名，首次下载可能出现 Microsoft Defender SmartScreen 提示；请只从本仓库 Releases 下载并核对 SHA-256。
 - 主题运行依赖 Codex Desktop 的本机调试端口和页面结构。Codex 大版本更新后若主题暂时无法应用，请先更新 Tessalume，再到“运行与诊断”检查进程、端口和主题包状态。
 - 连接异常时按“确认 Windows 版 Codex 已安装 → 刷新诊断 → 重新应用主题 → 必要时确认后重启 Codex”的顺序处理；不要手工修改 Codex 安装目录。
@@ -166,16 +172,16 @@ powershell -ExecutionPolicy Bypass -File ".\一键构建EXE.ps1"
 ```text
 src/Tessalume.App             WPF 主界面、顶部浮窗与本机适配
 src/Tessalume.Core            主题加载、校验、Codex 启动与 CDP 运行时
-tests/                         无外部测试框架的自动检查
+tests/Tessalume.Tests/         无外部测试框架的产品级回归检查
 schemas/                       主题包 JSON Schema
 themes/<主题目录>/             10 款内置旗舰主题源码
 examples/                      可直接复制的旗舰主题模板 1.0
 .agents/skills/                主题创作规范、脚手架与契约校验
-docs/screenshots/              Tessalume 实机界面截图
+.github/assets/screenshots/    GitHub README 使用的实机界面截图
 一键构建EXE.ps1               还原、测试、优化与发布入口
 ```
 
-Tessalume 1.2 的正式发布产物为 `Tessalume.exe` 与对应的 SHA-256 校验文件，不额外要求安装器或 .NET 运行环境。
+Tessalume 1.2.1 的正式发布产物为 `Tessalume.exe` 与对应的 SHA-256 校验文件，不额外要求安装器或 .NET 运行环境。
 
 ## 许可证
 

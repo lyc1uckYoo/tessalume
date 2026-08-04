@@ -1,0 +1,12 @@
+global using System.IO.Compression;
+global using System.Net;
+global using System.Security.Cryptography;
+global using System.Text;
+global using System.Text.Json;
+global using System.Text.RegularExpressions;
+global using System.Windows;
+global using Tessalume.App;
+global using Tessalume.Core.Themes;
+global using Tessalume.Core.Runtime;
+global using Tessalume.Core.Updates;
+global using Tessalume.App.Infrastructure;

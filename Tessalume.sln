@@ -11,7 +11,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tessalume.App", "src\Tessal
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{1CBE3D98-174D-453B-B58A-75CE85195C78}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tessalume.Core.Tests", "tests\Tessalume.Core.Tests\Tessalume.Core.Tests.csproj", "{26C5A9E4-CD28-4DD9-8FD9-B4D32A3FD8C1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tessalume.Tests", "tests\Tessalume.Tests\Tessalume.Tests.csproj", "{26C5A9E4-CD28-4DD9-8FD9-B4D32A3FD8C1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
