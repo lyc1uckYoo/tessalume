@@ -81,4 +81,10 @@ public sealed record CreatorWorkspaceScanResult(
     ThemeProjectHealthReport Health)
 {
     public bool Exists => Directory.Exists(WorkspaceDirectory);
+
+    public CreatorWorkspaceContractInfo Contract { get; init; } = new(
+        CreatorWorkspaceContractState.Missing,
+        null,
+        null,
+        "尚未读取工作区版本。");
 }

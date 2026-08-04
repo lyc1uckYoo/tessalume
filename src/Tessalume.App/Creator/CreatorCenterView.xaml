@@ -90,6 +90,7 @@
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="MiniChrome" Property="Background" Value="{DynamicResource AccentSoft}" /><Setter TargetName="MiniChrome" Property="BorderBrush" Value="{DynamicResource Accent}" /></Trigger>
                             <Trigger Property="IsPressed" Value="True"><Setter TargetName="MiniChrome" Property="Opacity" Value="0.78" /></Trigger>
+                            <Trigger Property="IsEnabled" Value="False"><Setter TargetName="MiniChrome" Property="Opacity" Value="0.38" /></Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
@@ -103,6 +104,30 @@
             <Style.Triggers>
                 <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.42" /></Trigger>
             </Style.Triggers>
+        </Style>
+        <Style x:Key="CreatorTextBox" TargetType="TextBox">
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryText}" />
+            <Setter Property="Background" Value="{DynamicResource Surface}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Border}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="11,8" />
+            <Setter Property="FontSize" Value="10" />
+            <Setter Property="CaretBrush" Value="{DynamicResource Accent}" />
+            <Setter Property="SelectionBrush" Value="{DynamicResource AccentSoft}" />
+            <Setter Property="FocusVisualStyle" Value="{DynamicResource KeyboardFocusVisual}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="InputChrome" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="9">
+                            <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="InputChrome" Property="BorderBrush" Value="{DynamicResource Accent}" /></Trigger>
+                            <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="InputChrome" Property="BorderBrush" Value="{DynamicResource Accent}" /></Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
         <Style x:Key="CreatorSwitch" TargetType="ToggleButton">
             <Setter Property="Width" Value="42" />
@@ -146,7 +171,7 @@
             <Border Grid.Column="1" Background="{DynamicResource AccentSoft}" BorderBrush="{DynamicResource Accent}" BorderThickness="1" CornerRadius="11" Padding="11,6" VerticalAlignment="Center">
                 <StackPanel Orientation="Horizontal">
                     <Ellipse Width="6" Height="6" Fill="{DynamicResource Positive}" Margin="0,0,7,0" />
-                    <TextBlock Text="1.3 · Creator Center" Foreground="{DynamicResource Accent}" FontSize="9.5" FontWeight="SemiBold" />
+                    <TextBlock Text="1.4 · Creator Studio" Foreground="{DynamicResource Accent}" FontSize="9.5" FontWeight="SemiBold" />
                 </StackPanel>
             </Border>
         </Grid>
@@ -159,10 +184,7 @@
                     <ColumnDefinition Width="20" />
                     <ColumnDefinition Width="206" />
                 </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
+                <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
                 <Border Width="44" Height="44" CornerRadius="14" Background="{DynamicResource PrimaryGradient}" VerticalAlignment="Top">
                     <Path Width="21" Height="21" Data="M 4,4 C 8,3 10,4 12,6 L 12,20 C 10,18 8,17 4,18 Z M 20,4 C 16,3 14,4 12,6 L 12,20 C 14,18 16,17 20,18 Z" Stroke="White" StrokeThickness="1.8" StrokeLineJoin="Round" Fill="Transparent" Stretch="Uniform" />
                 </Border>
@@ -173,6 +195,7 @@
                 <StackPanel Grid.Column="3">
                     <Button Style="{DynamicResource PrimaryActionButton}" Height="38" Content="创建新工作区" Click="CreateWorkspace_Click" />
                     <Button Style="{DynamicResource QuietActionButton}" Content="打开已有工作区" Margin="0,8,0,0" Click="OpenWorkspace_Click" />
+                    <Button Style="{DynamicResource QuietActionButton}" Content="仅复制 Template 1.0" Margin="0,8,0,0" Click="CopyManualTemplate_Click" ToolTip="为手动开发复制裸模板" />
                 </StackPanel>
 
                 <Border Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Background="{DynamicResource InfoSurface}" BorderBrush="{DynamicResource InfoBorder}" BorderThickness="1" CornerRadius="11" Padding="14,12" Margin="0,15,0,0">
@@ -184,11 +207,35 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <StackPanel>
-                            <TextBlock Text="给 Codex 的一句话" Foreground="{DynamicResource Accent}" FontSize="9" FontWeight="Bold" />
-                            <TextBlock x:Name="CreatorPromptText" Text="请使用 $author-tessalume-theme 为《鸣潮》的椿制作一套 Tessalume 主题；先完成角色研究和 11 张素材计划，等我确认后再生成、校验并交付可导入的主题文件夹。" TextWrapping="Wrap" Foreground="{DynamicResource PrimaryText}" FontSize="11" LineHeight="18" Margin="0,5,14,0" />
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="给 Codex 的完整创作提示词" Foreground="{DynamicResource Accent}" FontSize="9" FontWeight="Bold" />
+                                <TextBlock x:Name="CreatorPromptStatusText" Text="已包含角色确认与最终校验" Foreground="{DynamicResource Teal}" FontSize="8.5" Margin="10,0,0,0" />
+                            </StackPanel>
+                            <TextBlock x:Name="CreatorPromptText" TextWrapping="Wrap" Foreground="{DynamicResource PrimaryText}" FontSize="10.5" LineHeight="17" MaxHeight="92" Margin="0,6,14,0" />
                         </StackPanel>
-                        <Button Grid.Column="1" Style="{DynamicResource QuietActionButton}" Content="复制" Width="64" Height="32" VerticalAlignment="Center" Click="CopyPrompt_Click" AutomationProperties.Name="复制创作提示词" />
-                        <Button Grid.Column="3" Style="{DynamicResource QuietActionButton}" Content="手动模板" Width="76" Height="32" VerticalAlignment="Center" Click="CopyManualTemplate_Click" ToolTip="仅复制 Template 1.0 文件夹" />
+                        <Button x:Name="TogglePromptEditorButton" Grid.Column="1" Style="{DynamicResource QuietActionButton}" Content="定制提示词" Width="92" Height="34" VerticalAlignment="Center" Click="TogglePromptEditor_Click" />
+                        <Button x:Name="CopyPromptButton" Grid.Column="3" Style="{DynamicResource PrimaryActionButton}" Content="复制提示词" Width="92" Height="36" VerticalAlignment="Center" Click="CopyPrompt_Click" AutomationProperties.Name="复制创作提示词" />
+                    </Grid>
+                </Border>
+
+                <Border x:Name="CreatorPromptEditor" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" Visibility="Collapsed"
+                        Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource Border}" BorderThickness="1"
+                        CornerRadius="13" Padding="15" Margin="0,11,0,0">
+                    <Grid>
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="12" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="10" /><RowDefinition Height="Auto" /><RowDefinition Height="11" /><RowDefinition Height="Auto" /><RowDefinition Height="11" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                        <Grid Grid.ColumnSpan="3">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                            <StackPanel><TextBlock Text="角色与视觉方向" Foreground="{DynamicResource PrimaryText}" FontSize="11.5" FontWeight="SemiBold" /><TextBlock Text="草稿只保存在本机；作品名和角色名填写后即可复制。" Foreground="{DynamicResource MutedText}" FontSize="8.5" Margin="0,3,0,0" /></StackPanel>
+                            <Button Grid.Column="1" Style="{StaticResource CreatorMiniButton}" Content="恢复示例" Click="ResetPrompt_Click" />
+                        </Grid>
+                        <StackPanel Grid.Row="2"><TextBlock Text="作品名称 *" Foreground="{DynamicResource MutedText}" FontSize="8.5" Margin="1,0,0,5" /><TextBox x:Name="PromptWorkNameBox" Style="{StaticResource CreatorTextBox}" MaxLength="80" TextChanged="PromptField_Changed" AutomationProperties.Name="主题作品名称" /></StackPanel>
+                        <StackPanel Grid.Row="2" Grid.Column="2"><TextBlock Text="角色名称 *" Foreground="{DynamicResource MutedText}" FontSize="8.5" Margin="1,0,0,5" /><TextBox x:Name="PromptCharacterNameBox" Style="{StaticResource CreatorTextBox}" MaxLength="80" TextChanged="PromptField_Changed" AutomationProperties.Name="主题角色名称" /></StackPanel>
+                        <StackPanel Grid.Row="4"><TextBlock Text="视觉方向" Foreground="{DynamicResource MutedText}" FontSize="8.5" Margin="1,0,0,5" /><TextBox x:Name="PromptVisualDirectionBox" Style="{StaticResource CreatorTextBox}" MaxLength="220" TextChanged="PromptField_Changed" ToolTip="例如：蓝白月光、庆典礼服、克制的科技感" /></StackPanel>
+                        <Border Grid.Row="4" Grid.Column="2" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="9" Padding="12,8">
+                            <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><StackPanel><TextBlock Text="我会附上参考图片" Foreground="{DynamicResource PrimaryText}" FontSize="9.5" FontWeight="SemiBold" /><TextBlock Text="提示 Codex 先核对形态与特征" Foreground="{DynamicResource MutedText}" FontSize="8" Margin="0,3,0,0" /></StackPanel><ToggleButton x:Name="PromptReferenceCheckBox" Grid.Column="1" Style="{StaticResource CreatorSwitch}" Checked="PromptField_Changed" Unchecked="PromptField_Changed" AutomationProperties.Name="使用参考图片" /></Grid>
+                        </Border>
+                        <StackPanel Grid.Row="6" Grid.ColumnSpan="3"><TextBlock Text="其他要求" Foreground="{DynamicResource MutedText}" FontSize="8.5" Margin="1,0,0,5" /><TextBox x:Name="PromptSpecialRequirementsBox" Style="{StaticResource CreatorTextBox}" Height="62" MaxLength="500" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" TextChanged="PromptField_Changed" ToolTip="可以填写服装形态、禁用元素、专属组件或氛围要求" /></StackPanel>
                     </Grid>
                 </Border>
             </Grid>
@@ -207,6 +254,8 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="12" />
                         <RowDefinition Height="235" />
+                        <RowDefinition Height="12" />
+                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="12" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
@@ -252,6 +301,19 @@
                         <Button Style="{DynamicResource QuietActionButton}" Content="打开目录" IsEnabled="{Binding HasSelectedWorkspace}" Click="OpenWorkspaceFolder_Click" />
                         <Button Grid.Column="2" Style="{DynamicResource QuietActionButton}" Content="移除记录" IsEnabled="{Binding HasSelectedWorkspace}" Click="RemoveWorkspace_Click" />
                     </Grid>
+
+                    <Border x:Name="WorkspaceVersionPanel" Grid.Row="6" BorderThickness="1" CornerRadius="11" Padding="11,9" Visibility="Collapsed">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="Background" Value="{DynamicResource AmberSoft}" /><Setter Property="BorderBrush" Value="{DynamicResource Amber}" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding WorkspaceVersionTone}" Value="ready"><Setter Property="Background" Value="{DynamicResource TealSoft}" /><Setter Property="BorderBrush" Value="{DynamicResource Teal}" /></DataTrigger>
+                                    <DataTrigger Binding="{Binding WorkspaceVersionTone}" Value="upgrade"><Setter Property="Background" Value="{DynamicResource AccentSoft}" /><Setter Property="BorderBrush" Value="{DynamicResource Accent}" /></DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><StackPanel><TextBlock Text="{Binding WorkspaceVersionText}" Foreground="{DynamicResource PrimaryText}" FontSize="9.5" FontWeight="SemiBold" /><TextBlock Text="{Binding WorkspaceVersionDetail}" Foreground="{DynamicResource MutedText}" FontSize="8" TextWrapping="Wrap" Margin="0,3,8,0" /></StackPanel><Button x:Name="UpgradeWorkspaceButton" Grid.Column="1" Style="{StaticResource CreatorMiniButton}" Content="安全升级" IsEnabled="{Binding CanUpgradeWorkspace}" Click="UpgradeWorkspace_Click" VerticalAlignment="Center" /></Grid>
+                    </Border>
                 </Grid>
             </Border>
 

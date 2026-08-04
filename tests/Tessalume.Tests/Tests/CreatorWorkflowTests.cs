@@ -1,5 +1,38 @@
 internal static partial class TestSuite
 {
+    static Task CreatorPromptComposerBuildsDurableContractPromptAsync()
+    {
+        var draft = new CreatorPromptDraft
+        {
+            WorkName = "原神",
+            CharacterName = "芙宁娜",
+            VisualDirection = "蓝白歌剧舞台与水元素光影",
+            SpecialRequirements = "突出审判席与礼帽元素，不使用通用圆球动效",
+            UsesReferenceImages = true,
+        };
+        var prompt = CreatorPromptComposer.Compose(draft);
+        Ensure(CreatorPromptComposer.CanCopy(draft) &&
+               prompt.Contains("《原神》的芙宁娜", StringComparison.Ordinal) &&
+               prompt.Contains("$author-tessalume-theme", StringComparison.Ordinal) &&
+               prompt.Contains("角色身份卡", StringComparison.Ordinal) &&
+               prompt.Contains("11 张素材", StringComparison.Ordinal) &&
+               prompt.Contains("亮色与暗色", StringComparison.Ordinal) &&
+               prompt.Contains("参考图片", StringComparison.Ordinal) &&
+               prompt.Contains("themes/<主题目录>", StringComparison.Ordinal),
+            "The creator prompt must carry character identity, visual preferences, approval, complete coverage, and import handoff.");
+        Ensure(!CreatorPromptComposer.CanCopy(draft with { CharacterName = " " }),
+            "A prompt without both work and character identity must not be copyable.");
+
+        var prepared = UiPreferencesMigration.PrepareForSave(new UiPreferences
+        {
+            CreatorPromptDraft = draft with { SpecialRequirements = new string('A', 700) },
+        });
+        Ensure(prepared.CreatorPromptDraft.WorkName == "原神" &&
+               prepared.CreatorPromptDraft.SpecialRequirements.Length == 500,
+            "Creator prompt drafts must persist locally with bounded text fields.");
+        return Task.CompletedTask;
+    }
+
     static async Task PortableCreatorWorkspaceIsSelfContainedAsync()
     {
         var repositoryRoot = FindRepositoryRoot();
@@ -31,6 +64,10 @@ internal static partial class TestSuite
             appRoot,
             "Creator",
             "CreatorWorkspaceProvisioner.cs"));
+        var promptComposer = await File.ReadAllTextAsync(Path.Combine(
+            appRoot,
+            "Creator",
+            "CreatorPromptComposer.cs"));
         var installerSource = await File.ReadAllTextAsync(Path.Combine(
             repositoryRoot,
             "src",
@@ -67,10 +104,13 @@ internal static partial class TestSuite
             "The published EXE must expose a testable creator-workspace export path.");
         Ensure(mainSource.Contains("CreatorCenter.ActivateAsync", StringComparison.Ordinal) &&
                mainXaml.Contains("创建新工作区", StringComparison.Ordinal) &&
-               mainXaml.Contains("请使用 $author-tessalume-theme", StringComparison.Ordinal) &&
                mainXaml.Contains("x:Name=\"CreatorPromptText\"", StringComparison.Ordinal) &&
+               mainXaml.Contains("x:Name=\"CreatorPromptEditor\"", StringComparison.Ordinal) &&
+               mainXaml.Contains("x:Name=\"PromptCharacterNameBox\"", StringComparison.Ordinal) &&
                mainXaml.Contains("AutomationProperties.Name=\"复制创作提示词\"", StringComparison.Ordinal) &&
                mainXaml.Contains("FocusVisualStyle=\"{x:Null}\"", StringComparison.Ordinal) &&
+               promptComposer.Contains("$author-tessalume-theme", StringComparison.Ordinal) &&
+               promptComposer.Contains("11 张素材规划", StringComparison.Ordinal) &&
                creatorSource.Contains("Clipboard.SetText(CreatorPromptText.Text)", StringComparison.Ordinal) &&
                !creatorSource.Contains("ShowMessage(\"复制", StringComparison.Ordinal),
             "The creator guide must show a larger complete prompt with one direct, non-modal copy action.");
@@ -78,7 +118,9 @@ internal static partial class TestSuite
                creatorViewModel.Contains("ThemeProjectScanner", StringComparison.Ordinal) &&
                creatorViewModel.Contains("ThemeArchiveWriter", StringComparison.Ordinal) &&
                creatorProvisioner.Contains("ResolveExistingWorkspace", StringComparison.Ordinal) &&
-               mainSource.Contains("CreatorCenter?.Dispose()", StringComparison.Ordinal),
+               creatorSource.Contains("FlushPendingPromptDraftAsync", StringComparison.Ordinal) &&
+               mainSource.Contains("await CreatorCenter.FlushPendingPromptDraftAsync()", StringComparison.Ordinal) &&
+               mainSource.Contains("CreatorCenter.Dispose()", StringComparison.Ordinal),
             "The creator center must own workspace scanning, health, export, and lifecycle outside MainWindow.");
         Ensure(mainXaml.Contains("本地开发会话", StringComparison.Ordinal) &&
                mainXaml.Contains("AutomationProperties.Name=\"校验通过后自动应用\"", StringComparison.Ordinal) &&
@@ -93,11 +135,19 @@ internal static partial class TestSuite
         Ensure(workspaceGuide.Contains("请为《鸣潮》的椿制作一套 Tessalume 主题", StringComparison.Ordinal) &&
                workspaceGuide.Contains("themes/<主题目录>", StringComparison.Ordinal),
             "The exported workspace must give a concrete one-sentence start and import handoff.");
+        Ensure(File.Exists(Path.Combine(
+                   repositoryRoot,
+                   "creator-workspace",
+                   CreatorWorkspaceContract.MarkerFileName)) &&
+               mainXaml.Contains("Content=\"安全升级\"", StringComparison.Ordinal) &&
+               creatorSource.Contains("UpgradeWorkspace_Click", StringComparison.Ordinal),
+            "Creator workspaces must expose a machine-readable version and a safe upgrade action.");
 
         foreach (var relativePath in new[]
         {
             Path.Combine("creator-workspace", "AGENTS.md"),
             Path.Combine("creator-workspace", "TESSALUME_CREATOR_WORKSPACE.md"),
+            Path.Combine("creator-workspace", "TESSALUME_CREATOR_WORKSPACE.json"),
             Path.Combine("creator-workspace", "themes", "README.md"),
             Path.Combine(".agents", "skills", "author-tessalume-theme", "scripts", "scaffold_theme.py"),
             Path.Combine(".agents", "skills", "author-tessalume-theme", "scripts", "validate_theme_contract.py"),

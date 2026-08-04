@@ -4,6 +4,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Threading;
 using Microsoft.Win32;
 
 namespace Tessalume.App.Creator;
@@ -14,11 +15,22 @@ public partial class CreatorCenterView : UserControl, IDisposable
     private CreatorWorkspaceProvisioner? _provisioner;
     private Func<bool>? _isDarkMode;
     private Action<string>? _showToast;
+    private Func<CreatorPromptDraft, Task>? _savePromptDraftAsync;
+    private CreatorPromptDraft _promptDraft = new();
+    private readonly DispatcherTimer _promptSaveTimer;
+    private bool _updatingPrompt;
+    private bool _promptEditorExpanded;
+    private bool _promptDraftDirty;
     private bool _synchronizingSelection;
     private bool _disposed;
 
     public CreatorCenterView()
     {
+        _promptSaveTimer = new DispatcherTimer(DispatcherPriority.Background)
+        {
+            Interval = TimeSpan.FromMilliseconds(450),
+        };
+        _promptSaveTimer.Tick += PromptSaveTimer_Tick;
         InitializeComponent();
     }
 
@@ -26,6 +38,8 @@ public partial class CreatorCenterView : UserControl, IDisposable
         string applicationRoot,
         CreatorWorkspaceStore workspaceStore,
         Func<Task> savePreferencesAsync,
+        CreatorPromptDraft promptDraft,
+        Func<CreatorPromptDraft, Task> savePromptDraftAsync,
         CreatorRuntimeBridge runtimeBridge,
         Func<bool> isDarkMode,
         Action<string> showToast)
@@ -36,6 +50,8 @@ public partial class CreatorCenterView : UserControl, IDisposable
         _provisioner = new CreatorWorkspaceProvisioner(applicationRoot);
         _isDarkMode = isDarkMode;
         _showToast = showToast;
+        _savePromptDraftAsync = savePromptDraftAsync;
+        LoadPromptDraft(promptDraft);
         _viewModel = new CreatorCenterViewModel(workspaceStore, savePreferencesAsync, runtimeBridge);
         _viewModel.PropertyChanged += ViewModel_PropertyChanged;
         DataContext = _viewModel;
@@ -274,6 +290,7 @@ public partial class CreatorCenterView : UserControl, IDisposable
 
     private void CopyPrompt_Click(object sender, RoutedEventArgs e)
     {
+        if (!CreatorPromptComposer.CanCopy(_promptDraft)) return;
         try
         {
             Clipboard.SetText(CreatorPromptText.Text);
@@ -283,6 +300,137 @@ public partial class CreatorCenterView : UserControl, IDisposable
         {
             _showToast?.Invoke("剪贴板正忙，请再点一次");
         }
+    }
+
+    private void TogglePromptEditor_Click(object sender, RoutedEventArgs e)
+    {
+        _promptEditorExpanded = !_promptEditorExpanded;
+        CreatorPromptEditor.Visibility = _promptEditorExpanded
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+        TogglePromptEditorButton.Content = _promptEditorExpanded ? "收起定制" : "定制提示词";
+    }
+
+    private void PromptField_Changed(object sender, RoutedEventArgs e)
+    {
+        if (_updatingPrompt) return;
+        _promptDraft = ReadPromptDraft();
+        RenderPromptDraft();
+        _promptDraftDirty = true;
+        _promptSaveTimer.Stop();
+        _promptSaveTimer.Start();
+    }
+
+    private void ResetPrompt_Click(object sender, RoutedEventArgs e)
+    {
+        LoadPromptDraft(new CreatorPromptDraft());
+        _promptDraftDirty = true;
+        _promptSaveTimer.Stop();
+        _promptSaveTimer.Start();
+        _showToast?.Invoke("已恢复提示词示例");
+    }
+
+    private void LoadPromptDraft(CreatorPromptDraft draft)
+    {
+        _promptDraft = draft.Normalize();
+        _updatingPrompt = true;
+        try
+        {
+            PromptWorkNameBox.Text = _promptDraft.WorkName;
+            PromptCharacterNameBox.Text = _promptDraft.CharacterName;
+            PromptVisualDirectionBox.Text = _promptDraft.VisualDirection;
+            PromptSpecialRequirementsBox.Text = _promptDraft.SpecialRequirements;
+            PromptReferenceCheckBox.IsChecked = _promptDraft.UsesReferenceImages;
+        }
+        finally
+        {
+            _updatingPrompt = false;
+        }
+        RenderPromptDraft();
+    }
+
+    private CreatorPromptDraft ReadPromptDraft() => new()
+    {
+        WorkName = PromptWorkNameBox.Text,
+        CharacterName = PromptCharacterNameBox.Text,
+        VisualDirection = PromptVisualDirectionBox.Text,
+        SpecialRequirements = PromptSpecialRequirementsBox.Text,
+        UsesReferenceImages = PromptReferenceCheckBox.IsChecked == true,
+    };
+
+    private void RenderPromptDraft()
+    {
+        _promptDraft = _promptDraft.Normalize();
+        CreatorPromptText.Text = CreatorPromptComposer.Compose(_promptDraft);
+        var canCopy = CreatorPromptComposer.CanCopy(_promptDraft);
+        CopyPromptButton.IsEnabled = canCopy;
+        CreatorPromptStatusText.Text = canCopy
+            ? "已包含角色确认、11 张素材计划、亮暗覆盖与最终校验"
+            : "请先填写作品名称和角色名称";
+        CreatorPromptStatusText.Foreground = (System.Windows.Media.Brush)FindResource(
+            canCopy ? "Teal" : "Amber");
+    }
+
+    private async void PromptSaveTimer_Tick(object? sender, EventArgs e)
+    {
+        _promptSaveTimer.Stop();
+        if (_savePromptDraftAsync is null) return;
+        var saving = _promptDraft.Normalize();
+        try
+        {
+            await _savePromptDraftAsync(saving);
+            if (saving == _promptDraft.Normalize()) _promptDraftDirty = false;
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            _showToast?.Invoke("提示词草稿暂时无法保存");
+        }
+    }
+
+    internal async Task FlushPendingPromptDraftAsync()
+    {
+        _promptSaveTimer.Stop();
+        if (!_promptDraftDirty || _savePromptDraftAsync is null) return;
+        try
+        {
+            await _savePromptDraftAsync(_promptDraft.Normalize());
+            _promptDraftDirty = false;
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+        }
+    }
+
+    private async void UpgradeWorkspace_Click(object sender, RoutedEventArgs e)
+    {
+        if (_viewModel?.SelectedWorkspace is not { } workspace ||
+            _provisioner is null ||
+            !_viewModel.CanUpgradeWorkspace)
+        {
+            return;
+        }
+        var confirmed = ProductDialogWindow.Confirm(
+            GetOwner(),
+            "安全升级创作者工作区",
+            "升级会更新工作区内由 Tessalume 管理的 Skill、Schema、说明和共享校验文件。\n\n" +
+            "被替换的文件会先备份到 .tessalume-backups；themes 目录中的主题、图片和源码不会被读取、删除或覆盖。",
+            "备份并升级",
+            dangerous: false,
+            darkMode: IsDarkMode());
+        if (!confirmed) return;
+
+        await RunOperationAsync(async () =>
+        {
+            var result = CreatorWorkspaceProvisioner.UpgradeWorkspace(workspace.DirectoryPath);
+            await _viewModel.RefreshAsync();
+            var backupText = result.BackupDirectory is null
+                ? "工作区文件已经是最新版本。"
+                : $"升级前文件已保存在：\n{result.BackupDirectory}";
+            ShowMessage(
+                "创作者工作区已升级",
+                $"已更新 {result.UpdatedFileCount} 个受管理文件。\n\n{backupText}\n\n用户主题项目保持不变。",
+                ProductDialogKind.Information);
+        }, "无法升级创作者工作区");
     }
 
     private async void CopyManualTemplate_Click(object sender, RoutedEventArgs e)
@@ -319,6 +467,9 @@ public partial class CreatorCenterView : UserControl, IDisposable
                 ? Visibility.Collapsed
                 : Visibility.Visible;
             WorkspaceList.SelectedItem = _viewModel.SelectedWorkspace;
+            WorkspaceVersionPanel.Visibility = _viewModel.HasSelectedWorkspace
+                ? Visibility.Visible
+                : Visibility.Collapsed;
 
             ProjectLoadingPanel.Visibility = _viewModel.IsBusy
                 ? Visibility.Visible
@@ -404,6 +555,8 @@ public partial class CreatorCenterView : UserControl, IDisposable
     {
         if (_disposed) return;
         _disposed = true;
+        _promptSaveTimer.Stop();
+        _promptSaveTimer.Tick -= PromptSaveTimer_Tick;
         if (_viewModel is not null)
         {
             _viewModel.PropertyChanged -= ViewModel_PropertyChanged;

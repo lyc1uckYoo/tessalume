@@ -18,6 +18,7 @@ internal sealed class ThemeCardModel : INotifyPropertyChanged
     private BitmapImage? _preview;
     private readonly BitmapImage? _lightPreview;
     private readonly BitmapImage? _darkPreview;
+    private string? _storageSummary;
 
     public ThemeCardModel(
         ThemeCatalogItem item,
@@ -69,6 +70,26 @@ internal sealed class ThemeCardModel : INotifyPropertyChanged
     public bool CanDelete => Directory.Exists(CatalogItem.Directory);
 
     public string TypeLabel => IsBuiltIn ? "内置主题" : "本地主题";
+
+    public string DirectoryPath => CatalogItem.Directory;
+
+    public string TemplateLabel => CatalogItem.Package?.Manifest.Template is { } template
+        ? $"{template.Id} {template.Version}"
+        : "未声明";
+
+    public string CapabilityLabel => (SupportsLight, SupportsDark) switch
+    {
+        (true, true) => "亮色与暗色",
+        (true, false) => "仅亮色",
+        (false, true) => "仅暗色",
+        _ => "未声明",
+    };
+
+    public BitmapImage? LightPreview => _lightPreview;
+
+    public BitmapImage? DarkPreview => _darkPreview;
+
+    public string StorageSummary => _storageSummary ??= CreateStorageSummary(CatalogItem.Directory);
 
     public bool HasPreview => Preview is not null;
 
@@ -212,6 +233,40 @@ internal sealed class ThemeCardModel : INotifyPropertyChanged
         accent.Freeze();
         panel.Freeze();
         return (background, accent, panel);
+    }
+
+    private static string CreateStorageSummary(string directory)
+    {
+        try
+        {
+            var files = Directory.EnumerateFiles(directory, "*", new EnumerationOptions
+            {
+                RecurseSubdirectories = true,
+                IgnoreInaccessible = true,
+                AttributesToSkip = FileAttributes.ReparsePoint,
+            }).ToArray();
+            long size = 0;
+            foreach (var file in files)
+            {
+                try { size += new FileInfo(file).Length; }
+                catch (Exception exception) when (exception is IOException or UnauthorizedAccessException) { }
+            }
+            return $"{files.Length} 个文件 · {FormatSize(size)}";
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            return "无法读取文件统计";
+        }
+    }
+
+    private static string FormatSize(long bytes)
+    {
+        if (bytes < 1024) return $"{bytes} B";
+        var value = bytes / 1024d;
+        if (value < 1024) return $"{value:0.#} KB";
+        value /= 1024;
+        if (value < 1024) return $"{value:0.#} MB";
+        return $"{value / 1024:0.##} GB";
     }
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>

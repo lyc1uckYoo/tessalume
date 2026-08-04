@@ -28,6 +28,11 @@ public partial class ProductDialogWindow : Window
         Title = title;
         DialogTitleText.Text = title;
         DialogMessageText.Text = message;
+        var isLongMessage = message.Length > 360 || message.Count(character => character == '\n') > 7;
+        Width = Math.Min(
+            isLongMessage ? 520 : 440,
+            Math.Max(360, SystemParameters.WorkArea.Width - 32));
+        MaxHeight = Math.Min(620, Math.Max(320, SystemParameters.WorkArea.Height - 32));
         ConfirmButton.Content = confirmText;
         CancelButton.Content = cancelText ?? "取消";
         CancelButton.Visibility = cancelText is null ? Visibility.Collapsed : Visibility.Visible;

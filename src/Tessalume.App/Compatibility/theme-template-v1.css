@@ -154,33 +154,45 @@ html.tessalume-theme-active:not(.electron-dark) [data-tessalume-surface="sidebar
 
 /* User-owned artwork correction. Theme packages own only the source image and crop. */
 html.tessalume-theme-active:not(.electron-dark).tessalume-is-home [data-tessalume-surface="home"]>div:first-child>div:first-child>div:first-child::before {
-  filter:var(--tessalume-visual-hero-light-filter,brightness(1) contrast(1) saturate(1))!important;
+  filter:var(--tessalume-visual-hero-light-filter,brightness(1) contrast(1) saturate(1) grayscale(0) hue-rotate(0deg) blur(0))!important;
   opacity:var(--tessalume-visual-hero-light-opacity,1)!important;
+  translate:var(--tessalume-visual-hero-light-translate,0px 0px)!important;
+  scale:var(--tessalume-visual-hero-light-scale,1)!important;
 }
 
 html.tessalume-theme-active.electron-dark.tessalume-is-home [data-tessalume-surface="home"]>div:first-child>div:first-child>div:first-child::before {
-  filter:var(--tessalume-visual-hero-dark-filter,brightness(1) contrast(1) saturate(1))!important;
+  filter:var(--tessalume-visual-hero-dark-filter,brightness(1) contrast(1) saturate(1) grayscale(0) hue-rotate(0deg) blur(0))!important;
   opacity:var(--tessalume-visual-hero-dark-opacity,1)!important;
+  translate:var(--tessalume-visual-hero-dark-translate,0px 0px)!important;
+  scale:var(--tessalume-visual-hero-dark-scale,1)!important;
 }
 
 html.tessalume-theme-active:not(.electron-dark) [data-tessalume-surface="sidebar"]::after {
-  filter:var(--tessalume-visual-sidebar-light-filter,brightness(1) contrast(1) saturate(1))!important;
+  filter:var(--tessalume-visual-sidebar-light-filter,brightness(1) contrast(1) saturate(1) grayscale(0) hue-rotate(0deg) blur(0))!important;
   opacity:var(--tessalume-visual-sidebar-light-opacity,1)!important;
+  translate:var(--tessalume-visual-sidebar-light-translate,0px 0px)!important;
+  scale:var(--tessalume-visual-sidebar-light-scale,1)!important;
 }
 
 html.tessalume-theme-active.electron-dark [data-tessalume-surface="sidebar"]::after {
-  filter:var(--tessalume-visual-sidebar-dark-filter,brightness(1) contrast(1) saturate(1))!important;
+  filter:var(--tessalume-visual-sidebar-dark-filter,brightness(1) contrast(1) saturate(1) grayscale(0) hue-rotate(0deg) blur(0))!important;
   opacity:var(--tessalume-visual-sidebar-dark-opacity,1)!important;
+  translate:var(--tessalume-visual-sidebar-dark-translate,0px 0px)!important;
+  scale:var(--tessalume-visual-sidebar-dark-scale,1)!important;
 }
 
 html.tessalume-theme-active:not(.electron-dark).tessalume-is-task main[data-tessalume-surface="main"]::before {
-  filter:var(--tessalume-visual-chat-light-filter,brightness(1) contrast(1) saturate(1))!important;
+  filter:var(--tessalume-visual-chat-light-filter,brightness(1) contrast(1) saturate(1) grayscale(0) hue-rotate(0deg) blur(0))!important;
   opacity:var(--tessalume-visual-chat-light-opacity,1)!important;
+  translate:var(--tessalume-visual-chat-light-translate,0px 0px)!important;
+  scale:var(--tessalume-visual-chat-light-scale,1)!important;
 }
 
 html.tessalume-theme-active.electron-dark.tessalume-is-task main[data-tessalume-surface="main"]::before {
-  filter:var(--tessalume-visual-chat-dark-filter,brightness(1) contrast(1) saturate(1))!important;
+  filter:var(--tessalume-visual-chat-dark-filter,brightness(1) contrast(1) saturate(1) grayscale(0) hue-rotate(0deg) blur(0))!important;
   opacity:var(--tessalume-visual-chat-dark-opacity,1)!important;
+  translate:var(--tessalume-visual-chat-dark-translate,0px 0px)!important;
+  scale:var(--tessalume-visual-chat-dark-scale,1)!important;
 }
 
 html.tessalume-theme-active:not(.electron-dark) [data-tessalume-surface="sidebar"] :is([data-app-action-sidebar-project-row],[data-app-action-sidebar-thread-row]):is(:hover,[aria-current="page"],[data-sidebar-thread-active="true"]) {

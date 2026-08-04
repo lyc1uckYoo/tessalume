@@ -58,6 +58,8 @@ public partial class MainWindow
 
     private void ShowInfoPage(RightPane page)
     {
+        CloseThemeDetailPanel();
+        ThemeDropOverlay.Visibility = Visibility.Collapsed;
         _rightPane = page;
         ThemeLibraryPage.Visibility = Visibility.Collapsed;
         InfoPage.Visibility = Visibility.Visible;

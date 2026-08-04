@@ -55,6 +55,7 @@
     <SolidColorBrush x:Key="SettingsControlBorder" Color="#C7CDDE" />
     <SolidColorBrush x:Key="SettingsControlHover" Color="#FFFFFF" />
     <SolidColorBrush x:Key="SettingsTrack" Color="#D9DDE8" />
+    <SolidColorBrush x:Key="DropOverlayBackground" Color="#F5F7FFF5" />
     <DropShadowEffect x:Key="CardShadow" Color="#17151F" BlurRadius="14" ShadowDepth="2" Opacity="0.055" />
     <DropShadowEffect x:Key="SelectedCardShadow" Color="#665FD8" BlurRadius="20" ShadowDepth="4" Opacity="0.15" />
     <DropShadowEffect x:Key="PrimaryButtonShadow" Color="#5149C8" BlurRadius="18" ShadowDepth="4" Opacity="0.26" />
@@ -264,6 +265,70 @@
         <Setter Property="Width" Value="28" />
         <Setter Property="Height" Value="28" />
     </Style>
+    <Style x:Key="SettingsComboBoxItem" TargetType="ComboBoxItem">
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryText}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Padding" Value="9,7" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ComboBoxItem">
+                    <Border x:Name="ItemSurface" Background="{TemplateBinding Background}" CornerRadius="7" Padding="{TemplateBinding Padding}">
+                        <ContentPresenter />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsHighlighted" Value="True"><Setter TargetName="ItemSurface" Property="Background" Value="{DynamicResource AccentSoft}" /></Trigger>
+                        <Trigger Property="IsSelected" Value="True"><Setter TargetName="ItemSurface" Property="Background" Value="{DynamicResource ActiveNav}" /></Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style x:Key="SettingsComboBox" TargetType="ComboBox">
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryText}" />
+        <Setter Property="Background" Value="{DynamicResource Surface}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Border}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="FontSize" Value="9" />
+        <Setter Property="Padding" Value="9,0,28,0" />
+        <Setter Property="ItemContainerStyle" Value="{StaticResource SettingsComboBoxItem}" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusVisual}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ComboBox">
+                    <Grid>
+                        <ToggleButton x:Name="DropDownToggle" Focusable="False" ClickMode="Press"
+                                      IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}">
+                            <ToggleButton.Template>
+                                <ControlTemplate TargetType="ToggleButton">
+                                    <Border x:Name="ComboSurface" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="8">
+                                        <Path Width="8" Height="5" Data="M 1,1 L 4,4 L 7,1" Stroke="{DynamicResource MutedText}" StrokeThickness="1.4" StrokeStartLineCap="Round" StrokeEndLineCap="Round" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0" />
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="ComboSurface" Property="BorderBrush" Value="{DynamicResource Accent}" /></Trigger>
+                                        <Trigger Property="IsChecked" Value="True"><Setter TargetName="ComboSurface" Property="BorderBrush" Value="{DynamicResource Accent}" /></Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </ToggleButton.Template>
+                        </ToggleButton>
+                        <ContentPresenter Margin="{TemplateBinding Padding}" VerticalAlignment="Center" IsHitTestVisible="False"
+                                          Content="{TemplateBinding SelectionBoxItem}" ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" ContentStringFormat="{TemplateBinding SelectionBoxItemStringFormat}" />
+                        <TextBlock x:Name="EmptySelectionText" Text="选择方案" Foreground="{DynamicResource SubtleText}" FontSize="9" Margin="9,0,28,0" VerticalAlignment="Center" Visibility="Collapsed" IsHitTestVisible="False" />
+                        <Popup x:Name="PART_Popup" Placement="Bottom" IsOpen="{TemplateBinding IsDropDownOpen}" AllowsTransparency="True" Focusable="False" PopupAnimation="Fade">
+                            <Border MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}" MaxHeight="220" Margin="0,4,0,0" Padding="4"
+                                    Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="10">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto" CanContentScroll="True"><ItemsPresenter /></ScrollViewer>
+                            </Border>
+                        </Popup>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="SelectedIndex" Value="-1"><Setter TargetName="EmptySelectionText" Property="Visibility" Value="Visible" /></Trigger>
+                        <Trigger Property="IsEnabled" Value="False"><Setter TargetName="DropDownToggle" Property="Opacity" Value="0.45" /></Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
     <Style x:Key="SettingsSlider" TargetType="Slider">
         <Setter Property="Height" Value="22" />
         <Setter Property="VerticalAlignment" Value="Center" />
@@ -445,6 +510,43 @@
         <Setter Property="Background" Value="{DynamicResource DangerSoft}" />
         <Setter Property="Foreground" Value="{DynamicResource Danger}" />
         <Setter Property="BorderBrush" Value="{DynamicResource Danger}" />
+    </Style>
+    <Style x:Key="UpdateBadgeButton" TargetType="Button">
+        <Setter Property="Background" Value="{DynamicResource Danger}" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Danger}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="7,3" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FontFamily" Value="Microsoft YaHei UI" />
+        <Setter Property="FontSize" Value="8.5" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusVisual}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="BadgeChrome"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="9"
+                            SnapsToDevicePixels="True">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="{TemplateBinding Padding}" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="BadgeChrome" Property="Opacity" Value="0.86" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="BadgeChrome" Property="Opacity" Value="0.68" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="BadgeChrome" Property="Opacity" Value="0.48" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
     <Style x:Key="RestoreActionButton" TargetType="Button" BasedOn="{StaticResource RoundButton}">
         <Setter Property="Background" Value="{DynamicResource AccentSoft}" />

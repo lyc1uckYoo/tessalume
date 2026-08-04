@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Net.Http;
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -46,6 +47,30 @@ public partial class MainWindow
     private async void CheckForUpdates_Click(object sender, RoutedEventArgs e) =>
         await CheckForUpdatesAsync(automatic: false);
 
+    private async void UpdateAvailableBadge_Click(object sender, RoutedEventArgs e)
+    {
+        if (_updateCheckInProgress || _availableUpdate is not { } release) return;
+
+        _updateCheckInProgress = true;
+        UpdateUpdateControls();
+        try
+        {
+            await ConfirmAndInstallUpdateAsync(release);
+        }
+        catch (OperationCanceledException) when (_updateCancellation.IsCancellationRequested)
+        {
+        }
+        catch (Exception exception)
+        {
+            HandleUpdateFailure(exception, showDialog: true);
+        }
+        finally
+        {
+            _updateCheckInProgress = false;
+            UpdateUpdateControls();
+        }
+    }
+
     internal void SetStartupUpdateResult(PortableUpdateResult? result) =>
         _startupUpdateResult = result;
 
@@ -68,14 +93,9 @@ public partial class MainWindow
 
     private void ScheduleAutomaticUpdateCheck(bool forceSoon = false)
     {
-        if (!_automaticUpdateChecks || _updateCheckInProgress) return;
-        if (!forceSoon && _lastUpdateCheckAt is { } checkedAt &&
-            DateTimeOffset.Now - checkedAt < TimeSpan.FromHours(12))
-        {
-            return;
-        }
-
-        _ = RunScheduledUpdateCheckAsync(forceSoon ? TimeSpan.FromSeconds(1) : TimeSpan.FromSeconds(5));
+        if (!_automaticUpdateChecks || _updateCheckInProgress || _automaticUpdateCheckScheduled) return;
+        _automaticUpdateCheckScheduled = true;
+        _ = RunScheduledUpdateCheckAsync(forceSoon ? TimeSpan.FromSeconds(1) : TimeSpan.FromSeconds(2));
     }
 
     private async Task RunScheduledUpdateCheckAsync(TimeSpan delay)
@@ -83,10 +103,17 @@ public partial class MainWindow
         try
         {
             await Task.Delay(delay, _updateCancellation.Token);
-            await CheckForUpdatesAsync(automatic: true);
+            if (_automaticUpdateChecks)
+            {
+                await CheckForUpdatesAsync(automatic: true);
+            }
         }
         catch (OperationCanceledException)
         {
+        }
+        finally
+        {
+            _automaticUpdateCheckScheduled = false;
         }
     }
 
@@ -109,6 +136,7 @@ public partial class MainWindow
             var release = await _updateClient.CheckLatestAsync(_updateCancellation.Token);
             if (release is null)
             {
+                _availableUpdate = null;
                 _updateStatusMessage = $"当前已是最新版本 · {BrandInfo.VersionLabel}";
                 UpdateUpdateControls();
                 if (!automatic)
@@ -121,43 +149,63 @@ public partial class MainWindow
                 return;
             }
 
+            _availableUpdate = release;
             _updateStatusMessage = $"发现新版本 {release.VersionLabel} · 等待确认";
             UpdateUpdateControls();
-            var notes = FormatReleaseNotes(release.ReleaseNotes);
-            var confirmed = ShowProductConfirmation(
-                $"发现 Tessalume {release.VersionLabel}",
-                $"当前版本：{BrandInfo.VersionLabel}\n新版本：{release.VersionLabel}\n下载大小：{FormatBytes(release.DownloadSize)}\n\n{notes}\n\n下载完成后会校验 SHA-256，随后退出、替换程序并自动重新打开。你的主题和 data 数据不会被删除。",
-                "下载并安装");
-            if (!confirmed)
+            if (automatic)
             {
-                _updateStatusMessage = $"{release.VersionLabel} 可用 · 已选择稍后更新";
-                UpdateUpdateControls();
+                if (_uiInitialized && IsVisible)
+                {
+                    ShowToast($"{release.VersionLabel} 已发布，点击左上角红色更新提示安装");
+                }
                 return;
             }
 
-            await DownloadAndInstallUpdateAsync(release);
+            await ConfirmAndInstallUpdateAsync(release);
         }
         catch (OperationCanceledException) when (_updateCancellation.IsCancellationRequested)
         {
         }
         catch (Exception exception)
         {
-            LocalLog.Write("Update check or installation failed.", exception);
-            var errorMessage = DescribeUpdateError(exception);
-            _updateStatusMessage = $"更新失败 · {errorMessage}";
-            UpdateUpdateControls();
-            if (!automatic || IsVisible)
-            {
-                ShowProductMessage(
-                    "无法完成软件更新",
-                    $"当前版本没有被修改，可以继续使用。\n\n{errorMessage}",
-                    ProductDialogKind.Error);
-            }
+            HandleUpdateFailure(exception, showDialog: !automatic);
         }
         finally
         {
             _updateCheckInProgress = false;
             UpdateUpdateControls();
+        }
+    }
+
+    private async Task ConfirmAndInstallUpdateAsync(ReleaseUpdate release)
+    {
+        var notes = FormatReleaseNotes(release.ReleaseNotes);
+        var confirmed = ShowProductConfirmation(
+            $"发现 Tessalume {release.VersionLabel}",
+            $"当前版本：{BrandInfo.VersionLabel}\n新版本：{release.VersionLabel}\n下载大小：{FormatBytes(release.DownloadSize)}\n\n{notes}\n\n下载完成后会校验 SHA-256，随后退出、替换程序并自动重新打开。你的主题和 data 数据不会被删除。",
+            "下载并安装");
+        if (!confirmed)
+        {
+            _updateStatusMessage = $"{release.VersionLabel} 可用 · 已选择稍后更新";
+            UpdateUpdateControls();
+            return;
+        }
+
+        await DownloadAndInstallUpdateAsync(release);
+    }
+
+    private void HandleUpdateFailure(Exception exception, bool showDialog)
+    {
+        LocalLog.Write("Update check or installation failed.", exception);
+        var errorMessage = DescribeUpdateError(exception);
+        _updateStatusMessage = $"更新失败 · {errorMessage}";
+        UpdateUpdateControls();
+        if (showDialog)
+        {
+            ShowProductMessage(
+                "无法完成软件更新",
+                $"当前版本没有被修改，可以继续使用。\n\n{errorMessage}",
+                ProductDialogKind.Error);
         }
     }
 
@@ -204,6 +252,15 @@ public partial class MainWindow
         _updatingAutomaticUpdateSetting = false;
         CheckForUpdatesButton.IsEnabled = !_updateCheckInProgress;
         UpdateStatusText.Text = _updateStatusMessage;
+        UpdateAvailableBadge.Visibility = _availableUpdate is null
+            ? Visibility.Collapsed
+            : Visibility.Visible;
+        UpdateAvailableBadge.IsEnabled = !_updateCheckInProgress;
+        if (_availableUpdate is { } release)
+        {
+            UpdateAvailableBadge.ToolTip = $"发现 {release.VersionLabel}，点击查看并安装";
+            AutomationProperties.SetName(UpdateAvailableBadge, $"发现 {release.VersionLabel}，点击更新");
+        }
         if (!_updateCheckInProgress && UpdateProgressBar.Value <= 0)
         {
             UpdateProgressBar.Visibility = Visibility.Collapsed;

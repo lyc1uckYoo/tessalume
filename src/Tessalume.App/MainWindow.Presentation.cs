@@ -81,6 +81,7 @@ public partial class MainWindow
         SetBrush("SettingsControlBorder", dark ? "#32FFFFFF" : "#C7CDDE");
         SetBrush("SettingsControlHover", dark ? "#29FFFFFF" : "#FFFFFF");
         SetBrush("SettingsTrack", dark ? "#46505D" : "#D9DDE8");
+        SetBrush("DropOverlayBackground", dark ? "#F51A202B" : "#F5F7FFF5");
         Resources["SettingsBarShadow"] = new System.Windows.Media.Effects.DropShadowEffect
         {
             Color = (Color)ColorConverter.ConvertFromString(dark ? "#120B18" : "#59637A"),
@@ -104,6 +105,7 @@ public partial class MainWindow
         UpdateStartupButton();
         UpdateQuickSwitchButton();
         UpdateCodexModeButton();
+        UpdateVisualAdjustmentGroup();
         if (_uiInitialized && AllThemesFilterButton is not null)
         {
             UpdateThemeFilterUi(_showFavorites
@@ -301,6 +303,7 @@ public partial class MainWindow
         StartupButton.IsEnabled = !busy;
         QuickSwitchButton.IsEnabled = !busy;
         DeleteButton.IsEnabled = !busy && _selectedTheme?.CanDelete == true;
+        ThemeDetailsButton.IsEnabled = !busy && _selectedTheme is not null;
         SettingsThemeSwitchPanel.IsEnabled = !busy;
         if (status is not null) StatusText.Text = status;
     }

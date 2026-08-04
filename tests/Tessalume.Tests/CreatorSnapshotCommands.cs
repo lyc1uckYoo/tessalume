@@ -8,7 +8,8 @@ internal static partial class TestSuite
         string workspacePath,
         string lightSnapshotPath,
         string detailSnapshotPath,
-        string darkSnapshotPath)
+        string darkSnapshotPath,
+        string? promptSnapshotPath = null)
     {
         var portableRoot = Path.Combine(
             Path.GetTempPath(),
@@ -93,6 +94,23 @@ internal static partial class TestSuite
                     ArrangeMainSurface(window);
                     SaveWindowContent(window, lightSnapshotPath);
 
+                    if (!string.IsNullOrWhiteSpace(promptSnapshotPath))
+                    {
+                        window.CreatorCenter.TogglePromptEditorButton.RaiseEvent(
+                            new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
+                        window.InfoScroll.ScrollToTop();
+                        ArrangeMainSurface(window);
+                        if (window.CreatorCenter.CreatorPromptEditor.Visibility != Visibility.Visible ||
+                            window.CreatorCenter.PromptCharacterNameBox.ActualWidth <= 0)
+                        {
+                            throw new InvalidOperationException(
+                                "The creator prompt editor must expand into a visible input surface.");
+                        }
+                        SaveWindowContent(window, promptSnapshotPath);
+                        window.CreatorCenter.TogglePromptEditorButton.RaiseEvent(
+                            new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
+                    }
+
                     window.InfoScroll.ScrollToEnd();
                     ArrangeMainSurface(window);
                     SaveWindowContent(window, detailSnapshotPath);
@@ -139,6 +157,10 @@ internal static partial class TestSuite
             Console.WriteLine($"Creator Center light snapshot: {Path.GetFullPath(lightSnapshotPath)}");
             Console.WriteLine($"Creator Center detail snapshot: {Path.GetFullPath(detailSnapshotPath)}");
             Console.WriteLine($"Creator Center dark snapshot: {Path.GetFullPath(darkSnapshotPath)}");
+            if (!string.IsNullOrWhiteSpace(promptSnapshotPath))
+            {
+                Console.WriteLine($"Creator prompt snapshot: {Path.GetFullPath(promptSnapshotPath)}");
+            }
             return Task.FromResult(0);
         }
         finally

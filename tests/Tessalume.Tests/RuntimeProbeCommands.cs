@@ -38,6 +38,119 @@ internal static partial class TestSuite
         }
     }
 
+    static async Task<int> ProbeVisualControlsAsync(
+        int port,
+        string packagePath,
+        string dataDirectory)
+    {
+        var package = (await new ThemePackageLoader().LoadAsync(packagePath)).Package
+            ?? throw new InvalidOperationException("The requested theme package could not be loaded.");
+        ThemeVisualSettings originalSettings;
+        using (var preferences = new UiPreferencesStore(dataDirectory))
+        {
+            var loaded = preferences.Load();
+            originalSettings = loaded.ThemeVisualSettings.TryGetValue(package.Manifest.Id, out var settings)
+                ? settings.Normalize()
+                : new ThemeVisualSettings();
+        }
+
+        var testAdjustment = new ThemeArtworkAdjustment
+        {
+            Brightness = 91,
+            Contrast = 112,
+            Saturation = 77,
+            Opacity = 83,
+            Zoom = 117,
+            OffsetX = 23,
+            OffsetY = -11,
+            Grayscale = 14,
+            HueRotation = 27,
+            Blur = 1.5,
+        };
+        var testMode = new ThemeVisualModeSettings
+        {
+            Hero = testAdjustment,
+            Sidebar = testAdjustment,
+            Chat = testAdjustment,
+        };
+        var testSettings = new ThemeVisualSettings { Light = testMode, Dark = testMode };
+        var repositoryRoot = FindRepositoryRoot();
+        await using var runtime = new ThemeRuntime(
+            new LoopbackCdpDiscovery(),
+            new ThemePayloadBuilder(new Dictionary<string, string>
+            {
+                [ThemePayloadBuilder.OpenRuntimeAdapterKey] = Path.Combine(
+                    repositoryRoot,
+                    "src",
+                    "Tessalume.App",
+                    "Compatibility",
+                    "theme-runtime-v2.js"),
+            }));
+
+        JsonElement? probe = null;
+        try
+        {
+            await runtime.StartAsync(port, package, originalSettings);
+            await runtime.ApplyVisualSettingsAsync(port, package.Manifest.Id, testSettings);
+            var targets = await new LoopbackCdpDiscovery().DiscoverAsync(port);
+            foreach (var target in targets)
+            {
+                await using var session = new CdpSession();
+                await session.ConnectAsync(target.WebSocketDebuggerUrl);
+                var result = await session.EvaluateAsync(
+                    """
+                    (() => {
+                      if (!window.__TESSALUME_RUNTIME__) return null;
+                      const style = document.documentElement.style;
+                      const read = name => style.getPropertyValue(name).trim();
+                      return {
+                        filter: read('--tessalume-visual-hero-light-filter'),
+                        opacity: read('--tessalume-visual-sidebar-dark-opacity'),
+                        translate: read('--tessalume-visual-chat-light-translate'),
+                        scale: read('--tessalume-visual-chat-dark-scale'),
+                        supportsTranslate: CSS.supports('translate', '23px -11px'),
+                        supportsScale: CSS.supports('scale', '1.17')
+                      };
+                    })()
+                    """);
+                if (result.ValueKind == JsonValueKind.Object)
+                {
+                    probe = result.Clone();
+                    break;
+                }
+            }
+        }
+        finally
+        {
+            try
+            {
+                await runtime.ApplyVisualSettingsAsync(port, package.Manifest.Id, originalSettings);
+            }
+            finally
+            {
+                await runtime.StopAsync();
+            }
+        }
+
+        if (probe is not { } value ||
+            !value.GetProperty("filter").GetString()!.Contains("grayscale(0.14)", StringComparison.Ordinal) ||
+            !value.GetProperty("filter").GetString()!.Contains("hue-rotate(27deg)", StringComparison.Ordinal) ||
+            !value.GetProperty("filter").GetString()!.Contains("blur(1.5px)", StringComparison.Ordinal) ||
+            value.GetProperty("opacity").GetString() != "0.83" ||
+            value.GetProperty("translate").GetString() != "23px -11px" ||
+            value.GetProperty("scale").GetString() != "1.17" ||
+            !value.GetProperty("supportsTranslate").GetBoolean() ||
+            !value.GetProperty("supportsScale").GetBoolean())
+        {
+            Console.Error.WriteLine(probe?.GetRawText() ?? "No themed Codex target returned visual settings.");
+            return 3;
+        }
+
+        Console.WriteLine(value.GetRawText());
+        Console.WriteLine("Original visual settings restored.");
+        return 0;
+    }
+
     static async Task<int> ProbeRuntimeAsync(int port)
     {
         using var discovery = new LoopbackCdpDiscovery();

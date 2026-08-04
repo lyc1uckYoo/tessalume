@@ -56,6 +56,35 @@ internal static partial class TestSuite
         }
 
         if (args is [
+                "--visual-controls-probe",
+                var visualPortText,
+                var visualPackagePath,
+                var visualDataDirectory] &&
+            int.TryParse(visualPortText, out var visualPort))
+        {
+            return await ProbeVisualControlsAsync(
+                visualPort,
+                visualPackagePath,
+                visualDataDirectory);
+        }
+
+        if (args is [
+                "--creator-snapshots",
+                var expandedWorkspacePath,
+                var expandedLightSnapshotPath,
+                var promptSnapshotPath,
+                var expandedDetailSnapshotPath,
+                var expandedDarkSnapshotPath])
+        {
+            return await RenderCreatorCenterSnapshotsAsync(
+                expandedWorkspacePath,
+                expandedLightSnapshotPath,
+                expandedDetailSnapshotPath,
+                expandedDarkSnapshotPath,
+                promptSnapshotPath);
+        }
+
+        if (args is [
                 "--creator-snapshots",
                 var workspacePath,
                 var lightSnapshotPath,
@@ -71,6 +100,20 @@ internal static partial class TestSuite
 
         if (args is [
                 "--stage-d-snapshots",
+                var aboutWithBadgeSnapshotPath,
+                var diagnosticsWithBadgeSnapshotPath,
+                var diagnosticsDarkWithBadgeSnapshotPath,
+                var updateBadgeSnapshotPath])
+        {
+            return await RenderStageDSnapshotsAsync(
+                aboutWithBadgeSnapshotPath,
+                diagnosticsWithBadgeSnapshotPath,
+                diagnosticsDarkWithBadgeSnapshotPath,
+                updateBadgeSnapshotPath);
+        }
+
+        if (args is [
+                "--stage-d-snapshots",
                 var aboutSnapshotPath,
                 var diagnosticsSnapshotPath,
                 var diagnosticsDarkSnapshotPath])
@@ -79,6 +122,30 @@ internal static partial class TestSuite
                 aboutSnapshotPath,
                 diagnosticsSnapshotPath,
                 diagnosticsDarkSnapshotPath);
+        }
+
+        if (args is [
+                "--artwork-snapshots",
+                var basicArtworkSnapshotPath,
+                var compositionArtworkSnapshotPath,
+                var effectsArtworkSnapshotPath])
+        {
+            return await RenderArtworkSnapshotsAsync(
+                basicArtworkSnapshotPath,
+                compositionArtworkSnapshotPath,
+                effectsArtworkSnapshotPath);
+        }
+
+        if (args is [
+                "--theme-library-snapshots",
+                var librarySnapshotPath,
+                var themeDetailSnapshotPath,
+                var themeDetailDarkSnapshotPath])
+        {
+            return await RenderThemeLibrarySnapshotsAsync(
+                librarySnapshotPath,
+                themeDetailSnapshotPath,
+                themeDetailDarkSnapshotPath);
         }
 
         var tests = new (string Name, Func<Task> Run)[]
@@ -103,6 +170,11 @@ internal static partial class TestSuite
             ("published themes use canonical injection contract", PublishedThemesUseCanonicalInjectionContractAsync),
             ("flagship template v1 freezes shared structure", FlagshipTemplateV1FreezesSharedStructureAsync),
             ("artwork adjustments are runtime-owned", ArtworkAdjustmentsAreRuntimeOwnedAsync),
+            ("artwork editor supports precise input and region transfer", ArtworkEditorSupportsPreciseInputAndTransferAsync),
+            ("artwork editor history and presets work", ArtworkEditorHistoryAndPresetsWorkAsync),
+            ("artwork preset files round-trip safely", ArtworkPresetFilesRoundTripSafelyAsync),
+            ("theme library state is normalized and version aware", ThemeLibraryStateIsNormalizedAndVersionAwareAsync),
+            ("theme library details and recent sorting work", ThemeLibraryDetailsAndRecentSortingWorkAsync),
             ("main product surfaces share the design system", MainProductSurfacesShareDesignSystemAsync),
             ("source layout keeps product feature boundaries", SourceLayoutKeepsFeatureBoundariesAsync),
             ("WPF shell loads split resources", WpfShellLoadsSplitResourcesAsync),
@@ -110,7 +182,9 @@ internal static partial class TestSuite
             ("adaptive layout and keyboard accessibility are available", AdaptiveLayoutAndKeyboardAccessibilityAsync),
             ("version 1.3.0 product workflow is complete", Version13ProductWorkflowIsCompleteAsync),
             ("portable Codex creator workspace is self-contained", PortableCreatorWorkspaceIsSelfContainedAsync),
+            ("creator prompt composer builds a durable contract prompt", CreatorPromptComposerBuildsDurableContractPromptAsync),
             ("creator workspace history is normalized and bounded", CreatorWorkspaceHistoryIsNormalizedAsync),
+            ("creator workspace contract upgrade preserves projects", CreatorWorkspaceContractUpgradePreservesProjectsAsync),
             ("creator center orchestrates workspace projects", CreatorCenterOrchestratesWorkspaceProjectsAsync),
             ("creator watcher debounces stable changes and releases", CreatorWatcherDebouncesStableChangesAndReleasesAsync),
             ("creator center auto-applies only healthy stable projects", CreatorCenterAutoAppliesOnlyHealthyStableProjectsAsync),
@@ -135,7 +209,7 @@ internal static partial class TestSuite
             ("first-run onboarding never applies a random theme", FirstRunOnboardingNeverAppliesRandomThemeAsync),
             ("build script launches the published executable by default", BuildScriptLaunchesPublishedExecutableAsync),
             ("release artifacts and feedback paths are documented", ReleaseReadinessAssetsAreDocumentedAsync),
-            ("UI preferences migrate from the unversioned schema", UiPreferencesMigrateFromUnversionedSchemaAsync),
+            ("UI preferences migrate through schema three", UiPreferencesMigrateFromUnversionedSchemaAsync),
         };
 
         var failures = new List<string>();
@@ -149,7 +223,7 @@ internal static partial class TestSuite
             catch (Exception exception)
             {
                 failures.Add(name);
-                Console.Error.WriteLine($"FAIL  {name}: {exception.Message}");
+                Console.Error.WriteLine($"FAIL  {name}: {exception}");
             }
         }
 

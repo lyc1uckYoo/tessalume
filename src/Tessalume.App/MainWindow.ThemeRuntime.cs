@@ -38,6 +38,10 @@ public partial class MainWindow
             allowCodexStart: true,
             showFailureDialog: true,
             CancellationToken.None);
+        if (result.Succeeded)
+        {
+            await RecordThemeUsageAsync(package.Manifest.Id);
+        }
         return result.Succeeded;
     }
 

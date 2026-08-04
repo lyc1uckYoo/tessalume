@@ -37,6 +37,10 @@ internal sealed partial class CreatorCenterViewModel : INotifyPropertyChanged, I
     private string _codexModeText = "明暗状态未知";
     private string _codexStatusTone = "idle";
     private string _lastAppliedText = "尚未从创作项目应用";
+    private string _workspaceVersionText = "尚未读取版本";
+    private string _workspaceVersionDetail = "选择工作区后检查工具链版本。";
+    private string _workspaceVersionTone = "idle";
+    private bool _canUpgradeWorkspace;
     private bool _disposed;
 
     public CreatorCenterViewModel(
@@ -203,6 +207,30 @@ internal sealed partial class CreatorCenterViewModel : INotifyPropertyChanged, I
         private set => SetField(ref _lastAppliedText, value);
     }
 
+    public string WorkspaceVersionText
+    {
+        get => _workspaceVersionText;
+        private set => SetField(ref _workspaceVersionText, value);
+    }
+
+    public string WorkspaceVersionDetail
+    {
+        get => _workspaceVersionDetail;
+        private set => SetField(ref _workspaceVersionDetail, value);
+    }
+
+    public string WorkspaceVersionTone
+    {
+        get => _workspaceVersionTone;
+        private set => SetField(ref _workspaceVersionTone, value);
+    }
+
+    public bool CanUpgradeWorkspace
+    {
+        get => _canUpgradeWorkspace;
+        private set => SetField(ref _canUpgradeWorkspace, value);
+    }
+
     public string WorkspaceCountText => Workspaces.Count == 0
         ? "尚无记录"
         : $"最近 {Workspaces.Count} 个";
@@ -358,6 +386,7 @@ internal sealed partial class CreatorCenterViewModel : INotifyPropertyChanged, I
             cancellationToken.ThrowIfCancellationRequested();
             WorkspaceExists = result.Exists;
             SelectedWorkspace.SetExists(result.Exists);
+            ApplyWorkspaceContract(result.Contract);
             foreach (var project in result.Projects)
             {
                 Projects.Add(new ThemeProjectItemViewModel(project));
@@ -438,9 +467,34 @@ internal sealed partial class CreatorCenterViewModel : INotifyPropertyChanged, I
         StateTitle = title;
         StateMessage = message;
         WorkspaceSummary = SelectedWorkspace?.DirectoryPath ?? "尚未选择工作区";
+        WorkspaceVersionText = "尚未读取版本";
+        WorkspaceVersionDetail = "选择可用工作区后检查工具链版本。";
+        WorkspaceVersionTone = "idle";
+        CanUpgradeWorkspace = false;
         IsBusy = false;
         OnPropertyChanged(nameof(HasProjects));
         OnPropertyChanged(nameof(CanExportSelectedProject));
+    }
+
+    private void ApplyWorkspaceContract(CreatorWorkspaceContractInfo contract)
+    {
+        WorkspaceVersionText = contract.State switch
+        {
+            CreatorWorkspaceContractState.Current => $"工作区 v{contract.WorkspaceVersion} · 最新",
+            CreatorWorkspaceContractState.Legacy => "旧版工作区 · 可升级",
+            CreatorWorkspaceContractState.UpgradeAvailable => $"工作区 v{contract.WorkspaceVersion ?? "未知"} · 可升级",
+            CreatorWorkspaceContractState.Newer => $"工作区 v{contract.WorkspaceVersion} · 来自新版",
+            CreatorWorkspaceContractState.Invalid => "版本标记异常 · 可修复",
+            _ => "非标准工作区",
+        };
+        WorkspaceVersionDetail = contract.Message;
+        WorkspaceVersionTone = contract.State switch
+        {
+            CreatorWorkspaceContractState.Current => "ready",
+            CreatorWorkspaceContractState.Newer or CreatorWorkspaceContractState.Missing => "warning",
+            _ => "upgrade",
+        };
+        CanUpgradeWorkspace = contract.CanUpgrade && WorkspaceExists;
     }
 
     private void StopProjectWatcher(bool keepStatus = false)

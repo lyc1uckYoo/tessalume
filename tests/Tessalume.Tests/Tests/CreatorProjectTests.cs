@@ -56,6 +56,88 @@ internal static partial class TestSuite
         return Task.CompletedTask;
     }
 
+    static Task CreatorWorkspaceContractUpgradePreservesProjectsAsync()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"tessalume-workspace-upgrade-{Guid.NewGuid():N}");
+        var workspace = Path.Combine(root, "Tessalume-Creator");
+        try
+        {
+            BuiltInAssetInstaller.CreateCreatorWorkspace(workspace);
+            var contract = CreatorWorkspaceContract.Inspect(workspace);
+            Ensure(contract.State == CreatorWorkspaceContractState.Current && !contract.CanUpgrade,
+                "A newly exported creator workspace must advertise the current contract.");
+
+            var userProject = Path.Combine(workspace, "themes", "user.theme");
+            Directory.CreateDirectory(userProject);
+            var userThemeFile = Path.Combine(userProject, "theme.js");
+            var userThemeBytes = new byte[] { 0x54, 0x45, 0x53, 0x53, 0x41, 0x4C, 0x55, 0x4D, 0x45 };
+            File.WriteAllBytes(userThemeFile, userThemeBytes);
+            var agentsPath = Path.Combine(workspace, "AGENTS.md");
+            File.WriteAllText(agentsPath, "legacy managed instructions");
+            File.WriteAllText(
+                Path.Combine(workspace, CreatorWorkspaceContract.MarkerFileName),
+                """
+                {
+                  "schemaVersion": 1,
+                  "workspaceVersion": "0.9",
+                  "templateVersion": "1.0"
+                }
+                """);
+            contract = CreatorWorkspaceContract.Inspect(workspace);
+            Ensure(contract.State == CreatorWorkspaceContractState.UpgradeAvailable && contract.CanUpgrade,
+                "An older workspace contract must offer a safe upgrade.");
+
+            var result = BuiltInAssetInstaller.UpgradeCreatorWorkspace(workspace);
+            Ensure(result.UpdatedFileCount >= 2 &&
+                   result.BackupDirectory is not null &&
+                   File.ReadAllText(Path.Combine(result.BackupDirectory, "AGENTS.md")) ==
+                       "legacy managed instructions" &&
+                   File.ReadAllBytes(userThemeFile).SequenceEqual(userThemeBytes) &&
+                   CreatorWorkspaceContract.Inspect(workspace).State == CreatorWorkspaceContractState.Current,
+                "Workspace upgrade must back up managed files, install the current contract, and leave user projects byte-identical.");
+            Ensure(!result.BackupDirectory!.StartsWith(Path.Combine(workspace, "themes"), StringComparison.OrdinalIgnoreCase),
+                "Workspace upgrade backups must never be written into the user themes directory.");
+
+            var externalManagedDirectory = Path.Combine(root, "external-managed-files");
+            Directory.CreateDirectory(externalManagedDirectory);
+            var sentinelPath = Path.Combine(externalManagedDirectory, "sentinel.txt");
+            File.WriteAllText(sentinelPath, "outside workspace");
+            var managedLink = Path.Combine(workspace, ".agents");
+            Directory.Delete(managedLink, recursive: true);
+            Directory.CreateSymbolicLink(managedLink, externalManagedDirectory);
+            File.WriteAllText(
+                Path.Combine(workspace, CreatorWorkspaceContract.MarkerFileName),
+                """
+                {
+                  "schemaVersion": 1,
+                  "workspaceVersion": "0.9",
+                  "templateVersion": "1.0"
+                }
+                """);
+            try
+            {
+                _ = BuiltInAssetInstaller.UpgradeCreatorWorkspace(workspace);
+                throw new InvalidOperationException("A managed directory reparse point was accepted.");
+            }
+            catch (InvalidDataException exception)
+            {
+                Ensure(exception.Message.Contains("重解析点", StringComparison.Ordinal) &&
+                       File.ReadAllText(sentinelPath) == "outside workspace" &&
+                       Directory.GetFiles(externalManagedDirectory).Length == 1,
+                    "Workspace upgrade must reject nested reparse points before touching files outside the workspace.");
+            }
+            finally
+            {
+                if (Directory.Exists(managedLink)) Directory.Delete(managedLink);
+            }
+        }
+        finally
+        {
+            if (Directory.Exists(root)) Directory.Delete(root, recursive: true);
+        }
+        return Task.CompletedTask;
+    }
+
     static async Task CreatorProjectScannerProducesStructuredHealthAsync()
     {
         var scanner = new ThemeProjectScanner(new ThemePackageLoader());
@@ -104,6 +186,23 @@ internal static partial class TestSuite
         Ensure(!missingWorkspace.Exists &&
                missingWorkspace.Health.Checks.Any(check => check.Code == "workspace.directory.missing"),
             "Moved workspaces must return a recoverable health result instead of throwing.");
+
+        var legacyWorkspace = Path.Combine(Path.GetTempPath(), $"tessalume-legacy-workspace-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(Path.Combine(legacyWorkspace, "themes"));
+        try
+        {
+            await File.WriteAllTextAsync(
+                Path.Combine(legacyWorkspace, CreatorWorkspaceContract.LegacyMarkerFileName),
+                "legacy creator workspace");
+            var legacyResult = await scanner.ScanWorkspaceAsync(legacyWorkspace);
+            Ensure(legacyResult.Contract.State == CreatorWorkspaceContractState.Legacy &&
+                   legacyResult.Health.Checks.Any(check => check.Code == "workspace.contract.legacy"),
+                "Legacy creator workspaces must remain scanable while receiving an explicit upgrade recommendation.");
+        }
+        finally
+        {
+            Directory.Delete(legacyWorkspace, recursive: true);
+        }
     }
 
     static async Task CreatorCenterOrchestratesWorkspaceProjectsAsync()
@@ -138,6 +237,9 @@ internal static partial class TestSuite
                    viewModel.SelectedProject.CanExport &&
                    viewModel.HealthGroups.Count == 8,
                 "The creator center must discover projects and expose the complete grouped health report.");
+            Ensure(viewModel.CanUpgradeWorkspace &&
+                   viewModel.WorkspaceVersionTone == "upgrade",
+                "A schema-two-era creator workspace must expose its safe upgrade state in the creator center.");
             Ensure(CreatorWorkspaceProvisioner.ResolveExistingWorkspace(project) == workspace,
                 "Opening a theme project folder must resolve back to its creator workspace.");
 

@@ -87,15 +87,27 @@
         const contrast = readPercent(adjustment.contrast, 100, 20, 180) / 100;
         const saturation = readPercent(adjustment.saturation, 100, 0, 200) / 100;
         const opacity = readPercent(adjustment.opacity, 100, 0, 100) / 100;
+        const zoom = readPercent(adjustment.zoom, 100, 70, 200) / 100;
+        const offsetX = readPercent(adjustment.offsetX, 0, -200, 200);
+        const offsetY = readPercent(adjustment.offsetY, 0, -200, 200);
+        const grayscale = readPercent(adjustment.grayscale, 0, 0, 100) / 100;
+        const hueRotation = readPercent(adjustment.hueRotation, 0, -180, 180);
+        const blur = readPercent(adjustment.blur, 0, 0, 20);
         const filterVariable = `--tessalume-visual-${region}-${mode}-filter`;
         const opacityVariable = `--tessalume-visual-${region}-${mode}-opacity`;
+        const translateVariable = `--tessalume-visual-${region}-${mode}-translate`;
+        const scaleVariable = `--tessalume-visual-${region}-${mode}-scale`;
         html.style.setProperty(
           filterVariable,
-          `brightness(${brightness}) contrast(${contrast}) saturate(${saturation})`,
+          `brightness(${brightness}) contrast(${contrast}) saturate(${saturation}) grayscale(${grayscale}) hue-rotate(${hueRotation}deg) blur(${blur}px)`,
         );
         html.style.setProperty(opacityVariable, String(opacity));
+        html.style.setProperty(translateVariable, `${offsetX}px ${offsetY}px`);
+        html.style.setProperty(scaleVariable, String(zoom));
         visualSettingVariables.add(filterVariable);
         visualSettingVariables.add(opacityVariable);
+        visualSettingVariables.add(translateVariable);
+        visualSettingVariables.add(scaleVariable);
       }
     }
     return true;

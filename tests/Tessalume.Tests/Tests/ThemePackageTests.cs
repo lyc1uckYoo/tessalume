@@ -271,7 +271,11 @@ internal static partial class TestSuite
             appRoot,
             "Creator",
             "CreatorCenterView.xaml"));
-        return mainWindow + "\n" + resources + "\n" + creatorCenter;
+        var artworkAdjustmentEditor = await File.ReadAllTextAsync(Path.Combine(
+            appRoot,
+            "Controls",
+            "ArtworkAdjustmentEditor.xaml"));
+        return mainWindow + "\n" + resources + "\n" + creatorCenter + "\n" + artworkAdjustmentEditor;
     }
 
     static async Task<string> ReadUiPreferencesSourceAsync(string appRoot)

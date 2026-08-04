@@ -20,7 +20,10 @@ internal sealed class UiPreferencesStore(string dataDirectory) : IDisposable
             var preferences = UiPreferencesMigration.Deserialize(json, _options, out var migrated);
             if (migrated)
             {
-                PreserveMigrationSnapshot(json);
+                if (PreserveMigrationSnapshot(json))
+                {
+                    PersistMigratedPreferences(preferences);
+                }
             }
             return preferences;
         }
@@ -30,7 +33,7 @@ internal sealed class UiPreferencesStore(string dataDirectory) : IDisposable
         }
     }
 
-    private void PreserveMigrationSnapshot(string json)
+    private bool PreserveMigrationSnapshot(string json)
     {
         var backupsDirectory = Path.Combine(Path.GetDirectoryName(_path)!, "backups");
         var snapshotPath = Path.Combine(backupsDirectory, "latest-before-preferences-migration.json");
@@ -40,6 +43,25 @@ internal sealed class UiPreferencesStore(string dataDirectory) : IDisposable
             Directory.CreateDirectory(backupsDirectory);
             File.WriteAllText(temporaryPath, json);
             File.Move(temporaryPath, snapshotPath, overwrite: true);
+            return true;
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            try { File.Delete(temporaryPath); }
+            catch (Exception cleanupException) when (cleanupException is IOException or UnauthorizedAccessException) { }
+            return false;
+        }
+    }
+
+    private void PersistMigratedPreferences(UiPreferences preferences)
+    {
+        var temporaryPath = _path + ".migration.tmp";
+        try
+        {
+            File.WriteAllText(
+                temporaryPath,
+                JsonSerializer.Serialize(UiPreferencesMigration.PrepareForSave(preferences), _options));
+            File.Move(temporaryPath, _path, overwrite: true);
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {

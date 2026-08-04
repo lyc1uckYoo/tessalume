@@ -54,8 +54,12 @@ public partial class MainWindow : Window, IAsyncDisposable
     private readonly CancellationTokenSource _updateCancellation = new();
     private readonly CancellationTokenSource _backupCancellation = new();
     private readonly HashSet<string> _favoriteThemeIds = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, ThemeUsageRecord> _themeUsage =
+        new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, ThemeVisualSettings> _themeVisualSettings =
         new(StringComparer.OrdinalIgnoreCase);
+    private readonly ObservableCollection<ThemeArtworkPreset> _artworkPresets = [];
+    private CreatorPromptDraft _creatorPromptDraft;
     private ThemeCardModel? _selectedTheme;
     private ThemeQuickSwitchWindow? _quickSwitchWindow;
     private string? _activeThemeId;
@@ -69,6 +73,7 @@ public partial class MainWindow : Window, IAsyncDisposable
     private bool _updatingAutomaticUpdateSetting;
     private bool _automaticUpdateChecks;
     private bool _updateCheckInProgress;
+    private bool _automaticUpdateCheckScheduled;
     private bool _startupInitialized;
     private bool _shutdownRequested;
     private bool _userDataRestoreCompleted;
@@ -77,11 +82,12 @@ public partial class MainWindow : Window, IAsyncDisposable
     private bool _uiInitialized;
     private bool _mainContentLoaded;
     private bool _editingVisualDarkMode;
-    private bool _updatingVisualControls;
     private ThemeLibraryFilter _themeLibraryFilter;
     private string _themeSearchQuery = string.Empty;
+    private string _themeLibrarySort = ThemeLibraryState.DefaultSort;
     private string _updateStatusMessage = "尚未检查更新";
     private DateTimeOffset? _lastUpdateCheckAt;
+    private ReleaseUpdate? _availableUpdate;
     private PortableUpdateResult? _startupUpdateResult;
     private DispatcherTimer? _visualSettingsDebounce;
     private DispatcherTimer? _toastTimer;
@@ -114,19 +120,29 @@ public partial class MainWindow : Window, IAsyncDisposable
         _onboardingCompleted = preferences.OnboardingCompleted || hadSavedPreferences;
         _automaticUpdateChecks = preferences.AutomaticUpdateChecks;
         _lastUpdateCheckAt = preferences.LastUpdateCheckAt;
+        _themeLibrarySort = ThemeLibraryState.NormalizeSort(preferences.ThemeLibrarySort);
         _creatorWorkspaces = new CreatorWorkspaceStore(preferences.RecentCreatorWorkspaces);
+        _creatorPromptDraft = preferences.CreatorPromptDraft.Normalize();
         _backupService = new PortableBackupService(
             _layout.RootDirectory,
             _layout.DataDirectory,
             _layout.ThemesDirectory,
             BuiltInAssetInstaller.ThemeIds);
         _favoriteThemeIds.UnionWith(preferences.FavoriteThemeIds.Where(id => !string.IsNullOrWhiteSpace(id)));
+        foreach (var usage in ThemeLibraryState.NormalizeUsage(preferences.RecentThemeUsage))
+        {
+            _themeUsage[usage.ThemeId] = usage;
+        }
         foreach (var (themeId, settings) in preferences.ThemeVisualSettings)
         {
             if (!string.IsNullOrWhiteSpace(themeId))
             {
                 _themeVisualSettings[themeId] = (settings ?? new ThemeVisualSettings()).Normalize();
             }
+        }
+        foreach (var preset in preferences.ArtworkPresets)
+        {
+            _artworkPresets.Add(preset.Normalize());
         }
         _runtime.StatusChanged += Runtime_StatusChanged;
         Closed += MainWindow_Closed;
@@ -137,11 +153,18 @@ public partial class MainWindow : Window, IAsyncDisposable
         if (_uiInitialized) return;
 
         InitializeComponent();
+        ThemeSortComboBox.SelectedValue = _themeLibrarySort;
         _uiInitialized = true;
         CreatorCenter.Configure(
             _layout.RootDirectory,
             _creatorWorkspaces,
             SavePreferencesAsync,
+            _creatorPromptDraft,
+            draft =>
+            {
+                _creatorPromptDraft = draft.Normalize();
+                return SavePreferencesAsync();
+            },
             new CreatorRuntimeBridge(
                 ApplyCreatorProjectAsync,
                 ReadCreatorRuntimeStatusAsync,
@@ -151,6 +174,7 @@ public partial class MainWindow : Window, IAsyncDisposable
         FitWindowToWorkArea();
         SourceInitialized += (_, _) => NativeTitleBar.Apply(this, _darkMode);
         ThemeItems.ItemsSource = _visibleThemes;
+        VisualPresetComboBox.ItemsSource = _artworkPresets;
         _visualSettingsDebounce = new DispatcherTimer(DispatcherPriority.Background)
         {
             Interval = TimeSpan.FromMilliseconds(140),
@@ -193,6 +217,28 @@ public partial class MainWindow : Window, IAsyncDisposable
 
     private void MainWindow_PreviewKeyDown(object sender, KeyEventArgs e)
     {
+        if (e.Key == Key.Escape && ThemeDetailPanel.Visibility == Visibility.Visible)
+        {
+            CloseThemeDetailPanel();
+            e.Handled = true;
+            return;
+        }
+        if (_rightPane == RightPane.Settings && Keyboard.FocusedElement is not TextBox)
+        {
+            if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.Z)
+            {
+                UndoVisualSettings();
+                e.Handled = true;
+                return;
+            }
+            if ((Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.Y) ||
+                (Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift) && e.Key == Key.Z))
+            {
+                RedoVisualSettings();
+                e.Handled = true;
+                return;
+            }
+        }
         if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.F)
         {
             ShowThemes();
@@ -296,7 +342,11 @@ public partial class MainWindow : Window, IAsyncDisposable
         _backupCancellation.Cancel();
         _backupCancellation.Dispose();
         _updateClient.Dispose();
-        CreatorCenter?.Dispose();
+        if (CreatorCenter is not null)
+        {
+            await CreatorCenter.FlushPendingPromptDraftAsync();
+            CreatorCenter.Dispose();
+        }
         if (visualSettingsPending && !_userDataRestoreCompleted)
         {
             await SavePreferencesAsync();

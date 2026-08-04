@@ -68,6 +68,9 @@ internal sealed class CreatorWorkspaceProvisioner(string applicationRoot)
         }
     }
 
+    public static CreatorWorkspaceUpgradeResult UpgradeWorkspace(string workspaceDirectory) =>
+        BuiltInAssetInstaller.UpgradeCreatorWorkspace(workspaceDirectory);
+
     private static bool LooksLikeWorkspace(string directory) =>
         Directory.Exists(Path.Combine(directory, "themes"));
 

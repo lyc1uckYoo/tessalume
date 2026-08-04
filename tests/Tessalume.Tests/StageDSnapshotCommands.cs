@@ -6,7 +6,8 @@ internal static partial class TestSuite
     static Task<int> RenderStageDSnapshotsAsync(
         string aboutSnapshotPath,
         string diagnosticsSnapshotPath,
-        string diagnosticsDarkSnapshotPath)
+        string diagnosticsDarkSnapshotPath,
+        string? updateBadgeSnapshotPath = null)
     {
         var portableRoot = Path.Combine(
             Path.GetTempPath(),
@@ -55,6 +56,17 @@ internal static partial class TestSuite
                     window.InfoScroll.ScrollToEnd();
                     ArrangeMainSurface(window);
                     SaveWindowContent(window, aboutSnapshotPath);
+                    if (!string.IsNullOrWhiteSpace(updateBadgeSnapshotPath))
+                    {
+                        window.UpdateAvailableBadge.Visibility = Visibility.Visible;
+                        window.UpdateAvailableBadge.ToolTip = "发现 v1.3.1，点击查看并安装";
+                        ArrangeMainSurface(window);
+                        Ensure(window.UpdateAvailableBadge.ActualWidth > 0 &&
+                               window.UpdateAvailableBadge.ActualHeight > 0,
+                            "The update badge must occupy a visible hit target after update discovery.");
+                        SaveWindowContent(window, updateBadgeSnapshotPath);
+                        window.UpdateAvailableBadge.Visibility = Visibility.Collapsed;
+                    }
 
                     ShowOnlyInfoPanel(window, window.DiagnosticsInfoPanel);
                     var refresh = typeof(MainWindow).GetMethod(
@@ -107,6 +119,10 @@ internal static partial class TestSuite
             Console.WriteLine($"About and Data snapshot: {Path.GetFullPath(aboutSnapshotPath)}");
             Console.WriteLine($"Compatibility diagnostics snapshot: {Path.GetFullPath(diagnosticsSnapshotPath)}");
             Console.WriteLine($"Compatibility diagnostics dark snapshot: {Path.GetFullPath(diagnosticsDarkSnapshotPath)}");
+            if (!string.IsNullOrWhiteSpace(updateBadgeSnapshotPath))
+            {
+                Console.WriteLine($"Update badge snapshot: {Path.GetFullPath(updateBadgeSnapshotPath)}");
+            }
             return Task.FromResult(0);
         }
         finally

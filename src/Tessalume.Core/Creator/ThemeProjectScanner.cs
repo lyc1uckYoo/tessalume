@@ -50,6 +50,7 @@ public sealed partial class ThemeProjectScanner(ThemePackageLoader loader)
         var workspace = Path.GetFullPath(workspaceDirectory);
         var themesDirectory = Path.Combine(workspace, "themes");
         var workspaceChecks = new List<ThemeProjectHealthCheck>();
+        var workspaceContract = CreatorWorkspaceContract.Inspect(workspace);
 
         if (!Directory.Exists(workspace))
         {
@@ -65,7 +66,8 @@ public sealed partial class ThemeProjectScanner(ThemePackageLoader loader)
                 workspace,
                 themesDirectory,
                 [],
-                new ThemeProjectHealthReport(workspaceChecks));
+                new ThemeProjectHealthReport(workspaceChecks))
+            { Contract = workspaceContract };
         }
 
         if (!File.Exists(Path.Combine(workspace, "TESSALUME_CREATOR_WORKSPACE.md")))
@@ -79,6 +81,8 @@ public sealed partial class ThemeProjectScanner(ThemePackageLoader loader)
                 workspace,
                 "确认所选目录包含 themes 文件夹，或重新创建标准创作工作区。"));
         }
+
+        AddWorkspaceContractCheck(workspaceChecks, workspace, workspaceContract);
 
         if (!Directory.Exists(themesDirectory))
         {
@@ -94,7 +98,8 @@ public sealed partial class ThemeProjectScanner(ThemePackageLoader loader)
                 workspace,
                 themesDirectory,
                 [],
-                new ThemeProjectHealthReport(workspaceChecks));
+                new ThemeProjectHealthReport(workspaceChecks))
+            { Contract = workspaceContract };
         }
 
         string[] projectDirectories;
@@ -120,7 +125,8 @@ public sealed partial class ThemeProjectScanner(ThemePackageLoader loader)
                 workspace,
                 themesDirectory,
                 [],
-                new ThemeProjectHealthReport(workspaceChecks));
+                new ThemeProjectHealthReport(workspaceChecks))
+            { Contract = workspaceContract };
         }
 
         var projects = new List<ThemeProjectSnapshot>(projectDirectories.Length);
@@ -147,7 +153,57 @@ public sealed partial class ThemeProjectScanner(ThemePackageLoader loader)
             workspace,
             themesDirectory,
             projects,
-            new ThemeProjectHealthReport(workspaceChecks));
+            new ThemeProjectHealthReport(workspaceChecks))
+        { Contract = workspaceContract };
+    }
+
+    private static void AddWorkspaceContractCheck(
+        List<ThemeProjectHealthCheck> checks,
+        string workspace,
+        CreatorWorkspaceContractInfo contract)
+    {
+        var markerPath = Path.Combine(workspace, CreatorWorkspaceContract.MarkerFileName);
+        var (code, title, severity, action) = contract.State switch
+        {
+            CreatorWorkspaceContractState.Current => (
+                "workspace.contract.current",
+                "工作区工具链为最新",
+                ThemeProjectHealthSeverity.Passed,
+                (string?)null),
+            CreatorWorkspaceContractState.Legacy => (
+                "workspace.contract.legacy",
+                "旧版工作区可以升级",
+                ThemeProjectHealthSeverity.Warning,
+                "在 Tessalume 创作项目中心点击“安全升级”。"),
+            CreatorWorkspaceContractState.UpgradeAvailable => (
+                "workspace.contract.upgrade",
+                "工作区工具链有可用更新",
+                ThemeProjectHealthSeverity.Warning,
+                "在 Tessalume 创作项目中心点击“安全升级”。"),
+            CreatorWorkspaceContractState.Newer => (
+                "workspace.contract.newer",
+                "工作区来自更新版本",
+                ThemeProjectHealthSeverity.Warning,
+                "使用创建这个工作区的 Tessalume 版本，避免降级工具文件。"),
+            CreatorWorkspaceContractState.Invalid => (
+                "workspace.contract.invalid",
+                "工作区版本标记需要修复",
+                ThemeProjectHealthSeverity.Warning,
+                "使用安全升级备份旧工具文件并重建版本标记。"),
+            _ => (
+                "workspace.contract.missing",
+                "未识别工作区工具链版本",
+                ThemeProjectHealthSeverity.Warning,
+                "如果这是 Tessalume 工作区，可重新创建标准工作区后迁移 themes 项目。"),
+        };
+        checks.Add(new ThemeProjectHealthCheck(
+            ThemeProjectHealthGroup.Workspace,
+            code,
+            title,
+            contract.Message,
+            severity,
+            markerPath,
+            action));
     }
 
     public async Task<ThemeProjectSnapshot> ScanProjectAsync(

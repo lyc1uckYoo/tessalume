@@ -23,6 +23,11 @@ internal static partial class TestSuite
             "The UI preferences migration must preserve explicit opt-out values.");
         Ensure(migratedPreferences.FavoriteThemeIds.Count == 0 &&
                migratedPreferences.ThemeVisualSettings.Count == 0 &&
+               migratedPreferences.ArtworkPresets.Count == 0 &&
+               migratedPreferences.ThemeLibrarySort == ThemeLibraryState.DefaultSort &&
+               migratedPreferences.RecentThemeUsage.Count == 0 &&
+               migratedPreferences.CreatorPromptDraft.WorkName == "鸣潮" &&
+               migratedPreferences.CreatorPromptDraft.CharacterName == "椿" &&
                migratedPreferences.RecentCreatorWorkspaces.Count == 0,
             "The UI preferences migration must normalize legacy null collections.");
 
@@ -57,14 +62,121 @@ internal static partial class TestSuite
                !versionOnePreferences.AutomaticUpdateChecks &&
                versionOnePreferences.LastUpdateCheckAt is not null &&
                versionOnePreferences.ThemeVisualSettings["sample.theme"].Light.Hero.Brightness == 91 &&
+               versionOnePreferences.ThemeVisualSettings["sample.theme"].Light.Hero.Zoom == 100 &&
+               versionOnePreferences.ThemeVisualSettings["sample.theme"].Light.Hero.OffsetX == 0 &&
+               versionOnePreferences.ThemeVisualSettings["sample.theme"].Light.Hero.Grayscale == 0 &&
+               versionOnePreferences.ThemeVisualSettings["sample.theme"].Light.Hero.Blur == 0 &&
                versionOnePreferences.ThemeVisualSettings["sample.theme"].Dark.Chat.Opacity == 87 &&
                versionOnePreferences.RecentCreatorWorkspaces.Count == 0,
             "The 1.2 schema migration must preserve favorites, updates, and image adjustments while initializing workspace history.");
 
-        var currentJson = JsonSerializer.Serialize(migratedPreferences, options);
+        const string versionTwoJson = """
+            {
+              "SchemaVersion": 2,
+              "DarkMode": true,
+              "OnboardingCompleted": true,
+              "AutomaticUpdateChecks": true,
+              "FavoriteThemeIds": ["advanced.theme"],
+              "ThemeVisualSettings": {
+                "advanced.theme": {
+                  "Dark": {
+                    "Sidebar": {
+                      "Brightness": 92,
+                      "Zoom": 128,
+                      "OffsetX": -36,
+                      "OffsetY": 18,
+                      "Grayscale": 24,
+                      "HueRotation": -42,
+                      "Blur": 3.5
+                    }
+                  }
+                }
+              }
+            }
+            """;
+        var versionTwoPreferences = UiPreferencesMigration.Deserialize(
+            versionTwoJson,
+            options,
+            out var versionTwoMigrated);
+        Ensure(versionTwoMigrated &&
+               versionTwoPreferences.SchemaVersion == UiPreferences.CurrentSchemaVersion &&
+               versionTwoPreferences.ThemeVisualSettings["advanced.theme"].Dark.Sidebar.Zoom == 128 &&
+               versionTwoPreferences.ArtworkPresets.Count == 0,
+            "Schema-two preferences must migrate to schema three without losing advanced image adjustments.");
+
+        var currentJson = JsonSerializer.Serialize(migratedPreferences with
+        {
+            ThemeVisualSettings = new Dictionary<string, ThemeVisualSettings>
+            {
+                ["advanced.theme"] = new ThemeVisualSettings
+                {
+                    Dark = new ThemeVisualModeSettings
+                    {
+                        Sidebar = new ThemeArtworkAdjustment
+                        {
+                            Zoom = 128,
+                            OffsetX = -36,
+                            OffsetY = 18,
+                            Grayscale = 24,
+                            HueRotation = -42,
+                            Blur = 3.5,
+                        },
+                    },
+                },
+            },
+            ArtworkPresets =
+            [
+                new ThemeArtworkPreset
+                {
+                    Name = "柔和背景",
+                    Settings = new ThemeVisualModeSettings
+                    {
+                        Chat = new ThemeArtworkAdjustment
+                        {
+                            Brightness = 88,
+                            Saturation = 72,
+                            Blur = 2.5,
+                        },
+                    },
+                },
+            ],
+            ThemeLibrarySort = ThemeLibraryState.RecentSort,
+            RecentThemeUsage =
+            [
+                new ThemeUsageRecord
+                {
+                    ThemeId = "advanced.theme",
+                    LastUsedAt = DateTimeOffset.Parse(
+                        "2026-08-04T12:00:00+08:00",
+                        System.Globalization.CultureInfo.InvariantCulture),
+                    UseCount = 7,
+                },
+            ],
+            CreatorPromptDraft = new CreatorPromptDraft
+            {
+                WorkName = "原神",
+                CharacterName = "芙宁娜",
+                VisualDirection = "蓝白歌剧舞台",
+                UsesReferenceImages = true,
+            },
+        }, options);
         var currentPreferences = UiPreferencesMigration.Deserialize(currentJson, options, out var currentMigrated);
-        Ensure(!currentMigrated && currentPreferences.SchemaVersion == UiPreferences.CurrentSchemaVersion,
-            "Current UI preferences must load without another migration.");
+        var advancedAdjustment = currentPreferences.ThemeVisualSettings["advanced.theme"].Dark.Sidebar;
+        Ensure(!currentMigrated &&
+               currentPreferences.SchemaVersion == UiPreferences.CurrentSchemaVersion &&
+               advancedAdjustment.Zoom == 128 &&
+               advancedAdjustment.OffsetX == -36 &&
+               advancedAdjustment.OffsetY == 18 &&
+               advancedAdjustment.Grayscale == 24 &&
+               advancedAdjustment.HueRotation == -42 &&
+               advancedAdjustment.Blur == 3.5 &&
+               currentPreferences.ArtworkPresets is [{ Name: "柔和背景" } preset] &&
+               preset.Settings.Chat.Blur == 2.5 &&
+               currentPreferences.ThemeLibrarySort == ThemeLibraryState.RecentSort &&
+               currentPreferences.RecentThemeUsage is [{ ThemeId: "advanced.theme", UseCount: 7 }] &&
+               currentPreferences.CreatorPromptDraft is
+               { WorkName: "原神", CharacterName: "芙宁娜", UsesReferenceImages: true },
+            "Schema-three preferences must round-trip image editing and theme library state without another migration.");
 
         var futureJson = currentJson.Replace(
             $"\"SchemaVersion\": {UiPreferences.CurrentSchemaVersion}",
@@ -95,6 +207,26 @@ internal static partial class TestSuite
                 "latest-before-preferences-migration.json");
             Ensure(File.Exists(snapshotPath) && File.ReadAllText(snapshotPath) == legacyJson,
                 "Preferences migration must preserve the latest original JSON before normalization.");
+            using (var migratedDocument = JsonDocument.Parse(File.ReadAllText(preferencesPath)))
+            {
+                Ensure(migratedDocument.RootElement.GetProperty("SchemaVersion").GetInt32() ==
+                       UiPreferences.CurrentSchemaVersion,
+                    "A successful migration must atomically persist the current schema immediately.");
+            }
+
+            File.Delete(snapshotPath);
+            File.WriteAllText(preferencesPath, versionTwoJson);
+            using (var store = new UiPreferencesStore(storeRoot))
+            {
+                _ = store.Load();
+            }
+            Ensure(File.Exists(snapshotPath) && File.ReadAllText(snapshotPath) == versionTwoJson,
+                "The schema-two to schema-three migration must preserve the original preferences JSON.");
+            using (var migratedDocument = JsonDocument.Parse(File.ReadAllText(preferencesPath)))
+            {
+                Ensure(migratedDocument.RootElement.GetProperty("SchemaVersion").GetInt32() == 3,
+                    "The schema-two migration must persist schema three without waiting for another setting change.");
+            }
 
             File.Delete(snapshotPath);
             File.WriteAllText(preferencesPath, currentJson);
@@ -192,8 +324,10 @@ internal static partial class TestSuite
         var preferences = await ReadUiPreferencesSourceAsync(appRoot);
         Ensure(xaml.Contains("x:Name=\"AutomaticUpdatesCheckBox\"", StringComparison.Ordinal) &&
                xaml.Contains("x:Name=\"CheckForUpdatesButton\"", StringComparison.Ordinal) &&
+               xaml.Contains("x:Name=\"UpdateAvailableBadge\"", StringComparison.Ordinal) &&
+               xaml.Contains("Click=\"UpdateAvailableBadge_Click\"", StringComparison.Ordinal) &&
                xaml.Contains("x:Name=\"UpdateProgressBar\"", StringComparison.Ordinal),
-            "Settings must expose automatic checks, a manual check, and download progress.");
+            "The product must expose automatic checks, a manual check, an update badge, and download progress.");
         Ensure(preferences.Contains("AutomaticUpdateChecks { get; init; } = true", StringComparison.Ordinal) &&
                preferences.Contains("LastUpdateCheckAt", StringComparison.Ordinal) &&
                preferences.Contains("SemaphoreSlim _saveGate", StringComparison.Ordinal) &&
@@ -201,11 +335,17 @@ internal static partial class TestSuite
                preferences.Contains("preferences.ThemeVisualSettings ??", StringComparison.Ordinal),
             "Preferences must retain update state, normalize older data, and serialize concurrent writes.");
         Ensure(mainSource.Contains("ScheduleAutomaticUpdateCheck", StringComparison.Ordinal) &&
+               mainSource.Contains("_automaticUpdateCheckScheduled", StringComparison.Ordinal) &&
+               mainSource.Contains("UpdateAvailableBadge.Visibility", StringComparison.Ordinal) &&
+               mainSource.Contains("ConfirmAndInstallUpdateAsync", StringComparison.Ordinal) &&
+               mainSource.Contains("if (_updateCheckInProgress || _availableUpdate is not", StringComparison.Ordinal) &&
+               mainSource.Contains("HandleUpdateFailure(exception, showDialog: true)", StringComparison.Ordinal) &&
+               !mainSource.Contains("DateTimeOffset.Now - checkedAt", StringComparison.Ordinal) &&
                mainSource.Contains("DownloadAndInstallUpdateAsync", StringComparison.Ordinal) &&
                mainSource.Contains("UpdateBootstrapper.StartHelper", StringComparison.Ordinal) &&
                mainSource.Contains("DescribeUpdateError", StringComparison.Ordinal) &&
                mainSource.Contains("无法连接 GitHub 更新服务", StringComparison.Ordinal),
-            "The main product flow must check, download, verify, and hand off installation.");
+            "Every enabled startup must check once, surface a non-blocking badge, and guard confirmed installation against concurrent or unhandled failures.");
         Ensure(appSource.Contains("UpdateBootstrapper.TryParseHelperArguments", StringComparison.Ordinal) &&
                bootstrapper.Contains("PortableUpdateInstaller.ApplyAndWriteResultAsync", StringComparison.Ordinal) &&
                bootstrapper.Contains("UseShellExecute = false", StringComparison.Ordinal),

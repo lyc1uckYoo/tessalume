@@ -116,6 +116,7 @@ public partial class MainWindow
             ThemeLibraryFilter.Dark => source.Where(theme => theme.SupportsDark),
             _ => source,
         };
+        source = OrderThemeSource(source);
 
         _visibleThemes.Clear();
         foreach (var theme in source)
@@ -141,6 +142,7 @@ public partial class MainWindow
         SelectedThemeText.Text = _showFavorites ? "还没有可用的收藏主题" : "这里还没有可用主题";
         ActivateButton.IsEnabled = false;
         DeleteButton.IsEnabled = false;
+        ThemeDetailsButton.IsEnabled = false;
     }
 
     private void UpdateThemeFilterUi(int sourceCount)
@@ -348,6 +350,7 @@ public partial class MainWindow
         SelectedThemeText.Text = theme.Name;
         ActivateButton.IsEnabled = theme.IsValid;
         DeleteButton.IsEnabled = theme.CanDelete;
+        ThemeDetailsButton.IsEnabled = true;
         StatusText.Text = theme.IsValid
             ? $"v{theme.Version} · 沉浸式主题 · 启用时检查本地源码"
             : string.Join("；", theme.CatalogItem.Validation.Issues.Select(issue => issue.Message));
@@ -388,8 +391,7 @@ public partial class MainWindow
 
         try
         {
-            using var extraction = await ThemeArchiveExtractor.ExtractAsync(dialog.FileName);
-            await ImportThemeSourceAsync(extraction.ThemeDirectory, "ZIP");
+            await ImportArchivePathAsync(dialog.FileName);
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
         {
@@ -420,10 +422,7 @@ public partial class MainWindow
         if (Directory.Exists(destination) &&
             !string.Equals(Path.GetFullPath(sourceDirectory), Path.GetFullPath(destination), StringComparison.OrdinalIgnoreCase))
         {
-            overwrite = ShowProductConfirmation(
-                "替换本地主题",
-                $"本地库中已有“{result.Package.Manifest.Name}”。是否替换为所选版本？",
-                "替换主题");
+            overwrite = await ConfirmThemeOverwriteAsync(loader, destination, result.Package);
             if (!overwrite) return;
         }
 
@@ -490,7 +489,8 @@ public partial class MainWindow
             {
                 BuiltInAssetInstaller.MarkDeleted(_layout, themeId);
             }
-            if (themeId is not null && _favoriteThemeIds.Remove(themeId))
+            if (themeId is not null &&
+                (_favoriteThemeIds.Remove(themeId) | _themeUsage.Remove(themeId)))
             {
                 await SavePreferencesAsync();
             }

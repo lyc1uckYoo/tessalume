@@ -2,6 +2,8 @@
 
 这个文件夹已经包含 Tessalume Template 1.0、主题创作 Skill、11 张标准素材规范、
 共享几何和自动校验脚本。你不需要手动修改模板，也不需要先学 CSS。
+工作区根目录的 `TESSALUME_CREATOR_WORKSPACE.json` 用于识别工具链版本；以后通过
+Tessalume 安全升级时只更新 Skill、Schema、说明和共享校验文件，不会改动 `themes/` 中的项目。
 
 ## 开始
 
