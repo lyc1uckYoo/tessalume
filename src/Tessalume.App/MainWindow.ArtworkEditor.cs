@@ -23,6 +23,7 @@ public partial class MainWindow
 {
     private const int MaxVisualHistoryEntries = 48;
     private ArtworkAdjustmentGroup _visualAdjustmentGroup = ArtworkAdjustmentGroup.Basic;
+    private string _visualAdjustmentRegion = "hero";
     private readonly Dictionary<string, List<ThemeVisualSettings>> _visualUndoHistory =
         new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, List<ThemeVisualSettings>> _visualRedoHistory =
@@ -235,6 +236,18 @@ public partial class MainWindow
             _ => ArtworkAdjustmentGroup.Basic,
         };
         UpdateVisualAdjustmentGroup();
+    }
+
+    private void VisualAdjustmentRegion_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { CommandParameter: string region }) return;
+        _visualAdjustmentRegion = region switch
+        {
+            "sidebar" => "sidebar",
+            "chat" => "chat",
+            _ => "hero",
+        };
+        UpdateVisualAdjustmentRegion();
     }
 
     private void ResetAllVisualSettings_Click(object sender, RoutedEventArgs e)
@@ -625,6 +638,7 @@ public partial class MainWindow
         VisualEditingModeText.Foreground = (Brush)Resources[_editingVisualDarkMode ? "Accent" : "Sky"];
         UpdateSettingsVisualHeader();
         UpdateVisualEditorActions();
+        UpdateVisualAdjustmentRegion();
         if (!available) return;
 
         var settings = GetVisualSettings(theme!.ThemeId!);
@@ -648,7 +662,7 @@ public partial class MainWindow
         VisualOriginalPreviewButton.IsEnabled = available &&
             string.Equals(themeId, _activeThemeId, StringComparison.OrdinalIgnoreCase);
         CopyVisualModeButton.IsEnabled = available;
-        CopyVisualModeButton.Content = _editingVisualDarkMode ? "复制到亮色" : "复制到暗色";
+        CopyVisualModeText.Text = _editingVisualDarkMode ? "复制到亮色" : "复制到暗色";
         SaveVisualPresetButton.IsEnabled = available;
         var preset = ResolveSelectedVisualPreset();
         ApplyVisualPresetButton.IsEnabled = available && preset is not null;
@@ -751,6 +765,17 @@ public partial class MainWindow
         SetVisualAdjustmentGroupButton(VisualBasicGroupButton, ArtworkAdjustmentGroup.Basic);
         SetVisualAdjustmentGroupButton(VisualCompositionGroupButton, ArtworkAdjustmentGroup.Composition);
         SetVisualAdjustmentGroupButton(VisualEffectsGroupButton, ArtworkAdjustmentGroup.Effects);
+    }
+
+    private void UpdateVisualAdjustmentRegion()
+    {
+        if (!_uiInitialized || HeroAdjustmentEditor is null) return;
+        HeroAdjustmentEditor.Visibility = _visualAdjustmentRegion == "hero" ? Visibility.Visible : Visibility.Collapsed;
+        SidebarAdjustmentEditor.Visibility = _visualAdjustmentRegion == "sidebar" ? Visibility.Visible : Visibility.Collapsed;
+        ChatAdjustmentEditor.Visibility = _visualAdjustmentRegion == "chat" ? Visibility.Visible : Visibility.Collapsed;
+        VisualHeroRegionButton.Tag = _visualAdjustmentRegion == "hero" ? "active" : "inactive";
+        VisualSidebarRegionButton.Tag = _visualAdjustmentRegion == "sidebar" ? "active" : "inactive";
+        VisualChatRegionButton.Tag = _visualAdjustmentRegion == "chat" ? "active" : "inactive";
     }
 
     private void SetVisualAdjustmentGroupButton(Button button, ArtworkAdjustmentGroup group)

@@ -138,6 +138,20 @@ internal static partial class TestSuite
 
         if (args is [
                 "--theme-library-snapshots",
+                var libraryLightSnapshotPath,
+                var libraryDarkSnapshotPath,
+                var detailLightSnapshotPath,
+                var detailDarkSnapshotPath])
+        {
+            return await RenderThemeLibrarySnapshotsAsync(
+                libraryLightSnapshotPath,
+                detailLightSnapshotPath,
+                detailDarkSnapshotPath,
+                libraryDarkSnapshotPath);
+        }
+
+        if (args is [
+                "--theme-library-snapshots",
                 var librarySnapshotPath,
                 var themeDetailSnapshotPath,
                 var themeDetailDarkSnapshotPath])
@@ -146,6 +160,24 @@ internal static partial class TestSuite
                 librarySnapshotPath,
                 themeDetailSnapshotPath,
                 themeDetailDarkSnapshotPath);
+        }
+
+        if (args is [
+                "--shell-surface-snapshots",
+                var dialogLightPath,
+                var dialogDarkPath,
+                var onboardingLightPath,
+                var onboardingDarkPath,
+                var quickLightPath,
+                var quickDarkPath])
+        {
+            return await RenderShellSurfaceSnapshotsAsync(
+                dialogLightPath,
+                dialogDarkPath,
+                onboardingLightPath,
+                onboardingDarkPath,
+                quickLightPath,
+                quickDarkPath);
         }
 
         var tests = new (string Name, Func<Task> Run)[]
@@ -175,12 +207,13 @@ internal static partial class TestSuite
             ("artwork preset files round-trip safely", ArtworkPresetFilesRoundTripSafelyAsync),
             ("theme library state is normalized and version aware", ThemeLibraryStateIsNormalizedAndVersionAwareAsync),
             ("theme library details and recent sorting work", ThemeLibraryDetailsAndRecentSortingWorkAsync),
+            ("cold-start settings are immediately interactive", ColdStartSettingsAreImmediatelyInteractiveAsync),
             ("main product surfaces share the design system", MainProductSurfacesShareDesignSystemAsync),
             ("source layout keeps product feature boundaries", SourceLayoutKeepsFeatureBoundariesAsync),
             ("WPF shell loads split resources", WpfShellLoadsSplitResourcesAsync),
             ("long product dialogs keep a fixed header and scrollable body", LongProductDialogUsesScrollableBodyAsync),
             ("adaptive layout and keyboard accessibility are available", AdaptiveLayoutAndKeyboardAccessibilityAsync),
-            ("version 1.3.0 product workflow is complete", Version13ProductWorkflowIsCompleteAsync),
+            ("version 1.4.0 product workflow is complete", Version14ProductWorkflowIsCompleteAsync),
             ("portable Codex creator workspace is self-contained", PortableCreatorWorkspaceIsSelfContainedAsync),
             ("creator prompt composer builds a durable contract prompt", CreatorPromptComposerBuildsDurableContractPromptAsync),
             ("creator workspace history is normalized and bounded", CreatorWorkspaceHistoryIsNormalizedAsync),

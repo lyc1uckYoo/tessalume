@@ -1,11 +1,16 @@
 <UserControl x:Class="Tessalume.App.Controls.ArtworkAdjustmentEditor"
              x:Name="Root"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             UseLayoutRounding="True"
+             TextOptions.TextFormattingMode="Display"
+             TextOptions.TextRenderingMode="ClearType"
+             TextOptions.TextHintingMode="Fixed">
     <UserControl.Resources>
         <Style x:Key="AdjustmentLabel" TargetType="TextBlock">
             <Setter Property="Foreground" Value="{DynamicResource MutedText}" />
-            <Setter Property="FontSize" Value="9.5" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
         <Style x:Key="AdjustmentValue" TargetType="TextBox">
@@ -13,10 +18,10 @@
             <Setter Property="Background" Value="{DynamicResource Surface}" />
             <Setter Property="BorderBrush" Value="{DynamicResource Border}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="FontSize" Value="8.5" />
+            <Setter Property="FontSize" Value="10" />
             <Setter Property="TextAlignment" Value="Center" />
-            <Setter Property="Padding" Value="4,3" />
-            <Setter Property="Margin" Value="5,0,0,0" />
+            <Setter Property="Padding" Value="5,4" />
+            <Setter Property="Margin" Value="7,0,0,0" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
             <Setter Property="SelectionBrush" Value="{DynamicResource AccentSoft}" />
             <Setter Property="CaretBrush" Value="{DynamicResource Accent}" />
@@ -29,27 +34,28 @@
         </Style>
     </UserControl.Resources>
 
-    <Border Background="{DynamicResource SurfaceAlt}"
-            BorderBrush="{DynamicResource Border}"
+    <Border Background="{DynamicResource SurfaceElevated}"
+            BorderBrush="{DynamicResource HomeToolbarBorder}"
             BorderThickness="1"
-            CornerRadius="15"
-            Padding="14">
+            CornerRadius="14"
+            Padding="15"
+            Effect="{DynamicResource HomeCardShadow}">
         <StackPanel>
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="34" />
+                    <ColumnDefinition Width="38" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <Border Width="28" Height="28" CornerRadius="9" Background="{Binding HeaderAccentSoft, ElementName=Root}">
+                <Border Width="30" Height="30" CornerRadius="10" Background="{Binding HeaderAccentSoft, ElementName=Root}">
                     <Path Width="14" Height="14" Data="{Binding IconData, ElementName=Root}"
                           Stroke="{Binding HeaderAccent, ElementName=Root}" StrokeThickness="1.8"
                           StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
                           Fill="Transparent" Stretch="Uniform" />
                 </Border>
                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                    <TextBlock Text="{Binding Title, ElementName=Root}" Foreground="{DynamicResource PrimaryText}" FontWeight="SemiBold" FontSize="12.5" />
-                    <TextBlock Text="{Binding Subtitle, ElementName=Root}" Foreground="{DynamicResource SubtleText}" FontSize="8.5" />
+                    <TextBlock Text="{Binding Title, ElementName=Root}" Foreground="{DynamicResource PrimaryText}" FontWeight="SemiBold" FontSize="13" />
+                    <TextBlock Text="{Binding Subtitle, ElementName=Root}" Foreground="{DynamicResource MutedText}" FontSize="10" Margin="0,2,0,0" />
                 </StackPanel>
                 <StackPanel Grid.Column="2" Orientation="Horizontal">
                     <Button x:Name="CopyButton" Style="{DynamicResource SettingsMiniButton}" Click="Copy_Click"
@@ -70,7 +76,7 @@
                 </StackPanel>
             </Grid>
 
-            <Border Height="1" Background="{DynamicResource Border}" Margin="0,11,0,7" />
+            <Border Height="1" Background="{DynamicResource HomeToolbarBorder}" Margin="0,12,0,8" />
 
             <StackPanel x:Name="BasicPanel">
                 <Grid Margin="0,4">
@@ -118,7 +124,7 @@
                     <Slider x:Name="OffsetYSlider" Grid.Column="1" Style="{DynamicResource SettingsSlider}" Tag="offsetY" AutomationProperties.Name="图像垂直位置" Minimum="-200" Maximum="200" Value="0" ValueChanged="Slider_ValueChanged" AutoToolTipPlacement="TopLeft" />
                     <TextBox x:Name="OffsetYValue" Grid.Column="2" Tag="offsetY" Text="0 px" Style="{StaticResource AdjustmentValue}" GotKeyboardFocus="ValueEditor_GotKeyboardFocus" LostKeyboardFocus="ValueEditor_LostKeyboardFocus" PreviewKeyDown="ValueEditor_PreviewKeyDown" />
                 </Grid>
-                <TextBlock Text="位置是在主题原始裁切上追加偏移，不会改写主题文件。" Foreground="{DynamicResource SubtleText}" FontSize="8" TextWrapping="Wrap" Margin="0,7,0,0" />
+                <TextBlock Text="位置是在主题原始裁切上追加偏移，不会改写主题文件。" Foreground="{DynamicResource MutedText}" FontSize="10" TextWrapping="Wrap" LineHeight="17" Margin="0,8,0,0" />
             </StackPanel>
 
             <StackPanel x:Name="EffectsPanel" Visibility="Collapsed">
@@ -140,7 +146,7 @@
                     <Slider x:Name="BlurSlider" Grid.Column="1" Style="{DynamicResource SettingsSlider}" Tag="blur" AutomationProperties.Name="图像模糊" Minimum="0" Maximum="20" Value="0" TickFrequency="0.5" ValueChanged="Slider_ValueChanged" AutoToolTipPlacement="TopLeft" />
                     <TextBox x:Name="BlurValue" Grid.Column="2" Tag="blur" Text="0 px" Style="{StaticResource AdjustmentValue}" GotKeyboardFocus="ValueEditor_GotKeyboardFocus" LostKeyboardFocus="ValueEditor_LostKeyboardFocus" PreviewKeyDown="ValueEditor_PreviewKeyDown" />
                 </Grid>
-                <TextBlock Text="柔化适合降低复杂背景干扰；色相会整体改变原图颜色。" Foreground="{DynamicResource SubtleText}" FontSize="8" TextWrapping="Wrap" Margin="0,7,0,0" />
+                <TextBlock Text="柔化适合降低复杂背景干扰；色相会整体改变原图颜色。" Foreground="{DynamicResource MutedText}" FontSize="10" TextWrapping="Wrap" LineHeight="17" Margin="0,8,0,0" />
             </StackPanel>
         </StackPanel>
     </Border>

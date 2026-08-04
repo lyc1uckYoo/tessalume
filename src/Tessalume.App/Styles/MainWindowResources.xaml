@@ -22,8 +22,24 @@
         <GradientStop Color="#FFFFFF" Offset="0" />
         <GradientStop Color="#E9E7F8" Offset="1" />
     </LinearGradientBrush>
+    <LinearGradientBrush x:Key="HomeHeroGradient" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#E9EEFF" Offset="0" />
+        <GradientStop Color="#F5EDFF" Offset="0.58" />
+        <GradientStop Color="#EAF8F8" Offset="1" />
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="HomeSelectionGradient" StartPoint="0,0" EndPoint="1,0">
+        <GradientStop Color="#F2F4FF" Offset="0" />
+        <GradientStop Color="#F9F5FF" Offset="1" />
+    </LinearGradientBrush>
     <SolidColorBrush x:Key="WindowBackground" Color="#F5F7FB" />
     <SolidColorBrush x:Key="SidebarBackground" Color="#FBFCFE" />
+    <SolidColorBrush x:Key="SidebarBrandSurface" Color="#F1F2FF" />
+    <SolidColorBrush x:Key="SidebarBrandBorder" Color="#D8DCF7" />
+    <SolidColorBrush x:Key="SidebarSectionText" Color="#686DA0" />
+    <SolidColorBrush x:Key="SidebarStatusSurface" Color="#EFF9F6" />
+    <SolidColorBrush x:Key="SidebarStatusBorder" Color="#CDE8DF" />
+    <SolidColorBrush x:Key="SidebarGlowOne" Color="#7A70F3" />
+    <SolidColorBrush x:Key="SidebarGlowTwo" Color="#37B7AF" />
     <SolidColorBrush x:Key="Surface" Color="#FFFFFF" />
     <SolidColorBrush x:Key="SurfaceAlt" Color="#F2F4F8" />
     <SolidColorBrush x:Key="SurfaceElevated" Color="#FFFFFF" />
@@ -56,10 +72,21 @@
     <SolidColorBrush x:Key="SettingsControlHover" Color="#FFFFFF" />
     <SolidColorBrush x:Key="SettingsTrack" Color="#D9DDE8" />
     <SolidColorBrush x:Key="DropOverlayBackground" Color="#F5F7FFF5" />
+    <SolidColorBrush x:Key="HomeHeroBorder" Color="#D4DCF8" />
+    <SolidColorBrush x:Key="HomeHeroPanel" Color="#CCFFFFFF" />
+    <SolidColorBrush x:Key="HomeHeroMuted" Color="#59627B" />
+    <SolidColorBrush x:Key="HomeHeroGlowOne" Color="#6777F0" />
+    <SolidColorBrush x:Key="HomeHeroGlowTwo" Color="#B064D0" />
+    <SolidColorBrush x:Key="HomeToolbarSurface" Color="#F8FAFD" />
+    <SolidColorBrush x:Key="HomeToolbarBorder" Color="#D9DFEA" />
+    <SolidColorBrush x:Key="HomeDockBorder" Color="#D0D8F2" />
     <DropShadowEffect x:Key="CardShadow" Color="#17151F" BlurRadius="14" ShadowDepth="2" Opacity="0.055" />
     <DropShadowEffect x:Key="SelectedCardShadow" Color="#665FD8" BlurRadius="20" ShadowDepth="4" Opacity="0.15" />
     <DropShadowEffect x:Key="PrimaryButtonShadow" Color="#5149C8" BlurRadius="18" ShadowDepth="4" Opacity="0.26" />
     <DropShadowEffect x:Key="SettingsBarShadow" Color="#59637A" BlurRadius="24" ShadowDepth="7" Opacity="0.18" />
+    <DropShadowEffect x:Key="HomeHeroShadow" Color="#444B78" BlurRadius="22" ShadowDepth="6" Opacity="0.12" />
+    <DropShadowEffect x:Key="HomeCardShadow" Color="#222B45" BlurRadius="16" ShadowDepth="3" Opacity="0.11" />
+    <DropShadowEffect x:Key="HomeDockShadow" Color="#454E78" BlurRadius="20" ShadowDepth="5" Opacity="0.14" />
 
     <Style x:Key="KeyboardFocusVisual" TargetType="Control">
         <Setter Property="Template">
@@ -82,37 +109,24 @@
         <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusVisual}" />
         <Setter Property="HorizontalContentAlignment" Value="Left" />
         <Setter Property="Padding" Value="13,10" />
-        <Setter Property="Margin" Value="0,1" />
-        <Setter Property="FontSize" Value="12.5" />
+        <Setter Property="Margin" Value="0,2" />
+        <Setter Property="FontSize" Value="13" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Grid RenderTransformOrigin="0.5,0.5">
-                        <Grid.RenderTransform><ScaleTransform x:Name="NavScale" ScaleX="1" ScaleY="1" /></Grid.RenderTransform>
-                        <Border x:Name="Chrome" Background="{TemplateBinding Background}" BorderBrush="Transparent" BorderThickness="1" CornerRadius="10">
-                            <Grid>
-                                <Border x:Name="ActiveBar" Width="3" Height="20" CornerRadius="2" Background="{DynamicResource Accent}"
-                                        HorizontalAlignment="Left" VerticalAlignment="Center" Opacity="0" />
-                                <ContentPresenter Margin="{TemplateBinding Padding}" />
-                            </Grid>
-                        </Border>
-                    </Grid>
+                    <Border x:Name="Chrome" Background="{TemplateBinding Background}" BorderBrush="Transparent" BorderThickness="1" CornerRadius="11" SnapsToDevicePixels="True">
+                        <Grid>
+                            <Border x:Name="ActiveTint" Background="{DynamicResource AccentSoft}" CornerRadius="11" Opacity="0" />
+                            <Border x:Name="ActiveBar" Width="3" Height="22" CornerRadius="2" Background="{DynamicResource Accent}"
+                                    HorizontalAlignment="Left" VerticalAlignment="Center" Opacity="0" />
+                            <ContentPresenter Margin="{TemplateBinding Padding}" />
+                        </Grid>
+                    </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource HoverSurface}" />
+                            <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource HomeToolbarBorder}" />
                             <Setter Property="Foreground" Value="{DynamicResource Accent}" />
-                            <Trigger.EnterActions>
-                                <BeginStoryboard><Storyboard>
-                                    <DoubleAnimation Storyboard.TargetName="NavScale" Storyboard.TargetProperty="ScaleX" To="1.018" Duration="0:0:0.167" />
-                                    <DoubleAnimation Storyboard.TargetName="NavScale" Storyboard.TargetProperty="ScaleY" To="1.018" Duration="0:0:0.167" />
-                                </Storyboard></BeginStoryboard>
-                            </Trigger.EnterActions>
-                            <Trigger.ExitActions>
-                                <BeginStoryboard><Storyboard>
-                                    <DoubleAnimation Storyboard.TargetName="NavScale" Storyboard.TargetProperty="ScaleX" To="1" Duration="0:0:0.167" />
-                                    <DoubleAnimation Storyboard.TargetName="NavScale" Storyboard.TargetProperty="ScaleY" To="1" Duration="0:0:0.167" />
-                                </Storyboard></BeginStoryboard>
-                            </Trigger.ExitActions>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
                             <Setter TargetName="Chrome" Property="Opacity" Value="0.76" />
@@ -123,11 +137,19 @@
                         </Trigger>
                         <Trigger Property="Tag" Value="active">
                             <Setter TargetName="ActiveBar" Property="Opacity" Value="1" />
+                            <Setter TargetName="ActiveTint" Property="Opacity" Value="0.48" />
+                            <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource InfoBorder}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+    </Style>
+    <Style x:Key="SidebarSectionLabel" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource SidebarSectionText}" />
+        <Setter Property="FontSize" Value="10" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Margin" Value="12,0,0,7" />
     </Style>
     <Style x:Key="RoundButton" TargetType="Button">
         <Setter Property="Foreground" Value="{DynamicResource PrimaryText}" />
@@ -136,33 +158,21 @@
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Padding" Value="14,9" />
         <Setter Property="MinHeight" Value="36" />
-        <Setter Property="FontSize" Value="10.5" />
+        <Setter Property="FontSize" Value="11" />
         <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusVisual}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
                     <Border x:Name="Chrome" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="11"
-                            RenderTransformOrigin="0.5,0.5">
-                        <Border.RenderTransform><ScaleTransform x:Name="ButtonScale" ScaleX="1" ScaleY="1" /></Border.RenderTransform>
+                            BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="11" SnapsToDevicePixels="True">
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="{TemplateBinding Padding}" />
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource HoverSurface}" />
                             <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource Accent}" />
-                            <Trigger.EnterActions>
-                                <BeginStoryboard><Storyboard>
-                                    <DoubleAnimation Storyboard.TargetName="ButtonScale" Storyboard.TargetProperty="ScaleX" To="1.025" Duration="0:0:0.167" />
-                                    <DoubleAnimation Storyboard.TargetName="ButtonScale" Storyboard.TargetProperty="ScaleY" To="1.025" Duration="0:0:0.167" />
-                                </Storyboard></BeginStoryboard>
-                            </Trigger.EnterActions>
-                            <Trigger.ExitActions>
-                                <BeginStoryboard><Storyboard>
-                                    <DoubleAnimation Storyboard.TargetName="ButtonScale" Storyboard.TargetProperty="ScaleX" To="1" Duration="0:0:0.167" />
-                                    <DoubleAnimation Storyboard.TargetName="ButtonScale" Storyboard.TargetProperty="ScaleY" To="1" Duration="0:0:0.167" />
-                                </Storyboard></BeginStoryboard>
-                            </Trigger.ExitActions>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True"><Setter TargetName="Chrome" Property="Opacity" Value="0.76" /></Trigger>
                         <Trigger Property="IsEnabled" Value="False"><Setter TargetName="Chrome" Property="Opacity" Value="0.42" /></Trigger>
@@ -183,8 +193,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Grid x:Name="ModeMotion" RenderTransformOrigin="0.5,0.5">
-                        <Grid.RenderTransform><ScaleTransform ScaleX="1" ScaleY="1" /></Grid.RenderTransform>
+                    <Grid x:Name="ModeMotion">
                         <Border x:Name="ModeChrome" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="9.5">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="{TemplateBinding Padding}" />
@@ -193,14 +202,7 @@
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="ModeChrome" Property="BorderBrush" Value="{DynamicResource Accent}" />
-                            <Trigger.EnterActions><BeginStoryboard><Storyboard>
-                                <DoubleAnimation Storyboard.TargetName="ModeMotion" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1.025" Duration="0:0:0.15" />
-                                <DoubleAnimation Storyboard.TargetName="ModeMotion" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1.025" Duration="0:0:0.15" />
-                            </Storyboard></BeginStoryboard></Trigger.EnterActions>
-                            <Trigger.ExitActions><BeginStoryboard><Storyboard>
-                                <DoubleAnimation Storyboard.TargetName="ModeMotion" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1" Duration="0:0:0.16" />
-                                <DoubleAnimation Storyboard.TargetName="ModeMotion" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1" Duration="0:0:0.16" />
-                            </Storyboard></BeginStoryboard></Trigger.ExitActions>
+                            <Setter TargetName="ModeChrome" Property="Background" Value="{DynamicResource AccentSoft}" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
                             <Setter TargetName="ModeMotion" Property="Opacity" Value="0.72" />
@@ -225,8 +227,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Grid x:Name="MotionRoot" RenderTransformOrigin="0.5,0.5">
-                        <Grid.RenderTransform><ScaleTransform ScaleX="1" ScaleY="1" /></Grid.RenderTransform>
+                    <Grid x:Name="MotionRoot">
                         <Border x:Name="Chrome" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="13">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="{TemplateBinding Padding}" />
@@ -236,14 +237,6 @@
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource SettingsControlHover}" />
                             <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource Accent}" />
-                            <Trigger.EnterActions><BeginStoryboard><Storyboard>
-                                <DoubleAnimation Storyboard.TargetName="MotionRoot" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1.07" Duration="0:0:0.16" />
-                                <DoubleAnimation Storyboard.TargetName="MotionRoot" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1.07" Duration="0:0:0.16" />
-                            </Storyboard></BeginStoryboard></Trigger.EnterActions>
-                            <Trigger.ExitActions><BeginStoryboard><Storyboard>
-                                <DoubleAnimation Storyboard.TargetName="MotionRoot" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1" Duration="0:0:0.18" />
-                                <DoubleAnimation Storyboard.TargetName="MotionRoot" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1" Duration="0:0:0.18" />
-                            </Storyboard></BeginStoryboard></Trigger.ExitActions>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
                             <Setter TargetName="MotionRoot" Property="Opacity" Value="0.72" />
@@ -289,7 +282,7 @@
         <Setter Property="Background" Value="{DynamicResource Surface}" />
         <Setter Property="BorderBrush" Value="{DynamicResource Border}" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="FontSize" Value="9" />
+        <Setter Property="FontSize" Value="11" />
         <Setter Property="Padding" Value="9,0,28,0" />
         <Setter Property="ItemContainerStyle" Value="{StaticResource SettingsComboBoxItem}" />
         <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusVisual}" />
@@ -313,7 +306,7 @@
                         </ToggleButton>
                         <ContentPresenter Margin="{TemplateBinding Padding}" VerticalAlignment="Center" IsHitTestVisible="False"
                                           Content="{TemplateBinding SelectionBoxItem}" ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" ContentStringFormat="{TemplateBinding SelectionBoxItemStringFormat}" />
-                        <TextBlock x:Name="EmptySelectionText" Text="选择方案" Foreground="{DynamicResource SubtleText}" FontSize="9" Margin="9,0,28,0" VerticalAlignment="Center" Visibility="Collapsed" IsHitTestVisible="False" />
+                        <TextBlock x:Name="EmptySelectionText" Text="选择方案" Foreground="{DynamicResource SubtleText}" FontSize="11" Margin="9,0,28,0" VerticalAlignment="Center" Visibility="Collapsed" IsHitTestVisible="False" />
                         <Popup x:Name="PART_Popup" Placement="Bottom" IsOpen="{TemplateBinding IsDropDownOpen}" AllowsTransparency="True" Focusable="False" PopupAnimation="Fade">
                             <Border MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}" MaxHeight="220" Margin="0,4,0,0" Padding="4"
                                     Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="10">
@@ -406,14 +399,13 @@
         <Setter Property="Background" Value="{DynamicResource Surface}" />
         <Setter Property="BorderBrush" Value="{DynamicResource Border}" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="FontSize" Value="10.5" />
+        <Setter Property="FontSize" Value="11" />
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Tag" Value="inactive" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Grid x:Name="MotionRoot" RenderTransformOrigin="0.5,0.5">
-                        <Grid.RenderTransform><ScaleTransform ScaleX="1" ScaleY="1" /></Grid.RenderTransform>
+                    <Grid x:Name="MotionRoot">
                         <Border x:Name="Chrome" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="11" Padding="12,4">
                             <Grid>
@@ -428,18 +420,6 @@
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource HoverSurface}" />
                             <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource Accent}" />
-                            <Trigger.EnterActions>
-                                <BeginStoryboard><Storyboard>
-                                    <DoubleAnimation Storyboard.TargetName="MotionRoot" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1.025" Duration="0:0:0.16" />
-                                    <DoubleAnimation Storyboard.TargetName="MotionRoot" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1.025" Duration="0:0:0.16" />
-                                </Storyboard></BeginStoryboard>
-                            </Trigger.EnterActions>
-                            <Trigger.ExitActions>
-                                <BeginStoryboard><Storyboard>
-                                    <DoubleAnimation Storyboard.TargetName="MotionRoot" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1" Duration="0:0:0.16" />
-                                    <DoubleAnimation Storyboard.TargetName="MotionRoot" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1" Duration="0:0:0.16" />
-                                </Storyboard></BeginStoryboard>
-                            </Trigger.ExitActions>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True"><Setter TargetName="Chrome" Property="Opacity" Value="0.78" /></Trigger>
                         <Trigger Property="Tag" Value="active">
@@ -465,12 +445,14 @@
         <Setter Property="Foreground" Value="White" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusVisual}" />
         <Setter Property="Padding" Value="16,10" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Grid x:Name="PrimaryMotion" RenderTransformOrigin="0.5,0.5">
-                        <Grid.RenderTransform><ScaleTransform ScaleX="1" ScaleY="1" /></Grid.RenderTransform>
+                    <Grid x:Name="PrimaryMotion">
                         <Grid.Effect><StaticResource ResourceKey="PrimaryButtonShadow" /></Grid.Effect>
                         <Border x:Name="PrimaryChrome" Background="{TemplateBinding Background}" CornerRadius="12">
                             <Grid>
@@ -482,18 +464,6 @@
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="PrimaryGlow" Property="Opacity" Value="1" />
-                            <Trigger.EnterActions>
-                                <BeginStoryboard><Storyboard>
-                                    <DoubleAnimation Storyboard.TargetName="PrimaryMotion" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1.025" Duration="0:0:0.16" />
-                                    <DoubleAnimation Storyboard.TargetName="PrimaryMotion" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1.025" Duration="0:0:0.16" />
-                                </Storyboard></BeginStoryboard>
-                            </Trigger.EnterActions>
-                            <Trigger.ExitActions>
-                                <BeginStoryboard><Storyboard>
-                                    <DoubleAnimation Storyboard.TargetName="PrimaryMotion" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1" Duration="0:0:0.18" />
-                                    <DoubleAnimation Storyboard.TargetName="PrimaryMotion" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1" Duration="0:0:0.18" />
-                                </Storyboard></BeginStoryboard>
-                            </Trigger.ExitActions>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
                             <Setter TargetName="PrimaryChrome" Property="Opacity" Value="0.86" />
@@ -519,7 +489,7 @@
         <Setter Property="Padding" Value="7,3" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="FontFamily" Value="Microsoft YaHei UI" />
-        <Setter Property="FontSize" Value="8.5" />
+        <Setter Property="FontSize" Value="10" />
         <Setter Property="FontWeight" Value="Bold" />
         <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusVisual}" />
         <Setter Property="Template">
@@ -559,7 +529,7 @@
         <Setter Property="BorderBrush" Value="{DynamicResource Sky}" />
     </Style>
     <Style x:Key="PillText" TargetType="TextBlock">
-        <Setter Property="FontSize" Value="9.5" />
+        <Setter Property="FontSize" Value="10" />
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Foreground" Value="{DynamicResource MutedText}" />
         <Setter Property="VerticalAlignment" Value="Center" />
@@ -578,30 +548,30 @@
     </Style>
     <Style x:Key="PageTitleText" TargetType="TextBlock">
         <Setter Property="Foreground" Value="{DynamicResource PrimaryText}" />
-        <Setter Property="FontSize" Value="27" />
+        <Setter Property="FontSize" Value="28" />
         <Setter Property="FontWeight" Value="Bold" />
     </Style>
     <Style x:Key="PageDescriptionText" TargetType="TextBlock">
         <Setter Property="Foreground" Value="{DynamicResource MutedText}" />
-        <Setter Property="FontSize" Value="11.5" />
+        <Setter Property="FontSize" Value="12" />
         <Setter Property="Margin" Value="1,6,0,0" />
     </Style>
     <Style x:Key="SectionEyebrowText" TargetType="TextBlock">
         <Setter Property="Foreground" Value="{DynamicResource Accent}" />
-        <Setter Property="FontSize" Value="9" />
+        <Setter Property="FontSize" Value="10" />
         <Setter Property="FontWeight" Value="Bold" />
     </Style>
     <Style x:Key="ProductCard" TargetType="Border">
-        <Setter Property="Background" Value="{DynamicResource Surface}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource Border}" />
+        <Setter Property="Background" Value="{DynamicResource SurfaceElevated}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource HomeToolbarBorder}" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="CornerRadius" Value="18" />
+        <Setter Property="CornerRadius" Value="16" />
         <Setter Property="Padding" Value="20" />
-        <Setter Property="Effect" Value="{StaticResource CardShadow}" />
+        <Setter Property="Effect" Value="{StaticResource HomeCardShadow}" />
     </Style>
     <Style x:Key="InsetCard" TargetType="Border">
-        <Setter Property="Background" Value="{DynamicResource SurfaceAlt}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource Border}" />
+        <Setter Property="Background" Value="{DynamicResource HomeToolbarSurface}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource HomeToolbarBorder}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="13" />
         <Setter Property="Padding" Value="14" />
@@ -615,7 +585,7 @@
         <Setter Property="BorderBrush" Value="Transparent" />
         <Setter Property="Height" Value="34" />
         <Setter Property="Padding" Value="12,0" />
-        <Setter Property="FontSize" Value="9.5" />
+        <Setter Property="FontSize" Value="11" />
     </Style>
     <Style x:Key="SearchTextBox" TargetType="TextBox">
         <Setter Property="Height" Value="38" />
@@ -623,7 +593,7 @@
         <Setter Property="Background" Value="{DynamicResource Surface}" />
         <Setter Property="BorderBrush" Value="{DynamicResource Border}" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="FontSize" Value="10.5" />
+        <Setter Property="FontSize" Value="12" />
         <Setter Property="Cursor" Value="IBeam" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="CaretBrush" Value="{DynamicResource Accent}" />
@@ -650,7 +620,7 @@
         <Setter Property="Height" Value="34" />
         <Setter Property="MinWidth" Value="58" />
         <Setter Property="Padding" Value="12,0" />
-        <Setter Property="FontSize" Value="9.5" />
+        <Setter Property="FontSize" Value="11" />
         <Setter Property="FontWeight" Value="SemiBold" />
     </Style>
     <Style x:Key="MetricValueText" TargetType="TextBlock">
@@ -660,6 +630,178 @@
     </Style>
     <Style x:Key="MetricLabelText" TargetType="TextBlock">
         <Setter Property="Foreground" Value="{DynamicResource MutedText}" />
-        <Setter Property="FontSize" Value="9" />
+        <Setter Property="FontSize" Value="10" />
+    </Style>
+    <Style x:Key="HomeCrispButton" TargetType="Button">
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryText}" />
+        <Setter Property="Background" Value="{DynamicResource Surface}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Border}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="14,0" />
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusVisual}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Chrome" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="10" SnapsToDevicePixels="True">
+                        <Grid>
+                            <Border x:Name="HoverTint" Background="{DynamicResource AccentSoft}" CornerRadius="10" Opacity="0" />
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="{TemplateBinding Padding}" />
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource Accent}" />
+                            <Setter TargetName="HoverTint" Property="Opacity" Value="0.42" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True"><Setter TargetName="Chrome" Property="Opacity" Value="0.78" /></Trigger>
+                        <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource Accent}" /></Trigger>
+                        <Trigger Property="IsEnabled" Value="False"><Setter TargetName="Chrome" Property="Opacity" Value="0.42" /></Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style x:Key="HomeUtilityButton" TargetType="Button">
+        <Setter Property="Height" Value="36" />
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryText}" />
+        <Setter Property="Background" Value="{DynamicResource Surface}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Border}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Tag" Value="inactive" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusVisual}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Chrome" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="10" Padding="12,4" SnapsToDevicePixels="True">
+                        <Grid>
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="9" /><ColumnDefinition Width="8" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                            <Ellipse x:Name="StateHalo" Width="9" Height="9" Fill="{DynamicResource Accent}" Opacity="0" />
+                            <Ellipse x:Name="StateDot" Width="6" Height="6" Fill="{DynamicResource SubtleText}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <ContentPresenter Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource HoverSurface}" />
+                            <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource Accent}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True"><Setter TargetName="Chrome" Property="Opacity" Value="0.78" /></Trigger>
+                        <Trigger Property="Tag" Value="active">
+                            <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource InfoSurface}" />
+                            <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource Accent}" />
+                            <Setter TargetName="StateDot" Property="Fill" Value="{DynamicResource Positive}" />
+                            <Setter TargetName="StateHalo" Property="Fill" Value="{DynamicResource Positive}" />
+                            <Setter TargetName="StateHalo" Property="Opacity" Value="0.18" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False"><Setter TargetName="Chrome" Property="Opacity" Value="0.42" /></Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style x:Key="HomeSearchTextBox" TargetType="TextBox" BasedOn="{StaticResource SearchTextBox}">
+        <Setter Property="Height" Value="40" />
+        <Setter Property="FontSize" Value="12" />
+    </Style>
+    <Style x:Key="HomeModeToggleButton" TargetType="Button" BasedOn="{StaticResource HomeCrispButton}">
+        <Setter Property="Width" Value="61" />
+        <Setter Property="Height" Value="30" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="Padding" Value="7,0" />
+    </Style>
+    <Style x:Key="HomeFilterChipButton" TargetType="Button" BasedOn="{StaticResource HomeCrispButton}">
+        <Setter Property="Height" Value="38" />
+        <Setter Property="MinWidth" Value="62" />
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="Padding" Value="12,0" />
+    </Style>
+    <Style x:Key="HomePrimaryActionButton" TargetType="Button">
+        <Setter Property="Height" Value="44" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="Background" Value="{DynamicResource PrimaryActionGradient}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Padding" Value="19,0" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusVisual}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="PrimaryChrome" Background="{TemplateBinding Background}" CornerRadius="12" SnapsToDevicePixels="True">
+                        <Grid>
+                            <Border x:Name="PrimaryGlow" Background="#1AFFFFFF" CornerRadius="12" Opacity="0" />
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="{TemplateBinding Padding}" />
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="PrimaryGlow" Property="Opacity" Value="1" /></Trigger>
+                        <Trigger Property="IsPressed" Value="True"><Setter TargetName="PrimaryChrome" Property="Opacity" Value="0.82" /></Trigger>
+                        <Trigger Property="IsEnabled" Value="False"><Setter TargetName="PrimaryChrome" Property="Opacity" Value="0.42" /></Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style x:Key="HomeHeroActionButton" TargetType="Button">
+        <Setter Property="Height" Value="60" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="Background" Value="{DynamicResource PrimaryActionGradient}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusVisual}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid x:Name="HeroActionMotion">
+                        <Grid.Effect><StaticResource ResourceKey="PrimaryButtonShadow" /></Grid.Effect>
+                        <Border x:Name="HeroActionChrome" Background="{TemplateBinding Background}" CornerRadius="13">
+                            <Grid>
+                                <Border x:Name="HeroActionGlow" Background="#1AFFFFFF" CornerRadius="13" Opacity="0" />
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Grid>
+                        </Border>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="HeroActionGlow" Property="Opacity" Value="1" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True"><Setter TargetName="HeroActionChrome" Property="Opacity" Value="0.84" /></Trigger>
+                        <Trigger Property="IsEnabled" Value="False"><Setter TargetName="HeroActionMotion" Property="Opacity" Value="0.42" /></Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style x:Key="HomeDockActionButton" TargetType="Button" BasedOn="{StaticResource HomeCrispButton}">
+        <Setter Property="Height" Value="44" />
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="Padding" Value="14,0" />
+    </Style>
+    <Style x:Key="HomeDangerActionButton" TargetType="Button" BasedOn="{StaticResource HomeDockActionButton}">
+        <Setter Property="Background" Value="{DynamicResource DangerSoft}" />
+        <Setter Property="Foreground" Value="{DynamicResource Danger}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Danger}" />
+    </Style>
+    <Style x:Key="HomeRestoreActionButton" TargetType="Button" BasedOn="{StaticResource HomeDockActionButton}">
+        <Setter Property="Background" Value="{DynamicResource AccentSoft}" />
+        <Setter Property="Foreground" Value="{DynamicResource Accent}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
+    </Style>
+    <Style x:Key="HomeCodexActionButton" TargetType="Button" BasedOn="{StaticResource HomeDockActionButton}">
+        <Setter Property="Background" Value="{DynamicResource SkySoft}" />
+        <Setter Property="Foreground" Value="{DynamicResource Sky}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Sky}" />
     </Style>
 </ResourceDictionary>

@@ -103,13 +103,13 @@ public partial class ProductDialogWindow : Window
 
     private void ApplyTheme(bool darkMode)
     {
-        Resources["DialogSurfaceBrush"] = Brush(darkMode ? "#202732" : "#FFFFFF");
-        Resources["DialogSurfaceAltBrush"] = Brush(darkMode ? "#2A323E" : "#F3F5F9");
-        Resources["DialogBorderBrush"] = Brush(darkMode ? "#3A4557" : "#DDE2EC");
-        Resources["DialogTextBrush"] = Brush(darkMode ? "#EFF2F8" : "#171927");
-        Resources["DialogMutedBrush"] = Brush(darkMode ? "#ADB6C6" : "#62697A");
-        Resources["DialogAccentBrush"] = Brush(darkMode ? "#978BFF" : "#675CF0");
-        Resources["DialogAccentSoftBrush"] = Brush(darkMode ? "#332F58" : "#EFEDFF");
+        Resources["DialogSurfaceBrush"] = Brush(darkMode ? "#202732" : "#FBFCFF");
+        Resources["DialogSurfaceAltBrush"] = Brush(darkMode ? "#2A323E" : "#F1F3FA");
+        Resources["DialogBorderBrush"] = Brush(darkMode ? "#3A4557" : "#D7DDEA");
+        Resources["DialogTextBrush"] = Brush(darkMode ? "#EFF2F8" : "#171B2E");
+        Resources["DialogMutedBrush"] = Brush(darkMode ? "#ADB6C6" : "#5D667C");
+        Resources["DialogAccentBrush"] = Brush(darkMode ? "#978BFF" : "#6558E8");
+        Resources["DialogAccentSoftBrush"] = Brush(darkMode ? "#332F58" : "#EEEBFF");
     }
 
     private static SolidColorBrush Brush(string color) =>

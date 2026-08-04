@@ -34,14 +34,14 @@ public partial class FirstRunWindow : Window
 
     private void ApplyTheme(bool darkMode)
     {
-        Resources["WelcomeSurface"] = Brush(darkMode ? "#202732" : "#FFFFFF");
-        Resources["WelcomeSurfaceAlt"] = Brush(darkMode ? "#2A323E" : "#F6F7FB");
-        Resources["WelcomeBorder"] = Brush(darkMode ? "#3A4557" : "#DDE2EC");
-        Resources["WelcomeText"] = Brush(darkMode ? "#EFF2F8" : "#171927");
-        Resources["WelcomeMuted"] = Brush(darkMode ? "#ADB6C6" : "#62697A");
+        Resources["WelcomeSurface"] = Brush(darkMode ? "#202732" : "#FBFCFF");
+        Resources["WelcomeSurfaceAlt"] = Brush(darkMode ? "#2A323E" : "#F1F3FA");
+        Resources["WelcomeBorder"] = Brush(darkMode ? "#3A4557" : "#D7DDEA");
+        Resources["WelcomeText"] = Brush(darkMode ? "#EFF2F8" : "#171B2E");
+        Resources["WelcomeMuted"] = Brush(darkMode ? "#ADB6C6" : "#5D667C");
         Resources["WelcomeSubtle"] = Brush(darkMode ? "#858FA1" : "#9299AA");
-        Resources["WelcomeAccent"] = Brush(darkMode ? "#978BFF" : "#675CF0");
-        Resources["WelcomeAccentSoft"] = Brush(darkMode ? "#332F58" : "#EFEDFF");
+        Resources["WelcomeAccent"] = Brush(darkMode ? "#978BFF" : "#6558E8");
+        Resources["WelcomeAccentSoft"] = Brush(darkMode ? "#332F58" : "#EEEBFF");
         Resources["WelcomePositive"] = Brush(darkMode ? "#55D6A6" : "#24B987");
         Resources["WelcomePositiveSoft"] = Brush(darkMode ? "#203B34" : "#EAF9F4");
         Resources["WelcomeAmber"] = Brush(darkMode ? "#F1B85B" : "#D88A24");

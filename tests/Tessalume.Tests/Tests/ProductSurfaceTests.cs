@@ -123,6 +123,20 @@ internal static partial class TestSuite
                     typeof(MainWindow).GetField("_activeThemeId", flags)?.SetValue(window, "editor.probe");
                     typeof(MainWindow).GetMethod("UpdateVisualAdjustmentControls", flags)?.Invoke(window, null);
 
+                    Ensure(window.HeroAdjustmentEditor.Visibility == Visibility.Visible &&
+                           window.SidebarAdjustmentEditor.Visibility == Visibility.Collapsed &&
+                           window.ChatAdjustmentEditor.Visibility == Visibility.Collapsed,
+                        "The focused artwork workflow must initially show only the home banner editor.");
+                    window.VisualChatRegionButton.RaiseEvent(
+                        new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
+                    Ensure(window.HeroAdjustmentEditor.Visibility == Visibility.Collapsed &&
+                           window.SidebarAdjustmentEditor.Visibility == Visibility.Collapsed &&
+                           window.ChatAdjustmentEditor.Visibility == Visibility.Visible &&
+                           Equals(window.VisualChatRegionButton.Tag, "active"),
+                        "Selecting an artwork region must replace the editor instead of displaying three dense panels.");
+                    window.VisualHeroRegionButton.RaiseEvent(
+                        new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
+
                     var settings = (Dictionary<string, ThemeVisualSettings>)(
                         typeof(MainWindow).GetField("_themeVisualSettings", flags)?.GetValue(window)
                         ?? throw new MissingFieldException(nameof(MainWindow), "_themeVisualSettings"));
@@ -380,7 +394,7 @@ internal static partial class TestSuite
                         "这是一段用于验证更新说明排版和滚动区域的长文本，标题栏与关闭按钮必须保持固定。",
                         24));
                 dialog = new ProductDialogWindow(
-                    "发现 Tessalume v1.3.0",
+                    "发现 Tessalume v1.4.0",
                     longMessage,
                     ProductDialogKind.Confirmation,
                     darkMode: false,
@@ -410,7 +424,7 @@ internal static partial class TestSuite
 
                 compactDialog = new ProductDialogWindow(
                     "当前已是最新版本",
-                    "你正在使用 v1.3.0，暂时没有可安装的新版本。",
+                    "你正在使用 v1.4.0，暂时没有可安装的新版本。",
                     ProductDialogKind.Information,
                     darkMode: false,
                     confirmText: "知道了",
@@ -696,11 +710,16 @@ internal static partial class TestSuite
                quickXaml.Contains("AutomationProperties.Name=\"关闭主题浮窗\"", StringComparison.Ordinal) &&
                quickXaml.Contains("IsKeyboardFocused", StringComparison.Ordinal),
             "The icon-only quick bar controls must be named and visibly focusable.");
+        Ensure(mainXaml.Contains("TextOptions.TextRenderingMode=\"ClearType\"", StringComparison.Ordinal) &&
+               mainXaml.Contains("TextOptions.TextHintingMode=\"Fixed\"", StringComparison.Ordinal) &&
+               quickXaml.Contains("TextOptions.TextHintingMode=\"Fixed\"", StringComparison.Ordinal) &&
+               !quickXaml.Contains("Storyboard.TargetName=\"MotionRoot\"", StringComparison.Ordinal),
+            "Product text must use stable glyph metrics and quick-bar hover feedback must not rescale text-bearing controls.");
         Ensure(manifest.Contains("PerMonitorV2, PerMonitor", StringComparison.Ordinal),
             "The Windows application manifest must opt into per-monitor DPI scaling.");
     }
 
-    static async Task Version13ProductWorkflowIsCompleteAsync()
+    static async Task Version14ProductWorkflowIsCompleteAsync()
     {
         var repositoryRoot = FindRepositoryRoot();
         var appRoot = Path.Combine(repositoryRoot, "src", "Tessalume.App");
@@ -722,7 +741,7 @@ internal static partial class TestSuite
                      "x:Name=\"ToastPanel\"",
                      "x:Name=\"AboutInfoPanel\"",
                      "x:Name=\"AboutLibrarySummaryText\"",
-                     "1.3 版本亮点",
+                     "1.4 版本亮点",
                  })
         {
             Ensure(xaml.Contains(marker, StringComparison.Ordinal), $"The product interface is missing {marker}.");
@@ -742,13 +761,18 @@ internal static partial class TestSuite
                dialogXaml.Contains("IsCancel=\"True\"", StringComparison.Ordinal) &&
                dialogSource.Contains("CancelButton.IsDefault = true", StringComparison.Ordinal),
             "The product dialog must support consistent styling and keyboard-safe confirmation.");
-        Ensure(project.Contains("<Version>1.3.0</Version>", StringComparison.Ordinal) &&
+        Ensure(dialogXaml.Contains("TextOptions.TextHintingMode=\"Fixed\"", StringComparison.Ordinal) &&
+               firstRunXaml.Contains("TextOptions.TextHintingMode=\"Fixed\"", StringComparison.Ordinal) &&
+               !xaml.Contains("Storyboard.TargetName=\"PrimaryMotion\"", StringComparison.Ordinal) &&
+               !xaml.Contains("x:Name=\"ButtonScale\"", StringComparison.Ordinal),
+            "Shared actions, dialogs, and onboarding must keep stable text rendering without hover scaling.");
+        Ensure(project.Contains("<Version>1.4.0</Version>", StringComparison.Ordinal) &&
                firstRunXaml.Contains("{x:Static local:BrandInfo.VersionLabel}", StringComparison.Ordinal) &&
                !firstRunXaml.Contains("Text=\"v1.2\"", StringComparison.Ordinal) &&
-               readme.Contains("## Tessalume 1.3.0", StringComparison.Ordinal) &&
+               readme.Contains("## Tessalume 1.4.0", StringComparison.Ordinal) &&
                readme.Contains("十套内置旗舰主题", StringComparison.Ordinal) &&
                File.Exists(Path.Combine(repositoryRoot, "CHANGELOG.md")),
-            "Version metadata and release documentation must agree on Tessalume 1.3.0.");
+            "Version metadata and release documentation must agree on Tessalume 1.4.0.");
     }
 
 
@@ -758,6 +782,7 @@ internal static partial class TestSuite
         var appRoot = Path.Combine(repositoryRoot, "src", "Tessalume.App");
         var xaml = await ReadMainWindowXamlAsync(appRoot);
         var mainSource = await ReadMainWindowSourceAsync(appRoot);
+        var diagnosticsSource = await File.ReadAllTextAsync(Path.Combine(appRoot, "MainWindow.Diagnostics.cs"));
         var appSource = await File.ReadAllTextAsync(Path.Combine(appRoot, "App.xaml.cs"));
         var installerSource = await File.ReadAllTextAsync(Path.Combine(
             appRoot,
@@ -783,6 +808,32 @@ internal static partial class TestSuite
                !mainSource.Contains("CopyDiagnosticReport_Click", StringComparison.Ordinal) &&
                !xaml.Contains("复制诊断报告", StringComparison.Ordinal),
             "The diagnostics page must retain local status and recovery without clipboard report actions.");
+        var diagnosticsHandlerStart = diagnosticsSource.IndexOf("private async void Diagnostics_Click", StringComparison.Ordinal);
+        var diagnosticsHandlerEnd = diagnosticsSource.IndexOf("private async Task RefreshDiagnosticsAsync", StringComparison.Ordinal);
+        var diagnosticsHandler = diagnosticsHandlerStart >= 0 && diagnosticsHandlerEnd > diagnosticsHandlerStart
+            ? diagnosticsSource[diagnosticsHandlerStart..diagnosticsHandlerEnd]
+            : string.Empty;
+        Ensure(xaml.Contains("x:Name=\"DiagnosticLoadingPanel\"", StringComparison.Ordinal) &&
+               diagnosticsHandler.Contains("ShowInfoPage(RightPane.Diagnostics)", StringComparison.Ordinal) &&
+               diagnosticsHandler.IndexOf("ShowInfoPage(RightPane.Diagnostics)", StringComparison.Ordinal) <
+               diagnosticsHandler.IndexOf("await RefreshDiagnosticsAsync()", StringComparison.Ordinal) &&
+               diagnosticsHandler.Contains("Dispatcher.Yield(DispatcherPriority.Render)", StringComparison.Ordinal),
+            "Diagnostics navigation must render an explicit loading state before local inspection begins.");
+        var settingsStart = xaml.IndexOf("x:Name=\"SettingsInfoPanel\"", StringComparison.Ordinal);
+        var aboutStart = xaml.IndexOf("x:Name=\"AboutInfoPanel\"", StringComparison.Ordinal);
+        var diagnosticsStart = xaml.IndexOf("x:Name=\"DiagnosticsInfoPanel\"", StringComparison.Ordinal);
+        var settingsMarkup = settingsStart >= 0 && aboutStart > settingsStart
+            ? xaml[settingsStart..aboutStart]
+            : string.Empty;
+        var aboutMarkup = aboutStart >= 0 && diagnosticsStart > aboutStart
+            ? xaml[aboutStart..diagnosticsStart]
+            : string.Empty;
+        Ensure(!settingsMarkup.Contains("x:Name=\"StartupCheckBox\"", StringComparison.Ordinal) &&
+               !settingsMarkup.Contains("x:Name=\"AutomaticUpdatesCheckBox\"", StringComparison.Ordinal) &&
+               aboutMarkup.Contains("x:Name=\"StartupCheckBox\"", StringComparison.Ordinal) &&
+               aboutMarkup.Contains("x:Name=\"AutomaticUpdatesCheckBox\"", StringComparison.Ordinal) &&
+               settingsMarkup.Contains("x:Name=\"VisualHeroRegionButton\"", StringComparison.Ordinal),
+            "Application behavior belongs on About while personalization remains a focused image workflow.");
         Ensure(appSource.Contains("LocalLog.Initialize(layout.DataDirectory)", StringComparison.Ordinal) &&
                appSource.IndexOf("LocalLog.Initialize(layout.DataDirectory)", StringComparison.Ordinal) <
                appSource.IndexOf("new MainWindow(layout)", StringComparison.Ordinal),

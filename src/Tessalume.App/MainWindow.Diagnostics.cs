@@ -21,10 +21,41 @@ namespace Tessalume.App;
 
 public partial class MainWindow
 {
+    private bool _diagnosticsRefreshInProgress;
+
     private async void Diagnostics_Click(object sender, RoutedEventArgs e)
     {
-        await RefreshDiagnosticsAsync();
         ShowInfoPage(RightPane.Diagnostics);
+        if (_diagnosticsRefreshInProgress) return;
+
+        _diagnosticsRefreshInProgress = true;
+        SetDiagnosticsLoadingState(true);
+        await Dispatcher.Yield(DispatcherPriority.Render);
+        try
+        {
+            await RefreshDiagnosticsAsync();
+        }
+        catch (Exception exception)
+        {
+            DiagnosticHealthTitleText.Text = "本次检查未完成";
+            DiagnosticHealthBodyText.Text = "诊断数据没有被修改，可以稍后重新检查。";
+            DiagnosticHealthDot.Fill = (Brush)Resources["Danger"];
+            DiagnosticUpdatedText.Text = "检查失败";
+            ShowToast($"诊断检查失败：{exception.Message}");
+        }
+        finally
+        {
+            _diagnosticsRefreshInProgress = false;
+            SetDiagnosticsLoadingState(false);
+        }
+    }
+
+    private void SetDiagnosticsLoadingState(bool isLoading)
+    {
+        if (!_uiInitialized || DiagnosticLoadingPanel is null) return;
+        DiagnosticLoadingPanel.Visibility = isLoading ? Visibility.Visible : Visibility.Collapsed;
+        DiagnosticsRefreshButton.IsEnabled = !isLoading;
+        DiagnosticUpdatedText.Text = isLoading ? "正在检查…" : DiagnosticUpdatedText.Text;
     }
 
     private async Task RefreshDiagnosticsAsync()

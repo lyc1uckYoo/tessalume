@@ -59,7 +59,7 @@ internal static partial class TestSuite
                     if (!string.IsNullOrWhiteSpace(updateBadgeSnapshotPath))
                     {
                         window.UpdateAvailableBadge.Visibility = Visibility.Visible;
-                        window.UpdateAvailableBadge.ToolTip = "发现 v1.3.1，点击查看并安装";
+                        window.UpdateAvailableBadge.ToolTip = "发现 v1.4.1，点击查看并安装";
                         ArrangeMainSurface(window);
                         Ensure(window.UpdateAvailableBadge.ActualWidth > 0 &&
                                window.UpdateAvailableBadge.ActualHeight > 0,

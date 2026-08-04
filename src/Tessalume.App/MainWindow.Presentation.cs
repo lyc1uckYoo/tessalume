@@ -28,8 +28,8 @@ public partial class MainWindow
             dark ? "#111620" : "#F0F3F8");
         SetGradientBrush(
             "SidebarBackground",
-            dark ? "#12161F" : "#FCFDFE",
-            dark ? "#171C26" : "#F7F9FC");
+            dark ? "#111621" : "#FAFBFE",
+            dark ? "#171D2A" : "#F1F4FA");
         SetGradientBrush(
             "PrimaryGradient",
             dark ? "#7480F4" : "#5968EA",
@@ -50,7 +50,22 @@ public partial class MainWindow
             "SettingsCurrentThemeGradient",
             dark ? "#3A2B45" : "#FFFFFF",
             dark ? "#2A233A" : "#E9E7F8");
+        SetGradientBrush(
+            "HomeHeroGradient",
+            dark ? "#1A2135" : "#E9EEFF",
+            dark ? "#30213B" : "#F5EDFF");
+        SetGradientBrush(
+            "HomeSelectionGradient",
+            dark ? "#20283A" : "#F2F4FF",
+            dark ? "#2A2238" : "#F9F5FF");
         SetBrush("Surface", dark ? "#1C222C" : "#FFFFFF");
+        SetBrush("SidebarBrandSurface", dark ? "#20263E" : "#F1F2FF");
+        SetBrush("SidebarBrandBorder", dark ? "#394363" : "#D8DCF7");
+        SetBrush("SidebarSectionText", dark ? "#929BC6" : "#686DA0");
+        SetBrush("SidebarStatusSurface", dark ? "#1A2A2B" : "#EFF9F6");
+        SetBrush("SidebarStatusBorder", dark ? "#31504F" : "#CDE8DF");
+        SetBrush("SidebarGlowOne", dark ? "#857BFF" : "#7A70F3");
+        SetBrush("SidebarGlowTwo", dark ? "#4AC6BC" : "#37B7AF");
         SetBrush("SurfaceAlt", dark ? "#252C37" : "#F2F4F8");
         SetBrush("SurfaceElevated", dark ? "#202732" : "#FFFFFF");
         SetBrush("HoverSurface", dark ? "#2C3441" : "#E9ECF3");
@@ -82,6 +97,14 @@ public partial class MainWindow
         SetBrush("SettingsControlHover", dark ? "#29FFFFFF" : "#FFFFFF");
         SetBrush("SettingsTrack", dark ? "#46505D" : "#D9DDE8");
         SetBrush("DropOverlayBackground", dark ? "#F51A202B" : "#F5F7FFF5");
+        SetBrush("HomeHeroBorder", dark ? "#3B4668" : "#D4DCF8");
+        SetBrush("HomeHeroPanel", dark ? "#24FFFFFF" : "#CCFFFFFF");
+        SetBrush("HomeHeroMuted", dark ? "#BEC6D8" : "#59627B");
+        SetBrush("HomeHeroGlowOne", dark ? "#7885FF" : "#6777F0");
+        SetBrush("HomeHeroGlowTwo", dark ? "#C277DC" : "#B064D0");
+        SetBrush("HomeToolbarSurface", dark ? "#171D28" : "#F8FAFD");
+        SetBrush("HomeToolbarBorder", dark ? "#303A4B" : "#D9DFEA");
+        SetBrush("HomeDockBorder", dark ? "#3D4967" : "#D0D8F2");
         Resources["SettingsBarShadow"] = new System.Windows.Media.Effects.DropShadowEffect
         {
             Color = (Color)ColorConverter.ConvertFromString(dark ? "#120B18" : "#59637A"),
@@ -197,18 +220,17 @@ public partial class MainWindow
 
     private void AnimateSelectionDock()
     {
-        if (!_uiInitialized || SelectionDockScale is null)
+        if (!_uiInitialized || SelectionDock is null)
         {
             return;
         }
 
-        var easing = new BackEase { Amplitude = 0.22, EasingMode = EasingMode.EaseOut };
-        SelectionDockScale.BeginAnimation(
-            ScaleTransform.ScaleXProperty,
-            new DoubleAnimation(0.985, 1, TimeSpan.FromMilliseconds(220)) { EasingFunction = easing });
-        SelectionDockScale.BeginAnimation(
-            ScaleTransform.ScaleYProperty,
-            new DoubleAnimation(0.985, 1, TimeSpan.FromMilliseconds(220)) { EasingFunction = easing });
+        SelectionDock.BeginAnimation(
+            OpacityProperty,
+            new DoubleAnimation(0.82, 1, TimeSpan.FromMilliseconds(180))
+            {
+                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut },
+            });
     }
 
     private static void AnimatePage(FrameworkElement page)

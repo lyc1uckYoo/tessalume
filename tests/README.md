@@ -10,7 +10,7 @@
 - `Tests/RuntimeTests.cs`：主题运行时、资源分段、恢复和页面修饰。
 - `Tests/BackupTests.cs`：用户数据备份、内容摘要、哈希校验、内置主题保护、取消、事务恢复和回滚。
 - `Tests/CompatibilityTests.cs`：Codex/运行时兼容性基线、失败阶段持久化和诊断页接线。
-- `Tests/ReleaseCandidateTests.cs`：1.2 配置迁移、项目发现、体检、分享 ZIP、干净导入、用户数据备份与事务恢复的 1.3 隔离端到端流程。
+- `Tests/ReleaseCandidateTests.cs`：覆盖 1.2 配置迁移、项目发现、体检、分享 ZIP、干净导入、用户数据备份与事务恢复的隔离端到端流程。
 - `Tests/TemplateContractTests.cs`：Template 1.0、冻结几何和内置主题契约。
 - `Tests/AppLifecycleTests.cs`：配置迁移、启动、恢复和自动更新接线。
 - `Tests/ProductSurfaceTests.cs`：主界面、设置、诊断、无障碍、视觉调节和图像方案文件安全边界。

@@ -5,13 +5,14 @@
         Width="760" Height="440" WindowStyle="None" AllowsTransparency="True"
         Background="Transparent" WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
         ShowInTaskbar="False" FontFamily="Microsoft YaHei UI" UseLayoutRounding="True"
-        KeyDown="Window_KeyDown">
+        KeyDown="Window_KeyDown"
+        TextOptions.TextFormattingMode="Display" TextOptions.TextRenderingMode="Grayscale" TextOptions.TextHintingMode="Fixed">
     <Window.Resources>
-        <SolidColorBrush x:Key="WelcomeSurface" Color="#FFFFFF" />
-        <SolidColorBrush x:Key="WelcomeSurfaceAlt" Color="#F6F7FB" />
-        <SolidColorBrush x:Key="WelcomeBorder" Color="#DDE2EC" />
-        <SolidColorBrush x:Key="WelcomeText" Color="#171927" />
-        <SolidColorBrush x:Key="WelcomeMuted" Color="#62697A" />
+        <SolidColorBrush x:Key="WelcomeSurface" Color="#FBFCFF" />
+        <SolidColorBrush x:Key="WelcomeSurfaceAlt" Color="#F1F3FA" />
+        <SolidColorBrush x:Key="WelcomeBorder" Color="#D7DDEA" />
+        <SolidColorBrush x:Key="WelcomeText" Color="#171B2E" />
+        <SolidColorBrush x:Key="WelcomeMuted" Color="#5D667C" />
         <SolidColorBrush x:Key="WelcomeSubtle" Color="#9299AA" />
         <SolidColorBrush x:Key="WelcomeAccent" Color="#675CF0" />
         <SolidColorBrush x:Key="WelcomeAccentSoft" Color="#EFEDFF" />
@@ -75,7 +76,7 @@
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="欢迎使用 Tessalume" Foreground="{DynamicResource WelcomeText}" FontSize="23" FontWeight="Bold" />
                         <Border Background="{DynamicResource WelcomeAccentSoft}" CornerRadius="8" Padding="8,3" Margin="10,2,0,0" VerticalAlignment="Top">
-                            <TextBlock Text="{x:Static local:BrandInfo.VersionLabel}" Foreground="{DynamicResource WelcomeAccent}" FontSize="9" FontWeight="Bold" />
+                        <TextBlock Text="{x:Static local:BrandInfo.VersionLabel}" Foreground="{DynamicResource WelcomeAccent}" FontSize="10" FontWeight="Bold" />
                         </Border>
                     </StackPanel>
                     <TextBlock Text="先了解三个关键动作，再开始选择你的第一套主题。" Foreground="{DynamicResource WelcomeMuted}" FontSize="11" Margin="0,6,0,0" />
@@ -86,13 +87,13 @@
 
             <UniformGrid Grid.Row="2" Columns="3">
                 <Border Background="{DynamicResource WelcomeSurfaceAlt}" BorderBrush="{DynamicResource WelcomeBorder}" BorderThickness="1" CornerRadius="16" Padding="16" Margin="0,0,6,0">
-                    <StackPanel><TextBlock Text="01" Foreground="{DynamicResource WelcomeAccent}" FontSize="10" FontWeight="Bold" /><TextBlock Text="选择喜欢的主题" Foreground="{DynamicResource WelcomeText}" FontSize="13" FontWeight="SemiBold" Margin="0,9,0,0" /><TextBlock Text="首次启动不会自动换肤，先浏览预览，再由你决定应用哪一套。" TextWrapping="Wrap" Foreground="{DynamicResource WelcomeMuted}" FontSize="9.5" LineHeight="16" Margin="0,6,0,0" /></StackPanel>
+                    <StackPanel><TextBlock Text="01" Foreground="{DynamicResource WelcomeAccent}" FontSize="10" FontWeight="Bold" /><TextBlock Text="选择喜欢的主题" Foreground="{DynamicResource WelcomeText}" FontSize="13" FontWeight="SemiBold" Margin="0,9,0,0" /><TextBlock Text="首次启动不会自动换肤，先浏览预览，再由你决定应用哪一套。" TextWrapping="Wrap" Foreground="{DynamicResource WelcomeMuted}" FontSize="10" LineHeight="17" Margin="0,6,0,0" /></StackPanel>
                 </Border>
                 <Border Background="{DynamicResource WelcomeSurfaceAlt}" BorderBrush="{DynamicResource WelcomeBorder}" BorderThickness="1" CornerRadius="16" Padding="16" Margin="6,0">
-                    <StackPanel><TextBlock Text="02" Foreground="{DynamicResource WelcomeAmber}" FontSize="10" FontWeight="Bold" /><TextBlock Text="必要时重新连接" Foreground="{DynamicResource WelcomeText}" FontSize="13" FontWeight="SemiBold" Margin="0,9,0,0" /><TextBlock Text="若 Codex 需要重启，软件会先提醒你保存工作，确认后才会继续。" TextWrapping="Wrap" Foreground="{DynamicResource WelcomeMuted}" FontSize="9.5" LineHeight="16" Margin="0,6,0,0" /></StackPanel>
+                    <StackPanel><TextBlock Text="02" Foreground="{DynamicResource WelcomeAmber}" FontSize="10" FontWeight="Bold" /><TextBlock Text="必要时重新连接" Foreground="{DynamicResource WelcomeText}" FontSize="13" FontWeight="SemiBold" Margin="0,9,0,0" /><TextBlock Text="若 Codex 需要重启，软件会先提醒你保存工作，确认后才会继续。" TextWrapping="Wrap" Foreground="{DynamicResource WelcomeMuted}" FontSize="10" LineHeight="17" Margin="0,6,0,0" /></StackPanel>
                 </Border>
                 <Border Background="{DynamicResource WelcomeSurfaceAlt}" BorderBrush="{DynamicResource WelcomeBorder}" BorderThickness="1" CornerRadius="16" Padding="16" Margin="6,0,0,0">
-                    <StackPanel><TextBlock Text="03" Foreground="{DynamicResource WelcomePositive}" FontSize="10" FontWeight="Bold" /><TextBlock Text="随时恢复默认" Foreground="{DynamicResource WelcomeText}" FontSize="13" FontWeight="SemiBold" Margin="0,9,0,0" /><TextBlock Text="主题只作用于当前本机会话，可随时恢复 Codex 默认外观。" TextWrapping="Wrap" Foreground="{DynamicResource WelcomeMuted}" FontSize="9.5" LineHeight="16" Margin="0,6,0,0" /></StackPanel>
+                    <StackPanel><TextBlock Text="03" Foreground="{DynamicResource WelcomePositive}" FontSize="10" FontWeight="Bold" /><TextBlock Text="随时恢复默认" Foreground="{DynamicResource WelcomeText}" FontSize="13" FontWeight="SemiBold" Margin="0,9,0,0" /><TextBlock Text="主题只作用于当前本机会话，可随时恢复 Codex 默认外观。" TextWrapping="Wrap" Foreground="{DynamicResource WelcomeMuted}" FontSize="10" LineHeight="17" Margin="0,6,0,0" /></StackPanel>
                 </Border>
             </UniformGrid>
 
@@ -101,19 +102,19 @@
                     <Grid.ColumnDefinitions><ColumnDefinition Width="38" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                     <Grid Width="30" Height="30"><Ellipse Fill="{DynamicResource WelcomeSurface}" /><Ellipse x:Name="CodexStatusDot" Width="9" Height="9" Fill="{DynamicResource WelcomePositive}" /></Grid>
                     <StackPanel Grid.Column="1" Margin="8,0,16,0" VerticalAlignment="Center">
-                        <TextBlock x:Name="CodexStatusText" Text="正在检查 Codex Desktop" Foreground="{DynamicResource WelcomeText}" FontSize="11.5" FontWeight="SemiBold" />
-                        <TextBlock x:Name="CodexStatusHintText" Text="只检查本机安装状态，不会连接网络。" Foreground="{DynamicResource WelcomeMuted}" FontSize="9" Margin="0,3,0,0" />
+                        <TextBlock x:Name="CodexStatusText" Text="正在检查 Codex Desktop" Foreground="{DynamicResource WelcomeText}" FontSize="12" FontWeight="SemiBold" />
+                        <TextBlock x:Name="CodexStatusHintText" Text="只检查本机安装状态，不会连接网络。" Foreground="{DynamicResource WelcomeMuted}" FontSize="10" Margin="0,3,0,0" />
                     </StackPanel>
                     <Border Grid.Column="2" Background="{DynamicResource WelcomeSurface}" CornerRadius="9" Padding="10,5" VerticalAlignment="Center">
-                        <TextBlock Text="便携数据已准备" Foreground="{DynamicResource WelcomeAccent}" FontSize="9" FontWeight="SemiBold" />
+                        <TextBlock Text="便携数据已准备" Foreground="{DynamicResource WelcomeAccent}" FontSize="10" FontWeight="SemiBold" />
                     </Border>
                 </Grid>
             </Border>
 
             <Grid Grid.Row="6">
                 <StackPanel VerticalAlignment="Center">
-                    <TextBlock Text="以后启动时将直接显示顶部主题浮窗。" Foreground="{DynamicResource WelcomeSubtle}" FontSize="9.5" />
-                    <TextBlock Text="你可以随时从浮窗打开完整主题库。" Foreground="{DynamicResource WelcomeSubtle}" FontSize="9.5" Margin="0,3,0,0" />
+                    <TextBlock Text="以后启动时将直接显示顶部主题浮窗。" Foreground="{DynamicResource WelcomeMuted}" FontSize="10" />
+                    <TextBlock Text="你可以随时从浮窗打开完整主题库。" Foreground="{DynamicResource WelcomeMuted}" FontSize="10" Margin="0,3,0,0" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                     <Button Style="{StaticResource WelcomeButton}" Content="退出" Click="Exit_Click" AutomationProperties.Name="退出 Tessalume" />

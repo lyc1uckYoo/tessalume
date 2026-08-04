@@ -4,7 +4,8 @@
         xmlns:local="clr-namespace:Tessalume.App"
         Title="{x:Static local:BrandInfo.QuickSwitchTitle}" Height="78" MinHeight="78" MaxHeight="78" SizeToContent="Width"
         WindowStartupLocation="Manual" Topmost="True" ShowInTaskbar="False" ResizeMode="NoResize"
-        WindowStyle="None" Background="Transparent" AllowsTransparency="True" FontFamily="Microsoft YaHei UI">
+        WindowStyle="None" Background="Transparent" AllowsTransparency="True" FontFamily="Microsoft YaHei UI"
+        UseLayoutRounding="True" TextOptions.TextFormattingMode="Display" TextOptions.TextRenderingMode="Grayscale" TextOptions.TextHintingMode="Fixed">
     <Window.Resources>
         <LinearGradientBrush x:Key="BarGradient" StartPoint="0,0" EndPoint="1,1">
             <GradientStop Color="#211827" Offset="0" />
@@ -56,8 +57,7 @@
             <Setter Property="BorderThickness" Value="1" /><Setter Property="Cursor" Value="Hand" />
             <Setter Property="FocusVisualStyle" Value="{x:Null}" />
             <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
-                <Grid x:Name="MotionRoot" Width="{TemplateBinding Width}" Height="{TemplateBinding Height}" RenderTransformOrigin="0.5,0.5">
-                    <Grid.RenderTransform><ScaleTransform ScaleX="1" ScaleY="1" /></Grid.RenderTransform>
+                <Grid x:Name="MotionRoot" Width="{TemplateBinding Width}" Height="{TemplateBinding Height}">
                     <Border x:Name="Chrome" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="12">
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
@@ -67,25 +67,9 @@
                     <Trigger Property="IsMouseOver" Value="True">
                         <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource QuickButtonHover}" />
                         <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource QuickButtonHoverBorder}" />
-                        <Trigger.EnterActions><BeginStoryboard><Storyboard>
-                            <DoubleAnimation Storyboard.TargetName="MotionRoot" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1.08" Duration="0:0:0.16" />
-                            <DoubleAnimation Storyboard.TargetName="MotionRoot" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1.08" Duration="0:0:0.16" />
-                        </Storyboard></BeginStoryboard></Trigger.EnterActions>
-                        <Trigger.ExitActions><BeginStoryboard><Storyboard>
-                            <DoubleAnimation Storyboard.TargetName="MotionRoot" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1" Duration="0:0:0.18" />
-                            <DoubleAnimation Storyboard.TargetName="MotionRoot" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1" Duration="0:0:0.18" />
-                        </Storyboard></BeginStoryboard></Trigger.ExitActions>
                     </Trigger>
                     <Trigger Property="IsPressed" Value="True">
                         <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource QuickButtonPressed}" />
-                        <Trigger.EnterActions><BeginStoryboard><Storyboard>
-                            <DoubleAnimation Storyboard.TargetName="MotionRoot" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="0.92" Duration="0:0:0.08" />
-                            <DoubleAnimation Storyboard.TargetName="MotionRoot" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="0.92" Duration="0:0:0.08" />
-                        </Storyboard></BeginStoryboard></Trigger.EnterActions>
-                        <Trigger.ExitActions><BeginStoryboard><Storyboard>
-                            <DoubleAnimation Storyboard.TargetName="MotionRoot" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1.08" Duration="0:0:0.12" />
-                            <DoubleAnimation Storyboard.TargetName="MotionRoot" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1.08" Duration="0:0:0.12" />
-                        </Storyboard></BeginStoryboard></Trigger.ExitActions>
                     </Trigger>
                     <Trigger Property="IsKeyboardFocused" Value="True">
                         <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource QuickPrimaryText}" />
@@ -137,9 +121,9 @@
                     <Path x:Name="FiveHourUsageArcPath" Stroke="#8D8A9C" StrokeThickness="3" StrokeStartLineCap="Round"
                           StrokeEndLineCap="Round" Fill="Transparent" />
                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                        <TextBlock x:Name="FiveHourUsagePercentText" Text="--" Foreground="{DynamicResource QuickPrimaryText}" FontWeight="Bold" FontSize="10.5"
+                        <TextBlock x:Name="FiveHourUsagePercentText" Text="--" Foreground="{DynamicResource QuickPrimaryText}" FontWeight="Bold" FontSize="11"
                                    HorizontalAlignment="Center" />
-                        <TextBlock Text="5H" Foreground="{DynamicResource QuickSecondaryText}" FontSize="7" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,-2,0,0" />
+                        <TextBlock Text="5H" Foreground="{DynamicResource QuickSecondaryText}" FontSize="8" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,-2,0,0" />
                     </StackPanel>
                 </Grid>
                 <Grid Grid.Column="2" Width="38" Height="38" VerticalAlignment="Center" ToolTipService.InitialShowDelay="180">
@@ -153,9 +137,9 @@
                     <Path x:Name="LongUsageArcPath" Stroke="#8D8A9C" StrokeThickness="3" StrokeStartLineCap="Round"
                           StrokeEndLineCap="Round" Fill="Transparent" />
                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                        <TextBlock x:Name="LongUsagePercentText" Text="--" Foreground="{DynamicResource QuickPrimaryText}" FontWeight="Bold" FontSize="10.5"
+                        <TextBlock x:Name="LongUsagePercentText" Text="--" Foreground="{DynamicResource QuickPrimaryText}" FontWeight="Bold" FontSize="11"
                                    HorizontalAlignment="Center" />
-                        <TextBlock x:Name="LongUsageLabelText" Text="7D" Foreground="{DynamicResource QuickSecondaryText}" FontSize="7" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,-2,0,0" />
+                        <TextBlock x:Name="LongUsageLabelText" Text="7D" Foreground="{DynamicResource QuickSecondaryText}" FontSize="8" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,-2,0,0" />
                     </StackPanel>
                 </Grid>
                 <Border Grid.Column="4" Width="1" Height="29" Background="{DynamicResource QuickSeparator}" VerticalAlignment="Center" />
@@ -225,7 +209,7 @@
                             </Border>
                         </Grid>
                         <StackPanel Grid.Column="1" Margin="7,0,0,0" VerticalAlignment="Center">
-                            <TextBlock Text="当前主题" Foreground="{DynamicResource QuickSecondaryText}" FontWeight="SemiBold" FontSize="8.5" />
+                            <TextBlock Text="当前主题" Foreground="{DynamicResource QuickSecondaryText}" FontWeight="SemiBold" FontSize="10" />
                             <TextBlock x:Name="CurrentThemeText" Text="Codex 默认外观" Foreground="{DynamicResource QuickPrimaryText}" FontWeight="SemiBold"
                                        FontSize="12" TextTrimming="CharacterEllipsis" MaxWidth="188">
                                 <TextBlock.RenderTransform><TranslateTransform X="0" /></TextBlock.RenderTransform>
@@ -235,7 +219,7 @@
                                 Padding="6,3" VerticalAlignment="Center" Margin="8,0,0,0">
                             <StackPanel Orientation="Horizontal">
                                 <Ellipse x:Name="LivePulse" Width="5" Height="5" Fill="#75E7C0" Margin="0,0,4,0" />
-                                <TextBlock Text="LIVE" Foreground="{DynamicResource QuickSecondaryText}" FontSize="6.5" FontWeight="Bold" />
+                                <TextBlock Text="LIVE" Foreground="{DynamicResource QuickSecondaryText}" FontSize="8" FontWeight="Bold" />
                             </StackPanel>
                         </Border>
                     </Grid>

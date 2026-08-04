@@ -6,7 +6,8 @@ internal static partial class TestSuite
     static Task<int> RenderThemeLibrarySnapshotsAsync(
         string librarySnapshotPath,
         string detailSnapshotPath,
-        string detailDarkSnapshotPath)
+        string detailDarkSnapshotPath,
+        string? libraryDarkSnapshotPath = null)
     {
         var repositoryRoot = FindRepositoryRoot();
         var data = Path.Combine(
@@ -53,6 +54,15 @@ internal static partial class TestSuite
                         "The theme library cards and sort control must be visible in the product layout.");
                     SaveWindowContent(window, librarySnapshotPath);
 
+                    if (!string.IsNullOrWhiteSpace(libraryDarkSnapshotPath))
+                    {
+                        SetStudioThemeForSnapshot(window, true);
+                        ArrangeMainSurface(window);
+                        SaveWindowContent(window, libraryDarkSnapshotPath);
+                        SetStudioThemeForSnapshot(window, false);
+                        ArrangeMainSurface(window);
+                    }
+
                     window.ThemeDetailsButton.RaiseEvent(
                         new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
                     ArrangeMainSurface(window);
@@ -63,7 +73,7 @@ internal static partial class TestSuite
                         "The large light/dark theme detail preview must occupy a visible surface.");
                     SaveWindowContent(window, detailSnapshotPath);
 
-                    InvokeMainWindowMethod(window, "ApplyStudioTheme", true);
+                    SetStudioThemeForSnapshot(window, true);
                     ArrangeMainSurface(window);
                     SaveWindowContent(window, detailDarkSnapshotPath);
                 }
@@ -94,6 +104,10 @@ internal static partial class TestSuite
                 return Task.FromResult(1);
             }
             Console.WriteLine($"Theme library snapshot: {Path.GetFullPath(librarySnapshotPath)}");
+            if (!string.IsNullOrWhiteSpace(libraryDarkSnapshotPath))
+            {
+                Console.WriteLine($"Theme library dark snapshot: {Path.GetFullPath(libraryDarkSnapshotPath)}");
+            }
             Console.WriteLine($"Theme detail snapshot: {Path.GetFullPath(detailSnapshotPath)}");
             Console.WriteLine($"Theme detail dark snapshot: {Path.GetFullPath(detailDarkSnapshotPath)}");
             return Task.FromResult(0);
@@ -102,5 +116,13 @@ internal static partial class TestSuite
         {
             if (Directory.Exists(data)) Directory.Delete(data, recursive: true);
         }
+    }
+
+    private static void SetStudioThemeForSnapshot(MainWindow window, bool dark)
+    {
+        var field = typeof(MainWindow).GetField("_darkMode", BindingFlags.Instance | BindingFlags.NonPublic)
+            ?? throw new MissingFieldException(nameof(MainWindow), "_darkMode");
+        field.SetValue(window, dark);
+        InvokeMainWindowMethod(window, "ApplyStudioTheme", dark);
     }
 }

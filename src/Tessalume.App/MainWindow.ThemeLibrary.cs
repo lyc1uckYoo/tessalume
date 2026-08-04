@@ -28,17 +28,37 @@ public partial class MainWindow
         }
 
         preferredId ??= _selectedTheme?.CatalogItem.Package?.Manifest.Id;
-        var catalog = await new ThemeCatalog(new ThemePackageLoader()).ScanAsync(_layout.ThemesDirectory);
-        _themes.Clear();
-        foreach (var item in catalog)
+        var shouldLoadPreviews = loadPreviews ?? _uiInitialized;
+        var favoriteIds = new HashSet<string>(_favoriteThemeIds, StringComparer.OrdinalIgnoreCase);
+        var darkMode = _darkMode;
+        var activeThemeId = _activeThemeId;
+        // Package validation and especially BitmapImage decoding can take noticeable
+        // time on a cold disk. Build only frozen, cross-thread-safe models here, then
+        // publish the completed collection on the dispatcher below.
+        var loadedThemes = await Task.Run(async () =>
         {
-            var themeId = item.Package?.Manifest.Id;
-            var theme = new ThemeCardModel(
-                item,
-                themeId is not null && _favoriteThemeIds.Contains(themeId),
-                loadPreviews ?? _uiInitialized);
-            theme.SetDarkMode(_darkMode);
-            theme.IsApplied = string.Equals(themeId, _activeThemeId, StringComparison.OrdinalIgnoreCase);
+            var catalog = await new ThemeCatalog(new ThemePackageLoader())
+                .ScanAsync(_layout.ThemesDirectory)
+                .ConfigureAwait(false);
+            return catalog.Select(item =>
+            {
+                var themeId = item.Package?.Manifest.Id;
+                var theme = new ThemeCardModel(
+                    item,
+                    themeId is not null && favoriteIds.Contains(themeId),
+                    shouldLoadPreviews);
+                theme.SetDarkMode(darkMode);
+                theme.IsApplied = string.Equals(
+                    themeId,
+                    activeThemeId,
+                    StringComparison.OrdinalIgnoreCase);
+                return theme;
+            }).ToArray();
+        });
+
+        _themes.Clear();
+        foreach (var theme in loadedThemes)
+        {
             _themes.Add(theme);
         }
 

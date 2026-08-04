@@ -186,6 +186,10 @@ public partial class MainWindow : Window, IAsyncDisposable
         };
         _toastTimer.Tick += ToastTimer_Tick;
         ApplyStudioTheme(_darkMode);
+        // The quick-start scan already provides validated theme metadata. Select from
+        // that lightweight catalog immediately so Settings never waits for preview
+        // decoding before its artwork controls become usable.
+        ShowThemes(_activeThemeId);
         UpdateStartupButton();
         UpdateUpdateControls();
         UpdateVisualAdjustmentControls();

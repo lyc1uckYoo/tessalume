@@ -34,6 +34,7 @@ internal static partial class TestSuite
         var repositoryRoot = FindRepositoryRoot();
         var appRoot = Path.Combine(repositoryRoot, "src", "Tessalume.App");
         var xaml = File.ReadAllText(Path.Combine(appRoot, "MainWindow.xaml"));
+        var resources = File.ReadAllText(Path.Combine(appRoot, "Styles", "MainWindowResources.xaml"));
         var experienceSource = File.ReadAllText(Path.Combine(appRoot, "MainWindow.ThemeLibraryExperience.cs"));
         Ensure(xaml.Contains("x:Name=\"ThemeSortComboBox\"", StringComparison.Ordinal) &&
                xaml.Contains("x:Name=\"ThemeDetailPanel\"", StringComparison.Ordinal) &&
@@ -42,6 +43,19 @@ internal static partial class TestSuite
                experienceSource.Contains("ConfirmThemeOverwriteAsync", StringComparison.Ordinal) &&
                experienceSource.Contains("收藏、图像调节和其他本地配置会继续保留", StringComparison.Ordinal),
             "Theme Library 2.0 must keep details, sorting, drag import, and safe conflict messaging wired to the product surface.");
+        Ensure(xaml.Contains("TextOptions.TextHintingMode=\"Fixed\"", StringComparison.Ordinal) &&
+               xaml.Contains("Style=\"{StaticResource HomeSearchTextBox}\"", StringComparison.Ordinal) &&
+               xaml.Contains("Background=\"{DynamicResource HomeHeroGradient}\"", StringComparison.Ordinal) &&
+               xaml.Contains("Effect=\"{StaticResource HomeCardShadow}\"", StringComparison.Ordinal) &&
+               resources.Contains("x:Key=\"HomeHeroGradient\"", StringComparison.Ordinal) &&
+               resources.Contains("x:Key=\"HomeFilterChipButton\"", StringComparison.Ordinal) &&
+               resources.Contains("x:Key=\"HomeCrispButton\"", StringComparison.Ordinal) &&
+               resources.Contains("x:Key=\"SidebarSectionLabel\"", StringComparison.Ordinal) &&
+               xaml.Contains("Background=\"{DynamicResource SidebarBrandSurface}\"", StringComparison.Ordinal) &&
+               xaml.Contains("Background=\"{DynamicResource SidebarStatusSurface}\"", StringComparison.Ordinal) &&
+               !resources.Contains("x:Name=\"NavScale\"", StringComparison.Ordinal) &&
+               !resources.Contains("Storyboard.TargetName=\"HeroActionMotion\"", StringComparison.Ordinal),
+            "The home theme library must retain its crisp typography, layered hero, readable controls, and dedicated visual system.");
 
         var root = Path.Combine(Path.GetTempPath(), $"tessalume-import-policy-{Guid.NewGuid():N}");
         Directory.CreateDirectory(root);
@@ -160,6 +174,87 @@ internal static partial class TestSuite
             if (Directory.Exists(root)) Directory.Delete(root, recursive: true);
         }
         return Task.CompletedTask;
+    }
+
+    static async Task ColdStartSettingsAreImmediatelyInteractiveAsync()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"tessalume-cold-settings-{Guid.NewGuid():N}");
+        var themesDirectory = Path.Combine(root, "themes");
+        var dataDirectory = Path.Combine(root, "data");
+        Directory.CreateDirectory(themesDirectory);
+        Directory.CreateDirectory(dataDirectory);
+        using var fixture = await ThemeFixture.CreateAsync(Path.Combine(themesDirectory, "sample.theme"));
+        Exception? failure = null;
+
+        var thread = new Thread(() =>
+        {
+            var dispatcher = Dispatcher.CurrentDispatcher;
+            SynchronizationContext.SetSynchronizationContext(new DispatcherSynchronizationContext(dispatcher));
+            MainWindow? window = null;
+            dispatcher.BeginInvoke(async () =>
+            {
+                try
+                {
+                    window = new MainWindow(new PortableLayout(root, themesDirectory, dataDirectory));
+                    var flags = BindingFlags.Instance | BindingFlags.NonPublic;
+                    var reload = typeof(MainWindow).GetMethod("ReloadThemesAsync", flags)
+                        ?? throw new MissingMethodException(nameof(MainWindow), "ReloadThemesAsync");
+                    await ((Task?)reload.Invoke(window, [null, false])
+                        ?? throw new InvalidOperationException("Cold theme scan did not return a task."));
+                    InvokeMainWindowMethod(window, "EnsureMainUiInitialized");
+
+                    Ensure(window.VisualAdjustmentEditor.IsEnabled &&
+                           window.HeroAdjustmentEditor.IsEnabled &&
+                           window.SidebarAdjustmentEditor.IsEnabled &&
+                           window.ChatAdjustmentEditor.IsEnabled &&
+                           window.SettingsPreviousThemeButton.IsEnabled &&
+                           window.SettingsNextThemeButton.IsEnabled,
+                        "The first validated theme must enable Settings before preview hydration starts.");
+
+                    var selected = typeof(MainWindow).GetField("_selectedTheme", flags)?.GetValue(window);
+                    Ensure(selected is ThemeCardModel { ThemeId: "sample.theme" },
+                        "Deferred main UI initialization must immediately select the lightweight cold-start catalog entry.");
+
+                    var themeLibrarySource = await File.ReadAllTextAsync(Path.Combine(
+                        FindRepositoryRoot(),
+                        "src",
+                        "Tessalume.App",
+                        "MainWindow.ThemeLibrary.cs"));
+                    Ensure(themeLibrarySource.Contains("var loadedThemes = await Task.Run", StringComparison.Ordinal) &&
+                           themeLibrarySource.Contains("shouldLoadPreviews", StringComparison.Ordinal),
+                        "Cold package validation and preview decoding must remain outside the UI dispatcher.");
+                }
+                catch (Exception exception)
+                {
+                    failure = exception is TargetInvocationException invocation
+                        ? invocation.InnerException ?? invocation
+                        : exception;
+                }
+                finally
+                {
+                    if (window is not null) await window.DisposeAsync();
+                    dispatcher.BeginInvokeShutdown(DispatcherPriority.Background);
+                }
+            });
+            Dispatcher.Run();
+        });
+        thread.SetApartmentState(ApartmentState.STA);
+        thread.Start();
+        thread.Join();
+
+        try
+        {
+            if (failure is not null)
+            {
+                throw new InvalidOperationException(
+                    "Cold-start Settings interactivity verification failed.",
+                    failure);
+            }
+        }
+        finally
+        {
+            if (Directory.Exists(root)) Directory.Delete(root, recursive: true);
+        }
     }
 
     private static ThemeCardModel CreateThemeCard(

@@ -3,6 +3,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              FontFamily="Microsoft YaHei UI"
              UseLayoutRounding="True"
+             TextOptions.TextFormattingMode="Display"
+             TextOptions.TextRenderingMode="ClearType"
+             TextOptions.TextHintingMode="Fixed"
              Focusable="False">
     <UserControl.Resources>
         <Style x:Key="CreatorListBox" TargetType="ListBox">
@@ -21,7 +24,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ListBoxItem">
-                        <Border x:Name="ItemChrome" Background="{TemplateBinding Background}" BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="12">
+                        <Border x:Name="ItemChrome" Background="{TemplateBinding Background}" BorderBrush="{DynamicResource HomeToolbarBorder}" BorderThickness="1" CornerRadius="12" SnapsToDevicePixels="True">
                             <ContentPresenter />
                         </Border>
                         <ControlTemplate.Triggers>
@@ -60,7 +63,7 @@
         </Style>
         <Style x:Key="CreatorStatusText" TargetType="TextBlock">
             <Setter Property="Foreground" Value="{DynamicResource Teal}" />
-            <Setter Property="FontSize" Value="8.5" />
+            <Setter Property="FontSize" Value="10" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Style.Triggers>
                 <DataTrigger Binding="{Binding StatusTone}" Value="warning">
@@ -79,7 +82,8 @@
             <Setter Property="Foreground" Value="{DynamicResource Accent}" />
             <Setter Property="BorderBrush" Value="{DynamicResource Border}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="FontSize" Value="8.5" />
+            <Setter Property="FontSize" Value="10" />
+            <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Template">
                 <Setter.Value>
@@ -100,7 +104,7 @@
             <Setter Property="Height" Value="34" />
             <Setter Property="MinWidth" Value="82" />
             <Setter Property="Padding" Value="13,0" />
-            <Setter Property="FontSize" Value="9" />
+            <Setter Property="FontSize" Value="11" />
             <Style.Triggers>
                 <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.42" /></Trigger>
             </Style.Triggers>
@@ -111,7 +115,7 @@
             <Setter Property="BorderBrush" Value="{DynamicResource Border}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Padding" Value="11,8" />
-            <Setter Property="FontSize" Value="10" />
+            <Setter Property="FontSize" Value="11" />
             <Setter Property="CaretBrush" Value="{DynamicResource Accent}" />
             <Setter Property="SelectionBrush" Value="{DynamicResource AccentSoft}" />
             <Setter Property="FocusVisualStyle" Value="{DynamicResource KeyboardFocusVisual}" />
@@ -165,13 +169,13 @@
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <StackPanel>
-                <TextBlock Text="创作项目中心" Foreground="{DynamicResource PrimaryText}" FontSize="27" FontWeight="Bold" />
-                <TextBlock Text="从一句角色需求到体检、修正和分享包，主题项目的完整本地工作台。" Foreground="{DynamicResource MutedText}" FontSize="11.5" Margin="1,6,0,0" />
+                <TextBlock Text="创作项目中心" Foreground="{DynamicResource PrimaryText}" FontSize="28" FontWeight="Bold" />
+                <TextBlock Text="从一句角色需求到体检、修正和分享包，主题项目的完整本地工作台。" Foreground="{DynamicResource MutedText}" FontSize="12" Margin="1,6,0,0" />
             </StackPanel>
             <Border Grid.Column="1" Background="{DynamicResource AccentSoft}" BorderBrush="{DynamicResource Accent}" BorderThickness="1" CornerRadius="11" Padding="11,6" VerticalAlignment="Center">
                 <StackPanel Orientation="Horizontal">
                     <Ellipse Width="6" Height="6" Fill="{DynamicResource Positive}" Margin="0,0,7,0" />
-                    <TextBlock Text="1.4 · Creator Studio" Foreground="{DynamicResource Accent}" FontSize="9.5" FontWeight="SemiBold" />
+                    <TextBlock Text="1.4 · Creator Studio" Foreground="{DynamicResource Accent}" FontSize="10" FontWeight="SemiBold" />
                 </StackPanel>
             </Border>
         </Grid>
@@ -182,20 +186,20 @@
                     <ColumnDefinition Width="54" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="20" />
-                    <ColumnDefinition Width="206" />
+                    <ColumnDefinition Width="398" />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
                 <Border Width="44" Height="44" CornerRadius="14" Background="{DynamicResource PrimaryGradient}" VerticalAlignment="Top">
                     <Path Width="21" Height="21" Data="M 4,4 C 8,3 10,4 12,6 L 12,20 C 10,18 8,17 4,18 Z M 20,4 C 16,3 14,4 12,6 L 12,20 C 14,18 16,17 20,18 Z" Stroke="White" StrokeThickness="1.8" StrokeLineJoin="Round" Fill="Transparent" Stretch="Uniform" />
                 </Border>
                 <StackPanel Grid.Column="1">
-                    <TextBlock Text="让 Codex 完成设计，让 Tessalume 管理项目" Foreground="{DynamicResource PrimaryText}" FontSize="16" FontWeight="SemiBold" />
-                    <TextBlock Text="标准工作区内置 Template 1.0、11 个素材位和创作 Skill。生成完成后回到这里，即可看到每个主题的可发布状态。" TextWrapping="Wrap" Foreground="{DynamicResource MutedText}" FontSize="10.5" LineHeight="18" Margin="0,6,0,0" />
+                    <TextBlock Text="让 Codex 完成设计，让 Tessalume 管理项目" Foreground="{DynamicResource PrimaryText}" FontSize="17" FontWeight="SemiBold" />
+                    <TextBlock Text="标准工作区内置 Template 1.0、11 个素材位和创作 Skill。生成完成后回到这里，即可看到每个主题的可发布状态。" TextWrapping="Wrap" Foreground="{DynamicResource MutedText}" FontSize="11" LineHeight="19" Margin="0,6,0,0" />
                 </StackPanel>
-                <StackPanel Grid.Column="3">
-                    <Button Style="{DynamicResource PrimaryActionButton}" Height="38" Content="创建新工作区" Click="CreateWorkspace_Click" />
-                    <Button Style="{DynamicResource QuietActionButton}" Content="打开已有工作区" Margin="0,8,0,0" Click="OpenWorkspace_Click" />
-                    <Button Style="{DynamicResource QuietActionButton}" Content="仅复制 Template 1.0" Margin="0,8,0,0" Click="CopyManualTemplate_Click" ToolTip="为手动开发复制裸模板" />
+                <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Top">
+                    <Button Style="{DynamicResource PrimaryActionButton}" Width="128" Height="38" Content="创建新工作区" Click="CreateWorkspace_Click" />
+                    <Button Style="{DynamicResource QuietActionButton}" Width="112" Content="打开已有工作区" Margin="8,0,0,0" Click="OpenWorkspace_Click" />
+                    <Button Style="{DynamicResource QuietActionButton}" Width="142" Content="仅复制 Template 1.0" Margin="8,0,0,0" Click="CopyManualTemplate_Click" ToolTip="为手动开发复制裸模板" />
                 </StackPanel>
 
                 <Border Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Background="{DynamicResource InfoSurface}" BorderBrush="{DynamicResource InfoBorder}" BorderThickness="1" CornerRadius="11" Padding="14,12" Margin="0,15,0,0">
@@ -208,10 +212,10 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel>
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="给 Codex 的完整创作提示词" Foreground="{DynamicResource Accent}" FontSize="9" FontWeight="Bold" />
-                                <TextBlock x:Name="CreatorPromptStatusText" Text="已包含角色确认与最终校验" Foreground="{DynamicResource Teal}" FontSize="8.5" Margin="10,0,0,0" />
+                                <TextBlock Text="给 Codex 的完整创作提示词" Foreground="{DynamicResource Accent}" FontSize="10" FontWeight="Bold" />
+                                <TextBlock x:Name="CreatorPromptStatusText" Text="已包含角色确认与最终校验" Foreground="{DynamicResource Teal}" FontSize="10" Margin="10,0,0,0" />
                             </StackPanel>
-                            <TextBlock x:Name="CreatorPromptText" TextWrapping="Wrap" Foreground="{DynamicResource PrimaryText}" FontSize="10.5" LineHeight="17" MaxHeight="92" Margin="0,6,14,0" />
+                            <TextBlock x:Name="CreatorPromptText" TextWrapping="Wrap" Foreground="{DynamicResource PrimaryText}" FontSize="11" LineHeight="19" MaxHeight="96" Margin="0,6,14,0" />
                         </StackPanel>
                         <Button x:Name="TogglePromptEditorButton" Grid.Column="1" Style="{DynamicResource QuietActionButton}" Content="定制提示词" Width="92" Height="34" VerticalAlignment="Center" Click="TogglePromptEditor_Click" />
                         <Button x:Name="CopyPromptButton" Grid.Column="3" Style="{DynamicResource PrimaryActionButton}" Content="复制提示词" Width="92" Height="36" VerticalAlignment="Center" Click="CopyPrompt_Click" AutomationProperties.Name="复制创作提示词" />
@@ -226,16 +230,16 @@
                         <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="10" /><RowDefinition Height="Auto" /><RowDefinition Height="11" /><RowDefinition Height="Auto" /><RowDefinition Height="11" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
                         <Grid Grid.ColumnSpan="3">
                             <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                            <StackPanel><TextBlock Text="角色与视觉方向" Foreground="{DynamicResource PrimaryText}" FontSize="11.5" FontWeight="SemiBold" /><TextBlock Text="草稿只保存在本机；作品名和角色名填写后即可复制。" Foreground="{DynamicResource MutedText}" FontSize="8.5" Margin="0,3,0,0" /></StackPanel>
+                            <StackPanel><TextBlock Text="角色与视觉方向" Foreground="{DynamicResource PrimaryText}" FontSize="12" FontWeight="SemiBold" /><TextBlock Text="草稿只保存在本机；作品名和角色名填写后即可复制。" Foreground="{DynamicResource MutedText}" FontSize="10" Margin="0,3,0,0" /></StackPanel>
                             <Button Grid.Column="1" Style="{StaticResource CreatorMiniButton}" Content="恢复示例" Click="ResetPrompt_Click" />
                         </Grid>
-                        <StackPanel Grid.Row="2"><TextBlock Text="作品名称 *" Foreground="{DynamicResource MutedText}" FontSize="8.5" Margin="1,0,0,5" /><TextBox x:Name="PromptWorkNameBox" Style="{StaticResource CreatorTextBox}" MaxLength="80" TextChanged="PromptField_Changed" AutomationProperties.Name="主题作品名称" /></StackPanel>
-                        <StackPanel Grid.Row="2" Grid.Column="2"><TextBlock Text="角色名称 *" Foreground="{DynamicResource MutedText}" FontSize="8.5" Margin="1,0,0,5" /><TextBox x:Name="PromptCharacterNameBox" Style="{StaticResource CreatorTextBox}" MaxLength="80" TextChanged="PromptField_Changed" AutomationProperties.Name="主题角色名称" /></StackPanel>
-                        <StackPanel Grid.Row="4"><TextBlock Text="视觉方向" Foreground="{DynamicResource MutedText}" FontSize="8.5" Margin="1,0,0,5" /><TextBox x:Name="PromptVisualDirectionBox" Style="{StaticResource CreatorTextBox}" MaxLength="220" TextChanged="PromptField_Changed" ToolTip="例如：蓝白月光、庆典礼服、克制的科技感" /></StackPanel>
+                        <StackPanel Grid.Row="2"><TextBlock Text="作品名称 *" Foreground="{DynamicResource MutedText}" FontSize="10" FontWeight="SemiBold" Margin="1,0,0,5" /><TextBox x:Name="PromptWorkNameBox" Style="{StaticResource CreatorTextBox}" MaxLength="80" TextChanged="PromptField_Changed" AutomationProperties.Name="主题作品名称" /></StackPanel>
+                        <StackPanel Grid.Row="2" Grid.Column="2"><TextBlock Text="角色名称 *" Foreground="{DynamicResource MutedText}" FontSize="10" FontWeight="SemiBold" Margin="1,0,0,5" /><TextBox x:Name="PromptCharacterNameBox" Style="{StaticResource CreatorTextBox}" MaxLength="80" TextChanged="PromptField_Changed" AutomationProperties.Name="主题角色名称" /></StackPanel>
+                        <StackPanel Grid.Row="4"><TextBlock Text="视觉方向" Foreground="{DynamicResource MutedText}" FontSize="10" FontWeight="SemiBold" Margin="1,0,0,5" /><TextBox x:Name="PromptVisualDirectionBox" Style="{StaticResource CreatorTextBox}" MaxLength="220" TextChanged="PromptField_Changed" ToolTip="例如：蓝白月光、庆典礼服、克制的科技感" /></StackPanel>
                         <Border Grid.Row="4" Grid.Column="2" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="9" Padding="12,8">
-                            <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><StackPanel><TextBlock Text="我会附上参考图片" Foreground="{DynamicResource PrimaryText}" FontSize="9.5" FontWeight="SemiBold" /><TextBlock Text="提示 Codex 先核对形态与特征" Foreground="{DynamicResource MutedText}" FontSize="8" Margin="0,3,0,0" /></StackPanel><ToggleButton x:Name="PromptReferenceCheckBox" Grid.Column="1" Style="{StaticResource CreatorSwitch}" Checked="PromptField_Changed" Unchecked="PromptField_Changed" AutomationProperties.Name="使用参考图片" /></Grid>
+                            <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><StackPanel><TextBlock Text="我会附上参考图片" Foreground="{DynamicResource PrimaryText}" FontSize="11" FontWeight="SemiBold" /><TextBlock Text="提示 Codex 先核对形态与特征" Foreground="{DynamicResource MutedText}" FontSize="10" Margin="0,3,0,0" /></StackPanel><ToggleButton x:Name="PromptReferenceCheckBox" Grid.Column="1" Style="{StaticResource CreatorSwitch}" Checked="PromptField_Changed" Unchecked="PromptField_Changed" AutomationProperties.Name="使用参考图片" /></Grid>
                         </Border>
-                        <StackPanel Grid.Row="6" Grid.ColumnSpan="3"><TextBlock Text="其他要求" Foreground="{DynamicResource MutedText}" FontSize="8.5" Margin="1,0,0,5" /><TextBox x:Name="PromptSpecialRequirementsBox" Style="{StaticResource CreatorTextBox}" Height="62" MaxLength="500" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" TextChanged="PromptField_Changed" ToolTip="可以填写服装形态、禁用元素、专属组件或氛围要求" /></StackPanel>
+                        <StackPanel Grid.Row="6" Grid.ColumnSpan="3"><TextBlock Text="其他要求" Foreground="{DynamicResource MutedText}" FontSize="10" FontWeight="SemiBold" Margin="1,0,0,5" /><TextBox x:Name="PromptSpecialRequirementsBox" Style="{StaticResource CreatorTextBox}" Height="66" MaxLength="500" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" TextChanged="PromptField_Changed" ToolTip="可以填写服装形态、禁用元素、专属组件或氛围要求" /></StackPanel>
                     </Grid>
                 </Border>
             </Grid>
@@ -253,7 +257,7 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="12" />
-                        <RowDefinition Height="235" />
+                        <RowDefinition Height="190" />
                         <RowDefinition Height="12" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="12" />
@@ -262,11 +266,11 @@
                     <Grid>
                         <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                         <StackPanel>
-                            <TextBlock Text="最近工作区" Foreground="{DynamicResource PrimaryText}" FontSize="13.5" FontWeight="SemiBold" />
-                            <TextBlock Text="路径只保存在本机" Foreground="{DynamicResource MutedText}" FontSize="9" Margin="0,3,0,0" />
+                            <TextBlock Text="最近工作区" Foreground="{DynamicResource PrimaryText}" FontSize="14" FontWeight="SemiBold" />
+                            <TextBlock Text="路径只保存在本机" Foreground="{DynamicResource MutedText}" FontSize="10" Margin="0,3,0,0" />
                         </StackPanel>
                         <Border Grid.Column="1" Background="{DynamicResource SurfaceAlt}" CornerRadius="8" Padding="7,4" VerticalAlignment="Center">
-                            <TextBlock Text="{Binding WorkspaceCountText}" Foreground="{DynamicResource MutedText}" FontSize="8.5" />
+                            <TextBlock Text="{Binding WorkspaceCountText}" Foreground="{DynamicResource MutedText}" FontSize="10" />
                         </Border>
                     </Grid>
 
@@ -281,8 +285,8 @@
                                         <Border Grid.Column="1" Style="{StaticResource CreatorStatusPill}" Margin="8,0,0,0">
                                             <TextBlock Text="{Binding StatusText}" Style="{StaticResource CreatorStatusText}" />
                                         </Border>
-                                        <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding DirectoryPath}" Foreground="{DynamicResource SubtleText}" FontSize="8.5" TextTrimming="CharacterEllipsis" Margin="0,5,0,0" ToolTip="{Binding DirectoryPath}" />
-                                        <TextBlock Grid.Row="2" Grid.ColumnSpan="2" Text="{Binding LastOpenedText}" Foreground="{DynamicResource MutedText}" FontSize="8" Margin="0,5,0,0" />
+                                        <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding DirectoryPath}" Foreground="{DynamicResource SubtleText}" FontSize="10" TextTrimming="CharacterEllipsis" Margin="0,5,0,0" ToolTip="{Binding DirectoryPath}" />
+                                        <TextBlock Grid.Row="2" Grid.ColumnSpan="2" Text="{Binding LastOpenedText}" Foreground="{DynamicResource MutedText}" FontSize="10" Margin="0,5,0,0" />
                                     </Grid>
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
@@ -292,7 +296,7 @@
                                 <TextBlock Text="+" Foreground="{DynamicResource Accent}" FontSize="22" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
                             <TextBlock Text="还没有工作区" Foreground="{DynamicResource PrimaryText}" FontSize="10.5" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,9,0,0" />
-                            <TextBlock Text="创建或打开后会显示在这里" Foreground="{DynamicResource MutedText}" FontSize="8.5" HorizontalAlignment="Center" Margin="0,4,0,0" />
+                            <TextBlock Text="创建或打开后会显示在这里" Foreground="{DynamicResource MutedText}" FontSize="10" HorizontalAlignment="Center" Margin="0,4,0,0" />
                         </StackPanel>
                     </Grid>
 
@@ -312,7 +316,7 @@
                                 </Style.Triggers>
                             </Style>
                         </Border.Style>
-                        <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><StackPanel><TextBlock Text="{Binding WorkspaceVersionText}" Foreground="{DynamicResource PrimaryText}" FontSize="9.5" FontWeight="SemiBold" /><TextBlock Text="{Binding WorkspaceVersionDetail}" Foreground="{DynamicResource MutedText}" FontSize="8" TextWrapping="Wrap" Margin="0,3,8,0" /></StackPanel><Button x:Name="UpgradeWorkspaceButton" Grid.Column="1" Style="{StaticResource CreatorMiniButton}" Content="安全升级" IsEnabled="{Binding CanUpgradeWorkspace}" Click="UpgradeWorkspace_Click" VerticalAlignment="Center" /></Grid>
+                        <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><StackPanel><TextBlock Text="{Binding WorkspaceVersionText}" Foreground="{DynamicResource PrimaryText}" FontSize="10" FontWeight="SemiBold" /><TextBlock Text="{Binding WorkspaceVersionDetail}" Foreground="{DynamicResource MutedText}" FontSize="10" TextWrapping="Wrap" Margin="0,3,8,0" /></StackPanel><Button x:Name="UpgradeWorkspaceButton" Grid.Column="1" Style="{StaticResource CreatorMiniButton}" Content="安全升级" IsEnabled="{Binding CanUpgradeWorkspace}" Click="UpgradeWorkspace_Click" VerticalAlignment="Center" /></Grid>
                     </Border>
                 </Grid>
             </Border>
@@ -322,13 +326,13 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="12" />
-                        <RowDefinition Height="235" />
+                        <RowDefinition Height="190" />
                     </Grid.RowDefinitions>
                     <Grid>
                         <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="8" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                         <StackPanel>
-                            <TextBlock Text="工作区项目" Foreground="{DynamicResource PrimaryText}" FontSize="13.5" FontWeight="SemiBold" />
-                            <TextBlock Text="{Binding WorkspaceSummary}" Foreground="{DynamicResource MutedText}" FontSize="9" Margin="0,3,12,0" TextTrimming="CharacterEllipsis" ToolTip="{Binding WorkspaceSummary}" />
+                            <TextBlock Text="工作区项目" Foreground="{DynamicResource PrimaryText}" FontSize="14" FontWeight="SemiBold" />
+                            <TextBlock Text="{Binding WorkspaceSummary}" Foreground="{DynamicResource MutedText}" FontSize="10" Margin="0,3,12,0" TextTrimming="CharacterEllipsis" ToolTip="{Binding WorkspaceSummary}" />
                         </StackPanel>
                         <Button Grid.Column="1" Style="{DynamicResource QuietActionButton}" Content="重新定位" IsEnabled="{Binding CanRelocateWorkspace}" Click="RelocateWorkspace_Click" />
                         <Button Grid.Column="3" Style="{DynamicResource QuietActionButton}" Content="刷新" IsEnabled="{Binding HasSelectedWorkspace}" Click="RefreshWorkspace_Click" />
@@ -340,7 +344,7 @@
                                 <TextBlock Text="…" Foreground="{DynamicResource Accent}" FontSize="23" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
                             <TextBlock Text="正在检查项目" Foreground="{DynamicResource PrimaryText}" FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,10,0,0" />
-                            <TextBlock Text="读取清单、入口文件和素材引用" Foreground="{DynamicResource MutedText}" FontSize="8.5" HorizontalAlignment="Center" Margin="0,4,0,0" />
+                            <TextBlock Text="读取清单、入口文件和素材引用" Foreground="{DynamicResource MutedText}" FontSize="10" HorizontalAlignment="Center" Margin="0,4,0,0" />
                         </StackPanel>
 
                         <StackPanel x:Name="ProjectStatePanel" VerticalAlignment="Center" HorizontalAlignment="Center">
@@ -348,7 +352,7 @@
                                 <TextBlock Text="?" Foreground="{DynamicResource Accent}" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
                             <TextBlock Text="{Binding StateTitle}" Foreground="{DynamicResource PrimaryText}" FontSize="11.5" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,10,0,0" />
-                            <TextBlock Text="{Binding StateMessage}" Foreground="{DynamicResource MutedText}" FontSize="9" TextWrapping="Wrap" TextAlignment="Center" MaxWidth="360" LineHeight="15" HorizontalAlignment="Center" Margin="0,5,0,0" />
+                            <TextBlock Text="{Binding StateMessage}" Foreground="{DynamicResource MutedText}" FontSize="10" TextWrapping="Wrap" TextAlignment="Center" MaxWidth="360" LineHeight="15" HorizontalAlignment="Center" Margin="0,5,0,0" />
                         </StackPanel>
 
                         <ListBox x:Name="ProjectList" ItemsSource="{Binding Projects}" SelectedItem="{Binding SelectedProject, Mode=OneWay}" Style="{StaticResource CreatorListBox}" ItemContainerStyle="{StaticResource CreatorListItem}" SelectionChanged="ProjectList_SelectionChanged" Visibility="Collapsed">
@@ -361,10 +365,10 @@
                                         </Border>
                                         <StackPanel Grid.Column="1">
                                             <TextBlock Text="{Binding DisplayName}" Foreground="{DynamicResource PrimaryText}" FontSize="10.5" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
-                                            <TextBlock Foreground="{DynamicResource MutedText}" FontSize="8.5" Margin="0,4,0,0">
+                                            <TextBlock Foreground="{DynamicResource MutedText}" FontSize="10" Margin="0,4,0,0">
                                                 <Run Text="{Binding ThemeId, Mode=OneWay}" /><Run Text="  ·  " /><Run Text="{Binding VersionText, Mode=OneWay}" /><Run Text="  ·  " /><Run Text="{Binding CapabilityText, Mode=OneWay}" />
                                             </TextBlock>
-                                            <TextBlock Foreground="{DynamicResource SubtleText}" FontSize="8" Margin="0,4,0,0">
+                                            <TextBlock Foreground="{DynamicResource SubtleText}" FontSize="10" Margin="0,4,0,0">
                                                 <Run Text="{Binding AssetText, Mode=OneWay}" /><Run Text="  ·  " /><Run Text="{Binding ModifiedText, Mode=OneWay}" />
                                             </TextBlock>
                                         </StackPanel>
@@ -385,8 +389,8 @@
                 <Grid>
                     <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="8" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                     <StackPanel>
-                        <TextBlock Text="{Binding SelectedProject.DisplayName}" Foreground="{DynamicResource PrimaryText}" FontSize="16" FontWeight="SemiBold" />
-                        <TextBlock Foreground="{DynamicResource MutedText}" FontSize="9.5" Margin="0,5,0,0">
+                        <TextBlock Text="{Binding SelectedProject.DisplayName}" Foreground="{DynamicResource PrimaryText}" FontSize="17" FontWeight="SemiBold" />
+                        <TextBlock Foreground="{DynamicResource MutedText}" FontSize="10" Margin="0,5,0,0">
                             <Run Text="{Binding SelectedProject.CharacterName, Mode=OneWay}" /><Run Text="  ·  " /><Run Text="{Binding SelectedProject.ThemeId, Mode=OneWay}" /><Run Text="  ·  " /><Run Text="{Binding SelectedProject.VersionText, Mode=OneWay}" />
                         </TextBlock>
                     </StackPanel>
@@ -408,7 +412,7 @@
                             </Style>
                         </Border.Style>
                         <StackPanel>
-                            <TextBlock Text="发布状态" Foreground="{DynamicResource MutedText}" FontSize="8.5" />
+                            <TextBlock Text="发布状态" Foreground="{DynamicResource MutedText}" FontSize="10" />
                             <TextBlock Text="{Binding SelectedProject.StatusText}" FontSize="11" FontWeight="SemiBold" Margin="0,3,0,0">
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock">
@@ -423,10 +427,10 @@
                         </StackPanel>
                     </Border>
                     <Border Grid.Column="2" Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="11" Padding="12,9">
-                        <StackPanel><TextBlock Text="视觉覆盖" Foreground="{DynamicResource MutedText}" FontSize="8.5" /><TextBlock Text="{Binding SelectedProject.CapabilityText}" Foreground="{DynamicResource PrimaryText}" FontSize="11" FontWeight="SemiBold" Margin="0,3,0,0" /></StackPanel>
+                        <StackPanel><TextBlock Text="视觉覆盖" Foreground="{DynamicResource MutedText}" FontSize="10" /><TextBlock Text="{Binding SelectedProject.CapabilityText}" Foreground="{DynamicResource PrimaryText}" FontSize="11" FontWeight="SemiBold" Margin="0,3,0,0" /></StackPanel>
                     </Border>
                     <Border Grid.Column="4" Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="11" Padding="12,9">
-                        <StackPanel><TextBlock Text="素材清单" Foreground="{DynamicResource MutedText}" FontSize="8.5" /><TextBlock Text="{Binding SelectedProject.AssetText}" Foreground="{DynamicResource PrimaryText}" FontSize="11" FontWeight="SemiBold" Margin="0,3,0,0" /></StackPanel>
+                        <StackPanel><TextBlock Text="素材清单" Foreground="{DynamicResource MutedText}" FontSize="10" /><TextBlock Text="{Binding SelectedProject.AssetText}" Foreground="{DynamicResource PrimaryText}" FontSize="11" FontWeight="SemiBold" Margin="0,3,0,0" /></StackPanel>
                     </Border>
                 </Grid>
 
@@ -443,8 +447,8 @@
                         <Grid>
                             <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                             <StackPanel>
-                                <TextBlock Text="本地开发会话" Foreground="{DynamicResource PrimaryText}" FontSize="12.5" FontWeight="SemiBold" />
-                                <TextBlock Text="Codex 保存文件后，等待写入稳定再重新体检；不会读取对话内容。" Foreground="{DynamicResource MutedText}" FontSize="8.5" Margin="0,4,0,0" />
+                                <TextBlock Text="本地开发会话" Foreground="{DynamicResource PrimaryText}" FontSize="13" FontWeight="SemiBold" />
+                                <TextBlock Text="Codex 保存文件后，等待写入稳定再重新体检；不会读取对话内容。" Foreground="{DynamicResource MutedText}" FontSize="10" Margin="0,4,0,0" />
                             </StackPanel>
                             <Border Grid.Column="1" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="9" Padding="9,5" VerticalAlignment="Center">
                                 <StackPanel Orientation="Horizontal">
@@ -461,7 +465,7 @@
                                             </Style>
                                         </Ellipse.Style>
                                     </Ellipse>
-                                    <TextBlock Text="{Binding WatcherStatusText}" Foreground="{DynamicResource PrimaryText}" FontSize="8.5" FontWeight="SemiBold" />
+                                    <TextBlock Text="{Binding WatcherStatusText}" Foreground="{DynamicResource PrimaryText}" FontSize="10" FontWeight="SemiBold" />
                                 </StackPanel>
                             </Border>
                         </Grid>
@@ -475,8 +479,8 @@
                                         <TextBlock Text="↻" Foreground="{DynamicResource Accent}" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                     </Border>
                                     <StackPanel Grid.Column="1" Margin="10,0,0,0">
-                                        <TextBlock Text="文件监控与体检" Foreground="{DynamicResource PrimaryText}" FontSize="9.5" FontWeight="SemiBold" />
-                                        <TextBlock Text="{Binding WatcherActivityText}" Foreground="{DynamicResource MutedText}" FontSize="8.5" TextWrapping="Wrap" LineHeight="14" Margin="0,4,0,0" />
+                                        <TextBlock Text="文件监控与体检" Foreground="{DynamicResource PrimaryText}" FontSize="10" FontWeight="SemiBold" />
+                                        <TextBlock Text="{Binding WatcherActivityText}" Foreground="{DynamicResource MutedText}" FontSize="10" TextWrapping="Wrap" LineHeight="14" Margin="0,4,0,0" />
                                     </StackPanel>
                                 </Grid>
                             </Border>
@@ -497,8 +501,8 @@
                                         </TextBlock>
                                     </Border>
                                     <StackPanel Grid.Column="1" Margin="10,0,10,0">
-                                        <TextBlock Text="{Binding CodexStatusText}" Foreground="{DynamicResource PrimaryText}" FontSize="9.5" FontWeight="SemiBold" />
-                                        <TextBlock Text="{Binding CodexModeText}" Foreground="{DynamicResource MutedText}" FontSize="8.5" TextWrapping="Wrap" Margin="0,4,0,0" />
+                                        <TextBlock Text="{Binding CodexStatusText}" Foreground="{DynamicResource PrimaryText}" FontSize="10" FontWeight="SemiBold" />
+                                        <TextBlock Text="{Binding CodexModeText}" Foreground="{DynamicResource MutedText}" FontSize="10" TextWrapping="Wrap" Margin="0,4,0,0" />
                                     </StackPanel>
                                     <Button Grid.Column="2" Style="{StaticResource CreatorDevButton}" Content="切换亮暗" MinWidth="72" IsEnabled="{Binding CanToggleCodexMode}" Click="ToggleCreatorCodexMode_Click" />
                                 </Grid>
@@ -511,8 +515,8 @@
                             <Button Grid.Column="2" Style="{StaticResource CreatorDevButton}" Content="重新应用到 Codex" MinWidth="112" IsEnabled="{Binding CanApplySelectedProject}" Click="ApplyProjectToCodex_Click" />
                             <ToggleButton Grid.Column="4" Style="{StaticResource CreatorSwitch}" IsChecked="{Binding AutoApplyEnabled, Mode=TwoWay}" VerticalAlignment="Center" ToolTip="校验通过后自动重新应用；每次启动默认关闭" AutomationProperties.Name="校验通过后自动应用" />
                             <StackPanel Grid.Column="6" VerticalAlignment="Center">
-                                <TextBlock Text="校验通过后自动应用" Foreground="{DynamicResource PrimaryText}" FontSize="9" FontWeight="SemiBold" />
-                                <TextBlock Foreground="{DynamicResource MutedText}" FontSize="8" Margin="0,3,0,0" TextTrimming="CharacterEllipsis">
+                                <TextBlock Text="校验通过后自动应用" Foreground="{DynamicResource PrimaryText}" FontSize="10" FontWeight="SemiBold" />
+                                <TextBlock Foreground="{DynamicResource MutedText}" FontSize="10" Margin="0,3,0,0" TextTrimming="CharacterEllipsis">
                                     <Run Text="默认关闭  ·  " /><Run Text="{Binding LastAppliedText, Mode=OneWay}" />
                                 </TextBlock>
                             </StackPanel>
@@ -522,8 +526,8 @@
 
                 <Grid Margin="0,17,0,9">
                     <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                    <TextBlock Text="项目体检" Foreground="{DynamicResource PrimaryText}" FontSize="13" FontWeight="SemiBold" />
-                    <TextBlock Grid.Column="1" Text="错误会阻止导出，建议项不会" Foreground="{DynamicResource MutedText}" FontSize="8.5" VerticalAlignment="Center" />
+                    <TextBlock Text="项目体检" Foreground="{DynamicResource PrimaryText}" FontSize="14" FontWeight="SemiBold" />
+                    <TextBlock Grid.Column="1" Text="错误会阻止导出，建议项不会" Foreground="{DynamicResource MutedText}" FontSize="10" VerticalAlignment="Center" />
                 </Grid>
 
                 <ItemsControl ItemsSource="{Binding HealthGroups}">
@@ -548,7 +552,7 @@
                                             </Border.Style>
                                         </Border>
                                         <TextBlock Grid.Column="1" Text="{Binding Title}" Foreground="{DynamicResource PrimaryText}" FontSize="10.5" FontWeight="SemiBold" Margin="8,0,0,0" />
-                                        <TextBlock Grid.Column="2" Text="{Binding Summary}" Foreground="{DynamicResource MutedText}" FontSize="8.5" VerticalAlignment="Center" />
+                                        <TextBlock Grid.Column="2" Text="{Binding Summary}" Foreground="{DynamicResource MutedText}" FontSize="10" VerticalAlignment="Center" />
                                     </Grid>
                                     <ItemsControl ItemsSource="{Binding Checks}" Margin="0,9,0,0">
                                         <ItemsControl.Style>
@@ -565,8 +569,8 @@
                                                     <Grid>
                                                         <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                                                         <StackPanel>
-                                                            <TextBlock Text="{Binding Title}" Foreground="{DynamicResource PrimaryText}" FontSize="9" FontWeight="SemiBold" />
-                                                            <TextBlock Text="{Binding DetailText}" Foreground="{DynamicResource MutedText}" FontSize="8.5" TextWrapping="Wrap" LineHeight="14" Margin="0,4,8,0" />
+                                                            <TextBlock Text="{Binding Title}" Foreground="{DynamicResource PrimaryText}" FontSize="10" FontWeight="SemiBold" />
+                                                            <TextBlock Text="{Binding DetailText}" Foreground="{DynamicResource MutedText}" FontSize="10" TextWrapping="Wrap" LineHeight="14" Margin="0,4,8,0" />
                                                         </StackPanel>
                                                         <Button Grid.Column="1" Content="定位" Width="52" Height="28" Tag="{Binding FilePath}" Click="OpenHealthPath_Click" VerticalAlignment="Top">
                                                             <Button.Style>
@@ -592,7 +596,7 @@
         </Border>
 
         <Border Background="{DynamicResource InfoSurface}" BorderBrush="{DynamicResource InfoBorder}" BorderThickness="1" CornerRadius="13" Padding="14,11" Margin="0,9,0,0">
-            <TextBlock Text="所有扫描、体检和导出均在本机完成；Tessalume 不读取 Codex 对话，也不会上传主题项目或创作素材。" Foreground="{DynamicResource MutedText}" FontSize="9" TextWrapping="Wrap" />
+            <TextBlock Text="所有扫描、体检和导出均在本机完成；Tessalume 不读取 Codex 对话，也不会上传主题项目或创作素材。" Foreground="{DynamicResource MutedText}" FontSize="10" TextWrapping="Wrap" />
         </Border>
     </StackPanel>
 </UserControl>

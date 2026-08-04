@@ -27,19 +27,19 @@ internal static partial class TestSuite
                buildScript.Contains("SHA256SUMS.txt", StringComparison.Ordinal),
             "The release build must create a SHA-256 manifest beside the executable.");
         Ensure(File.Exists(securityPath) && File.Exists(issueTemplatePath) && File.Exists(changelogPath) &&
-               changelog.Contains("## 1.3.0", StringComparison.Ordinal) &&
+               changelog.Contains("## 1.4.0", StringComparison.Ordinal) &&
                license.Contains("MIT License", StringComparison.Ordinal) &&
                license.Contains("Permission is hereby granted", StringComparison.Ordinal),
             "Public testing requires an MIT license, security guidance, a structured bug form, and a public changelog.");
         Ensure(readme.Contains("issues/new?template=bug-report.yml", StringComparison.Ordinal) &&
                readme.Contains("Microsoft Defender SmartScreen", StringComparison.Ordinal) &&
                readme.Contains("SHA256SUMS.txt", StringComparison.Ordinal) &&
-               readme.Contains("从 1.2.x 升级到 1.3.0", StringComparison.Ordinal) &&
+               readme.Contains("从 1.2.x / 1.3.0 升级到 1.4.0", StringComparison.Ordinal) &&
                readme.Contains("项目化主题创作", StringComparison.Ordinal) &&
                readme.Contains("便携备份与恢复", StringComparison.Ordinal) &&
                readme.Contains("从 1.1 升级到 1.2", StringComparison.Ordinal) &&
                readme.Contains("[MIT License](LICENSE)", StringComparison.Ordinal) &&
-               security.Contains("最新的 `1.3.x`", StringComparison.Ordinal) &&
+               security.Contains("最新的 `1.4.x`", StringComparison.Ordinal) &&
                security.Contains("备份 ZIP", StringComparison.Ordinal),
             "The download guide must expose feedback, signature status, checksum verification, and licensing.");
     }
