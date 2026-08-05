@@ -2,13 +2,19 @@
 
 面向 Codex Desktop 的开源 Windows 主题工作室。Tessalume 把完整沉浸式主题、项目化创作、实时体检、亮暗预览、安全分享、便携备份、本机诊断和官方自动更新集中在一个应用中；主题运行通过本机回环端口连接 Codex，不修改 Codex 安装包、`app.asar` 或用户数据。
 
-[下载 Tessalume 1.4.0](https://github.com/lyc1uckYoo/tessalume/releases/latest) · [问题反馈](https://github.com/lyc1uckYoo/tessalume/issues/new?template=bug-report.yml) · [版本记录](CHANGELOG.md) · [主题制作指南](THEMING.md) · [安全与隐私](SECURITY.md) · [MIT 许可证](LICENSE)
+[下载 Tessalume 1.4.1](https://github.com/lyc1uckYoo/tessalume/releases/latest) · [问题反馈](https://github.com/lyc1uckYoo/tessalume/issues/new?template=bug-report.yml) · [版本记录](CHANGELOG.md) · [主题制作指南](THEMING.md) · [安全与隐私](SECURITY.md) · [MIT 许可证](LICENSE)
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset=".github/assets/screenshots/tessalume-dark.png">
   <source media="(prefers-color-scheme: light)" srcset=".github/assets/screenshots/tessalume-light.png">
   <img alt="Tessalume 主题画廊" src=".github/assets/screenshots/tessalume-light.png">
 </picture>
+
+## Tessalume 1.4.1
+
+1.4.1 是面向 Codex 最新页面结构的紧急兼容修复。Codex 更新后重命名了原生输入框外框和底部按钮栏，导致旧版 Tessalume 无法继续命中主题输入区样式，表现为输入框退回深色原生背景、主题描边与内部控件样式消失。本版本在共享兼容运行时中同时识别新旧结构，所有现有主题无需修改即可恢复输入框背景、边框、光效、文字、按钮和输入框挂件定位。
+
+1.4.0 及更早版本可以直接通过软件内自动更新升级到 1.4.1。更新仍然只替换 EXE，不会删除或重置 `data/`、`themes/`、`Compatibility/`、`Templates/`、收藏、个性化参数或创作工作区。
 
 ## Tessalume 1.4.0
 
@@ -94,9 +100,9 @@ Tessalume 默认以顶部浮窗开始工作。浮窗常驻屏幕上方，不遮�
 
 开启自动检查后，软件每次启动都会检查一次官方 Releases；发现新版本时，左上角品牌区会出现红色“更新”提示，点击后才展示版本说明并进入下载与安装确认。可在“关于与数据 → 应用行为”管理自动检查和开机启动，手动检查始终可用。更新仅替换 `Tessalume.exe`，不会删除 `data/`、用户主题或个性化参数。
 
-### 从 1.2.x / 1.3.0 升级到 1.4.0
+### 从 1.2.x / 1.3.0 / 1.4.0 升级到 1.4.1
 
-打开“关于与数据 → 应用行为”，点击“立即检查”；确认版本说明后，Tessalume 会下载并校验 `1.4.0`、备份旧 EXE、安全替换并重新启动。整个过程不会删除程序旁边的 `data/`、`themes/`、`Compatibility/`、`Templates/` 或创作工作区。首次读取旧设置时会迁移为 Schema 3，并在 `data/backups/` 保存迁移前快照。
+打开“关于与数据 → 应用行为”，点击“立即检查”；确认版本说明后，Tessalume 会下载并校验 `1.4.1`、备份旧 EXE、安全替换并重新启动。整个过程不会删除程序旁边的 `data/`、`themes/`、`Compatibility/`、`Templates/` 或创作工作区。首次读取旧设置时会迁移为 Schema 3，并在 `data/backups/` 保存迁移前快照。
 
 ### 从 1.1 升级到 1.2
 
@@ -107,7 +113,7 @@ Tessalume 默认以顶部浮窗开始工作。浮窗常驻屏幕上方，不遮�
 
 不要把新 EXE 放进另一个空文件夹后再期待旧配置自动迁移；Tessalume 是便携应用，用户数据始终跟随 EXE 所在目录。
 
-发布页同时提供 `SHA256SUMS.txt`，可用于核对下载的 EXE。Tessalume 1.4.0 当前面向安装了 Windows 版 Codex Desktop 的 x64 系统。当前构建没有商业代码签名，首次下载时 Microsoft Defender SmartScreen 可能显示提示；请只从本仓库 Releases 下载并核对 SHA-256。
+发布页同时提供 `SHA256SUMS.txt`，可用于核对下载的 EXE。Tessalume 1.4.1 当前面向安装了 Windows 版 Codex Desktop 的 x64 系统。当前构建没有商业代码签名，首次下载时 Microsoft Defender SmartScreen 可能显示提示；请只从本仓库 Releases 下载并核对 SHA-256。
 
 ## 本机运行与安全边界
 
@@ -136,7 +142,7 @@ Codex 会先展示角色身份卡和 11 张素材计划，确认后完成制作�
 
 ## 已知边界与排查顺序
 
-- 1.4.0 当前只发布 Windows x64 自包含单文件，没有 macOS、Linux 或 ARM64 构建。
+- 1.4.1 当前只发布 Windows x64 自包含单文件，没有 macOS、Linux 或 ARM64 构建。
 - 当前 EXE 没有商业代码签名，首次下载可能出现 Microsoft Defender SmartScreen 提示；请只从本仓库 Releases 下载并核对 SHA-256。
 - 主题运行依赖 Codex Desktop 的本机调试端口和页面结构。Codex 大版本更新后若主题暂时无法应用，请先更新 Tessalume，再到“运行与诊断”检查进程、端口和主题包状态。
 - 连接异常时按“确认 Windows 版 Codex 已安装 → 刷新诊断 → 重新应用主题 → 必要时确认后重启 Codex”的顺序处理；不要手工修改 Codex 安装目录。
@@ -188,7 +194,7 @@ examples/                      可直接复制的旗舰主题模板 1.0
 一键构建EXE.ps1               还原、测试、优化与发布入口
 ```
 
-Tessalume 1.4.0 的正式发布产物为 `Tessalume.exe` 与对应的 SHA-256 校验文件，不额外要求安装器或 .NET 运行环境。
+Tessalume 1.4.1 的正式发布产物为 `Tessalume.exe` 与对应的 SHA-256 校验文件，不额外要求安装器或 .NET 运行环境。
 
 ## 许可证
 

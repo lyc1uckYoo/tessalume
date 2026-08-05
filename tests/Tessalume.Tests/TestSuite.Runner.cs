@@ -8,6 +8,18 @@ internal static partial class TestSuite
             return await ProbeRuntimeAsync(probePort);
         }
 
+        if (args is ["--composer-probe", var composerPortText] &&
+            int.TryParse(composerPortText, out var composerPort))
+        {
+            return await ProbeComposerAsync(composerPort);
+        }
+
+        if (args is ["--composer-alias-probe", var aliasPortText] &&
+            int.TryParse(aliasPortText, out var aliasPort))
+        {
+            return await ProbeComposerAsync(aliasPort, applyAlias: true);
+        }
+
         if (args is ["--remove", var removePortText] && int.TryParse(removePortText, out var removePort))
         {
             return await RemoveRuntimeAsync(removePort);
@@ -213,7 +225,7 @@ internal static partial class TestSuite
             ("WPF shell loads split resources", WpfShellLoadsSplitResourcesAsync),
             ("long product dialogs keep a fixed header and scrollable body", LongProductDialogUsesScrollableBodyAsync),
             ("adaptive layout and keyboard accessibility are available", AdaptiveLayoutAndKeyboardAccessibilityAsync),
-            ("version 1.4.0 product workflow is complete", Version14ProductWorkflowIsCompleteAsync),
+            ("version 1.4.1 product workflow is complete", Version14ProductWorkflowIsCompleteAsync),
             ("portable Codex creator workspace is self-contained", PortableCreatorWorkspaceIsSelfContainedAsync),
             ("creator prompt composer builds a durable contract prompt", CreatorPromptComposerBuildsDurableContractPromptAsync),
             ("creator workspace history is normalized and bounded", CreatorWorkspaceHistoryIsNormalizedAsync),

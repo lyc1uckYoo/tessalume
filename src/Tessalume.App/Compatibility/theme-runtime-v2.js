@@ -348,6 +348,23 @@
     };
     const findMain = () =>
       document.querySelector("main.main-surface") || document.querySelector("main");
+    const findComposerSurface = () => {
+      const legacySurface = document.querySelector(".composer-surface-chrome");
+      const editor = document.querySelector('[data-codex-composer="true"]');
+      const surface = legacySurface ||
+        editor?.closest('[class*="ComposerLayoutRoot"]') ||
+        editor?.closest('[class*="ComposerLayoutBody"]')?.parentElement ||
+        null;
+      if (!surface) return null;
+
+      // Codex renamed both the composer root and footer CSS-module classes in
+      // mid-2026. Keep the stable Tessalume aliases at the compatibility layer
+      // so every existing theme can continue styling the native composer.
+      mark(surface, "composer-surface-chrome");
+      const footer = surface.querySelector('[class*="ComposerLayoutFooter"]');
+      if (footer && !footer.matches('[class*="_footer_"]')) mark(footer, "_footer_");
+      return surface;
+    };
     const findSettingsSurface = (main = findMain()) => {
       if (!main) return null;
       return Array.from(main.querySelectorAll(
@@ -391,7 +408,7 @@
     };
     const positionComposerAccessory = (main, selector, size = 76, gap = 18) => {
       const accessory = root.querySelector(selector);
-      const composer = document.querySelector(".composer-surface-chrome");
+      const composer = findComposerSurface();
       if (!main || !accessory || !composer) return;
       const mainBox = main.getBoundingClientRect();
       const composerBox = composer.getBoundingClientRect();
@@ -480,7 +497,7 @@
       }
 
       const workspace = document.querySelector(".thread-scroll-container") || main;
-      const composer = document.querySelector(".composer-surface-chrome");
+      const composer = findComposerSurface();
 
       const workspaceBox = workspace?.getBoundingClientRect();
       const composerBox = composer?.getBoundingClientRect();
@@ -560,9 +577,7 @@
       const workspace = adaptiveLayout
         ? document.querySelector(".thread-scroll-container") || main
         : null;
-      const composer = adaptiveLayout
-        ? document.querySelector(".composer-surface-chrome")
-        : null;
+      const composer = findComposerSurface();
 
       syncLayoutObservers(adaptiveLayout
         ? [main, workspace, composer]
@@ -572,7 +587,7 @@
       spec.onEnsure?.({ ...api, main, aside, home, stage });
       syncAdaptiveVisibility(main, stage, home);
 
-      return liveLayoutSignature([main, workspace, composer]);
+      return liveLayoutSignature(adaptiveLayout ? [main, workspace, composer] : [main]);
     };
     const startLayoutTracking = () => {
       if (themeDisposed || layoutFrame) return;
@@ -763,7 +778,7 @@
       markSurface(aside, "sidebar");
       markSurface(home, "home");
       markSurface(windowBar, "window-bar");
-      markSurface(document.querySelector(".composer-surface-chrome"), "composer");
+      markSurface(findComposerSurface(), "composer");
 
       let messageIndex = 0;
       document.querySelectorAll('[class*="_markdownContent_"]').forEach((content) => {

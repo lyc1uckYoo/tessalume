@@ -174,6 +174,121 @@ internal static partial class TestSuite
         return 0;
     }
 
+    static async Task<int> ProbeComposerAsync(int port, bool applyAlias = false)
+    {
+        using var discovery = new LoopbackCdpDiscovery();
+        var targets = await discovery.DiscoverAsync(port);
+        foreach (var target in targets.Where(target =>
+                     !target.Url.Contains("initialRoute=", StringComparison.OrdinalIgnoreCase)))
+        {
+            await using var session = new CdpSession();
+            await session.ConnectAsync(target.WebSocketDebuggerUrl);
+            if (applyAlias)
+            {
+                await session.EvaluateAsync(
+                    """
+                    (() => {
+                      const editor = document.querySelector('[data-codex-composer="true"]');
+                      const surface = editor?.closest('[class*="ComposerLayoutRoot"]');
+                      surface?.classList.add('composer-surface-chrome');
+                      return Boolean(surface);
+                    })()
+                    """);
+            }
+            var result = await session.EvaluateAsync(
+                """
+                (() => {
+                  const styleOf = element => {
+                    const style = getComputedStyle(element);
+                    const box = element.getBoundingClientRect();
+                    return {
+                      tag: element.tagName,
+                      className: typeof element.className === 'string' ? element.className : '',
+                      role: element.getAttribute('role'),
+                      ariaLabel: element.getAttribute('aria-label'),
+                      tessalumeSurface: element.getAttribute('data-tessalume-surface'),
+                      background: style.background,
+                      backgroundColor: style.backgroundColor,
+                      backgroundImage: style.backgroundImage,
+                      boxShadow: style.boxShadow,
+                      border: style.border,
+                      color: style.color,
+                      display: style.display,
+                      visibility: style.visibility,
+                      opacity: style.opacity,
+                      position: style.position,
+                      zIndex: style.zIndex,
+                      overflow: style.overflow,
+                      box: { left: Math.round(box.left), top: Math.round(box.top), width: Math.round(box.width), height: Math.round(box.height) }
+                    };
+                  };
+                  const editors = Array.from(document.querySelectorAll('textarea,input,[contenteditable="true"]'))
+                    .filter(element => {
+                      const box = element.getBoundingClientRect();
+                      const style = getComputedStyle(element);
+                      return box.width > 240 && box.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
+                    })
+                    .sort((left, right) => right.getBoundingClientRect().bottom - left.getBoundingClientRect().bottom);
+                  const editor = editors[0] || null;
+                  const composer = document.querySelector('.composer-surface-chrome');
+                  if (!editor && !composer) return null;
+                  const ancestors = [];
+                  for (let node = editor || composer, depth = 0; node && depth < 14; node = node.parentElement, depth += 1) {
+                    ancestors.push(styleOf(node));
+                  }
+                  const surface = composer || (ancestors.length > 3
+                    ? (editor?.parentElement?.parentElement?.parentElement || editor)
+                    : editor);
+                  const descendants = Array.from(surface.querySelectorAll('*'))
+                    .filter(element => {
+                      const style = getComputedStyle(element);
+                      return element.matches('textarea,input,[contenteditable="true"],button,[role="button"]') ||
+                        style.backgroundImage !== 'none' ||
+                        style.backgroundColor !== 'rgba(0, 0, 0, 0)' ||
+                        style.boxShadow !== 'none';
+                    })
+                    .slice(0, 80)
+                    .map(styleOf);
+                  const rules = [];
+                  for (const sheet of Array.from(document.styleSheets)) {
+                    let cssRules;
+                    try { cssRules = sheet.cssRules; } catch { continue; }
+                    for (const rule of Array.from(cssRules || [])) {
+                      if (rule.cssText && rule.cssText.includes('composer-surface-chrome')) {
+                        rules.push({ owner: sheet.ownerNode?.id || sheet.ownerNode?.tagName || '', text: rule.cssText });
+                      }
+                    }
+                  }
+                  return {
+                    url: location.href,
+                    themeId: window.__TESSALUME_THEME_ID__ || null,
+                    htmlClasses: document.documentElement.className,
+                    editor: editor ? styleOf(editor) : null,
+                    composer: composer ? styleOf(composer) : null,
+                    composerFooter: composer ? (() => {
+                      const footer = composer.querySelector('[class*="ComposerLayoutFooter"], [class*="_footer_"]');
+                      return footer ? styleOf(footer) : null;
+                    })() : null,
+                    before: composer ? (() => { const s = getComputedStyle(composer, '::before'); return { content: s.content, background: s.background, boxShadow: s.boxShadow, display: s.display }; })() : null,
+                    after: composer ? (() => { const s = getComputedStyle(composer, '::after'); return { content: s.content, background: s.background, boxShadow: s.boxShadow, display: s.display }; })() : null,
+                    ancestors,
+                    descendants,
+                    rules,
+                    outerHTML: (composer || editor).outerHTML.slice(0, 24000)
+                  };
+                })()
+                """);
+            if (result.ValueKind == JsonValueKind.Object)
+            {
+                Console.WriteLine(result.GetRawText());
+                return 0;
+            }
+        }
+
+        Console.Error.WriteLine("No live Codex composer was found.");
+        return 2;
+    }
+
     static async Task<int> RemoveRuntimeAsync(int port)
     {
         await using var runtime = new ThemeRuntime(

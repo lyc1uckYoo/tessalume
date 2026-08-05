@@ -219,6 +219,14 @@ internal static partial class TestSuite
             "The runtime must keep the sticky composer visible on Codex home layout changes.");
         Ensure(payload.Contains("min-height:64px!important", StringComparison.Ordinal),
             "The composer surface must keep a visible minimum hit area.");
+        Ensure(payload.Contains("findComposerSurface", StringComparison.Ordinal) &&
+               payload.Contains("[data-codex-composer=\"true\"]", StringComparison.Ordinal) &&
+               payload.Contains("ComposerLayoutRoot", StringComparison.Ordinal) &&
+               payload.Contains("mark(surface, \"composer-surface-chrome\")", StringComparison.Ordinal),
+            "The runtime must alias Codex's current composer root so existing theme skins survive native DOM changes.");
+        Ensure(payload.Contains("ComposerLayoutFooter", StringComparison.Ordinal) &&
+               payload.Contains("mark(footer, \"_footer_\")", StringComparison.Ordinal),
+            "The runtime must alias Codex's current composer footer so existing control skins survive native DOM changes.");
         Ensure(payload.Contains("tessalume-code-review-open", StringComparison.Ordinal),
             "The runtime must track Codex's code-review diff state.");
         Ensure(payload.Contains("data-tessalume-side-panel-overlay", StringComparison.Ordinal),

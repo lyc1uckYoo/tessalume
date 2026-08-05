@@ -394,7 +394,7 @@ internal static partial class TestSuite
                         "这是一段用于验证更新说明排版和滚动区域的长文本，标题栏与关闭按钮必须保持固定。",
                         24));
                 dialog = new ProductDialogWindow(
-                    "发现 Tessalume v1.4.0",
+                    "发现 Tessalume v1.4.1",
                     longMessage,
                     ProductDialogKind.Confirmation,
                     darkMode: false,
@@ -424,7 +424,7 @@ internal static partial class TestSuite
 
                 compactDialog = new ProductDialogWindow(
                     "当前已是最新版本",
-                    "你正在使用 v1.4.0，暂时没有可安装的新版本。",
+                    "你正在使用 v1.4.1，暂时没有可安装的新版本。",
                     ProductDialogKind.Information,
                     darkMode: false,
                     confirmText: "知道了",
@@ -766,13 +766,13 @@ internal static partial class TestSuite
                !xaml.Contains("Storyboard.TargetName=\"PrimaryMotion\"", StringComparison.Ordinal) &&
                !xaml.Contains("x:Name=\"ButtonScale\"", StringComparison.Ordinal),
             "Shared actions, dialogs, and onboarding must keep stable text rendering without hover scaling.");
-        Ensure(project.Contains("<Version>1.4.0</Version>", StringComparison.Ordinal) &&
+        Ensure(project.Contains("<Version>1.4.1</Version>", StringComparison.Ordinal) &&
                firstRunXaml.Contains("{x:Static local:BrandInfo.VersionLabel}", StringComparison.Ordinal) &&
                !firstRunXaml.Contains("Text=\"v1.2\"", StringComparison.Ordinal) &&
-               readme.Contains("## Tessalume 1.4.0", StringComparison.Ordinal) &&
+               readme.Contains("## Tessalume 1.4.1", StringComparison.Ordinal) &&
                readme.Contains("十套内置旗舰主题", StringComparison.Ordinal) &&
                File.Exists(Path.Combine(repositoryRoot, "CHANGELOG.md")),
-            "Version metadata and release documentation must agree on Tessalume 1.4.0.");
+            "Version metadata and release documentation must agree on Tessalume 1.4.1.");
     }
 
 
