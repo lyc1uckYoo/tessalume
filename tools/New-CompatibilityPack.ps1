@@ -13,6 +13,23 @@ param(
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.IO.Compression
 
+function Get-Sha256Hex {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Path
+    )
+
+    $stream = [System.IO.File]::OpenRead($Path)
+    $sha256 = [System.Security.Cryptography.SHA256]::Create()
+    try {
+        return [System.BitConverter]::ToString($sha256.ComputeHash($stream)).Replace('-', '')
+    }
+    finally {
+        $sha256.Dispose()
+        $stream.Dispose()
+    }
+}
+
 $repositoryRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $sourceDirectory = Join-Path $repositoryRoot 'src\Tessalume.App\Compatibility'
 $projectPath = Join-Path $repositoryRoot 'src\Tessalume.App\Tessalume.App.csproj'
@@ -62,8 +79,8 @@ try {
         $profileJson + "`r`n",
         $utf8WithoutBom)
 
-    $runtimeHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $runtimeDestination).Hash
-    $profileHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $profileDestination).Hash
+    $runtimeHash = Get-Sha256Hex -Path $runtimeDestination
+    $profileHash = Get-Sha256Hex -Path $profileDestination
     $manifest = [ordered]@{
         schemaVersion = 1
         packVersion = $Version
@@ -135,7 +152,7 @@ try {
         $archiveStream.Dispose()
     }
 
-    $archiveHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $archivePath).Hash
+    $archiveHash = Get-Sha256Hex -Path $archivePath
     [System.IO.File]::WriteAllText(
         $checksumPath,
         "$archiveHash *Tessalume-Compatibility.zip`r`n",

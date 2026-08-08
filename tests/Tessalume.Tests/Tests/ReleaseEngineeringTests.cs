@@ -164,6 +164,7 @@ internal static partial class TestSuite
             {
                 startInfo.ArgumentList.Add(argument);
             }
+            startInfo.Environment["PSModulePath"] = string.Empty;
 
             using var process = System.Diagnostics.Process.Start(startInfo)
                 ?? throw new InvalidOperationException("Unable to start the compatibility pack builder.");
