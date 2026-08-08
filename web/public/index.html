@@ -65,8 +65,10 @@
       </div>
       <div class="step"><div class="n">1</div><div class="muted">完全退出 ChatGPT（菜单栏图标 → 退出，或 <code>Cmd+Q</code>）。</div></div>
       <div class="step"><div class="n">2</div><div class="muted">打开「终端」，粘贴并回车（如默认路径不同请自行调整）：</div></div>
-      <pre id="launchCmd">/Applications/ChatGPT.app/Contents/MacOS/ChatGPT --remote-debugging-port=9222 &amp;</pre>
+      <pre id="launchCmd">nohup /Applications/ChatGPT.app/Contents/MacOS/ChatGPT --remote-debugging-port=9222 &gt;/tmp/chatgpt-debug.log 2&gt;&amp;1 &amp;
+disown</pre>
       <div class="step"><div class="n">3</div><div class="muted">回到本页面，点击「探测连接」确认状态。</div></div>
+      <div class="muted" style="margin-top:8px">使用 <code>nohup</code> + <code>disown</code> 可让 ChatGPT 在终端关闭后仍常驻；调试日志写入 <code>/tmp/chatgpt-debug.log</code>。</div>
       <div class="row" style="margin-top:12px">
         <input id="port" type="number" value="9222" min="1024" max="65535" style="max-width:110px" />
         <button id="probeBtn">探测连接</button>
