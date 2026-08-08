@@ -354,6 +354,11 @@ internal static partial class TestSuite
         var appSource = await File.ReadAllTextAsync(Path.Combine(appRoot, "App.xaml.cs"));
         var bootstrapper = await File.ReadAllTextAsync(Path.Combine(appRoot, "Infrastructure", "UpdateBootstrapper.cs"));
         var helperRuntime = await File.ReadAllTextAsync(Path.Combine(appRoot, "Infrastructure", "UpdateHelperRuntime.cs"));
+        var legacyAdapter = await File.ReadAllTextAsync(Path.Combine(
+            appRoot,
+            "Infrastructure",
+            "Updates",
+            "LegacyUpdateRecoveryAdapter.cs"));
         var preferences = await ReadUiPreferencesSourceAsync(appRoot);
         Ensure(xaml.Contains("x:Name=\"AutomaticUpdatesCheckBox\"", StringComparison.Ordinal) &&
                xaml.Contains("x:Name=\"CheckForUpdatesButton\"", StringComparison.Ordinal) &&
@@ -390,11 +395,18 @@ internal static partial class TestSuite
                    StringComparison.Ordinal),
             "A hidden standalone helper must health-check the new EXE, auto-restore failures, and retain the previous version.");
         var readResultAt = appSource.IndexOf("var startupUpdateResult = UpdateBootstrapper.ReadResult", StringComparison.Ordinal);
+        var adaptLegacyAt = appSource.IndexOf("LegacyUpdateRecoveryAdapter.PrepareAsync", StringComparison.Ordinal);
         var cleanupAt = appSource.IndexOf("UpdateBootstrapper.CleanupStaleArtifactsAsync", StringComparison.Ordinal);
+        var constructMainAt = appSource.IndexOf("var mainWindow = new MainWindow(layout)", StringComparison.Ordinal);
         var handoffAt = appSource.IndexOf("mainWindow.SetStartupUpdateResult(startupUpdateResult)", StringComparison.Ordinal);
-        Ensure(readResultAt >= 0 && cleanupAt > readResultAt && handoffAt > cleanupAt &&
-               appSource.Contains("if (startupUpdateResult is null)", StringComparison.Ordinal),
-            "The rollback backup must remain available until the updated application has completed startup.");
+        Ensure(readResultAt >= 0 && adaptLegacyAt > readResultAt && cleanupAt > adaptLegacyAt &&
+               constructMainAt > cleanupAt && handoffAt > constructMainAt &&
+               appSource.Contains("if (startupUpdateResult is null)", StringComparison.Ordinal) &&
+               legacyAdapter.Contains("UpdateDataSnapshotStore", StringComparison.Ordinal) &&
+               legacyAdapter.Contains("PortableUpdateInstaller.WriteResultAsync", StringComparison.Ordinal) &&
+               mainSource.Contains("更新完成，但恢复点未建立", StringComparison.Ordinal) &&
+               mainSource.Contains("没有建立可用的上一版本恢复点", StringComparison.Ordinal),
+            "The rollback backup must remain available, legacy updater results must capture old schemas before migration, and failures must be reported honestly.");
     }
 
     static async Task FirstRunOnboardingNeverAppliesRandomThemeAsync()

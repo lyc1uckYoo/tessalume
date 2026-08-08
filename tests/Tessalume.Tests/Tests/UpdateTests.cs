@@ -219,6 +219,94 @@ internal static partial class TestSuite
         }
     }
 
+    static async Task LegacyUpdateResultCreatesAPreMigrationRollbackPointAsync()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"tessalume-legacy-update-{Guid.NewGuid():N}");
+        var data = Path.Combine(root, "data");
+        var themes = Path.Combine(root, "themes");
+        var downloads = Path.Combine(data, "updates", "downloads");
+        var helpers = Path.Combine(data, "updates", "helpers");
+        Directory.CreateDirectory(themes);
+        Directory.CreateDirectory(downloads);
+        Directory.CreateDirectory(helpers);
+        try
+        {
+            var executable = Environment.ProcessPath
+                ?? throw new InvalidOperationException("The test executable path is unavailable.");
+            var destination = Path.Combine(root, "Tessalume.exe");
+            var backup = destination + ".previous";
+            var source = Path.Combine(downloads, "Tessalume-2.0.0.exe.download");
+            var helper = Path.Combine(helpers, "Tessalume.UpdateHelper.legacy.exe");
+            File.Copy(executable, destination);
+            File.Copy(executable, backup);
+            await File.WriteAllTextAsync(source, "already moved by the legacy updater");
+            await File.WriteAllTextAsync(helper, "legacy helper path");
+            var oldPreferences = "{\"SchemaVersion\":3,\"FavoriteThemeIds\":[\"kept-theme\"]}";
+            var oldState = "{\"SchemaVersion\":2,\"ThemeId\":\"kept-theme\",\"Enabled\":true}";
+            await File.WriteAllTextAsync(Path.Combine(data, "ui-settings.json"), oldPreferences);
+            await File.WriteAllTextAsync(Path.Combine(data, "state.json"), oldState);
+            var resultPath = Path.Combine(data, "update-result.json");
+            var legacyResult = new PortableUpdateResult(
+                true,
+                "v2.0.0",
+                "legacy update completed",
+                source,
+                destination,
+                backup,
+                helper,
+                0,
+                DateTimeOffset.Now);
+            await PortableUpdateInstaller.WriteResultAsync(resultPath, legacyResult);
+
+            var layout = new PortableLayout(root, themes, data);
+            var prepared = await LegacyUpdateRecoveryAdapter.PrepareAsync(layout, legacyResult);
+            Ensure(prepared is
+            {
+                Success: true,
+                Operation: PortableUpdateOperation.Install,
+                DataSnapshotId.Length: 32,
+            } && !string.IsNullOrWhiteSpace(prepared.PreviousVersionLabel),
+                "A successful 1.x update result must gain a pre-migration data snapshot before the new app loads settings.");
+            var preparedResult = prepared
+                ?? throw new InvalidOperationException("The legacy update result was not prepared.");
+            var persisted = PortableUpdateInstaller.ReadResult(resultPath);
+            Ensure(persisted?.DataSnapshotId == preparedResult.DataSnapshotId &&
+                   persisted.PreviousVersionLabel == preparedResult.PreviousVersionLabel,
+                "The adapted legacy result must survive a crash or restart before the success dialog is acknowledged.");
+
+            var snapshots = new UpdateDataSnapshotStore(data);
+            Ensure(await snapshots.ValidateAsync(preparedResult.DataSnapshotId) is not null,
+                "The legacy recovery snapshot must pass the same integrity validation as a native 2.x snapshot.");
+            await File.WriteAllTextAsync(Path.Combine(data, "ui-settings.json"), "{\"SchemaVersion\":4}");
+            await File.WriteAllTextAsync(Path.Combine(data, "state.json"), "{\"SchemaVersion\":3}");
+            await snapshots.RestoreAsync(preparedResult.DataSnapshotId);
+            Ensure(await File.ReadAllTextAsync(Path.Combine(data, "ui-settings.json")) == oldPreferences &&
+                   await File.ReadAllTextAsync(Path.Combine(data, "state.json")) == oldState,
+                "A direct 1.x to 2.x rollback must restore both legacy configuration schemas exactly.");
+
+            var rollbackStore = new UpdateRollbackStore(root, data, "Tessalume.exe");
+            await rollbackStore.SaveAsync(
+                preparedResult.VersionLabel,
+                preparedResult.PreviousVersionLabel,
+                backup,
+                preparedResult.DataSnapshotId);
+            Ensure(await rollbackStore.LoadAsync() is not null,
+                "The recovered legacy result must establish a usable manual rollback point.");
+
+            var unsafeResult = legacyResult with
+            {
+                BackupPath = Path.Combine(root, "outside.exe.previous"),
+            };
+            var rejected = await LegacyUpdateRecoveryAdapter.PrepareAsync(layout, unsafeResult);
+            Ensure(string.IsNullOrWhiteSpace(rejected?.DataSnapshotId),
+                "Legacy result adaptation must reject backup paths outside the exact portable rollback location.");
+        }
+        finally
+        {
+            if (Directory.Exists(root)) Directory.Delete(root, recursive: true);
+        }
+    }
+
     static async Task UpdateDataSnapshotsRestoreVersionedSettingsAtomicallyAsync()
     {
         var root = Path.Combine(Path.GetTempPath(), $"tessalume-update-data-{Guid.NewGuid():N}");

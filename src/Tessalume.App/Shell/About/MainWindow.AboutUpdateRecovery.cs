@@ -91,6 +91,7 @@ public partial class MainWindow
     {
         if (_startupUpdateResult is not { } result) return;
         _startupUpdateResult = null;
+        var rollbackPointReady = false;
         if (result is
             {
                 Success: true,
@@ -109,13 +110,18 @@ public partial class MainWindow
                     backup,
                     result.DataSnapshotId,
                     _updateCancellation.Token);
+                rollbackPointReady = true;
             }
             catch (Exception exception) when (
-                exception is IOException or UnauthorizedAccessException or InvalidDataException)
+                exception is IOException or UnauthorizedAccessException or InvalidDataException or
+                ArgumentException or NotSupportedException)
             {
                 LocalLog.Write("Preserving the previous application version failed.", exception);
             }
         }
+        var rollbackPointMissing = result is
+        { Success: true, Operation: PortableUpdateOperation.Install } &&
+            !rollbackPointReady;
         LocalLog.Write(result.Success
             ? $"Update completed: {result.VersionLabel}."
             : $"Update failed: {result.Message}");
@@ -123,6 +129,7 @@ public partial class MainWindow
         {
             { RolledBack: true } => "新版本启动失败，已自动恢复",
             { Success: true, Operation: PortableUpdateOperation.Rollback } => "已恢复上一版本",
+            { Success: true } when rollbackPointMissing => "更新完成，但恢复点未建立",
             { Success: true } => "Tessalume 已完成更新",
             _ => "自动更新未完成",
         };
@@ -132,6 +139,9 @@ public partial class MainWindow
                 $"{result.Message}\n\n用户数据、主题和个性化参数均未被删除。",
             { Success: true, Operation: PortableUpdateOperation.Rollback } =>
                 $"当前已运行 {result.VersionLabel}。用户数据、主题、收藏和个性化参数均已保留。",
+            { Success: true } when rollbackPointMissing =>
+                $"当前已运行 {result.VersionLabel}，主题、收藏和个性化参数均已保留，" +
+                "但没有建立可用的上一版本恢复点。继续使用不受影响；如需降级，请先导出备份。",
             { Success: true } =>
                 $"当前已运行 {result.VersionLabel}。启动健康检查已经通过，" +
                 "更新前版本会保留为本机恢复点。主题、收藏和个性化参数均已保留。",
@@ -140,7 +150,9 @@ public partial class MainWindow
         ShowProductMessage(
             title,
             message,
-            result.Success ? ProductDialogKind.Information : ProductDialogKind.Warning);
+            result.Success && !rollbackPointMissing
+                ? ProductDialogKind.Information
+                : ProductDialogKind.Warning);
         UpdateBootstrapper.DismissResult(_layout);
         _ = UpdateBootstrapper.CleanupArtifactsAsync(_layout, result);
         _ = RefreshRollbackAvailabilityAsync();

@@ -75,6 +75,9 @@ public partial class App : Application, IDisposable
             var layout = PortableLayout.Create();
             LocalLog.Initialize(layout.DataDirectory);
             var startupUpdateResult = UpdateBootstrapper.ReadResult(layout);
+            startupUpdateResult = await LegacyUpdateRecoveryAdapter.PrepareAsync(
+                layout,
+                startupUpdateResult);
             if (startupUpdateResult is null)
             {
                 _ = UpdateBootstrapper.CleanupStaleArtifactsAsync(layout);
