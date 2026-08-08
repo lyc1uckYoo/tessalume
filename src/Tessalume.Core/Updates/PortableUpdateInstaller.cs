@@ -4,6 +4,12 @@ using System.Text.Json;
 
 namespace Tessalume.Core.Updates;
 
+public enum PortableUpdateOperation
+{
+    Install,
+    Rollback,
+}
+
 public sealed record PortableUpdateRequest(
     int ParentProcessId,
     string SourcePath,
@@ -11,7 +17,16 @@ public sealed record PortableUpdateRequest(
     string ExpectedSha256,
     string VersionLabel,
     string ResultPath,
-    string HelperPath);
+    string HelperPath)
+{
+    public PortableUpdateOperation Operation { get; init; }
+    public string PreviousVersionLabel { get; init; } = string.Empty;
+    public string StartupHealthToken { get; init; } = string.Empty;
+    public string DataSnapshotId { get; init; } = string.Empty;
+    public string DataSnapshotManifestSha256 { get; init; } = string.Empty;
+    public string RecoveryDataSnapshotId { get; init; } = string.Empty;
+    public string RecoveryDataSnapshotManifestSha256 { get; init; } = string.Empty;
+}
 
 public sealed record PortableUpdateResult(
     bool Success,
@@ -22,7 +37,13 @@ public sealed record PortableUpdateResult(
     string? BackupPath,
     string HelperPath,
     int HelperProcessId,
-    DateTimeOffset CompletedAt);
+    DateTimeOffset CompletedAt)
+{
+    public PortableUpdateOperation Operation { get; init; }
+    public string PreviousVersionLabel { get; init; } = string.Empty;
+    public bool RolledBack { get; init; }
+    public string DataSnapshotId { get; init; } = string.Empty;
+}
 
 public static class PortableUpdateInstaller
 {
@@ -40,7 +61,10 @@ public static class PortableUpdateInstaller
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
-            var possibleBackup = Path.GetFullPath(request.DestinationPath) + ".previous";
+            var possibleBackup = Path.GetFullPath(request.DestinationPath) +
+                (request.Operation == PortableUpdateOperation.Rollback
+                    ? ".rollback-current"
+                    : ".previous");
             result = CreateResult(
                 request,
                 success: false,
@@ -92,8 +116,17 @@ public static class PortableUpdateInstaller
             throw new InvalidDataException("安装前的 SHA-256 复核失败，已保留当前版本。");
         }
 
-        var backup = destination + ".previous";
+        var backup = request.Operation == PortableUpdateOperation.Rollback
+            ? destination + ".rollback-current"
+            : destination + ".previous";
         File.Delete(backup);
+        if (request.Operation == PortableUpdateOperation.Rollback)
+        {
+            if (!string.Equals(source, destination + ".previous", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidDataException("恢复请求没有使用已验证的上一版本备份。");
+            }
+        }
         await ReplaceWithRetryAsync(source, destination, backup, cancellationToken);
         return new PortableUpdateResult(
             true,
@@ -104,7 +137,12 @@ public static class PortableUpdateInstaller
             backup,
             helper,
             Environment.ProcessId,
-            DateTimeOffset.Now);
+            DateTimeOffset.Now)
+        {
+            Operation = request.Operation,
+            PreviousVersionLabel = request.PreviousVersionLabel,
+            DataSnapshotId = request.DataSnapshotId,
+        };
     }
 
     public static async Task WriteResultAsync(
@@ -147,6 +185,37 @@ public static class PortableUpdateInstaller
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or JsonException)
         {
             return null;
+        }
+    }
+
+    public static async Task RestoreBackupAsync(
+        string destinationPath,
+        string backupPath,
+        CancellationToken cancellationToken = default)
+    {
+        var destination = Path.GetFullPath(destinationPath);
+        var backup = Path.GetFullPath(backupPath);
+        var expectedPrevious = destination + ".previous";
+        var expectedRollbackCurrent = destination + ".rollback-current";
+        if (!string.Equals(backup, expectedPrevious, StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(backup, expectedRollbackCurrent, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidDataException("恢复文件不在允许的程序回滚位置。");
+        }
+        if (!File.Exists(destination) || !File.Exists(backup))
+        {
+            throw new FileNotFoundException("当前程序或恢复文件不存在。");
+        }
+
+        var failedVersion = destination + ".failed-update";
+        File.Delete(failedVersion);
+        await ReplaceWithRetryAsync(backup, destination, failedVersion, cancellationToken);
+        try
+        {
+            File.Delete(failedVersion);
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
         }
     }
 
@@ -263,5 +332,10 @@ public static class PortableUpdateInstaller
             backupPath,
             Path.GetFullPath(request.HelperPath),
             Environment.ProcessId,
-            DateTimeOffset.Now);
+            DateTimeOffset.Now)
+        {
+            Operation = request.Operation,
+            PreviousVersionLabel = request.PreviousVersionLabel,
+            DataSnapshotId = request.DataSnapshotId,
+        };
 }

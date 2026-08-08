@@ -1,5 +1,49 @@
 internal static partial class TestSuite
 {
+    private static readonly object SourceRuntimeGate = new();
+
+    static ThemeRuntimeAssets GetSourceRuntimeAssets(string repositoryRoot)
+    {
+        var compatibilitySource = Path.Combine(
+            repositoryRoot,
+            "src",
+            "Tessalume.App",
+            "Compatibility");
+        var destination = Path.Combine(AppContext.BaseDirectory, "source-compatibility-runtime");
+        lock (SourceRuntimeGate)
+        {
+            Directory.CreateDirectory(destination);
+            var runtimePath = Path.Combine(destination, CompatibilityRuntimeComposer.RuntimeFileName);
+            var runtime = CompatibilityRuntimeComposer.ComposeSource(compatibilitySource);
+            if (!File.Exists(runtimePath) || !string.Equals(
+                    File.ReadAllText(runtimePath),
+                    runtime,
+                    StringComparison.Ordinal))
+            {
+                File.WriteAllText(runtimePath, runtime, new UTF8Encoding(false));
+            }
+            File.Copy(
+                Path.Combine(compatibilitySource, ThemePayloadBuilder.SharedTemplateStyleFileName),
+                Path.Combine(destination, ThemePayloadBuilder.SharedTemplateStyleFileName),
+                overwrite: true);
+            File.Copy(
+                Path.Combine(compatibilitySource, ThemePayloadBuilder.CompatibilityProfileFileName),
+                Path.Combine(destination, ThemePayloadBuilder.CompatibilityProfileFileName),
+                overwrite: true);
+            return new ThemeRuntimeAssets(
+                runtimePath,
+                Path.Combine(destination, ThemePayloadBuilder.SharedTemplateStyleFileName),
+                Path.Combine(destination, ThemePayloadBuilder.CompatibilityProfileFileName));
+        }
+    }
+
+    static Task<string> ReadCompatibilityRuntimeSourceAsync(string repositoryRoot) =>
+        Task.FromResult(CompatibilityRuntimeComposer.ComposeSource(Path.Combine(
+            repositoryRoot,
+            "src",
+            "Tessalume.App",
+            "Compatibility")));
+
     static string FindRepositoryRoot()
     {
         foreach (var startingPath in new[] { Directory.GetCurrentDirectory(), AppContext.BaseDirectory })

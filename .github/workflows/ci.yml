@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows-release-build:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Install .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install image build dependency
+        shell: pwsh
+        run: python -m pip install --disable-pip-version-check Pillow
+
+      - name: Build, test, and publish
+        shell: pwsh
+        run: |
+          dotnet restore Tessalume.sln
+          dotnet format Tessalume.sln --verify-no-changes --no-restore --verbosity minimal
+          .\一键构建EXE.ps1 -Configuration Release -Runtime win-x64 -NoLaunch
+
+      - name: Upload verified portable build
+        uses: actions/upload-artifact@v4
+        with:
+          name: Tessalume-windows-x64-${{ github.sha }}
+          path: |
+            dist/portable-win-x64/Tessalume.exe
+            dist/portable-win-x64/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 14

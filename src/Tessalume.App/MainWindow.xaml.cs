@@ -10,9 +10,14 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using Tessalume.App.Creator;
+using Tessalume.App.Features.About;
+using Tessalume.App.Features.Diagnostics;
+using Tessalume.App.Features.Navigation;
+using Tessalume.App.Features.Personalization;
 using Tessalume.App.Infrastructure;
 using Tessalume.App.Models;
 using Tessalume.Core.Backup;
+using Tessalume.Core.Compatibility;
 using Tessalume.Core.Runtime;
 using Tessalume.Core.Themes;
 using Tessalume.Core.Updates;
@@ -22,16 +27,6 @@ namespace Tessalume.App;
 
 public partial class MainWindow : Window, IAsyncDisposable
 {
-    private enum RightPane
-    {
-        Themes,
-        ImportGuide,
-        Settings,
-        Diagnostics,
-        About,
-        Creator,
-    }
-
     private enum ThemeLibraryFilter
     {
         All,
@@ -45,20 +40,25 @@ public partial class MainWindow : Window, IAsyncDisposable
     private readonly StudioStateStore _stateStore;
     private readonly UiPreferencesStore _preferencesStore;
     private readonly CreatorWorkspaceStore _creatorWorkspaces;
-    private readonly PortableBackupService _backupService;
+    private readonly AboutDataService _aboutDataService;
     private readonly LoopbackCdpDiscovery _launcherDiscovery = new();
     private readonly CodexPackageLauncher _launcher;
     private readonly ThemeRuntime _runtime;
     private readonly CodexUsageReader _usageReader = new();
-    private readonly ReleaseUpdateClient _updateClient;
+    private readonly CompatibilityPackStore _compatibilityPacks;
+    private readonly DiagnosticsInspectionService _diagnosticsService;
+    private readonly AboutUpdateService _aboutUpdateService;
+    private readonly PersonalImageStore _personalImageStore;
     private readonly CancellationTokenSource _updateCancellation = new();
     private readonly CancellationTokenSource _backupCancellation = new();
+    private readonly CancellationTokenSource _personalizationCancellation = new();
     private readonly HashSet<string> _favoriteThemeIds = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, ThemeUsageRecord> _themeUsage =
         new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, ThemeVisualSettings> _themeVisualSettings =
         new(StringComparer.OrdinalIgnoreCase);
     private readonly ObservableCollection<ThemeArtworkPreset> _artworkPresets = [];
+    private readonly ObservableCollection<ThemeExperiencePreset> _experiencePresets = [];
     private CreatorPromptDraft _creatorPromptDraft;
     private ThemeCardModel? _selectedTheme;
     private ThemeQuickSwitchWindow? _quickSwitchWindow;
@@ -69,11 +69,10 @@ public partial class MainWindow : Window, IAsyncDisposable
     private bool _showFavorites;
     private bool _darkMode;
     private bool? _codexDarkMode;
-    private bool _updatingStartupSetting;
-    private bool _updatingAutomaticUpdateSetting;
     private bool _automaticUpdateChecks;
     private bool _updateCheckInProgress;
     private bool _automaticUpdateCheckScheduled;
+    private bool _rollbackInProgress;
     private bool _startupInitialized;
     private bool _shutdownRequested;
     private bool _userDataRestoreCompleted;
@@ -89,30 +88,39 @@ public partial class MainWindow : Window, IAsyncDisposable
     private DateTimeOffset? _lastUpdateCheckAt;
     private ReleaseUpdate? _availableUpdate;
     private PortableUpdateResult? _startupUpdateResult;
+    private UpdateRollbackInfo? _availableRollback;
+    private string? _startupHealthToken;
     private DispatcherTimer? _visualSettingsDebounce;
     private DispatcherTimer? _toastTimer;
-    private RightPane _rightPane = RightPane.Themes;
+    private AppRoute _currentRoute = AppRoute.ThemeLibrary;
 
     internal MainWindow(PortableLayout? layout = null)
     {
         _layout = layout ?? PortableLayout.Create();
+        _personalImageStore = new PersonalImageStore(_layout.DataDirectory);
         _stateStore = new StudioStateStore(_layout.DataDirectory);
         _preferencesStore = new UiPreferencesStore(_layout.DataDirectory);
         _launcher = new CodexPackageLauncher(_launcherDiscovery);
-        _updateClient = new ReleaseUpdateClient(
-            BrandInfo.RepositoryOwner,
-            BrandInfo.RepositoryName,
+        BuiltInAssetInstaller.EnsureCompatibilityInstalled(_layout);
+        _compatibilityPacks = new CompatibilityPackStore(
+            Path.Combine(_layout.RootDirectory, "Compatibility"),
             _layout.DataDirectory,
-            Version.Parse(BrandInfo.Version));
+            Version.Parse(BrandInfo.Version),
+            ThemeRuntime.ContractVersion);
+        _diagnosticsService = new DiagnosticsInspectionService(
+            _layout,
+            _stateStore,
+            _compatibilityPacks,
+            _launcher);
+        _aboutUpdateService = new AboutUpdateService(
+            _layout,
+            _compatibilityPacks,
+            Version.Parse(BrandInfo.Version),
+            $"{BrandInfo.ProductName}.exe");
         _runtime = new ThemeRuntime(
             new LoopbackCdpDiscovery(),
-            new ThemePayloadBuilder(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-            {
-                [ThemePayloadBuilder.OpenRuntimeAdapterKey] = Path.Combine(
-                    _layout.RootDirectory,
-                    "Compatibility",
-                    "theme-runtime-v2.js"),
-            }));
+            new ThemePayloadBuilder(() => _compatibilityPacks.Resolve().RuntimeAssets),
+            _personalImageStore.ResolveForRuntime);
 
         var hadSavedPreferences = _preferencesStore.Exists;
         var preferences = _preferencesStore.Load();
@@ -123,7 +131,7 @@ public partial class MainWindow : Window, IAsyncDisposable
         _themeLibrarySort = ThemeLibraryState.NormalizeSort(preferences.ThemeLibrarySort);
         _creatorWorkspaces = new CreatorWorkspaceStore(preferences.RecentCreatorWorkspaces);
         _creatorPromptDraft = preferences.CreatorPromptDraft.Normalize();
-        _backupService = new PortableBackupService(
+        _aboutDataService = new AboutDataService(
             _layout.RootDirectory,
             _layout.DataDirectory,
             _layout.ThemesDirectory,
@@ -144,6 +152,10 @@ public partial class MainWindow : Window, IAsyncDisposable
         {
             _artworkPresets.Add(preset.Normalize());
         }
+        foreach (var preset in preferences.ExperiencePresets)
+        {
+            _experiencePresets.Add(preset.Normalize());
+        }
         _runtime.StatusChanged += Runtime_StatusChanged;
         Closed += MainWindow_Closed;
     }
@@ -153,6 +165,17 @@ public partial class MainWindow : Window, IAsyncDisposable
         if (_uiInitialized) return;
 
         InitializeComponent();
+        DiagnosticsPage.RefreshRequested += DiagnosticsPage_RefreshRequested;
+        DiagnosticsPage.OpenLogDirectoryRequested += DiagnosticsPage_OpenLogDirectoryRequested;
+        DiagnosticsPage.RestoreBuiltInThemesRequested += DiagnosticsPage_RestoreBuiltInThemesRequested;
+        AboutPage.OpenRootDirectoryRequested += AboutPage_OpenRootDirectoryRequested;
+        AboutPage.OpenDataDirectoryRequested += AboutPage_OpenDataDirectoryRequested;
+        AboutPage.BackupRequested += AboutPage_BackupRequested;
+        AboutPage.RestoreRequested += AboutPage_RestoreRequested;
+        AboutPage.StartupSettingChanged += AboutPage_StartupSettingChanged;
+        AboutPage.AutomaticUpdateSettingChanged += AboutPage_AutomaticUpdateSettingChanged;
+        AboutPage.CheckForUpdatesRequested += AboutPage_CheckForUpdatesRequested;
+        AboutPage.RollbackRequested += AboutPage_RollbackRequested;
         ThemeSortComboBox.SelectedValue = _themeLibrarySort;
         _uiInitialized = true;
         CreatorCenter.Configure(
@@ -168,13 +191,15 @@ public partial class MainWindow : Window, IAsyncDisposable
             new CreatorRuntimeBridge(
                 ApplyCreatorProjectAsync,
                 ReadCreatorRuntimeStatusAsync,
-                ToggleCreatorRuntimeColorSchemeAsync),
+                ToggleCreatorRuntimeColorSchemeAsync,
+                RunCreatorAcceptanceAsync),
             () => _darkMode,
             message => ShowToast(message));
         FitWindowToWorkArea();
         SourceInitialized += (_, _) => NativeTitleBar.Apply(this, _darkMode);
         ThemeItems.ItemsSource = _visibleThemes;
         VisualPresetComboBox.ItemsSource = _artworkPresets;
+        ExperienceProfilesPage.Bind(_experiencePresets);
         _visualSettingsDebounce = new DispatcherTimer(DispatcherPriority.Background)
         {
             Interval = TimeSpan.FromMilliseconds(140),
@@ -227,7 +252,7 @@ public partial class MainWindow : Window, IAsyncDisposable
             e.Handled = true;
             return;
         }
-        if (_rightPane == RightPane.Settings && Keyboard.FocusedElement is not TextBox)
+        if (_currentRoute == AppRoute.ArtworkStudio && Keyboard.FocusedElement is not TextBox)
         {
             if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.Z)
             {
@@ -292,8 +317,9 @@ public partial class MainWindow : Window, IAsyncDisposable
             SetStatus(codexInstalled
                 ? "欢迎使用 Tessalume，请选择喜欢的主题后手动应用"
                 : "可以先浏览主题；应用前请先安装 Windows 版 Codex Desktop");
-            ShowStartupUpdateResult();
+            await ShowStartupUpdateResultAsync();
             ScheduleAutomaticUpdateCheck();
+            await ConfirmPendingUpdateHealthAsync();
             return;
         }
 
@@ -307,8 +333,16 @@ public partial class MainWindow : Window, IAsyncDisposable
             SetEngineState("Codex 默认外观");
             SetStatus("请选择主题并手动应用到 Codex");
         }
-        ShowStartupUpdateResult();
+        await ShowStartupUpdateResultAsync();
         ScheduleAutomaticUpdateCheck();
+        await ConfirmPendingUpdateHealthAsync();
+    }
+
+    private async Task ConfirmPendingUpdateHealthAsync()
+    {
+        if (_startupHealthToken is not { } healthToken) return;
+        await UpdateBootstrapper.ConfirmStartupHealthyAsync(_layout, healthToken);
+        _startupHealthToken = null;
     }
 
     private async void MainWindow_Closed(object? sender, EventArgs e)
@@ -345,7 +379,9 @@ public partial class MainWindow : Window, IAsyncDisposable
         _updateCancellation.Dispose();
         _backupCancellation.Cancel();
         _backupCancellation.Dispose();
-        _updateClient.Dispose();
+        _personalizationCancellation.Cancel();
+        _personalizationCancellation.Dispose();
+        _aboutUpdateService.Dispose();
         if (CreatorCenter is not null)
         {
             await CreatorCenter.FlushPendingPromptDraftAsync();

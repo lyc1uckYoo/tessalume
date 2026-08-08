@@ -1,0 +1,77 @@
+name: Release compatibility pack
+
+on:
+  push:
+    tags:
+      - 'compat-v*.*.*'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: compatibility-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release-compatibility-pack:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out tagged source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Validate source and tests
+        shell: pwsh
+        run: |
+          dotnet restore Tessalume.sln
+          dotnet format Tessalume.sln --verify-no-changes --no-restore --verbosity minimal
+          dotnet build Tessalume.sln --configuration Release --no-restore
+          dotnet run --project tests/Tessalume.Tests/Tessalume.Tests.csproj --configuration Release --no-build
+          .\tools\Build-CompatibilityRuntime.ps1 -Destination artifacts/compatibility-validation/theme-runtime-v2.js
+          node --check artifacts/compatibility-validation/theme-runtime-v2.js
+
+      - name: Build compatibility pack
+        shell: pwsh
+        run: |
+          $version = '${{ github.ref_name }}' -replace '^compat-v', ''
+          if ($version -notmatch '^\d+\.\d+\.\d+(?:\.\d+)?$') {
+            throw "Invalid compatibility release tag: ${{ github.ref_name }}"
+          }
+          .\tools\New-CompatibilityPack.ps1 -Version $version
+
+      - name: Publish non-latest compatibility Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = '${{ github.ref_name }}'
+          $version = $tag -replace '^compat-v', ''
+          $assets = @(
+            'artifacts/compatibility/Tessalume-Compatibility.zip',
+            'artifacts/compatibility/SHA256SUMS.txt'
+          )
+          $notes = "Tessalume 页面兼容规则 $version。软件会自动校验并安装此小型补丁；不会替换用户主题、data 数据或 Codex 安装文件。"
+          if (gh release view $tag 2>$null) {
+            gh release upload $tag @assets --clobber
+            gh release edit $tag --title "Tessalume compatibility $version" --notes $notes
+          }
+          else {
+            gh release create $tag @assets --verify-tag --title "Tessalume compatibility $version" --notes $notes --latest=false
+          }
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Tessalume-Compatibility-${{ github.ref_name }}
+          path: |
+            artifacts/compatibility/Tessalume-Compatibility.zip
+            artifacts/compatibility/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 30

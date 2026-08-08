@@ -10,6 +10,7 @@ global using Tessalume.App.Creator;
 global using Tessalume.Core.Themes;
 global using Tessalume.Core.Creator;
 global using Tessalume.Core.Backup;
+global using Tessalume.Core.Compatibility;
 global using Tessalume.Core.Runtime;
 global using Tessalume.Core.Updates;
 global using Tessalume.App.Infrastructure;

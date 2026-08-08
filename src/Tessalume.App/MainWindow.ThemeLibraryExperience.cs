@@ -64,7 +64,7 @@ public partial class MainWindow
 
         await SavePreferencesAsync();
         if (_uiInitialized &&
-            _rightPane == RightPane.Themes &&
+            _currentRoute == Features.Navigation.AppRoute.ThemeLibrary &&
             string.Equals(_themeLibrarySort, ThemeLibraryState.RecentSort, StringComparison.OrdinalIgnoreCase))
         {
             ApplyThemeLibraryFilter(themeId);

@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Windows.Threading;
+using Tessalume.App.Features.About;
 
 internal static partial class TestSuite
 {
@@ -7,7 +8,8 @@ internal static partial class TestSuite
         string aboutSnapshotPath,
         string diagnosticsSnapshotPath,
         string diagnosticsDarkSnapshotPath,
-        string? updateBadgeSnapshotPath = null)
+        string? updateBadgeSnapshotPath = null,
+        string? aboutDarkSnapshotPath = null)
     {
         var portableRoot = Path.Combine(
             Path.GetTempPath(),
@@ -49,17 +51,35 @@ internal static partial class TestSuite
                 {
                     window = new MainWindow(new PortableLayout(portableRoot, themes, data));
                     InvokeMainWindowMethod(window, "EnsureMainUiInitialized");
-                    window.ThemeLibraryPage.Visibility = Visibility.Collapsed;
-                    window.InfoPage.Visibility = Visibility.Visible;
-                    ShowOnlyInfoPanel(window, window.AboutInfoPanel);
+                    window.DataButton.RaiseEvent(
+                        new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
+                    await Task.Delay(240);
+                    CompleteInfoPageTransition(window);
+                    window.AboutPage.ShowSection(AboutSection.DataAndUpdates);
+                    window.AboutPage.RenderOverview(new AboutOverview(
+                        portableRoot,
+                        data,
+                        ThemeCount: 0,
+                        ValidThemeCount: 0,
+                        FavoriteThemeCount: 0));
                     ArrangeMainSurface(window);
                     window.InfoScroll.ScrollToEnd();
                     ArrangeMainSurface(window);
                     SaveWindowContent(window, aboutSnapshotPath);
+                    if (!string.IsNullOrWhiteSpace(aboutDarkSnapshotPath))
+                    {
+                        InvokeMainWindowMethod(window, "ApplyStudioTheme", true);
+                        window.InfoScroll.ScrollToEnd();
+                        ArrangeMainSurface(window);
+                        SaveWindowContent(window, aboutDarkSnapshotPath);
+                        InvokeMainWindowMethod(window, "ApplyStudioTheme", false);
+                        window.InfoScroll.ScrollToEnd();
+                        ArrangeMainSurface(window);
+                    }
                     if (!string.IsNullOrWhiteSpace(updateBadgeSnapshotPath))
                     {
                         window.UpdateAvailableBadge.Visibility = Visibility.Visible;
-                        window.UpdateAvailableBadge.ToolTip = "发现 v1.4.1，点击查看并安装";
+                        window.UpdateAvailableBadge.ToolTip = "发现 v2.0.1，点击查看并安装";
                         ArrangeMainSurface(window);
                         Ensure(window.UpdateAvailableBadge.ActualWidth > 0 &&
                                window.UpdateAvailableBadge.ActualHeight > 0,
@@ -68,7 +88,10 @@ internal static partial class TestSuite
                         window.UpdateAvailableBadge.Visibility = Visibility.Collapsed;
                     }
 
-                    ShowOnlyInfoPanel(window, window.DiagnosticsInfoPanel);
+                    InvokeMainWindowMethod(
+                        window,
+                        "NavigateTo",
+                        Tessalume.App.Features.Navigation.AppRoute.Diagnostics);
                     var refresh = typeof(MainWindow).GetMethod(
                         "RefreshDiagnosticsAsync",
                         BindingFlags.Instance | BindingFlags.NonPublic)
@@ -117,6 +140,11 @@ internal static partial class TestSuite
                 return Task.FromResult(1);
             }
             Console.WriteLine($"About and Data snapshot: {Path.GetFullPath(aboutSnapshotPath)}");
+            if (!string.IsNullOrWhiteSpace(aboutDarkSnapshotPath))
+            {
+                Console.WriteLine(
+                    $"About and Data dark snapshot: {Path.GetFullPath(aboutDarkSnapshotPath)}");
+            }
             Console.WriteLine($"Compatibility diagnostics snapshot: {Path.GetFullPath(diagnosticsSnapshotPath)}");
             Console.WriteLine($"Compatibility diagnostics dark snapshot: {Path.GetFullPath(diagnosticsDarkSnapshotPath)}");
             if (!string.IsNullOrWhiteSpace(updateBadgeSnapshotPath))
@@ -137,14 +165,26 @@ internal static partial class TestSuite
                  {
                      window.ImportInfoPanel,
                      window.SettingsInfoPanel,
-                     window.DiagnosticsInfoPanel,
-                     window.AboutInfoPanel,
+                     window.ExperienceInfoPanel,
+                     window.DiagnosticsPage,
+                     window.AboutPage,
                      window.CreatorCenter,
                  })
         {
             panel.Visibility = ReferenceEquals(panel, visiblePanel)
                 ? Visibility.Visible
                 : Visibility.Collapsed;
+        }
+    }
+
+    private static void CompleteInfoPageTransition(MainWindow window)
+    {
+        window.InfoPage.BeginAnimation(UIElement.OpacityProperty, null);
+        window.InfoPage.Opacity = 1;
+        if (window.InfoPage.RenderTransform is System.Windows.Media.TranslateTransform translate)
+        {
+            translate.BeginAnimation(System.Windows.Media.TranslateTransform.YProperty, null);
+            translate.Y = 0;
         }
     }
 

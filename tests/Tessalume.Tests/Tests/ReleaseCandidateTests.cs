@@ -1,6 +1,6 @@
 internal static partial class TestSuite
 {
-    static async Task Version13IsolatedCreatorToRecoveryFlowAsync()
+    static async Task Version20IsolatedCreatorToRecoveryFlowAsync()
     {
         var root = Path.Combine(Path.GetTempPath(), $"tessalume-13-e2e-{Guid.NewGuid():N}");
         var workspace = Path.Combine(root, "workspace");

@@ -1,0 +1,139 @@
+<UserControl x:Class="Tessalume.App.Features.About.AboutView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Tessalume.App"
+             VerticalAlignment="Top"
+             Margin="0,0,0,4">
+    <StackPanel>
+        <Grid>
+            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+            <StackPanel>
+                <TextBlock x:Name="PageTitleText" Text="关于 Tessalume" Style="{DynamicResource PageTitleText}" />
+                <TextBlock x:Name="PageDescriptionText" Text="查看版本信息、产品定位与本次版本能力。" Style="{DynamicResource PageDescriptionText}" />
+            </StackPanel>
+            <Border Grid.Column="1" Background="{DynamicResource AccentSoft}" BorderBrush="{DynamicResource Accent}" BorderThickness="1" CornerRadius="11" Padding="12,6" VerticalAlignment="Center">
+                <TextBlock Text="{x:Static local:BrandInfo.VersionLabel}" Foreground="{DynamicResource Accent}" FontSize="10" FontWeight="SemiBold" />
+            </Border>
+        </Grid>
+
+        <Border x:Name="IdentityCard" Style="{DynamicResource ProductCard}" Margin="0,20,0,0" Padding="22">
+            <Grid>
+                <Grid.ColumnDefinitions><ColumnDefinition Width="72" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                <Border Width="60" Height="60" CornerRadius="18" Background="{DynamicResource PrimaryGradient}" VerticalAlignment="Center">
+                    <Image Width="48" Height="48" Source="{x:Static local:BrandInfo.AppLogo}" Stretch="Uniform" />
+                </Border>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="4,0,20,0">
+                    <TextBlock Text="{x:Static local:BrandInfo.ProductName}" Foreground="{DynamicResource PrimaryText}" FontSize="20" FontWeight="SemiBold" />
+                    <TextBlock Text="万棱流光 · Codex Desktop 主题工作室" Foreground="{DynamicResource MutedText}" FontSize="10.5" Margin="0,5,0,0" />
+                    <TextBlock Text="主题本机运行 · 官方更新联网 · 不修改 Codex 安装文件" Foreground="{DynamicResource Teal}" FontSize="10" FontWeight="SemiBold" Margin="0,9,0,0" />
+                </StackPanel>
+                <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
+                    <TextBlock Text="当前版本" Style="{DynamicResource MetricLabelText}" HorizontalAlignment="Right" />
+                    <TextBlock Text="{x:Static local:BrandInfo.VersionLabel}" Style="{DynamicResource MetricValueText}" FontSize="19" Margin="0,4,0,0" HorizontalAlignment="Right" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <TextBlock x:Name="ReleaseHighlightsLabel" Text="2.0 版本亮点" Style="{DynamicResource SectionEyebrowText}" Margin="2,22,0,0" />
+        <Grid x:Name="ReleaseHighlightsGrid" Margin="0,10,0,0">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="12" /><ColumnDefinition Width="*" /><ColumnDefinition Width="12" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+            <Border Style="{DynamicResource InsetCard}" Background="{DynamicResource AccentSoft}" BorderBrush="{DynamicResource InfoBorder}" Padding="16">
+                <StackPanel><TextBlock Text="◇" Foreground="{DynamicResource Accent}" FontSize="20" FontWeight="SemiBold" /><TextBlock Text="兼容规则独立更新" Foreground="{DynamicResource PrimaryText}" FontSize="12" FontWeight="SemiBold" Margin="0,9,0,0" /><TextBlock Text="页面识别集中管理，小型官方补丁可独立校验、安装和回退。" Foreground="{DynamicResource MutedText}" FontSize="10" TextWrapping="Wrap" LineHeight="15" Margin="0,5,0,0" /></StackPanel>
+            </Border>
+            <Border Grid.Column="2" Style="{DynamicResource InsetCard}" Background="{DynamicResource SkySoft}" BorderBrush="{DynamicResource InfoBorder}" Padding="16">
+                <StackPanel><TextBlock Text="↻" Foreground="{DynamicResource Sky}" FontSize="19" FontWeight="SemiBold" /><TextBlock Text="更新失败自动恢复" Foreground="{DynamicResource PrimaryText}" FontSize="12" FontWeight="SemiBold" Margin="0,9,0,0" /><TextBlock Text="新版先完成启动健康确认，并保留可手动恢复的上一版本。" Foreground="{DynamicResource MutedText}" FontSize="10" TextWrapping="Wrap" LineHeight="15" Margin="0,5,0,0" /></StackPanel>
+            </Border>
+            <Border Grid.Column="4" Style="{DynamicResource InsetCard}" Background="{DynamicResource TealSoft}" BorderBrush="{DynamicResource InfoBorder}" Padding="16">
+                <StackPanel><TextBlock Text="✓" Foreground="{DynamicResource Teal}" FontSize="19" FontWeight="SemiBold" /><TextBlock Text="创作中心 2.0" Foreground="{DynamicResource PrimaryText}" FontSize="12" FontWeight="SemiBold" Margin="0,9,0,0" /><TextBlock Text="五阶段流程、修复提示和亮暗关键表面批量验收形成完整发布门禁。" Foreground="{DynamicResource MutedText}" FontSize="10" TextWrapping="Wrap" LineHeight="15" Margin="0,5,0,0" /></StackPanel>
+            </Border>
+        </Grid>
+
+        <Border x:Name="DataManagementCard" Style="{DynamicResource ProductCard}" Margin="0,20,0,0" Padding="18">
+            <StackPanel>
+                <Grid>
+                    <StackPanel><TextBlock Text="便携数据与本机目录" Foreground="{DynamicResource PrimaryText}" FontSize="13" FontWeight="SemiBold" /><TextBlock Text="所有个性化内容都可以在这里找到。" Foreground="{DynamicResource MutedText}" FontSize="10" Margin="0,4,0,0" /></StackPanel>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                        <Button Style="{DynamicResource QuietActionButton}" Content="打开程序目录" Click="OpenRootDirectory_Click" />
+                        <Button Style="{DynamicResource SecondaryActionButton}" Content="打开数据目录" Margin="8,0,0,0" Click="OpenDataDirectory_Click" />
+                    </StackPanel>
+                </Grid>
+                <Grid Margin="0,14,0,0">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="12" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                    <Border Style="{DynamicResource InsetCard}" Padding="13"><StackPanel><TextBlock Text="程序目录" Style="{DynamicResource MetricLabelText}" /><TextBlock x:Name="RootDirectoryText" Text="—" Foreground="{DynamicResource PrimaryText}" FontFamily="Consolas" FontSize="10" TextTrimming="CharacterEllipsis" Margin="0,5,0,0" ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}" /></StackPanel></Border>
+                    <Border Grid.Column="2" Style="{DynamicResource InsetCard}" Padding="13"><StackPanel><TextBlock Text="数据目录" Style="{DynamicResource MetricLabelText}" /><TextBlock x:Name="DataDirectoryText" Text="—" Foreground="{DynamicResource PrimaryText}" FontFamily="Consolas" FontSize="10" TextTrimming="CharacterEllipsis" Margin="0,5,0,0" ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}" /></StackPanel></Border>
+                </Grid>
+                <TextBlock x:Name="LibrarySummaryText" Text="正在读取本地主题与收藏信息…" Foreground="{DynamicResource MutedText}" FontSize="10" Margin="1,11,0,0" />
+
+                <Border Height="1" Background="{DynamicResource Border}" Margin="0,15,0,14" />
+                <Grid>
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <TextBlock Text="用户数据备份与恢复" Foreground="{DynamicResource PrimaryText}" FontSize="12.5" FontWeight="SemiBold" />
+                        <TextBlock Text="默认备份收藏、图像参数和运行状态；日志、更新文件与内置主题不会进入备份。" Foreground="{DynamicResource MutedText}" FontSize="10" TextWrapping="Wrap" Margin="0,4,16,0" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                        <CheckBox x:Name="IncludeImportedThemesCheckBox" Style="{DynamicResource SettingsToggle}" IsChecked="False" AutomationProperties.Name="备份时包含用户导入主题" />
+                        <TextBlock Text="包含用户主题" Foreground="{DynamicResource MutedText}" FontSize="10" VerticalAlignment="Center" Margin="8,0,0,0" />
+                    </StackPanel>
+                </Grid>
+                <Grid Margin="0,13,0,0">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="8" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                    <TextBlock x:Name="BackupStatusText" Text="尚未在本次会话中备份或恢复" Foreground="{DynamicResource SubtleText}" FontSize="10" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Margin="1,0,14,0" />
+                    <Button x:Name="RestoreUserDataButton" Grid.Column="1" Style="{DynamicResource QuietActionButton}" Content="恢复备份" Click="RestoreUserData_Click" AutomationProperties.Name="恢复 Tessalume 用户数据" />
+                    <Button x:Name="BackupUserDataButton" Grid.Column="3" Style="{DynamicResource SecondaryActionButton}" Content="备份用户数据" Click="BackupUserData_Click" AutomationProperties.Name="备份 Tessalume 用户数据" />
+                </Grid>
+            </StackPanel>
+        </Border>
+
+        <TextBlock x:Name="ApplicationBehaviorLabel" Text="应用行为" Style="{DynamicResource SectionEyebrowText}" Margin="2,20,0,0" />
+        <Border x:Name="ApplicationBehaviorCard" Style="{DynamicResource ProductCard}" Margin="0,10,0,0" Padding="18">
+            <StackPanel>
+                <Grid>
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="42" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                    <Border Width="32" Height="32" CornerRadius="10" Background="{DynamicResource AccentSoft}">
+                        <Path Width="16" Height="16" Data="M 12,2 L 12,7 M 7.5,4.5 A 8,8 0 1 0 16.5,4.5" Stroke="{DynamicResource Accent}" StrokeThickness="2" StrokeStartLineCap="Round" Fill="Transparent" Stretch="Uniform" />
+                    </Border>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="登录 Windows 后自动启动" Foreground="{DynamicResource PrimaryText}" FontWeight="SemiBold" FontSize="12.5" />
+                        <TextBlock Text="默认关闭；开启后会自动显示 Tessalume 主题浮窗。" Foreground="{DynamicResource MutedText}" FontSize="10" Margin="0,3,12,0" />
+                    </StackPanel>
+                    <CheckBox x:Name="StartupCheckBox" Grid.Column="2" Style="{DynamicResource SettingsToggle}" VerticalAlignment="Center" Checked="StartupCheckBox_Changed" Unchecked="StartupCheckBox_Changed" AutomationProperties.Name="登录 Windows 后自动启动 Tessalume" />
+                </Grid>
+
+                <Border Height="1" Background="{DynamicResource Border}" Margin="0,16" />
+
+                <Grid>
+                    <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="42" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                    <Border Width="32" Height="32" CornerRadius="10" Background="{DynamicResource TealSoft}">
+                        <Path Width="16" Height="16" Data="M 19,7 L 19,3 L 15,3 M 19,3 C 16.5,1.2 12.8,1.5 10.5,3.2 C 8.7,4.5 7.7,6.4 7.5,8.4 M 5,17 L 5,21 L 9,21 M 5,21 C 7.5,22.8 11.2,22.5 13.5,20.8 C 15.3,19.5 16.3,17.6 16.5,15.6" Stroke="{DynamicResource Teal}" StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Fill="Transparent" Stretch="Uniform" />
+                    </Border>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="软件与兼容规则更新" Foreground="{DynamicResource PrimaryText}" FontWeight="SemiBold" FontSize="12.5" />
+                        <TextBlock x:Name="UpdateStatusText" Text="尚未检查更新" Foreground="{DynamicResource MutedText}" FontSize="10" Margin="0,3,12,0" TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="启动时自动检查" Foreground="{DynamicResource MutedText}" FontSize="10" VerticalAlignment="Center" Margin="0,0,8,0" />
+                        <CheckBox x:Name="AutomaticUpdatesCheckBox" Style="{DynamicResource SettingsToggle}" VerticalAlignment="Center" Checked="AutomaticUpdatesCheckBox_Changed" Unchecked="AutomaticUpdatesCheckBox_Changed" AutomationProperties.Name="启动时自动检查软件和页面兼容规则更新" />
+                        <Button x:Name="CheckForUpdatesButton" Style="{DynamicResource SecondaryActionButton}" Content="立即检查" Margin="14,0,0,0" Click="CheckForUpdates_Click" AutomationProperties.Name="立即检查软件和页面兼容规则更新" />
+                    </StackPanel>
+                    <Grid Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Margin="0,12,0,0">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                        <ProgressBar x:Name="UpdateProgressBar" Height="6" Minimum="0" Maximum="100" Value="0" Visibility="Collapsed" Background="{DynamicResource SurfaceAlt}" Foreground="{DynamicResource Accent}" BorderThickness="0" VerticalAlignment="Center" />
+                        <TextBlock x:Name="UpdateProgressText" Grid.Column="1" Text="0%" Visibility="Collapsed" Foreground="{DynamicResource SubtleText}" FontSize="10" Margin="10,0,0,0" VerticalAlignment="Center" />
+                    </Grid>
+                    <Border Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="10" Padding="11,8" Margin="0,12,0,0">
+                        <Grid>
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="上一版本恢复" Foreground="{DynamicResource PrimaryText}" FontSize="10.5" FontWeight="SemiBold" />
+                                <TextBlock x:Name="RollbackStatusText" Text="正在检查本机恢复点…" Foreground="{DynamicResource MutedText}" FontSize="10" Margin="0,3,12,0" TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                            <Button x:Name="RollbackVersionButton" Grid.Column="1" Style="{DynamicResource QuietActionButton}" Content="恢复上一版本" IsEnabled="False" Click="RollbackVersion_Click" AutomationProperties.Name="恢复到更新前的 Tessalume 版本" />
+                        </Grid>
+                    </Border>
+                </Grid>
+            </StackPanel>
+        </Border>
+    </StackPanel>
+</UserControl>

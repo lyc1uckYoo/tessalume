@@ -158,6 +158,7 @@ html.tessalume-theme-active:not(.electron-dark).tessalume-is-home [data-tessalum
   opacity:var(--tessalume-visual-hero-light-opacity,1)!important;
   translate:var(--tessalume-visual-hero-light-translate,0px 0px)!important;
   scale:var(--tessalume-visual-hero-light-scale,1)!important;
+  background-blend-mode:var(--tessalume-visual-hero-light-blend,normal)!important;
 }
 
 html.tessalume-theme-active.electron-dark.tessalume-is-home [data-tessalume-surface="home"]>div:first-child>div:first-child>div:first-child::before {
@@ -165,6 +166,7 @@ html.tessalume-theme-active.electron-dark.tessalume-is-home [data-tessalume-surf
   opacity:var(--tessalume-visual-hero-dark-opacity,1)!important;
   translate:var(--tessalume-visual-hero-dark-translate,0px 0px)!important;
   scale:var(--tessalume-visual-hero-dark-scale,1)!important;
+  background-blend-mode:var(--tessalume-visual-hero-dark-blend,normal)!important;
 }
 
 html.tessalume-theme-active:not(.electron-dark) [data-tessalume-surface="sidebar"]::after {
@@ -172,6 +174,7 @@ html.tessalume-theme-active:not(.electron-dark) [data-tessalume-surface="sidebar
   opacity:var(--tessalume-visual-sidebar-light-opacity,1)!important;
   translate:var(--tessalume-visual-sidebar-light-translate,0px 0px)!important;
   scale:var(--tessalume-visual-sidebar-light-scale,1)!important;
+  background-blend-mode:var(--tessalume-visual-sidebar-light-blend,normal)!important;
 }
 
 html.tessalume-theme-active.electron-dark [data-tessalume-surface="sidebar"]::after {
@@ -179,6 +182,7 @@ html.tessalume-theme-active.electron-dark [data-tessalume-surface="sidebar"]::af
   opacity:var(--tessalume-visual-sidebar-dark-opacity,1)!important;
   translate:var(--tessalume-visual-sidebar-dark-translate,0px 0px)!important;
   scale:var(--tessalume-visual-sidebar-dark-scale,1)!important;
+  background-blend-mode:var(--tessalume-visual-sidebar-dark-blend,normal)!important;
 }
 
 html.tessalume-theme-active:not(.electron-dark).tessalume-is-task main[data-tessalume-surface="main"]::before {
@@ -186,6 +190,7 @@ html.tessalume-theme-active:not(.electron-dark).tessalume-is-task main[data-tess
   opacity:var(--tessalume-visual-chat-light-opacity,1)!important;
   translate:var(--tessalume-visual-chat-light-translate,0px 0px)!important;
   scale:var(--tessalume-visual-chat-light-scale,1)!important;
+  background-blend-mode:var(--tessalume-visual-chat-light-blend,normal)!important;
 }
 
 html.tessalume-theme-active.electron-dark.tessalume-is-task main[data-tessalume-surface="main"]::before {
@@ -193,6 +198,56 @@ html.tessalume-theme-active.electron-dark.tessalume-is-task main[data-tessalume-
   opacity:var(--tessalume-visual-chat-dark-opacity,1)!important;
   translate:var(--tessalume-visual-chat-dark-translate,0px 0px)!important;
   scale:var(--tessalume-visual-chat-dark-scale,1)!important;
+  background-blend-mode:var(--tessalume-visual-chat-dark-blend,normal)!important;
+}
+
+/* Optional user readability protection. It is disabled by default and scoped to
+   the selected region and color mode. */
+html[data-tessalume-readability~="hero-light"]:not(.electron-dark) [data-theme-role="hero"],
+html[data-tessalume-readability~="hero-dark"].electron-dark [data-theme-role="hero"] {
+  text-shadow:0 2px 16px rgba(0,0,0,.42)!important;
+}
+
+html[data-tessalume-readability~="sidebar-light"]:not(.electron-dark) [data-tessalume-surface="sidebar"] :is([data-app-action-sidebar-project-row],[data-app-action-sidebar-thread-row]),
+html[data-tessalume-readability~="sidebar-dark"].electron-dark [data-tessalume-surface="sidebar"] :is([data-app-action-sidebar-project-row],[data-app-action-sidebar-thread-row]) {
+  background:color-mix(in srgb,var(--color-background-primary,#fff) 78%,transparent)!important;
+  backdrop-filter:blur(8px)!important;
+}
+
+html[data-tessalume-readability~="chat-light"]:not(.electron-dark).tessalume-is-task main[data-tessalume-surface="main"]::after,
+html[data-tessalume-readability~="chat-dark"].electron-dark.tessalume-is-task main[data-tessalume-surface="main"]::after {
+  background:linear-gradient(90deg,color-mix(in srgb,var(--color-background-primary,#fff) 88%,transparent),color-mix(in srgb,var(--color-background-primary,#fff) 56%,transparent) 58%,transparent 92%)!important;
+}
+
+/* User display preferences affect only Tessalume surfaces and theme-owned motion. */
+html[data-tessalume-motion="reduced"] #tessalume-theme-root *,
+html[data-tessalume-motion="reduced"] #tessalume-theme-root *::before,
+html[data-tessalume-motion="reduced"] #tessalume-theme-root *::after {
+  animation-duration:.8s!important;
+  transition-duration:.18s!important;
+}
+
+html[data-tessalume-motion="off"] #tessalume-theme-root *,
+html[data-tessalume-motion="off"] #tessalume-theme-root *::before,
+html[data-tessalume-motion="off"] #tessalume-theme-root *::after {
+  animation:none!important;
+  transition-duration:.001ms!important;
+}
+
+html[data-tessalume-text-scale="small"] :is([data-tessalume-surface="main"],[data-tessalume-surface="sidebar"]) {
+  font-size:94%!important;
+}
+
+html[data-tessalume-text-scale="large"] :is([data-tessalume-surface="main"],[data-tessalume-surface="sidebar"]) {
+  font-size:106%!important;
+}
+
+html[data-tessalume-density="compact"] [data-tessalume-message] {
+  margin-block:6px!important;
+}
+
+html[data-tessalume-density="spacious"] [data-tessalume-message] {
+  margin-block:18px!important;
 }
 
 html.tessalume-theme-active:not(.electron-dark) [data-tessalume-surface="sidebar"] :is([data-app-action-sidebar-project-row],[data-app-action-sidebar-thread-row]):is(:hover,[aria-current="page"],[data-sidebar-thread-active="true"]) {

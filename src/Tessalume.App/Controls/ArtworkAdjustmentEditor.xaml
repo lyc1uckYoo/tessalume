@@ -2,6 +2,7 @@
              x:Name="Root"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             MinHeight="274"
              UseLayoutRounding="True"
              TextOptions.TextFormattingMode="Display"
              TextOptions.TextRenderingMode="ClearType"
@@ -56,10 +57,15 @@
                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
                     <TextBlock Text="{Binding Title, ElementName=Root}" Foreground="{DynamicResource PrimaryText}" FontWeight="SemiBold" FontSize="13" />
                     <TextBlock Text="{Binding Subtitle, ElementName=Root}" Foreground="{DynamicResource MutedText}" FontSize="10" Margin="0,2,0,0" />
+                    <TextBlock x:Name="CustomImageStatusText" Text="使用主题原图" Foreground="{DynamicResource SubtleText}" FontSize="9.5" Margin="0,2,8,0" TextTrimming="CharacterEllipsis" />
                 </StackPanel>
                 <StackPanel Grid.Column="2" Orientation="Horizontal">
+                    <Button x:Name="ChooseImageButton" Style="{DynamicResource SettingsMiniButton}" Click="ChooseImage_Click"
+                            Content="换图" Padding="8,0" ToolTip="为当前亮暗模式选择本地图片" AutomationProperties.Name="选择本地替换图片" />
+                    <Button x:Name="ClearImageButton" Style="{DynamicResource SettingsMiniButton}" Click="ClearImage_Click" Margin="4,0,0,0"
+                            Content="原图" Padding="8,0" ToolTip="清除本地图片并恢复主题原图" AutomationProperties.Name="恢复主题原图" />
                     <Button x:Name="CopyButton" Style="{DynamicResource SettingsMiniButton}" Click="Copy_Click"
-                            ToolTip="复制这个区域的全部参数" AutomationProperties.Name="复制当前区域参数">
+                            Margin="8,0,0,0" ToolTip="复制这个区域的全部参数" AutomationProperties.Name="复制当前区域参数">
                         <Path Width="12" Height="12" Data="M 8,8 L 19,8 L 19,19 L 8,19 Z M 5,16 L 5,5 L 16,5"
                               Stroke="{DynamicResource MutedText}" StrokeThickness="1.8" Fill="Transparent" Stretch="Uniform" />
                     </Button>
@@ -128,25 +134,66 @@
             </StackPanel>
 
             <StackPanel x:Name="EffectsPanel" Visibility="Collapsed">
-                <Grid Margin="0,4">
-                    <Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /><ColumnDefinition Width="48" /></Grid.ColumnDefinitions>
-                    <TextBlock Text="灰度" Style="{StaticResource AdjustmentLabel}" />
-                    <Slider x:Name="GrayscaleSlider" Grid.Column="1" Style="{DynamicResource SettingsSlider}" Tag="grayscale" AutomationProperties.Name="图像灰度" Minimum="0" Maximum="100" Value="0" ValueChanged="Slider_ValueChanged" AutoToolTipPlacement="TopLeft" />
-                    <TextBox x:Name="GrayscaleValue" Grid.Column="2" Tag="grayscale" Text="0%" Style="{StaticResource AdjustmentValue}" GotKeyboardFocus="ValueEditor_GotKeyboardFocus" LostKeyboardFocus="ValueEditor_LostKeyboardFocus" PreviewKeyDown="ValueEditor_PreviewKeyDown" />
+                <Grid>
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="18" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <Grid Margin="0,2">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="42" /><ColumnDefinition Width="*" /><ColumnDefinition Width="48" /></Grid.ColumnDefinitions>
+                            <TextBlock Text="灰度" Style="{StaticResource AdjustmentLabel}" />
+                            <Slider x:Name="GrayscaleSlider" Grid.Column="1" Style="{DynamicResource SettingsSlider}" Tag="grayscale" AutomationProperties.Name="图像灰度" Minimum="0" Maximum="100" Value="0" ValueChanged="Slider_ValueChanged" AutoToolTipPlacement="TopLeft" />
+                            <TextBox x:Name="GrayscaleValue" Grid.Column="2" Tag="grayscale" Text="0%" Style="{StaticResource AdjustmentValue}" GotKeyboardFocus="ValueEditor_GotKeyboardFocus" LostKeyboardFocus="ValueEditor_LostKeyboardFocus" PreviewKeyDown="ValueEditor_PreviewKeyDown" />
+                        </Grid>
+                        <Grid Margin="0,2">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="42" /><ColumnDefinition Width="*" /><ColumnDefinition Width="48" /></Grid.ColumnDefinitions>
+                            <TextBlock Text="色相" Style="{StaticResource AdjustmentLabel}" />
+                            <Slider x:Name="HueRotationSlider" Grid.Column="1" Style="{DynamicResource SettingsSlider}" Tag="hueRotation" AutomationProperties.Name="图像色相旋转" Minimum="-180" Maximum="180" Value="0" ValueChanged="Slider_ValueChanged" AutoToolTipPlacement="TopLeft" />
+                            <TextBox x:Name="HueRotationValue" Grid.Column="2" Tag="hueRotation" Text="0°" Style="{StaticResource AdjustmentValue}" GotKeyboardFocus="ValueEditor_GotKeyboardFocus" LostKeyboardFocus="ValueEditor_LostKeyboardFocus" PreviewKeyDown="ValueEditor_PreviewKeyDown" />
+                        </Grid>
+                        <Grid Margin="0,2">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="42" /><ColumnDefinition Width="*" /><ColumnDefinition Width="48" /></Grid.ColumnDefinitions>
+                            <TextBlock Text="柔化" Style="{StaticResource AdjustmentLabel}" />
+                            <Slider x:Name="BlurSlider" Grid.Column="1" Style="{DynamicResource SettingsSlider}" Tag="blur" AutomationProperties.Name="图像模糊" Minimum="0" Maximum="20" Value="0" TickFrequency="0.5" ValueChanged="Slider_ValueChanged" AutoToolTipPlacement="TopLeft" />
+                            <TextBox x:Name="BlurValue" Grid.Column="2" Tag="blur" Text="0 px" Style="{StaticResource AdjustmentValue}" GotKeyboardFocus="ValueEditor_GotKeyboardFocus" LostKeyboardFocus="ValueEditor_LostKeyboardFocus" PreviewKeyDown="ValueEditor_PreviewKeyDown" />
+                        </Grid>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2">
+                        <Grid Margin="0,2">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="42" /><ColumnDefinition Width="*" /><ColumnDefinition Width="48" /></Grid.ColumnDefinitions>
+                            <TextBlock Text="叠色" Style="{StaticResource AdjustmentLabel}" />
+                            <Slider x:Name="OverlayOpacitySlider" Grid.Column="1" Style="{DynamicResource SettingsSlider}" Tag="overlayOpacity" AutomationProperties.Name="背景叠色强度" Minimum="0" Maximum="100" Value="0" ValueChanged="Slider_ValueChanged" AutoToolTipPlacement="TopLeft" />
+                            <TextBox x:Name="OverlayOpacityValue" Grid.Column="2" Tag="overlayOpacity" Text="0%" Style="{StaticResource AdjustmentValue}" GotKeyboardFocus="ValueEditor_GotKeyboardFocus" LostKeyboardFocus="ValueEditor_LostKeyboardFocus" PreviewKeyDown="ValueEditor_PreviewKeyDown" />
+                        </Grid>
+                        <Grid Margin="0,2">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="42" /><ColumnDefinition Width="*" /><ColumnDefinition Width="48" /></Grid.ColumnDefinitions>
+                            <TextBlock Text="渐变" Style="{StaticResource AdjustmentLabel}" />
+                            <Slider x:Name="GradientStrengthSlider" Grid.Column="1" Style="{DynamicResource SettingsSlider}" Tag="gradientStrength" AutomationProperties.Name="渐变遮罩强度" Minimum="0" Maximum="100" Value="0" ValueChanged="Slider_ValueChanged" AutoToolTipPlacement="TopLeft" />
+                            <TextBox x:Name="GradientStrengthValue" Grid.Column="2" Tag="gradientStrength" Text="0%" Style="{StaticResource AdjustmentValue}" GotKeyboardFocus="ValueEditor_GotKeyboardFocus" LostKeyboardFocus="ValueEditor_LostKeyboardFocus" PreviewKeyDown="ValueEditor_PreviewKeyDown" />
+                        </Grid>
+                        <Grid Margin="0,2">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="42" /><ColumnDefinition Width="*" /><ColumnDefinition Width="48" /></Grid.ColumnDefinitions>
+                            <TextBlock Text="暗角" Style="{StaticResource AdjustmentLabel}" />
+                            <Slider x:Name="VignetteSlider" Grid.Column="1" Style="{DynamicResource SettingsSlider}" Tag="vignette" AutomationProperties.Name="暗角强度" Minimum="0" Maximum="100" Value="0" ValueChanged="Slider_ValueChanged" AutoToolTipPlacement="TopLeft" />
+                            <TextBox x:Name="VignetteValue" Grid.Column="2" Tag="vignette" Text="0%" Style="{StaticResource AdjustmentValue}" GotKeyboardFocus="ValueEditor_GotKeyboardFocus" LostKeyboardFocus="ValueEditor_LostKeyboardFocus" PreviewKeyDown="ValueEditor_PreviewKeyDown" />
+                        </Grid>
+                    </StackPanel>
                 </Grid>
-                <Grid Margin="0,4">
-                    <Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /><ColumnDefinition Width="48" /></Grid.ColumnDefinitions>
-                    <TextBlock Text="色相" Style="{StaticResource AdjustmentLabel}" />
-                    <Slider x:Name="HueRotationSlider" Grid.Column="1" Style="{DynamicResource SettingsSlider}" Tag="hueRotation" AutomationProperties.Name="图像色相旋转" Minimum="-180" Maximum="180" Value="0" ValueChanged="Slider_ValueChanged" AutoToolTipPlacement="TopLeft" />
-                    <TextBox x:Name="HueRotationValue" Grid.Column="2" Tag="hueRotation" Text="0°" Style="{StaticResource AdjustmentValue}" GotKeyboardFocus="ValueEditor_GotKeyboardFocus" LostKeyboardFocus="ValueEditor_LostKeyboardFocus" PreviewKeyDown="ValueEditor_PreviewKeyDown" />
+                <Grid Margin="0,6,0,0">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="42" /><ColumnDefinition Width="124" /><ColumnDefinition Width="14" /><ColumnDefinition Width="42" /><ColumnDefinition Width="126" /><ColumnDefinition Width="16" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                    <TextBlock Text="混合" Style="{StaticResource AdjustmentLabel}" />
+                    <ComboBox x:Name="BlendModeComboBox" Grid.Column="1" Height="30" Style="{DynamicResource SettingsComboBox}" SelectedValuePath="Tag" SelectionChanged="BlendMode_SelectionChanged" AutomationProperties.Name="图像混合模式">
+                        <ComboBoxItem Content="正常" Tag="normal" />
+                        <ComboBoxItem Content="正片叠底" Tag="multiply" />
+                        <ComboBoxItem Content="滤色" Tag="screen" />
+                        <ComboBoxItem Content="叠加" Tag="overlay" />
+                        <ComboBoxItem Content="柔光" Tag="soft-light" />
+                        <ComboBoxItem Content="明度" Tag="luminosity" />
+                    </ComboBox>
+                    <TextBlock Grid.Column="3" Text="色值" Style="{StaticResource AdjustmentLabel}" />
+                    <TextBox x:Name="OverlayColorTextBox" Grid.Column="4" Height="30" Text="#000000" Style="{StaticResource AdjustmentValue}" Margin="0" LostKeyboardFocus="OverlayColor_LostKeyboardFocus" PreviewKeyDown="OverlayColor_PreviewKeyDown" AutomationProperties.Name="叠色十六进制颜色" />
+                    <CheckBox x:Name="ReadabilityCheckBox" Grid.Column="6" Style="{DynamicResource SettingsToggle}" Checked="Readability_Changed" Unchecked="Readability_Changed" AutomationProperties.Name="启用文字可读性保护" VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="7" Text="文字可读性保护" Foreground="{DynamicResource PrimaryText}" FontSize="10.5" FontWeight="SemiBold" VerticalAlignment="Center" Margin="8,0,0,0" />
                 </Grid>
-                <Grid Margin="0,4">
-                    <Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /><ColumnDefinition Width="48" /></Grid.ColumnDefinitions>
-                    <TextBlock Text="柔化" Style="{StaticResource AdjustmentLabel}" />
-                    <Slider x:Name="BlurSlider" Grid.Column="1" Style="{DynamicResource SettingsSlider}" Tag="blur" AutomationProperties.Name="图像模糊" Minimum="0" Maximum="20" Value="0" TickFrequency="0.5" ValueChanged="Slider_ValueChanged" AutoToolTipPlacement="TopLeft" />
-                    <TextBox x:Name="BlurValue" Grid.Column="2" Tag="blur" Text="0 px" Style="{StaticResource AdjustmentValue}" GotKeyboardFocus="ValueEditor_GotKeyboardFocus" LostKeyboardFocus="ValueEditor_LostKeyboardFocus" PreviewKeyDown="ValueEditor_PreviewKeyDown" />
-                </Grid>
-                <TextBlock Text="柔化适合降低复杂背景干扰；色相会整体改变原图颜色。" Foreground="{DynamicResource MutedText}" FontSize="10" TextWrapping="Wrap" LineHeight="17" Margin="0,8,0,0" />
+                <TextBlock Text="叠色、渐变与暗角只作用于图片层；可读性保护会为文字增加局部阅读底层。" Foreground="{DynamicResource MutedText}" FontSize="9.5" TextWrapping="Wrap" LineHeight="16" Margin="0,5,0,0" />
             </StackPanel>
         </StackPanel>
     </Border>

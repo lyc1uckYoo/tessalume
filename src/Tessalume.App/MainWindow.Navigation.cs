@@ -1,42 +1,46 @@
-using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
-using System.Net.Http;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Threading;
-using Tessalume.App.Infrastructure;
-using Tessalume.App.Models;
-using Tessalume.Core.Runtime;
-using Tessalume.Core.Themes;
-using Tessalume.Core.Updates;
-using Microsoft.Win32;
+using Tessalume.App.Features.About;
+using Tessalume.App.Features.Navigation;
 
 namespace Tessalume.App;
 
 public partial class MainWindow
 {
-    private void ImportGuide_Click(object sender, RoutedEventArgs e) => ShowInfoPage(RightPane.ImportGuide);
+    private void ImportGuide_Click(object sender, RoutedEventArgs e) => NavigateTo(AppRoute.ImportTheme);
 
     private void About_Click(object sender, RoutedEventArgs e)
     {
-        AboutRootText.Text = _layout.RootDirectory;
-        AboutDataText.Text = _layout.DataDirectory;
-        var validCount = _themes.Count(theme => theme.IsValid);
-        var favoriteCount = _themes.Count(theme => theme.IsFavorite);
-        AboutLibrarySummaryText.Text =
-            $"本地库共 {_themes.Count} 个主题 · {validCount} 个通过校验 · {favoriteCount} 个收藏";
-        ShowInfoPage(RightPane.About);
+        RenderAboutOverview();
+        AboutPage.ShowSection(AboutSection.Product);
+        NavigateTo(AppRoute.About);
     }
 
-    private void OpenRootDirectory_Click(object sender, RoutedEventArgs e) =>
+    private async void Data_Click(object sender, RoutedEventArgs e)
+    {
+        RenderAboutOverview();
+        AboutPage.ShowSection(AboutSection.DataAndUpdates);
+        NavigateTo(AppRoute.DataAndUpdates);
+        await RefreshRollbackAvailabilityAsync();
+    }
+
+    private void RenderAboutOverview()
+    {
+        var validCount = _themes.Count(theme => theme.IsValid);
+        var favoriteCount = _themes.Count(theme => theme.IsFavorite);
+        AboutPage.RenderOverview(new AboutOverview(
+            _layout.RootDirectory,
+            _layout.DataDirectory,
+            _themes.Count,
+            validCount,
+            favoriteCount));
+    }
+
+    private void AboutPage_OpenRootDirectoryRequested(object? sender, EventArgs e) =>
         OpenDirectory(_layout.RootDirectory);
 
-    private void OpenDataDirectory_Click(object sender, RoutedEventArgs e) =>
+    private void AboutPage_OpenDataDirectoryRequested(object? sender, EventArgs e) =>
         OpenDirectory(_layout.DataDirectory);
 
     private void OpenDirectory(string path)
@@ -45,31 +49,4 @@ public partial class MainWindow
         Process.Start(new ProcessStartInfo("explorer.exe", $"\"{path}\"") { UseShellExecute = true });
         ShowToast("已在文件资源管理器中打开目录");
     }
-
-
-    private void ShowThemeLibraryPage()
-    {
-        _rightPane = RightPane.Themes;
-        ThemeLibraryPage.Visibility = Visibility.Visible;
-        InfoPage.Visibility = Visibility.Collapsed;
-        UpdateCategoryButtons();
-        AnimatePage(ThemeLibraryPage);
-    }
-
-    private void ShowInfoPage(RightPane page)
-    {
-        CloseThemeDetailPanel();
-        ThemeDropOverlay.Visibility = Visibility.Collapsed;
-        _rightPane = page;
-        ThemeLibraryPage.Visibility = Visibility.Collapsed;
-        InfoPage.Visibility = Visibility.Visible;
-        ImportInfoPanel.Visibility = page == RightPane.ImportGuide ? Visibility.Visible : Visibility.Collapsed;
-        CreatorCenter.Visibility = page == RightPane.Creator ? Visibility.Visible : Visibility.Collapsed;
-        SettingsInfoPanel.Visibility = page == RightPane.Settings ? Visibility.Visible : Visibility.Collapsed;
-        DiagnosticsInfoPanel.Visibility = page == RightPane.Diagnostics ? Visibility.Visible : Visibility.Collapsed;
-        AboutInfoPanel.Visibility = page == RightPane.About ? Visibility.Visible : Visibility.Collapsed;
-        UpdateCategoryButtons();
-        AnimatePage(InfoPage);
-    }
-
 }

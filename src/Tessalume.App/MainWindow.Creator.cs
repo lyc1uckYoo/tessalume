@@ -7,7 +7,7 @@ public partial class MainWindow
 {
     private async void CreatorCenter_Click(object sender, RoutedEventArgs e)
     {
-        ShowInfoPage(RightPane.Creator);
+        NavigateTo(Features.Navigation.AppRoute.CreatorCenter);
         await CreatorCenter.ActivateAsync();
     }
 

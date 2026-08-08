@@ -159,23 +159,25 @@ public partial class MainWindow
     private void UpdateCategoryButtons()
     {
         if (ThemesButton is null || FavoritesButton is null) return;
-        var themesActive = _rightPane == RightPane.Themes && !_showFavorites;
+        var themesActive = _currentRoute == Features.Navigation.AppRoute.ThemeLibrary && !_showFavorites;
         ThemesButton.Background = themesActive ? (Brush)Resources["ActiveNav"] : Brushes.Transparent;
-        FavoritesButton.Background = _rightPane == RightPane.Themes && _showFavorites ? (Brush)Resources["ActiveNav"] : Brushes.Transparent;
+        FavoritesButton.Background = _currentRoute == Features.Navigation.AppRoute.ThemeLibrary && _showFavorites ? (Brush)Resources["ActiveNav"] : Brushes.Transparent;
         ThemesButton.Foreground = (Brush)Resources[themesActive ? "Accent" : "MutedText"];
-        FavoritesButton.Foreground = (Brush)Resources[_rightPane == RightPane.Themes && _showFavorites ? "Accent" : "MutedText"];
+        FavoritesButton.Foreground = (Brush)Resources[_currentRoute == Features.Navigation.AppRoute.ThemeLibrary && _showFavorites ? "Accent" : "MutedText"];
         ThemesButton.Tag = themesActive ? "active" : "inactive";
-        FavoritesButton.Tag = _rightPane == RightPane.Themes && _showFavorites ? "active" : "inactive";
+        FavoritesButton.Tag = _currentRoute == Features.Navigation.AppRoute.ThemeLibrary && _showFavorites ? "active" : "inactive";
         ThemesButton.FontWeight = themesActive ? FontWeights.SemiBold : FontWeights.Normal;
-        FavoritesButton.FontWeight = _rightPane == RightPane.Themes && _showFavorites ? FontWeights.SemiBold : FontWeights.Normal;
+        FavoritesButton.FontWeight = _currentRoute == Features.Navigation.AppRoute.ThemeLibrary && _showFavorites ? FontWeights.SemiBold : FontWeights.Normal;
         FavoritesLabelText.Text = _favoriteThemeIds.Count == 0
             ? "我的收藏"
             : $"我的收藏  {_favoriteThemeIds.Count}";
-        UpdateInfoNavigationButton(DiagnosticsButton, _rightPane == RightPane.Diagnostics);
-        UpdateInfoNavigationButton(SettingsButton, _rightPane == RightPane.Settings);
-        UpdateInfoNavigationButton(ImportGuideButton, _rightPane == RightPane.ImportGuide);
-        UpdateInfoNavigationButton(CreatorCenterButton, _rightPane == RightPane.Creator);
-        UpdateInfoNavigationButton(AboutButton, _rightPane == RightPane.About);
+        UpdateInfoNavigationButton(DiagnosticsButton, _currentRoute == Features.Navigation.AppRoute.Diagnostics);
+        UpdateInfoNavigationButton(SettingsButton, _currentRoute == Features.Navigation.AppRoute.ArtworkStudio);
+        UpdateInfoNavigationButton(ExperienceButton, _currentRoute == Features.Navigation.AppRoute.ExperienceProfiles);
+        UpdateInfoNavigationButton(ImportGuideButton, _currentRoute == Features.Navigation.AppRoute.ImportTheme);
+        UpdateInfoNavigationButton(CreatorCenterButton, _currentRoute == Features.Navigation.AppRoute.CreatorCenter);
+        UpdateInfoNavigationButton(DataButton, _currentRoute == Features.Navigation.AppRoute.DataAndUpdates);
+        UpdateInfoNavigationButton(AboutButton, _currentRoute == Features.Navigation.AppRoute.About);
     }
 
     private void UpdateLibraryMetrics()

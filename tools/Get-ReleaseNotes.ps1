@@ -1,0 +1,43 @@
+[CmdletBinding()]
+param(
+    [Parameter(Mandatory = $true)]
+    [ValidatePattern('^\d+\.\d+\.\d+(?:\.\d+)?$')]
+    [string]$Version,
+
+    [string]$ChangelogPath = (Join-Path $PSScriptRoot '..\CHANGELOG.md'),
+
+    [string]$OutputPath
+)
+
+$ErrorActionPreference = 'Stop'
+$changelog = [IO.Path]::GetFullPath($ChangelogPath)
+if (-not [IO.File]::Exists($changelog)) {
+    throw "Changelog not found: $changelog"
+}
+
+$content = [IO.File]::ReadAllText($changelog)
+$escapedVersion = [Regex]::Escape($Version)
+$match = [Regex]::Match(
+    $content,
+    "(?ms)^##\s+$escapedVersion\s*\r?\n(?<body>.*?)(?=^##\s+|\z)")
+if (-not $match.Success) {
+    throw "CHANGELOG.md does not contain a section for $Version."
+}
+
+$notes = $match.Groups['body'].Value.Trim()
+if ([string]::IsNullOrWhiteSpace($notes) -or $notes -match '^[-*]\s*暂无[。.]?$') {
+    throw "CHANGELOG.md section $Version does not contain release notes."
+}
+
+if ([string]::IsNullOrWhiteSpace($OutputPath)) {
+    $notes
+    return
+}
+
+$destination = [IO.Path]::GetFullPath($OutputPath)
+[IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($destination)) | Out-Null
+[IO.File]::WriteAllText(
+    $destination,
+    $notes + [Environment]::NewLine,
+    [Text.UTF8Encoding]::new($false))
+$destination

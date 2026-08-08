@@ -64,6 +64,23 @@ internal static class BuiltInAssetInstaller
                     Path.Combine(layout.RootDirectory, "Templates"));
             }
         }
+        CompatibilityRuntimeComposer.EnsureComposed(Path.Combine(layout.RootDirectory, "Compatibility"));
+    }
+
+    public static void EnsureCompatibilityInstalled(PortableLayout layout)
+    {
+        var assembly = typeof(BuiltInAssetInstaller).Assembly;
+        var destination = Path.Combine(layout.RootDirectory, "Compatibility");
+        foreach (var resourceName in assembly.GetManifestResourceNames()
+                     .Where(name => name.StartsWith(CompatibilityPrefix, StringComparison.Ordinal)))
+        {
+            ExtractResource(
+                assembly,
+                resourceName,
+                CompatibilityPrefix,
+                destination);
+        }
+        CompatibilityRuntimeComposer.EnsureComposed(destination);
     }
 
     public static void MarkDeleted(PortableLayout layout, string themeId)

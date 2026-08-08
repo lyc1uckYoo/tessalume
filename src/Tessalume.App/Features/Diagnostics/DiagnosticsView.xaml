@@ -1,0 +1,114 @@
+<UserControl x:Class="Tessalume.App.Features.Diagnostics.DiagnosticsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             FontFamily="Microsoft YaHei UI"
+             UseLayoutRounding="True"
+             TextOptions.TextFormattingMode="Display"
+             TextOptions.TextRenderingMode="ClearType"
+             TextOptions.TextHintingMode="Fixed">
+    <StackPanel VerticalAlignment="Top" Margin="0,0,0,4">
+        <Grid>
+            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+            <StackPanel><TextBlock Text="运行与诊断" Style="{DynamicResource PageTitleText}" /><TextBlock Text="检查 Codex、主题运行时与本地资源状态，不会访问互联网。" Style="{DynamicResource PageDescriptionText}" /></StackPanel>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <Button x:Name="DiagnosticsRefreshButton" Style="{DynamicResource SecondaryActionButton}" Click="Refresh_Click">
+                    <StackPanel Orientation="Horizontal"><Path Width="13" Height="13" Data="M 19,7 L 19,3 L 15,3 M 19,3 C 16.5,1.2 12.8,1.5 10.5,3.2 C 8.7,4.5 7.7,6.4 7.5,8.4 M 5,17 L 5,21 L 9,21 M 5,21 C 7.5,22.8 11.2,22.5 13.5,20.8 C 15.3,19.5 16.3,17.6 16.5,15.6" Stroke="{DynamicResource Accent}" StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Fill="Transparent" Stretch="Uniform" Margin="0,0,7,0" /><TextBlock Text="重新检查" /></StackPanel>
+                </Button>
+            </StackPanel>
+        </Grid>
+
+        <Border x:Name="DiagnosticLoadingPanel" Visibility="Collapsed" Background="{DynamicResource InfoSurface}" BorderBrush="{DynamicResource InfoBorder}" BorderThickness="1" CornerRadius="13" Padding="15,12" Margin="0,16,0,0">
+            <Grid>
+                <Grid.ColumnDefinitions><ColumnDefinition Width="34" /><ColumnDefinition Width="*" /><ColumnDefinition Width="160" /></Grid.ColumnDefinitions>
+                <Border Width="28" Height="28" CornerRadius="9" Background="{DynamicResource AccentSoft}">
+                    <Path Width="14" Height="14" Data="M 19,7 L 19,3 L 15,3 M 19,3 C 16.5,1.2 12.8,1.5 10.5,3.2 C 8.7,4.5 7.7,6.4 7.5,8.4 M 5,17 L 5,21 L 9,21 M 5,21 C 7.5,22.8 11.2,22.5 13.5,20.8 C 15.3,19.5 16.3,17.6 16.5,15.6" Stroke="{DynamicResource Accent}" StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Fill="Transparent" Stretch="Uniform" />
+                </Border>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="8,0,18,0">
+                    <TextBlock Text="正在读取本机运行状态" Foreground="{DynamicResource PrimaryText}" FontSize="11" FontWeight="SemiBold" />
+                    <TextBlock Text="检查 Codex 进程、回环端口与主题兼容性，请稍候。" Foreground="{DynamicResource MutedText}" FontSize="10" Margin="0,3,0,0" />
+                </StackPanel>
+                <ProgressBar Grid.Column="2" Height="5" IsIndeterminate="True" BorderThickness="0" Background="{DynamicResource SurfaceAlt}" Foreground="{DynamicResource Accent}" VerticalAlignment="Center" />
+            </Grid>
+        </Border>
+
+        <Border Style="{DynamicResource ProductCard}" Margin="0,20,0,0" Padding="18">
+            <Grid>
+                <Grid.ColumnDefinitions><ColumnDefinition Width="48" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                <Grid Width="38" Height="38" VerticalAlignment="Center">
+                    <Ellipse Fill="{DynamicResource TealSoft}" />
+                    <Ellipse x:Name="DiagnosticHealthDot" Width="10" Height="10" Fill="{DynamicResource Positive}" />
+                </Grid>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock x:Name="DiagnosticHealthTitleText" Text="正在检查运行状态" Foreground="{DynamicResource PrimaryText}" FontSize="15" FontWeight="SemiBold" />
+                    <TextBlock x:Name="DiagnosticHealthBodyText" Text="正在读取本机进程、回环端口和主题包。" Foreground="{DynamicResource MutedText}" FontSize="10" Margin="0,4,0,0" />
+                </StackPanel>
+                <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
+                    <Border Background="{DynamicResource TealSoft}" BorderBrush="{DynamicResource Teal}" BorderThickness="1" CornerRadius="9" Padding="9,5"><TextBlock Text="本地诊断" Foreground="{DynamicResource Teal}" FontSize="10" FontWeight="SemiBold" /></Border>
+                    <TextBlock x:Name="DiagnosticUpdatedText" Text="尚未刷新" Foreground="{DynamicResource SubtleText}" FontSize="10" HorizontalAlignment="Right" Margin="0,5,0,0" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Grid Margin="0,14,0,0">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="12" /><ColumnDefinition Width="*" /><ColumnDefinition Width="12" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+            <Border Style="{DynamicResource InsetCard}" Background="{DynamicResource AccentSoft}" BorderBrush="{DynamicResource InfoBorder}" Padding="16"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="34" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions><Border Width="28" Height="28" CornerRadius="9" Background="{DynamicResource Surface}"><Path Width="14" Height="14" Data="M 4,5 L 20,5 L 20,18 L 4,18 Z M 8,21 L 16,21 M 12,18 L 12,21" Stroke="{DynamicResource Accent}" StrokeThickness="1.7" StrokeLineJoin="Round" Fill="Transparent" Stretch="Uniform" /></Border><StackPanel Grid.Column="1" Margin="8,0,0,0"><TextBlock Text="CODEX" Style="{DynamicResource MetricLabelText}" /><TextBlock x:Name="DiagnosticCodexText" Text="正在检查…" Style="{DynamicResource MetricValueText}" FontSize="15" Margin="0,4,0,0" /></StackPanel></Grid></Border>
+            <Border Grid.Column="2" Style="{DynamicResource InsetCard}" Background="{DynamicResource SkySoft}" BorderBrush="{DynamicResource InfoBorder}" Padding="16"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="34" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions><Border Width="28" Height="28" CornerRadius="9" Background="{DynamicResource Surface}"><Path Width="14" Height="14" Data="M 5,8 C 3,10 3,14 5,16 M 19,8 C 21,10 21,14 19,16 M 8,10 C 7,11 7,13 8,14 M 16,10 C 17,11 17,13 16,14 M 12,12 L 12,12" Stroke="{DynamicResource Sky}" StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Fill="Transparent" Stretch="Uniform" /></Border><StackPanel Grid.Column="1" Margin="8,0,0,0"><TextBlock Text="本机端口" Style="{DynamicResource MetricLabelText}" /><TextBlock x:Name="DiagnosticPortText" Text="正在检查…" Style="{DynamicResource MetricValueText}" FontSize="15" Margin="0,4,0,0" /></StackPanel></Grid></Border>
+            <Border Grid.Column="4" Style="{DynamicResource InsetCard}" Background="{DynamicResource TealSoft}" BorderBrush="{DynamicResource InfoBorder}" Padding="16"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="34" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions><Border Width="28" Height="28" CornerRadius="9" Background="{DynamicResource Surface}"><Path Width="14" Height="14" Data="M 4,4 L 10,4 L 10,10 L 4,10 Z M 14,4 L 20,4 L 20,10 L 14,10 Z M 4,14 L 10,14 L 10,20 L 4,20 Z M 14,14 L 20,14 L 20,20 L 14,20 Z" Stroke="{DynamicResource Teal}" StrokeThickness="1.6" Fill="Transparent" Stretch="Uniform" /></Border><StackPanel Grid.Column="1" Margin="8,0,0,0"><TextBlock Text="主题包" Style="{DynamicResource MetricLabelText}" /><TextBlock x:Name="DiagnosticThemesText" Text="正在检查…" Style="{DynamicResource MetricValueText}" FontSize="15" Margin="0,4,0,0" /></StackPanel></Grid></Border>
+        </Grid>
+
+        <Border Style="{DynamicResource ProductCard}" Margin="0,14,0,0" Padding="18">
+            <StackPanel>
+                <Grid>
+                    <TextBlock Text="兼容性健康" Foreground="{DynamicResource PrimaryText}" FontSize="13" FontWeight="SemiBold" />
+                    <Border HorizontalAlignment="Right" Background="{DynamicResource AccentSoft}" BorderBrush="{DynamicResource InfoBorder}" BorderThickness="1" CornerRadius="8" Padding="8,4">
+                        <TextBlock Text="自动预检" Foreground="{DynamicResource Accent}" FontSize="10" FontWeight="SemiBold" />
+                    </Border>
+                </Grid>
+                <Grid Margin="0,13,0,0">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="10" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="10" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                    <Border Style="{DynamicResource InsetCard}" Padding="13"><StackPanel><TextBlock Text="已安装 CODEX" Style="{DynamicResource MetricLabelText}" /><TextBlock x:Name="DiagnosticCodexVersionText" Text="正在读取…" Foreground="{DynamicResource PrimaryText}" FontSize="10.5" FontWeight="SemiBold" Margin="0,5,0,0" /></StackPanel></Border>
+                    <Border Grid.Column="2" Style="{DynamicResource InsetCard}" Padding="13"><StackPanel><TextBlock Text="主题运行时契约" Style="{DynamicResource MetricLabelText}" /><TextBlock x:Name="DiagnosticRuntimeContractText" Text="正在读取…" Foreground="{DynamicResource PrimaryText}" FontSize="10.5" FontWeight="SemiBold" Margin="0,5,0,0" /></StackPanel></Border>
+                    <Border Grid.Row="2" Style="{DynamicResource InsetCard}" Padding="13"><StackPanel><TextBlock Text="最近成功应用" Style="{DynamicResource MetricLabelText}" /><TextBlock x:Name="DiagnosticLastSuccessText" Text="暂无记录" Foreground="{DynamicResource PrimaryText}" FontSize="10.5" FontWeight="SemiBold" Margin="0,5,0,0" /></StackPanel></Border>
+                    <Border Grid.Row="2" Grid.Column="2" Style="{DynamicResource InsetCard}" Padding="13"><StackPanel><TextBlock Text="最近失败阶段" Style="{DynamicResource MetricLabelText}" /><TextBlock x:Name="DiagnosticLastFailureText" Text="无失败记录" Foreground="{DynamicResource PrimaryText}" FontSize="10.5" FontWeight="SemiBold" Margin="0,5,0,0" /></StackPanel></Border>
+                </Grid>
+                <Border Background="{DynamicResource InfoSurface}" BorderBrush="{DynamicResource InfoBorder}" BorderThickness="1" CornerRadius="11" Padding="13,10" Margin="0,10,0,0">
+                    <StackPanel>
+                        <TextBlock x:Name="DiagnosticCompatibilityHintText" Text="Codex 更新后，下一次应用会自动重新预检。" Foreground="{DynamicResource PrimaryText}" FontSize="10" FontWeight="SemiBold" TextWrapping="Wrap" />
+                        <TextBlock x:Name="DiagnosticCompatibilityDetailText" Text="不会修改 Codex 安装文件。" Foreground="{DynamicResource MutedText}" FontSize="10" TextWrapping="Wrap" Margin="0,4,0,0" />
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Border>
+
+        <Border Style="{DynamicResource ProductCard}" Margin="0,14,0,0" Padding="18">
+            <StackPanel>
+                <Grid><TextBlock Text="诊断详情" Foreground="{DynamicResource PrimaryText}" FontSize="13" FontWeight="SemiBold" /><TextBlock Text="设备与主题运行时" HorizontalAlignment="Right" Foreground="{DynamicResource SubtleText}" FontSize="10" /></Grid>
+                <Grid Margin="0,13,0,0">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="12" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="10" /><RowDefinition Height="Auto" /><RowDefinition Height="10" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                    <Border Style="{DynamicResource InsetCard}" Padding="13"><StackPanel><TextBlock Text="应用目录" Style="{DynamicResource MetricLabelText}" /><TextBlock x:Name="DiagnosticRootText" Text="—" Foreground="{DynamicResource PrimaryText}" FontFamily="Consolas" FontSize="10" TextTrimming="CharacterEllipsis" Margin="0,5,0,0" /></StackPanel></Border>
+                    <Border Grid.Column="2" Style="{DynamicResource InsetCard}" Padding="13"><StackPanel><TextBlock Text="本地主题库" Style="{DynamicResource MetricLabelText}" /><TextBlock x:Name="DiagnosticLibraryText" Text="—" Foreground="{DynamicResource PrimaryText}" FontFamily="Consolas" FontSize="10" TextTrimming="CharacterEllipsis" Margin="0,5,0,0" /></StackPanel></Border>
+                    <Border Grid.Row="2" Style="{DynamicResource InsetCard}" Padding="13"><StackPanel><TextBlock Text="Codex 进程" Style="{DynamicResource MetricLabelText}" /><TextBlock x:Name="DiagnosticProcessText" Text="—" Foreground="{DynamicResource PrimaryText}" FontSize="10.5" FontWeight="SemiBold" Margin="0,5,0,0" /></StackPanel></Border>
+                    <Border Grid.Row="2" Grid.Column="2" Style="{DynamicResource InsetCard}" Padding="13"><StackPanel><TextBlock Text="本机回环连接" Style="{DynamicResource MetricLabelText}" /><TextBlock x:Name="DiagnosticLoopbackText" Text="—" Foreground="{DynamicResource PrimaryText}" FontSize="10.5" FontWeight="SemiBold" Margin="0,5,0,0" /></StackPanel></Border>
+                    <Border Grid.Row="4" Background="{DynamicResource InfoSurface}" BorderBrush="{DynamicResource InfoBorder}" BorderThickness="1" CornerRadius="12" Padding="13"><StackPanel><TextBlock Text="主题状态" Foreground="{DynamicResource Accent}" FontSize="10" FontWeight="SemiBold" /><TextBlock x:Name="DiagnosticThemeStateText" Text="—" Foreground="{DynamicResource PrimaryText}" FontSize="10.5" FontWeight="SemiBold" Margin="0,5,0,0" /><TextBlock x:Name="DiagnosticCurrentThemeText" Text="当前主题：—" Foreground="{DynamicResource MutedText}" FontSize="10" Margin="0,3,0,0" /></StackPanel></Border>
+                    <Border Grid.Row="4" Grid.Column="2" Background="{DynamicResource InfoSurface}" BorderBrush="{DynamicResource InfoBorder}" BorderThickness="1" CornerRadius="12" Padding="13"><StackPanel><TextBlock Text="主题包校验" Foreground="{DynamicResource Accent}" FontSize="10" FontWeight="SemiBold" /><TextBlock x:Name="DiagnosticValidationText" Text="—" Foreground="{DynamicResource PrimaryText}" FontSize="10.5" FontWeight="SemiBold" Margin="0,5,0,0" /><TextBlock Text="仅本机注入 · 无公网请求" Foreground="{DynamicResource MutedText}" FontSize="10" Margin="0,3,0,0" /></StackPanel></Border>
+                </Grid>
+            </StackPanel>
+        </Border>
+
+        <Border Background="{DynamicResource InfoSurface}" BorderBrush="{DynamicResource InfoBorder}" BorderThickness="1" CornerRadius="15" Padding="16,13" Margin="0,14,0,0">
+            <Grid>
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="自助恢复" Foreground="{DynamicResource PrimaryText}" FontSize="11.5" FontWeight="SemiBold" />
+                    <TextBlock Text="找回被删除的内置主题，或打开本地日志查看最近运行记录。" Foreground="{DynamicResource MutedText}" FontSize="10" Margin="0,4,0,0" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Style="{DynamicResource QuietActionButton}" Content="打开日志目录" Click="OpenLogDirectory_Click" />
+                    <Button Style="{DynamicResource SecondaryActionButton}" Content="恢复内置主题" Margin="8,0,0,0" Click="RestoreBuiltInThemes_Click" />
+                </StackPanel>
+            </Grid>
+        </Border>
+    </StackPanel>
+</UserControl>

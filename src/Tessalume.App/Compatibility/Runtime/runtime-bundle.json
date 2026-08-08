@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "output": "theme-runtime-v2.js",
+  "fragments": [
+    "00-bootstrap.js",
+    "10-page-recognition.js",
+    "20-adaptive-layout.js",
+    "30-surface-decoration.js",
+    "40-cleanup-recovery.js"
+  ]
+}

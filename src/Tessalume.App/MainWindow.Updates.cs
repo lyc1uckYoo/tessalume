@@ -1,34 +1,24 @@
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Net.Http;
 using System.Windows;
 using System.Windows.Automation;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Threading;
+using Tessalume.App.Features.About;
 using Tessalume.App.Infrastructure;
-using Tessalume.App.Models;
-using Tessalume.Core.Runtime;
-using Tessalume.Core.Themes;
 using Tessalume.Core.Updates;
-using Microsoft.Win32;
 
 namespace Tessalume.App;
 
 public partial class MainWindow
 {
-    private async void AutomaticUpdatesCheckBox_Changed(object sender, RoutedEventArgs e)
+    private async void AboutPage_AutomaticUpdateSettingChanged(
+        object? sender,
+        AboutBooleanSettingChangedEventArgs e)
     {
-        if (_updatingAutomaticUpdateSetting) return;
-        _automaticUpdateChecks = AutomaticUpdatesCheckBox.IsChecked == true;
+        _automaticUpdateChecks = e.Enabled;
         if (_automaticUpdateChecks)
         {
             _lastUpdateCheckAt = null;
-            _updateStatusMessage = "自动检查已开启，将从 GitHub Releases 获取最新版本";
+            _updateStatusMessage = "自动检查已开启，将从 GitHub 获取软件与页面兼容规则更新";
         }
         else
         {
@@ -44,7 +34,7 @@ public partial class MainWindow
         }
     }
 
-    private async void CheckForUpdates_Click(object sender, RoutedEventArgs e) =>
+    private async void AboutPage_CheckForUpdatesRequested(object? sender, EventArgs e) =>
         await CheckForUpdatesAsync(automatic: false);
 
     private async void UpdateAvailableBadge_Click(object sender, RoutedEventArgs e)
@@ -69,26 +59,6 @@ public partial class MainWindow
             _updateCheckInProgress = false;
             UpdateUpdateControls();
         }
-    }
-
-    internal void SetStartupUpdateResult(PortableUpdateResult? result) =>
-        _startupUpdateResult = result;
-
-    private void ShowStartupUpdateResult()
-    {
-        if (_startupUpdateResult is not { } result) return;
-        _startupUpdateResult = null;
-        LocalLog.Write(result.Success
-            ? $"Update completed: {result.VersionLabel}."
-            : $"Update failed: {result.Message}");
-        ShowProductMessage(
-            result.Success ? "Tessalume 已完成更新" : "自动更新未完成",
-            result.Success
-                ? $"当前已运行 {result.VersionLabel}。主题、收藏和个性化参数均已保留。"
-                : $"当前版本仍可继续使用。\n\n原因：{result.Message}",
-            result.Success ? ProductDialogKind.Information : ProductDialogKind.Warning);
-        UpdateBootstrapper.DismissResult(_layout);
-        _ = UpdateBootstrapper.CleanupArtifactsAsync(_layout, result);
     }
 
     private void ScheduleAutomaticUpdateCheck(bool forceSoon = false)
@@ -123,9 +93,7 @@ public partial class MainWindow
         _updateCheckInProgress = true;
         if (_uiInitialized)
         {
-            UpdateProgressBar.Value = 0;
-            UpdateProgressBar.Visibility = Visibility.Collapsed;
-            UpdateProgressText.Visibility = Visibility.Collapsed;
+            AboutPage.SetUpdateProgress(0, string.Empty, visible: false);
         }
         _updateStatusMessage = automatic ? "正在自动检查更新…" : "正在连接 GitHub Releases…";
         UpdateUpdateControls();
@@ -133,18 +101,60 @@ public partial class MainWindow
         {
             _lastUpdateCheckAt = DateTimeOffset.Now;
             await SavePreferencesAsync();
-            var release = await _updateClient.CheckLatestAsync(_updateCancellation.Token);
+            var result = await _aboutUpdateService.CheckAsync(_updateCancellation.Token);
+            var compatibilityInstall = result.CompatibilityUpdate;
+            var compatibilityUpdateError = result.CompatibilityError;
+            if (compatibilityUpdateError is not null)
+            {
+                LocalLog.Write("Compatibility update check failed.", compatibilityUpdateError);
+            }
+            if (compatibilityInstall?.Changed == true)
+            {
+                LocalLog.Write(
+                    $"Compatibility rules updated from " +
+                    $"{compatibilityInstall.PreviousPack.PackVersionLabel} to " +
+                    $"{compatibilityInstall.ActivePack.PackVersionLabel}.");
+                if (_uiInitialized && IsVisible)
+                {
+                    ShowToast(
+                        $"页面兼容规则已更新到 " +
+                        compatibilityInstall.ActivePack.PackVersionLabel);
+                }
+            }
+
+            var release = result.ApplicationUpdate;
             if (release is null)
             {
                 _availableUpdate = null;
-                _updateStatusMessage = $"当前已是最新版本 · {BrandInfo.VersionLabel}";
+                _updateStatusMessage = compatibilityInstall?.Changed == true
+                    ? $"兼容规则已更新到 {compatibilityInstall.ActivePack.PackVersionLabel} · 软件 {BrandInfo.VersionLabel}"
+                    : compatibilityUpdateError is not null
+                        ? $"软件已是最新版本 · 兼容规则检查未完成"
+                        : $"当前已是最新版本 · {BrandInfo.VersionLabel}";
                 UpdateUpdateControls();
                 if (!automatic)
                 {
-                    ShowProductMessage(
-                        "当前已是最新版本",
-                        $"你正在使用 {BrandInfo.VersionLabel}，暂时没有可安装的新版本。",
-                        ProductDialogKind.Information);
+                    if (compatibilityInstall?.Changed == true)
+                    {
+                        ShowProductMessage(
+                            "页面兼容规则已更新",
+                            $"软件仍为 {BrandInfo.VersionLabel}，页面兼容规则已更新到 {compatibilityInstall.ActivePack.PackVersionLabel}。下次应用主题时会自动完成预检，不需要重新下载完整软件。",
+                            ProductDialogKind.Information);
+                    }
+                    else if (compatibilityUpdateError is not null)
+                    {
+                        ShowProductMessage(
+                            "软件已是最新版本",
+                            $"你正在使用 {BrandInfo.VersionLabel}。软件版本检查已完成，但页面兼容规则检查暂未完成：\n\n{DescribeUpdateError(compatibilityUpdateError)}",
+                            ProductDialogKind.Warning);
+                    }
+                    else
+                    {
+                        ShowProductMessage(
+                            "当前已是最新版本",
+                            $"你正在使用 {BrandInfo.VersionLabel}，软件和页面兼容规则均为最新。",
+                            ProductDialogKind.Information);
+                    }
                 }
                 return;
             }
@@ -212,14 +222,14 @@ public partial class MainWindow
     private async Task DownloadAndInstallUpdateAsync(ReleaseUpdate release)
     {
         ShowMainInterface();
-        ShowInfoPage(RightPane.Settings);
+        AboutPage.ShowSection(AboutSection.DataAndUpdates);
+        NavigateTo(Features.Navigation.AppRoute.DataAndUpdates);
         _updateStatusMessage = $"正在下载 {release.VersionLabel}…";
         if (_uiInitialized)
         {
-            UpdateProgressBar.Visibility = Visibility.Visible;
-            UpdateProgressBar.Value = 0;
-            UpdateProgressText.Visibility = Visibility.Visible;
-            UpdateProgressText.Text = $"0% · 0 B / {FormatBytes(release.DownloadSize)}";
+            AboutPage.SetUpdateProgress(
+                0,
+                $"0% · 0 B / {FormatBytes(release.DownloadSize)}");
         }
 
         var progress = new Progress<UpdateDownloadProgress>(value =>
@@ -228,17 +238,23 @@ public partial class MainWindow
             var percentage = Math.Clamp(value.BytesReceived * 100d / total, 0, 100);
             if (_uiInitialized)
             {
-                UpdateProgressBar.Value = percentage;
-                UpdateProgressText.Text = $"{percentage:0}% · {FormatBytes(value.BytesReceived)} / {FormatBytes(total)}";
+                AboutPage.SetUpdateProgress(
+                    percentage,
+                    $"{percentage:0}% · {FormatBytes(value.BytesReceived)} / " +
+                    FormatBytes(total));
             }
         });
-        var downloaded = await _updateClient.DownloadAsync(
+        var downloaded = await _aboutUpdateService.DownloadApplicationAsync(
             release,
             progress,
             _updateCancellation.Token);
         _updateStatusMessage = "下载与 SHA-256 校验完成，正在准备安全替换…";
         UpdateUpdateControls();
-        var helperProcessId = UpdateBootstrapper.StartHelper(_layout, downloaded, release);
+        var helperProcessId = await UpdateBootstrapper.StartHelperAsync(
+            _layout,
+            downloaded,
+            release,
+            _updateCancellation.Token);
         LocalLog.Write($"Update helper {helperProcessId} started for {release.VersionLabel}.");
         _shutdownRequested = true;
         Application.Current.Shutdown();
@@ -246,12 +262,8 @@ public partial class MainWindow
 
     private void UpdateUpdateControls()
     {
-        if (!_uiInitialized || AutomaticUpdatesCheckBox is null) return;
-        _updatingAutomaticUpdateSetting = true;
-        AutomaticUpdatesCheckBox.IsChecked = _automaticUpdateChecks;
-        _updatingAutomaticUpdateSetting = false;
-        CheckForUpdatesButton.IsEnabled = !_updateCheckInProgress;
-        UpdateStatusText.Text = _updateStatusMessage;
+        if (!_uiInitialized || AboutPage is null) return;
+        AboutPage.RenderUpdateState(BuildAboutUpdateState());
         UpdateAvailableBadge.Visibility = _availableUpdate is null
             ? Visibility.Collapsed
             : Visibility.Visible;
@@ -261,11 +273,28 @@ public partial class MainWindow
             UpdateAvailableBadge.ToolTip = $"发现 {release.VersionLabel}，点击查看并安装";
             AutomationProperties.SetName(UpdateAvailableBadge, $"发现 {release.VersionLabel}，点击更新");
         }
-        if (!_updateCheckInProgress && UpdateProgressBar.Value <= 0)
-        {
-            UpdateProgressBar.Visibility = Visibility.Collapsed;
-            UpdateProgressText.Visibility = Visibility.Collapsed;
-        }
+    }
+
+    private AboutUpdateState BuildAboutUpdateState(
+        string? rollbackStatus = null,
+        bool? rollbackAvailable = null)
+    {
+        var available = rollbackAvailable ?? _availableRollback is not null;
+        var status = rollbackStatus ?? (_availableRollback is { } rollback
+            ? $"可恢复 {rollback.PreviousVersionLabel} · 更新前 EXE 已通过 SHA-256 校验"
+            : "当前没有可用恢复点；成功更新后会自动保留上一版本");
+        var toolTip = _availableRollback is { } rollbackInfo
+            ? $"从 {rollbackInfo.CurrentVersionLabel} 恢复到 {rollbackInfo.PreviousVersionLabel}"
+            : "没有可恢复的上一版本";
+        return new AboutUpdateState(
+            _automaticUpdateChecks,
+            _updateCheckInProgress,
+            _updateStatusMessage,
+            new AboutRollbackState(
+                status,
+                toolTip,
+                available,
+                _rollbackInProgress));
     }
 
     private static string FormatReleaseNotes(string notes)

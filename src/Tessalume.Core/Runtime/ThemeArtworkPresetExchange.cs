@@ -121,16 +121,15 @@ public static class ThemeArtworkPresetExchange
         ValidateAdjustment(preset.Settings.Hero, "首页横幅");
         ValidateAdjustment(preset.Settings.Sidebar, "左栏图片");
         ValidateAdjustment(preset.Settings.Chat, "聊天背景");
-        return preset with
-        {
-            Name = name,
-            Settings = preset.Settings.Normalize(),
-        };
+        return (preset with { Name = name }).Normalize();
     }
 
     private static void ValidateAdjustment(ThemeArtworkAdjustment? adjustment, string region)
     {
-        if (adjustment is null || !AllFinite(adjustment) || adjustment != adjustment.Normalize())
+        if (adjustment is null ||
+            !string.IsNullOrWhiteSpace(adjustment.CustomImagePath) ||
+            !AllFinite(adjustment) ||
+            adjustment != adjustment.Normalize())
         {
             throw new InvalidDataException($"{region}包含超出支持范围的图像参数。");
         }
@@ -146,7 +145,10 @@ public static class ThemeArtworkPresetExchange
         double.IsFinite(adjustment.OffsetY) &&
         double.IsFinite(adjustment.Grayscale) &&
         double.IsFinite(adjustment.HueRotation) &&
-        double.IsFinite(adjustment.Blur);
+        double.IsFinite(adjustment.Blur) &&
+        double.IsFinite(adjustment.OverlayOpacity) &&
+        double.IsFinite(adjustment.GradientStrength) &&
+        double.IsFinite(adjustment.Vignette);
 
     private sealed record ArtworkPresetDocument
     {

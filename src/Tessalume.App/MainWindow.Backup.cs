@@ -2,14 +2,14 @@ using System.Globalization;
 using System.IO;
 using System.Windows;
 using Microsoft.Win32;
+using Tessalume.App.Features.About;
 using Tessalume.App.Infrastructure;
-using Tessalume.Core.Backup;
 
 namespace Tessalume.App;
 
 public partial class MainWindow
 {
-    private async void BackupUserData_Click(object sender, RoutedEventArgs e)
+    private async void AboutPage_BackupRequested(object? sender, EventArgs e)
     {
         var dialog = new SaveFileDialog
         {
@@ -25,16 +25,14 @@ public partial class MainWindow
         try
         {
             await SavePreferencesAsync();
-            var result = await _backupService.CreateAsync(
+            var result = await _aboutDataService.CreateBackupAsync(
                 dialog.FileName,
-                new PortableBackupOptions
-                {
-                    IncludeImportedThemes = IncludeImportedThemesCheckBox.IsChecked == true,
-                },
+                AboutPage.IncludeImportedThemes,
                 _backupCancellation.Token);
-            DataBackupStatusText.Text =
+            AboutPage.SetBackupStatus(
                 $"最近备份：{result.Summary.DataFileCount} 个数据文件 · " +
-                $"{result.Summary.ImportedThemes.Count} 个用户主题 · {FormatBackupBytes(result.CompressedBytes)}";
+                $"{result.Summary.ImportedThemes.Count} 个用户主题 · " +
+                $"{FormatBackupBytes(result.CompressedBytes)}");
             ShowProductMessage(
                 "用户数据已安全备份",
                 $"设置与运行状态：{result.Summary.DataFileCount} 个文件\n" +
@@ -49,7 +47,7 @@ public partial class MainWindow
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
         {
             LocalLog.Write("Creating a user-data backup failed.", exception);
-            DataBackupStatusText.Text = "上次备份未完成，原目标文件未被破坏";
+            AboutPage.SetBackupStatus("上次备份未完成，原目标文件未被破坏");
             ShowProductMessage("无法备份用户数据", exception.Message, ProductDialogKind.Error);
         }
         finally
@@ -58,7 +56,7 @@ public partial class MainWindow
         }
     }
 
-    private async void RestoreUserData_Click(object sender, RoutedEventArgs e)
+    private async void AboutPage_RestoreRequested(object? sender, EventArgs e)
     {
         var dialog = new OpenFileDialog
         {
@@ -72,7 +70,7 @@ public partial class MainWindow
         SetDataOperationBusy(true, "正在验证备份内容…");
         try
         {
-            var summary = await PortableBackupService.InspectAsync(
+            var summary = await AboutDataService.InspectBackupAsync(
                 dialog.FileName,
                 _backupCancellation.Token);
             var themes = summary.ImportedThemes.Count == 0
@@ -92,14 +90,16 @@ public partial class MainWindow
                 dangerous: true);
             if (!confirmed)
             {
-                DataBackupStatusText.Text = "已取消恢复，当前数据没有变化";
+                AboutPage.SetBackupStatus("已取消恢复，当前数据没有变化");
                 return;
             }
 
             await SavePreferencesAsync();
-            var result = await _backupService.RestoreAsync(dialog.FileName, _backupCancellation.Token);
+            var result = await _aboutDataService.RestoreBackupAsync(
+                dialog.FileName,
+                _backupCancellation.Token);
             _userDataRestoreCompleted = true;
-            DataBackupStatusText.Text = "恢复完成，等待重新启动 Tessalume";
+            AboutPage.SetBackupStatus("恢复完成，等待重新启动 Tessalume");
             ShowProductMessage(
                 "用户数据恢复完成",
                 $"已恢复 {result.Summary.DataFileCount} 个数据文件和 " +
@@ -115,7 +115,7 @@ public partial class MainWindow
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
         {
             LocalLog.Write("Restoring a user-data backup failed.", exception);
-            DataBackupStatusText.Text = "恢复失败，当前数据已保持或自动回滚";
+            AboutPage.SetBackupStatus("恢复失败，当前数据已保持或自动回滚");
             ShowProductMessage(
                 "无法恢复用户数据",
                 $"当前数据没有被替换，或已经自动回滚。\n\n{exception.Message}",
@@ -132,13 +132,7 @@ public partial class MainWindow
 
     private void SetDataOperationBusy(bool busy, string? status)
     {
-        BackupUserDataButton.IsEnabled = !busy;
-        RestoreUserDataButton.IsEnabled = !busy;
-        IncludeImportedThemesCheckBox.IsEnabled = !busy;
-        if (status is not null)
-        {
-            DataBackupStatusText.Text = status;
-        }
+        AboutPage.SetBackupBusy(busy, status);
     }
 
     private static string FormatBackupBytes(long bytes) => bytes switch

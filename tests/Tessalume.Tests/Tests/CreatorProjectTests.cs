@@ -379,7 +379,12 @@ internal static partial class TestSuite
                         "applied"));
                 },
                 _ => Task.FromResult(new CreatorRuntimeStatus(true, 9340, false)),
-                _ => Task.FromResult(new CreatorRuntimeStatus(true, 9340, true)));
+                _ => Task.FromResult(new CreatorRuntimeStatus(true, 9340, true)),
+                (_, _) => Task.FromResult(new CreatorAcceptanceSnapshot(
+                    DateTimeOffset.Now,
+                    CreatorAcceptanceCatalog.CreatePendingChecks()
+                        .Select(check => check with { State = CreatorAcceptanceState.Passed })
+                        .ToArray())));
             using var viewModel = new CreatorCenterViewModel(
                 new CreatorWorkspaceStore(),
                 () => Task.CompletedTask,
@@ -407,6 +412,90 @@ internal static partial class TestSuite
             await Task.Delay(350);
             Ensure(applyCount == 1 && viewModel.LastAppliedText.Contains("跳过", StringComparison.Ordinal),
                 "Automatic apply must be skipped when the refreshed project has a blocking error.");
+        }
+        finally
+        {
+            if (Directory.Exists(root)) Directory.Delete(root, recursive: true);
+        }
+    }
+
+    static async Task CreatorRuntimeAcceptanceClassifiesIssuesAndGatesReleaseAsync()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"tessalume-acceptance-{Guid.NewGuid():N}");
+        var workspace = Path.Combine(root, "workspace");
+        var project = Path.Combine(workspace, "themes", "fixture.creator-theme");
+        Directory.CreateDirectory(Path.Combine(workspace, "themes"));
+        try
+        {
+            using var fixture = await CreatorThemeFixture.CreateAsync(project);
+            var acceptanceMode = "failed";
+            var runtime = new CreatorRuntimeBridge(
+                (_, _, _) => Task.FromResult(new CreatorRuntimeActionResult(
+                    true,
+                    new CreatorRuntimeStatus(true, 9340, false),
+                    "applied")),
+                _ => Task.FromResult(new CreatorRuntimeStatus(true, 9340, false)),
+                _ => Task.FromResult(new CreatorRuntimeStatus(true, 9340, true)),
+                (_, _) =>
+                {
+                    var checks = CreatorAcceptanceCatalog.CreatePendingChecks()
+                        .Select(check => check with { State = CreatorAcceptanceState.Passed })
+                        .ToArray();
+                    if (acceptanceMode == "failed")
+                    {
+                        checks[2] = checks[2] with
+                        {
+                            State = CreatorAcceptanceState.Failed,
+                            IssueOrigin = CreatorIssueOrigin.RuntimeCompatibility,
+                            Detail = "composer semantic marker missing",
+                        };
+                    }
+                    else if (acceptanceMode == "attention")
+                    {
+                        checks[2] = checks[2] with
+                        {
+                            State = CreatorAcceptanceState.NeedsAttention,
+                            IssueOrigin = CreatorIssueOrigin.None,
+                            Detail = "composer was not visible",
+                        };
+                    }
+                    return Task.FromResult(new CreatorAcceptanceSnapshot(DateTimeOffset.Now, checks));
+                });
+            using var viewModel = new CreatorCenterViewModel(
+                new CreatorWorkspaceStore(),
+                () => Task.CompletedTask,
+                runtime);
+            await viewModel.AddWorkspaceAsync(workspace);
+            await viewModel.RunAcceptanceAsync();
+            Ensure(viewModel.AcceptanceHasRun &&
+                   viewModel.RuntimeCompatibilityIssueCount == 1 &&
+                   !viewModel.CanReleaseSelectedProject &&
+                   viewModel.ReleaseChecklist.Any(item =>
+                       item.Code == "runtime-acceptance" && item.Blocking && !item.Passed),
+                "Runtime acceptance must classify compatibility failures and keep the release gate closed.");
+
+            acceptanceMode = "attention";
+            await viewModel.RunAcceptanceAsync();
+            var attentionExportRejected = false;
+            try
+            {
+                await viewModel.ExportSelectedProjectAsync(Path.Combine(root, "must-not-export.zip"));
+            }
+            catch (InvalidDataException)
+            {
+                attentionExportRejected = true;
+            }
+            Ensure(!viewModel.CanReleaseSelectedProject &&
+                   attentionExportRejected &&
+                   viewModel.AcceptanceSummaryText.Contains("待复验", StringComparison.Ordinal),
+                "An unobserved composer or message surface must keep both UI and application-service export gates closed.");
+
+            acceptanceMode = "passed";
+            await viewModel.RunAcceptanceAsync();
+            Ensure(viewModel.RuntimeCompatibilityIssueCount == 0 &&
+                   viewModel.AcceptanceChecks.All(item => item.StatusTone == "ready") &&
+                   viewModel.CanReleaseSelectedProject,
+                "A complete five-surface acceptance pass must open the final release gate.");
         }
         finally
         {

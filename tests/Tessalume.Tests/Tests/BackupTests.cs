@@ -14,6 +14,9 @@ internal static partial class TestSuite
             await File.WriteAllTextAsync(Path.Combine(data, "ui-settings.json"), "{\"value\":\"original\"}");
             await File.WriteAllTextAsync(Path.Combine(data, "state.json"), "{\"enabled\":true}");
             await File.WriteAllTextAsync(Path.Combine(data, "deleted-built-in-themes.txt"), "builtin.removed");
+            var personalImage = Path.Combine(data, "personalization", "images", "personal.png");
+            Directory.CreateDirectory(Path.GetDirectoryName(personalImage)!);
+            await File.WriteAllBytesAsync(personalImage, [137, 80, 78, 71, 13, 10, 26, 10]);
             Directory.CreateDirectory(Path.Combine(data, "logs"));
             await File.WriteAllTextAsync(Path.Combine(data, "logs", "tessalume.log"), "must not ship");
 
@@ -33,8 +36,8 @@ internal static partial class TestSuite
             var dataOnly = await service.CreateAsync(dataOnlyPath);
             Ensure(!dataOnly.Summary.IncludesImportedThemes &&
                    dataOnly.Summary.ImportedThemes.Count == 0 &&
-                   dataOnly.Summary.DataFileCount == 3,
-                "Default backups must include user settings and runtime state without themes.");
+                   dataOnly.Summary.DataFileCount == 4,
+                "Default backups must include user settings, runtime state, and personal images without themes.");
             using (var archive = ZipFile.OpenRead(dataOnlyPath))
             {
                 Ensure(archive.Entries.All(entry =>
@@ -61,11 +64,15 @@ internal static partial class TestSuite
 
             await File.WriteAllTextAsync(Path.Combine(data, "ui-settings.json"), "{\"value\":\"mutated\"}");
             await File.WriteAllTextAsync(Path.Combine(data, "state.json"), "{\"enabled\":false}");
+            File.Delete(personalImage);
             await File.WriteAllTextAsync(Path.Combine(userTheme, "theme.css"), "mutated");
             await File.WriteAllTextAsync(Path.Combine(builtInTheme, "built-in.txt"), "keep-current-built-in");
             var restore = await service.RestoreAsync(fullPath);
             Ensure(await File.ReadAllTextAsync(Path.Combine(data, "ui-settings.json")) == "{\"value\":\"original\"}" &&
                    await File.ReadAllTextAsync(Path.Combine(data, "state.json")) == "{\"enabled\":true}" &&
+                   File.Exists(personalImage) &&
+                   (await File.ReadAllBytesAsync(personalImage)).SequenceEqual(
+                       new byte[] { 137, 80, 78, 71, 13, 10, 26, 10 }) &&
                    (await File.ReadAllTextAsync(Path.Combine(userTheme, "theme.css"))).Contains("--accent", StringComparison.Ordinal) &&
                    await File.ReadAllTextAsync(Path.Combine(builtInTheme, "built-in.txt")) == "keep-current-built-in",
                 "Restore must replace backed-up user data and imported themes without touching built-in themes.");

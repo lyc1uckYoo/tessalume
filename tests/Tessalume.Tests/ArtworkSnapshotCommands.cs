@@ -104,6 +104,25 @@ internal static partial class TestSuite
         window.CopyVisualModeButton.IsEnabled = true;
         window.SaveVisualPresetButton.IsEnabled = true;
         groupButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        if (groupButton == window.VisualEffectsGroupButton)
+        {
+            window.HeroAdjustmentEditor.SetAdjustment(new ThemeArtworkAdjustment
+            {
+                CustomImagePath = "personalization/images/night-scene.webp",
+                Grayscale = 6,
+                HueRotation = 12,
+                Blur = 1.5,
+                OverlayColor = "#31265F",
+                OverlayOpacity = 18,
+                GradientStrength = 42,
+                Vignette = 24,
+                BlendMode = "soft-light",
+                ReadabilityProtection = true,
+            });
+        }
+        window.HeroAdjustmentEditor.InvalidateMeasure();
+        window.VisualAdjustmentEditor.InvalidateMeasure();
+        window.InfoScroll.InvalidateMeasure();
         ArrangeMainSurface(window);
         window.InfoScroll.ScrollToVerticalOffset(126);
         ArrangeMainSurface(window);

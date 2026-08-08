@@ -9,7 +9,9 @@ internal static partial class TestSuite
         string lightSnapshotPath,
         string detailSnapshotPath,
         string darkSnapshotPath,
-        string? promptSnapshotPath = null)
+        string? promptSnapshotPath = null,
+        string? releaseSnapshotPath = null,
+        string? acceptanceSnapshotPath = null)
     {
         var portableRoot = Path.Combine(
             Path.GetTempPath(),
@@ -60,8 +62,8 @@ internal static partial class TestSuite
                     window.InfoPage.Visibility = Visibility.Visible;
                     window.ImportInfoPanel.Visibility = Visibility.Collapsed;
                     window.SettingsInfoPanel.Visibility = Visibility.Collapsed;
-                    window.DiagnosticsInfoPanel.Visibility = Visibility.Collapsed;
-                    window.AboutInfoPanel.Visibility = Visibility.Collapsed;
+                    window.DiagnosticsPage.Visibility = Visibility.Collapsed;
+                    window.AboutPage.Visibility = Visibility.Collapsed;
                     window.CreatorCenter.Visibility = Visibility.Visible;
                     if (window.CreatorCenter.DataContext is not CreatorCenterViewModel viewModel)
                     {
@@ -90,16 +92,14 @@ internal static partial class TestSuite
                             "Creator Center project details were not rendered.");
                     }
 
-                    window.InfoScroll.ScrollToTop();
-                    ArrangeMainSurface(window);
+                    ResetCreatorScroll(window);
                     SaveWindowContent(window, lightSnapshotPath);
 
                     if (!string.IsNullOrWhiteSpace(promptSnapshotPath))
                     {
                         window.CreatorCenter.TogglePromptEditorButton.RaiseEvent(
                             new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
-                        window.InfoScroll.ScrollToTop();
-                        ArrangeMainSurface(window);
+                        ResetCreatorScroll(window);
                         if (window.CreatorCenter.CreatorPromptEditor.Visibility != Visibility.Visible ||
                             window.CreatorCenter.PromptCharacterNameBox.ActualWidth <= 0)
                         {
@@ -111,8 +111,8 @@ internal static partial class TestSuite
                             new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
                     }
 
-                    window.InfoScroll.ScrollToEnd();
-                    ArrangeMainSurface(window);
+                    window.CreatorCenter.NavigateTo(CreatorCenterRoute.Workflow);
+                    ResetCreatorScroll(window);
                     SaveWindowContent(window, detailSnapshotPath);
 
                     var applyTheme = typeof(MainWindow).GetMethod(
@@ -120,9 +120,22 @@ internal static partial class TestSuite
                         System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
                         ?? throw new MissingMethodException(nameof(MainWindow), "ApplyStudioTheme");
                     applyTheme.Invoke(window, [true]);
-                    window.InfoScroll.ScrollToTop();
-                    ArrangeMainSurface(window);
+                    window.CreatorCenter.NavigateTo(CreatorCenterRoute.Inspection);
+                    ResetCreatorScroll(window);
                     SaveWindowContent(window, darkSnapshotPath);
+
+                    if (!string.IsNullOrWhiteSpace(releaseSnapshotPath))
+                    {
+                        if (!string.IsNullOrWhiteSpace(acceptanceSnapshotPath))
+                        {
+                            window.CreatorCenter.NavigateTo(CreatorCenterRoute.Acceptance);
+                            ResetCreatorScroll(window);
+                            SaveWindowContent(window, acceptanceSnapshotPath);
+                        }
+                        window.CreatorCenter.NavigateTo(CreatorCenterRoute.Release);
+                        ResetCreatorScroll(window);
+                        SaveWindowContent(window, releaseSnapshotPath);
+                    }
                 }
                 catch (Exception exception)
                 {
@@ -161,6 +174,14 @@ internal static partial class TestSuite
             {
                 Console.WriteLine($"Creator prompt snapshot: {Path.GetFullPath(promptSnapshotPath)}");
             }
+            if (!string.IsNullOrWhiteSpace(releaseSnapshotPath))
+            {
+                Console.WriteLine($"Creator release snapshot: {Path.GetFullPath(releaseSnapshotPath)}");
+            }
+            if (!string.IsNullOrWhiteSpace(acceptanceSnapshotPath))
+            {
+                Console.WriteLine($"Creator acceptance snapshot: {Path.GetFullPath(acceptanceSnapshotPath)}");
+            }
             return Task.FromResult(0);
         }
         finally
@@ -169,14 +190,23 @@ internal static partial class TestSuite
         }
     }
 
-    private static void ArrangeMainSurface(MainWindow window)
+    private static void ArrangeMainSurface(MainWindow window, Size? requestedSize = null)
     {
         var surface = window.Content as FrameworkElement
             ?? throw new InvalidOperationException("Main window content is unavailable.");
-        var size = new Size(1280, 820);
+        var size = requestedSize ?? new Size(1280, 820);
         surface.Measure(size);
         surface.Arrange(new Rect(size));
         surface.UpdateLayout();
+    }
+
+    private static void ResetCreatorScroll(MainWindow window)
+    {
+        window.InfoScroll.ScrollToVerticalOffset(0);
+        ArrangeMainSurface(window);
+        window.InfoScroll.UpdateLayout();
+        window.InfoScroll.ScrollToVerticalOffset(0);
+        ArrangeMainSurface(window);
     }
 
     private static void SaveWindowContent(MainWindow window, string path)

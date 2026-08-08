@@ -27,21 +27,154 @@ internal static partial class TestSuite
                buildScript.Contains("SHA256SUMS.txt", StringComparison.Ordinal),
             "The release build must create a SHA-256 manifest beside the executable.");
         Ensure(File.Exists(securityPath) && File.Exists(issueTemplatePath) && File.Exists(changelogPath) &&
-               changelog.Contains("## 1.4.1", StringComparison.Ordinal) &&
+               changelog.Contains("## 2.0.0", StringComparison.Ordinal) &&
                license.Contains("MIT License", StringComparison.Ordinal) &&
                license.Contains("Permission is hereby granted", StringComparison.Ordinal),
             "Public testing requires an MIT license, security guidance, a structured bug form, and a public changelog.");
         Ensure(readme.Contains("issues/new?template=bug-report.yml", StringComparison.Ordinal) &&
                readme.Contains("Microsoft Defender SmartScreen", StringComparison.Ordinal) &&
                readme.Contains("SHA256SUMS.txt", StringComparison.Ordinal) &&
-               readme.Contains("从 1.2.x / 1.3.0 / 1.4.0 升级到 1.4.1", StringComparison.Ordinal) &&
+               readme.Contains("从 1.2.x / 1.3.0 / 1.4.x 升级到 2.0.0", StringComparison.Ordinal) &&
                readme.Contains("项目化主题创作", StringComparison.Ordinal) &&
                readme.Contains("便携备份与恢复", StringComparison.Ordinal) &&
                readme.Contains("从 1.1 升级到 1.2", StringComparison.Ordinal) &&
                readme.Contains("[MIT License](LICENSE)", StringComparison.Ordinal) &&
-               security.Contains("最新的 `1.4.x`", StringComparison.Ordinal) &&
+               security.Contains("最新的 `2.0.x`", StringComparison.Ordinal) &&
                security.Contains("备份 ZIP", StringComparison.Ordinal),
             "The download guide must expose feedback, signature status, checksum verification, and licensing.");
+    }
+
+    static async Task GitHubAutomationSeparatesApplicationAndCompatibilityReleasesAsync()
+    {
+        var repositoryRoot = FindRepositoryRoot();
+        var workflows = Path.Combine(repositoryRoot, ".github", "workflows");
+        var ci = await File.ReadAllTextAsync(Path.Combine(workflows, "ci.yml"));
+        var release = await File.ReadAllTextAsync(Path.Combine(workflows, "release.yml"));
+        var compatibility = await File.ReadAllTextAsync(Path.Combine(
+            workflows,
+            "compatibility-release.yml"));
+        var packScript = await File.ReadAllTextAsync(Path.Combine(
+            repositoryRoot,
+            "tools",
+            "New-CompatibilityPack.ps1"));
+        var notesScript = await File.ReadAllTextAsync(Path.Combine(
+            repositoryRoot,
+            "tools",
+            "Get-ReleaseNotes.ps1"));
+
+        Ensure(ci.Contains("一键构建EXE.ps1", StringComparison.Ordinal) &&
+               ci.Contains("-NoLaunch", StringComparison.Ordinal) &&
+               ci.Contains("actions/upload-artifact@v4", StringComparison.Ordinal),
+            "CI must execute the same complete release build used locally and retain its verified artifacts.");
+        Ensure(release.Contains("tags:", StringComparison.Ordinal) &&
+               release.Contains("'v*.*.*'", StringComparison.Ordinal) &&
+               release.Contains("does not match project version", StringComparison.Ordinal) &&
+               release.Contains("Get-ReleaseNotes.ps1", StringComparison.Ordinal) &&
+               release.Contains("gh release create", StringComparison.Ordinal) &&
+               release.Contains("--latest", StringComparison.Ordinal),
+            "Application tags must validate the project version and changelog before publishing a latest GitHub Release.");
+        Ensure(compatibility.Contains("'compat-v*.*.*'", StringComparison.Ordinal) &&
+               compatibility.Contains("New-CompatibilityPack.ps1", StringComparison.Ordinal) &&
+               compatibility.Contains("--latest=false", StringComparison.Ordinal) &&
+               compatibility.Contains("Tessalume-Compatibility.zip", StringComparison.Ordinal),
+            "Compatibility tags must publish only the bounded small package and must never replace the latest app release.");
+        Ensure(packScript.Contains("minimumAppVersion", StringComparison.Ordinal) &&
+               packScript.Contains("Tessalume.App.csproj", StringComparison.Ordinal) &&
+               notesScript.Contains("CHANGELOG.md does not contain", StringComparison.Ordinal),
+            "Release scripts must derive compatibility requirements from the project and reject missing release notes.");
+    }
+
+    static async Task CompatibilityPackBuildIsDeterministicAsync()
+    {
+        var repositoryRoot = FindRepositoryRoot();
+        var scriptPath = Path.Combine(repositoryRoot, "tools", "New-CompatibilityPack.ps1");
+        var testRoot = Path.Combine(Path.GetTempPath(), $"tessalume-compat-pack-{Guid.NewGuid():N}");
+        var firstOutput = Path.Combine(testRoot, "first");
+        var secondOutput = Path.Combine(testRoot, "second");
+
+        try
+        {
+            await BuildPackAsync(firstOutput);
+            await BuildPackAsync(secondOutput);
+
+            var firstArchive = Path.Combine(firstOutput, "Tessalume-Compatibility.zip");
+            var secondArchive = Path.Combine(secondOutput, "Tessalume-Compatibility.zip");
+            var firstHash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(
+                await File.ReadAllBytesAsync(firstArchive)));
+            var secondHash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(
+                await File.ReadAllBytesAsync(secondArchive)));
+            Ensure(firstHash == secondHash,
+                "Identical compatibility sources must produce a reproducible ZIP and SHA-256.");
+
+            using var archive = System.IO.Compression.ZipFile.OpenRead(firstArchive);
+            var expectedEntries = new[]
+            {
+                "compatibility-pack.json",
+                "compatibility-profile-v3.json",
+                "theme-runtime-v2.js",
+            };
+            Ensure(archive.Entries.Select(entry => entry.FullName).SequenceEqual(expectedEntries) &&
+                   archive.Entries.All(entry =>
+                       entry.LastWriteTime.Year == 2000 &&
+                       entry.LastWriteTime.Month == 1 &&
+                       entry.LastWriteTime.Day == 1 &&
+                       entry.LastWriteTime.Hour == 0 &&
+                       entry.LastWriteTime.Minute == 0 &&
+                       entry.LastWriteTime.Second == 0),
+                "The compatibility ZIP must retain its fixed contract order and timestamp.");
+        }
+        finally
+        {
+            if (Directory.Exists(testRoot))
+            {
+                Directory.Delete(testRoot, recursive: true);
+            }
+        }
+
+        async Task BuildPackAsync(string outputDirectory)
+        {
+            var powerShell = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.System),
+                "WindowsPowerShell",
+                "v1.0",
+                "powershell.exe");
+            var startInfo = new System.Diagnostics.ProcessStartInfo(powerShell)
+            {
+                WorkingDirectory = repositoryRoot,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+            };
+            foreach (var argument in new[]
+                     {
+                         "-NoProfile",
+                         "-NonInteractive",
+                         "-ExecutionPolicy",
+                         "Bypass",
+                         "-File",
+                         scriptPath,
+                         "-Version",
+                         "3.0.1",
+                         "-MinimumAppVersion",
+                         "2.0.0",
+                         "-OutputDirectory",
+                         outputDirectory,
+                     })
+            {
+                startInfo.ArgumentList.Add(argument);
+            }
+
+            using var process = System.Diagnostics.Process.Start(startInfo)
+                ?? throw new InvalidOperationException("Unable to start the compatibility pack builder.");
+            var outputTask = process.StandardOutput.ReadToEndAsync();
+            var errorTask = process.StandardError.ReadToEndAsync();
+            await process.WaitForExitAsync();
+            var output = await outputTask;
+            var error = await errorTask;
+            Ensure(process.ExitCode == 0,
+                $"Compatibility pack build failed. {output} {error}".Trim());
+        }
     }
 
 
@@ -61,6 +194,7 @@ internal static partial class TestSuite
             "MainWindow.Settings.cs",
             "MainWindow.ArtworkEditor.cs",
             "MainWindow.Creator.cs",
+            "MainWindow.CreatorAcceptance.cs",
             "MainWindow.Updates.cs",
             "MainWindow.Diagnostics.cs",
             "MainWindow.Backup.cs",
@@ -96,9 +230,6 @@ internal static partial class TestSuite
                  {
                      "CreatorCenterView.xaml",
                      "CreatorCenterView.xaml.cs",
-                     "CreatorCenterViewModel.cs",
-                     "CreatorWorkspaceProvisioner.cs",
-                     "CreatorWorkspaceStore.cs",
                  })
         {
             Ensure(File.Exists(Path.Combine(appRoot, "Creator", fileName)),
@@ -109,20 +240,217 @@ internal static partial class TestSuite
                !creatorShell.Contains("ThemeProjectScanner", StringComparison.Ordinal) &&
                !creatorShell.Contains("ThemeArchiveWriter", StringComparison.Ordinal),
             "MainWindow.Creator must remain a navigation shell instead of reclaiming project logic.");
+
+        var creatorRoot = Path.Combine(appRoot, "Creator");
+        foreach (var relativePath in new[]
+                 {
+                     Path.Combine("Application", "Contracts", "ICreatorProjectInspectionService.cs"),
+                     Path.Combine("Application", "Contracts", "ICreatorProjectExportService.cs"),
+                     Path.Combine("Application", "Contracts", "ICreatorRuntimeGateway.cs"),
+                     Path.Combine("Application", "Contracts", "ICreatorAcceptanceService.cs"),
+                     Path.Combine("Application", "Services", "CreatorWorkflowEvaluator.cs"),
+                     Path.Combine("Application", "Services", "CreatorAcceptanceService.cs"),
+                     Path.Combine("Application", "Prompting", "CreatorPromptComposer.cs"),
+                     Path.Combine("Application", "Prompting", "CreatorRepairPromptComposer.cs"),
+                     Path.Combine("Domain", "CreatorWorkflow.cs"),
+                     Path.Combine("Domain", "CreatorAcceptance.cs"),
+                     Path.Combine("Infrastructure", "Persistence", "CreatorWorkspaceStore.cs"),
+                     Path.Combine("Infrastructure", "Runtime", "CreatorRuntimeBridge.cs"),
+                     Path.Combine("Infrastructure", "Watching", "ThemeProjectWatcher.cs"),
+                     Path.Combine("Infrastructure", "Workspaces", "CreatorWorkspaceProvisioner.cs"),
+                     Path.Combine("Presentation", "Navigation", "CreatorCenterRoute.cs"),
+                     Path.Combine("Presentation", "Pages", "CreatorWorkspacePage.xaml"),
+                     Path.Combine("Presentation", "Pages", "CreatorWorkflowPage.xaml"),
+                     Path.Combine("Presentation", "Pages", "CreatorInspectionPage.xaml"),
+                     Path.Combine("Presentation", "Pages", "CreatorAcceptancePage.xaml"),
+                     Path.Combine("Presentation", "Pages", "CreatorReleasePage.xaml"),
+                     Path.Combine("Presentation", "ViewModels", "CreatorCenterViewModel.Workspaces.cs"),
+                     Path.Combine("Presentation", "ViewModels", "CreatorCenterViewModel.cs"),
+                     Path.Combine("Presentation", "ViewModels", "CreatorProjectViewModels.cs"),
+                     Path.Combine("Presentation", "ViewModels", "CreatorCenterViewModel.ProjectInspection.cs"),
+                     Path.Combine("Presentation", "ViewModels", "CreatorCenterViewModel.RuntimeSession.cs"),
+                     Path.Combine("Presentation", "ViewModels", "CreatorCenterViewModel.Acceptance.cs"),
+                 })
+        {
+            Ensure(File.Exists(Path.Combine(creatorRoot, relativePath)),
+                $"The Creator Center modular boundary is missing {relativePath}.");
+        }
+
+        var compatibilityRoot = Path.Combine(appRoot, "Compatibility");
+        var runtimeRoot = Path.Combine(compatibilityRoot, "Runtime");
+        var runtimeFragments = new[]
+        {
+            "00-bootstrap.js",
+            "10-page-recognition.js",
+            "20-adaptive-layout.js",
+            "30-surface-decoration.js",
+            "40-cleanup-recovery.js",
+        };
+        Ensure(!File.Exists(Path.Combine(compatibilityRoot, "theme-runtime-v2.js")) &&
+               File.Exists(Path.Combine(runtimeRoot, "runtime-bundle.json")),
+            "Compatibility runtime source must be modular and assembled only at build/install boundaries.");
+        foreach (var fragment in runtimeFragments)
+        {
+            var fragmentPath = Path.Combine(runtimeRoot, fragment);
+            Ensure(File.Exists(fragmentPath), $"Compatibility runtime fragment is missing: {fragment}.");
+            var lines = await File.ReadAllLinesAsync(fragmentPath);
+            Ensure(lines.Length <= 400 &&
+                   lines.FirstOrDefault()?.Contains("TESSALUME_RUNTIME_FRAGMENT", StringComparison.Ordinal) == true,
+                $"Compatibility runtime fragment must remain focused and self-identifying: {fragment}.");
+        }
+        var composedRuntime = CompatibilityRuntimeComposer.ComposeSource(compatibilityRoot);
+        Ensure(composedRuntime.Contains("mountCanonicalTheme", StringComparison.Ordinal) &&
+               composedRuntime.Contains("syncAdaptiveVisibility", StringComparison.Ordinal) &&
+               composedRuntime.Contains("decorateSharedSurfaces", StringComparison.Ordinal) &&
+               composedRuntime.TrimEnd().EndsWith("})()", StringComparison.Ordinal),
+            "The modular compatibility runtime must compose into the complete contract-v3 payload.");
+        foreach (var fileName in new[] { "ThemeRuntimeAcceptanceProbe.cs", "ThemeRuntimeAcceptanceSnapshot.cs" })
+        {
+            var sourcePath = Path.Combine(repositoryRoot, "src", "Tessalume.Core", "Runtime", fileName);
+            Ensure(File.Exists(sourcePath) && (await File.ReadAllLinesAsync(sourcePath)).Length <= 240,
+                $"Runtime acceptance must stay in its focused service boundary: {fileName}.");
+        }
+        var acceptanceProbeSource = await File.ReadAllTextAsync(Path.Combine(
+            repositoryRoot,
+            "src",
+            "Tessalume.Core",
+            "Runtime",
+            "ThemeRuntimeAcceptanceProbe.cs"));
+        Ensure(acceptanceProbeSource.Contains("'reduced'", StringComparison.Ordinal) &&
+               !acceptanceProbeSource.Contains("'compact'", StringComparison.Ordinal),
+            "Runtime acceptance must use the same full/reduced/minimal layout vocabulary as the compatibility engine.");
+
+        foreach (var sourcePath in Directory.EnumerateFiles(
+                     Path.Combine(creatorRoot, "Presentation"),
+                     "*.cs",
+                     SearchOption.AllDirectories))
+        {
+            var lineCount = (await File.ReadAllLinesAsync(sourcePath)).Length;
+            Ensure(lineCount <= 320,
+                $"Creator presentation source must stay focused: {Path.GetFileName(sourcePath)} has {lineCount} lines.");
+        }
+
+        var scannerRoot = Path.Combine(repositoryRoot, "src", "Tessalume.Core", "Creator");
+        foreach (var relativePath in new[]
+                 {
+                     "ThemeProjectScanner.cs",
+                     Path.Combine("Inspection", "ThemeProjectScanner.Workspaces.cs"),
+                     Path.Combine("Inspection", "ThemeProjectScanner.Contracts.cs"),
+                     Path.Combine("Inspection", "ThemeProjectScanner.Mapping.cs"),
+                 })
+        {
+            var sourcePath = Path.Combine(scannerRoot, relativePath);
+            Ensure(File.Exists(sourcePath), $"The scanner boundary is missing {relativePath}.");
+            var lineCount = (await File.ReadAllLinesAsync(sourcePath)).Length;
+            Ensure(lineCount <= 320,
+                $"Scanner source must stay focused: {relativePath} has {lineCount} lines.");
+        }
         Ensure(!File.Exists(Path.Combine(appRoot, "DiagnosticsWindow.xaml")) &&
                !File.Exists(Path.Combine(appRoot, "DiagnosticsWindow.xaml.cs")),
             "The obsolete duplicate diagnostics window must not return.");
+        var aboutFeatureRoot = Path.Combine(appRoot, "Features", "About");
+        foreach (var fileName in new[]
+                 {
+                     "AboutView.xaml",
+                     "AboutView.xaml.cs",
+                     "AboutState.cs",
+                     "AboutDataService.cs",
+                     "AboutUpdateService.cs",
+                 })
+        {
+            Ensure(File.Exists(Path.Combine(aboutFeatureRoot, fileName)),
+                $"The About feature slice is missing {fileName}.");
+        }
+        var diagnosticsFeatureRoot = Path.Combine(appRoot, "Features", "Diagnostics");
+        foreach (var fileName in new[]
+                 {
+                     "DiagnosticsView.xaml",
+                     "DiagnosticsView.xaml.cs",
+                     "DiagnosticsSnapshot.cs",
+                     "DiagnosticsInspectionService.cs",
+                     "CompatibilityHealthService.cs",
+                 })
+        {
+            Ensure(File.Exists(Path.Combine(diagnosticsFeatureRoot, fileName)),
+                $"The diagnostics feature slice is missing {fileName}.");
+        }
+        var personalizationFeatureRoot = Path.Combine(appRoot, "Features", "Personalization");
+        foreach (var fileName in new[]
+                 {
+                     "PersonalImageStore.cs",
+                     "DisplayPreferencesView.xaml",
+                     "DisplayPreferencesView.xaml.cs",
+                     "ExperienceProfilesView.xaml",
+                     "ExperienceProfilesView.xaml.cs",
+                 })
+        {
+            Ensure(File.Exists(Path.Combine(personalizationFeatureRoot, fileName)),
+                $"The personalization feature slice is missing {fileName}.");
+        }
+        var personalizationShellRoot = Path.Combine(appRoot, "Shell", "Personalization");
+        foreach (var fileName in new[]
+                 {
+                     "MainWindow.PersonalizationNavigation.cs",
+                     "MainWindow.PersonalizationPreview.cs",
+                     "MainWindow.PersonalizationPresentation.cs",
+                     "MainWindow.PersonalizationProfiles.cs",
+                     "MainWindow.ArtworkPresets.cs",
+                 })
+        {
+            var path = Path.Combine(personalizationShellRoot, fileName);
+            Ensure(File.Exists(path) && (await File.ReadAllTextAsync(path)).Split('\n').Length < 220,
+                $"The personalization shell boundary is missing or oversized: {fileName}.");
+        }
+        Ensure((await File.ReadAllTextAsync(Path.Combine(appRoot, "MainWindow.ArtworkEditor.cs")))
+                   .Split('\n').Length < 350,
+            "The artwork editor shell must keep image mutation logic below the maintainability boundary.");
         Ensure(File.Exists(Path.Combine(
-                   appRoot,
-                   "Diagnostics",
-                   "CompatibilityHealthService.cs")) &&
-               File.Exists(Path.Combine(
                    repositoryRoot,
                    "src",
                    "Tessalume.Core",
                    "Backup",
                    "PortableBackupService.cs")),
             "Compatibility presentation and portable backup algorithms must remain in dedicated feature boundaries.");
+        foreach (var (relativePath, maximumLines) in new[]
+                 {
+                     (Path.Combine("src", "Tessalume.App", "Infrastructure", "UpdateBootstrapper.cs"), 450),
+                     (Path.Combine("src", "Tessalume.App", "Infrastructure", "UpdateHelperRuntime.cs"), 450),
+                     (Path.Combine("src", "Tessalume.Core", "Runtime", "ThemeRuntime.cs"), 650),
+                     (Path.Combine("src", "Tessalume.Core", "Runtime", "ThemeRuntime.Payload.cs"), 200),
+                     (Path.Combine("src", "Tessalume.Core", "Backup", "PortableBackupService.cs"), 800),
+                     (Path.Combine("src", "Tessalume.Core", "Backup", "PortableBackupService.Internals.cs"), 200),
+                 })
+        {
+            var path = Path.Combine(repositoryRoot, relativePath);
+            Ensure(File.Exists(path) && (await File.ReadAllLinesAsync(path)).Length <= maximumLines,
+                $"Infrastructure source must stay focused: {relativePath}.");
+        }
+
+        var mainXaml = await File.ReadAllTextAsync(Path.Combine(appRoot, "MainWindow.xaml"));
+        var diagnosticsView = await File.ReadAllTextAsync(Path.Combine(
+            diagnosticsFeatureRoot,
+            "DiagnosticsView.xaml"));
+        var aboutView = await File.ReadAllTextAsync(Path.Combine(aboutFeatureRoot, "AboutView.xaml"));
+        var updateShell = await File.ReadAllTextAsync(Path.Combine(appRoot, "MainWindow.Updates.cs"));
+        var recoveryShellPath = Path.Combine(
+            appRoot,
+            "Shell",
+            "About",
+            "MainWindow.AboutUpdateRecovery.cs");
+        Ensure(mainXaml.Contains("<about:AboutView", StringComparison.Ordinal) &&
+               !mainXaml.Contains("x:Name=\"LibrarySummaryText\"", StringComparison.Ordinal) &&
+               aboutView.Contains("x:Name=\"LibrarySummaryText\"", StringComparison.Ordinal) &&
+               mainXaml.Contains("<diagnostics:DiagnosticsView", StringComparison.Ordinal) &&
+               !mainXaml.Contains("x:Name=\"DiagnosticHealthTitleText\"", StringComparison.Ordinal) &&
+               diagnosticsView.Contains("x:Name=\"DiagnosticHealthTitleText\"", StringComparison.Ordinal) &&
+               mainXaml.Split('\n').Length < 950,
+            "MainWindow must compose About and Diagnostics as features instead of reclaiming their controls.");
+        Ensure(File.Exists(recoveryShellPath) &&
+               updateShell.Split('\n').Length < 350 &&
+               !updateShell.Contains("UpdateRollbackStore", StringComparison.Ordinal) &&
+               !updateShell.Contains("ReleaseUpdateClient", StringComparison.Ordinal) &&
+               !updateShell.Contains("CompatibilityUpdateClient", StringComparison.Ordinal),
+            "About update orchestration must keep recovery and low-level clients outside the main update file.");
 
         var testRoot = Path.Combine(repositoryRoot, "tests", "Tessalume.Tests");
         var program = await File.ReadAllTextAsync(Path.Combine(testRoot, "Program.cs"));

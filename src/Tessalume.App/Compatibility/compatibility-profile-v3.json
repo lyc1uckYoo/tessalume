@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "profileVersion": "3.0.0",
+  "runtimeContractVersion": 3,
+  "selectors": {
+    "main": [
+      "main.main-surface",
+      "main"
+    ],
+    "homeIcon": [
+      "[data-testid=\"home-icon\"]"
+    ],
+    "homeAncestor": [
+      "[role=\"main\"]",
+      "main"
+    ],
+    "sidebar": [
+      "aside.app-shell-left-panel"
+    ],
+    "workspace": [
+      ".thread-scroll-container"
+    ],
+    "composerLegacySurface": [
+      ".composer-surface-chrome"
+    ],
+    "composerEditor": [
+      "[data-codex-composer=\"true\"]"
+    ],
+    "composerRootAncestor": [
+      "[class*=\"ComposerLayoutRoot\"]"
+    ],
+    "composerBodyAncestor": [
+      "[class*=\"ComposerLayoutBody\"]"
+    ],
+    "composerFooter": [
+      "[class*=\"ComposerLayoutFooter\"]",
+      "[class*=\"_footer_\"]"
+    ],
+    "settingsSurface": [
+      ".main-surface.flex.h-full.min-h-0.flex-col"
+    ],
+    "settingsScrollChild": [
+      ":scope > .scrollbar-stable.flex-1.overflow-y-auto.p-panel"
+    ],
+    "windowBar": [
+      ".group\\/application-menu-top-bar"
+    ],
+    "markdownContent": [
+      "[class*=\"_markdownContent_\"]"
+    ],
+    "messageUnitAncestor": [
+      "[data-content-search-unit-key]"
+    ],
+    "userMessageBubble": [
+      "[data-user-message-bubble=\"true\"]"
+    ],
+    "chatPaperAncestor": [
+      "[class*=\"thread-content-max-width\"]"
+    ],
+    "taskHeader": [
+      "[data-testid=\"app-shell-header-context-menu-surface\"]"
+    ],
+    "outputPanelItem": [
+      "[data-slot=\"thread-summary-panel-item-button\"]"
+    ],
+    "homeSuggestions": [
+      ".group\\/home-suggestions"
+    ]
+  }
+}

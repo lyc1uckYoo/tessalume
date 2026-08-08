@@ -1,13 +1,12 @@
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Tessalume.Core.Themes;
 
 namespace Tessalume.Core.Runtime;
 
-public sealed class ThemeRuntime(
-    LoopbackCdpDiscovery discovery,
-    ThemePayloadBuilder payloadBuilder) : IAsyncDisposable
+public sealed partial class ThemeRuntime : IAsyncDisposable
 {
-    public const int ContractVersion = 2;
+    public const int ContractVersion = 3;
 
     private const string ThemeScriptFailureMarker = "TESSALUME_THEME_SCRIPT:";
 
@@ -45,12 +44,31 @@ public sealed class ThemeRuntime(
               document.documentElement.style.removeProperty(name);
             }
           }
+          delete document.documentElement.dataset.tessalumeReadability;
+          delete document.documentElement.dataset.tessalumeMotion;
+          delete document.documentElement.dataset.tessalumeTextScale;
+          delete document.documentElement.dataset.tessalumeDensity;
           return true;
         })()
         """;
 
     private readonly SemaphoreSlim _applyLock = new(1, 1);
+    private readonly LoopbackCdpDiscovery _discovery;
+    private readonly ThemePayloadBuilder _payloadBuilder;
+    private readonly Func<ThemeVisualSettings, ThemeVisualSettings>? _visualSettingsResolver;
+    private readonly ThemeRuntimeAcceptanceProbe _acceptanceProbe;
     private static readonly JsonSerializerOptions VisualSettingsJsonOptions = new(JsonSerializerDefaults.Web);
+
+    public ThemeRuntime(
+        LoopbackCdpDiscovery discovery,
+        ThemePayloadBuilder payloadBuilder,
+        Func<ThemeVisualSettings, ThemeVisualSettings>? visualSettingsResolver = null)
+    {
+        _discovery = discovery ?? throw new ArgumentNullException(nameof(discovery));
+        _payloadBuilder = payloadBuilder ?? throw new ArgumentNullException(nameof(payloadBuilder));
+        _visualSettingsResolver = visualSettingsResolver;
+        _acceptanceProbe = new ThemeRuntimeAcceptanceProbe(_discovery);
+    }
 
     public event EventHandler<string>? StatusChanged;
 
@@ -68,7 +86,7 @@ public sealed class ThemeRuntime(
             port,
             package,
             payload,
-            SerializeVisualSettings(visualSettings),
+            await SerializeVisualSettingsAsync(visualSettings, cancellationToken),
             force: true,
             processedTargets: null,
             cancellationToken);
@@ -86,7 +104,7 @@ public sealed class ThemeRuntime(
         await _applyLock.WaitAsync(cancellationToken);
         try
         {
-            var targets = await discovery.DiscoverAsync(port, cancellationToken);
+            var targets = await _discovery.DiscoverAsync(port, cancellationToken);
             if (targets.Count == 0)
             {
                 throw new ThemeRuntimeException(
@@ -130,7 +148,7 @@ public sealed class ThemeRuntime(
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(themeId);
         var themeIdJson = JsonSerializer.Serialize(themeId);
-        var settingsJson = SerializeVisualSettings(visualSettings);
+        var settingsJson = await SerializeVisualSettingsAsync(visualSettings, cancellationToken);
         var expression = $$"""
             (() => {
               const runtime = window.__TESSALUME_RUNTIME__;
@@ -144,7 +162,7 @@ public sealed class ThemeRuntime(
         await _applyLock.WaitAsync(cancellationToken);
         try
         {
-            var targets = await discovery.DiscoverAsync(port, cancellationToken);
+            var targets = await _discovery.DiscoverAsync(port, cancellationToken);
             if (targets.Count == 0)
             {
                 throw new InvalidOperationException($"本机端口 {port} 尚未发现 Codex 页面");
@@ -175,7 +193,7 @@ public sealed class ThemeRuntime(
         await _applyLock.WaitAsync(cancellationToken);
         try
         {
-            var targets = await discovery.DiscoverAsync(port, cancellationToken);
+            var targets = await _discovery.DiscoverAsync(port, cancellationToken);
             foreach (var target in targets)
             {
                 await using var session = new CdpSession();
@@ -196,7 +214,7 @@ public sealed class ThemeRuntime(
         await _applyLock.WaitAsync(cancellationToken);
         try
         {
-            var targets = await discovery.DiscoverAsync(port, cancellationToken);
+            var targets = await _discovery.DiscoverAsync(port, cancellationToken);
             if (targets.Count == 0)
             {
                 throw new InvalidOperationException($"本机端口 {port} 尚未发现 Codex 页面");
@@ -240,12 +258,43 @@ public sealed class ThemeRuntime(
         }
     }
 
+    public async Task<ThemeRuntimeAcceptanceSnapshot> InspectAcceptanceAsync(
+        int port,
+        CancellationToken cancellationToken = default)
+    {
+        await _applyLock.WaitAsync(cancellationToken);
+        try
+        {
+            return await _acceptanceProbe.InspectAsync(port, cancellationToken);
+        }
+        finally
+        {
+            _applyLock.Release();
+        }
+    }
+
+    public async Task<IReadOnlyList<ThemeRuntimeAcceptanceSnapshot>> InspectResponsiveAcceptanceAsync(
+        int port,
+        IReadOnlyList<int> viewportWidths,
+        CancellationToken cancellationToken = default)
+    {
+        await _applyLock.WaitAsync(cancellationToken);
+        try
+        {
+            return await _acceptanceProbe.InspectResponsiveAsync(port, viewportWidths, cancellationToken);
+        }
+        finally
+        {
+            _applyLock.Release();
+        }
+    }
+
     public async Task<bool> ToggleColorSchemeAsync(int port, CancellationToken cancellationToken = default)
     {
         await _applyLock.WaitAsync(cancellationToken);
         try
         {
-            var targets = await discovery.DiscoverAsync(port, cancellationToken);
+            var targets = await _discovery.DiscoverAsync(port, cancellationToken);
             if (targets.Count == 0)
             {
                 throw new InvalidOperationException($"本机端口 {port} 尚未发现 Codex 页面");
@@ -393,7 +442,7 @@ public sealed class ThemeRuntime(
     {
         await Task.CompletedTask;
         _applyLock.Dispose();
-        discovery.Dispose();
+        _discovery.Dispose();
     }
 
     private async Task ApplyToAllAsync(
@@ -429,7 +478,7 @@ public sealed class ThemeRuntime(
         try
         {
             var themeId = package.Manifest.Id;
-            targets = await discovery.DiscoverAsync(port, cancellationToken);
+            targets = await _discovery.DiscoverAsync(port, cancellationToken);
             if (targets.Count == 0)
             {
                 throw new ThemeRuntimeException(
@@ -543,84 +592,4 @@ public sealed class ThemeRuntime(
         }
     }
 
-    private async Task<string> BuildPayloadAsync(
-        ThemePackage package,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            return await payloadBuilder.BuildRuntimeAsync(package, cancellationToken);
-        }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-        {
-            throw;
-        }
-        catch (Exception exception)
-        {
-            throw new ThemeRuntimeException(
-                ThemeRuntimeFailureStage.ResourcePreflightFailed,
-                "主题源码或素材未能完整读取，尚未更改 Codex 当前外观。",
-                exception);
-        }
-    }
-
-    private static async Task CleanupTargetsAsync(IReadOnlyList<CdpTarget> targets)
-    {
-        foreach (var target in targets)
-        {
-            try
-            {
-                using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(2));
-                await using var session = new CdpSession();
-                await session.ConnectAsync(target.WebSocketDebuggerUrl, timeout.Token);
-                _ = await session.EvaluateAsync(RemoveCompatibleRuntimesScript, timeout.Token);
-            }
-            catch (Exception exception) when (
-                exception is InvalidOperationException or UriFormatException or
-                    System.Net.WebSockets.WebSocketException or OperationCanceledException)
-            {
-                // Best effort: another Codex page may already have closed while rollback runs.
-            }
-        }
-    }
-
-    private static string GetTargetKey(CdpTarget target) =>
-        string.IsNullOrWhiteSpace(target.Id) ? target.WebSocketDebuggerUrl : target.Id;
-
-    private static string SerializeVisualSettings(ThemeVisualSettings? settings) =>
-        JsonSerializer.Serialize((settings ?? new ThemeVisualSettings()).Normalize(), VisualSettingsJsonOptions);
-
-    private static async Task StageAssetsAsync(
-        CdpSession session,
-        IReadOnlyDictionary<string, string> assetPaths,
-        CancellationToken cancellationToken)
-    {
-        await session.EvaluateAsync(
-            "window.__TESSALUME_STAGED_ASSETS__ = Object.create(null); true",
-            cancellationToken);
-        try
-        {
-            foreach (var (name, path) in assetPaths)
-            {
-                var dataUrl = await ThemePayloadBuilder.ReadDataUrlAsync(path, cancellationToken);
-                var expression =
-                    $"window.__TESSALUME_STAGED_ASSETS__['{name}'] = '{dataUrl}'; true";
-                await session.EvaluateAsync(expression, cancellationToken);
-            }
-        }
-        catch
-        {
-            try
-            {
-                await session.EvaluateAsync(
-                    "delete window.__TESSALUME_STAGED_ASSETS__; true",
-                    CancellationToken.None);
-            }
-            catch
-            {
-            }
-
-            throw;
-        }
-    }
 }

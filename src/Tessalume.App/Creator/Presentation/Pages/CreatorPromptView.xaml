@@ -1,0 +1,39 @@
+<UserControl x:Class="Tessalume.App.Creator.CreatorPromptView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackPanel>
+        <Border Background="{DynamicResource InfoSurface}" BorderBrush="{DynamicResource InfoBorder}" BorderThickness="1" CornerRadius="13" Padding="15,13">
+            <Grid>
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="8" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="给 Codex 的完整创作提示词" Foreground="{DynamicResource Accent}" FontSize="10" FontWeight="Bold" />
+                        <TextBlock x:Name="CreatorPromptStatusText" Text="已包含角色确认与最终校验" Foreground="{DynamicResource Teal}" FontSize="10" Margin="10,0,0,0" />
+                    </StackPanel>
+                    <TextBlock x:Name="CreatorPromptText" TextWrapping="Wrap" Foreground="{DynamicResource PrimaryText}" FontSize="11" LineHeight="19" MaxHeight="96" Margin="0,6,14,0" />
+                </StackPanel>
+                <Button x:Name="TogglePromptEditorButton" Grid.Column="1" Style="{DynamicResource QuietActionButton}" Content="定制提示词" Width="92" Height="34" VerticalAlignment="Center" Click="ToggleEditor_Click" />
+                <Button x:Name="CopyPromptButton" Grid.Column="3" Style="{DynamicResource PrimaryActionButton}" Content="复制提示词" Width="92" Height="36" VerticalAlignment="Center" Click="Copy_Click" AutomationProperties.Name="复制创作提示词" />
+            </Grid>
+        </Border>
+
+        <Border x:Name="CreatorPromptEditor" Visibility="Collapsed" Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="13" Padding="15" Margin="0,11,0,0">
+            <Grid>
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="12" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="10" /><RowDefinition Height="Auto" /><RowDefinition Height="11" /><RowDefinition Height="Auto" /><RowDefinition Height="11" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                <Grid Grid.ColumnSpan="3">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                    <StackPanel><TextBlock Text="角色与视觉方向" Foreground="{DynamicResource PrimaryText}" FontSize="12" FontWeight="SemiBold" /><TextBlock Text="草稿只保存在本机；作品名和角色名填写后即可复制。" Foreground="{DynamicResource MutedText}" FontSize="10" Margin="0,3,0,0" /></StackPanel>
+                    <Button Grid.Column="1" Style="{DynamicResource CreatorMiniButton}" Content="恢复示例" Click="Reset_Click" />
+                </Grid>
+                <StackPanel Grid.Row="2"><TextBlock Text="作品名称 *" Foreground="{DynamicResource MutedText}" FontSize="10" FontWeight="SemiBold" Margin="1,0,0,5" /><TextBox x:Name="PromptWorkNameBox" Style="{DynamicResource CreatorTextBox}" MaxLength="80" TextChanged="PromptField_Changed" AutomationProperties.Name="主题作品名称" /></StackPanel>
+                <StackPanel Grid.Row="2" Grid.Column="2"><TextBlock Text="角色名称 *" Foreground="{DynamicResource MutedText}" FontSize="10" FontWeight="SemiBold" Margin="1,0,0,5" /><TextBox x:Name="PromptCharacterNameBox" Style="{DynamicResource CreatorTextBox}" MaxLength="80" TextChanged="PromptField_Changed" AutomationProperties.Name="主题角色名称" /></StackPanel>
+                <StackPanel Grid.Row="4"><TextBlock Text="视觉方向" Foreground="{DynamicResource MutedText}" FontSize="10" FontWeight="SemiBold" Margin="1,0,0,5" /><TextBox x:Name="PromptVisualDirectionBox" Style="{DynamicResource CreatorTextBox}" MaxLength="220" TextChanged="PromptField_Changed" /></StackPanel>
+                <Border Grid.Row="4" Grid.Column="2" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="9" Padding="12,8">
+                    <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><StackPanel><TextBlock Text="我会附上参考图片" Foreground="{DynamicResource PrimaryText}" FontSize="11" FontWeight="SemiBold" /><TextBlock Text="提示 Codex 先核对形态与特征" Foreground="{DynamicResource MutedText}" FontSize="10" Margin="0,3,0,0" /></StackPanel><ToggleButton x:Name="PromptReferenceCheckBox" Grid.Column="1" Style="{DynamicResource CreatorSwitch}" Checked="PromptToggle_Changed" Unchecked="PromptToggle_Changed" AutomationProperties.Name="使用参考图片" /></Grid>
+                </Border>
+                <StackPanel Grid.Row="6" Grid.ColumnSpan="3"><TextBlock Text="其他要求" Foreground="{DynamicResource MutedText}" FontSize="10" FontWeight="SemiBold" Margin="1,0,0,5" /><TextBox x:Name="PromptSpecialRequirementsBox" Style="{DynamicResource CreatorTextBox}" Height="66" MaxLength="500" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" TextChanged="PromptField_Changed" /></StackPanel>
+            </Grid>
+        </Border>
+    </StackPanel>
+</UserControl>

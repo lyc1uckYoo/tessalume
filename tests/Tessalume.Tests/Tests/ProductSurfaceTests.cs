@@ -13,15 +13,37 @@ internal static partial class TestSuite
                     Title = "首页横幅",
                 };
                 Tessalume.App.Controls.ArtworkAdjustmentChangedEventArgs? changed = null;
+                Tessalume.App.Controls.ArtworkAdjustmentOptionChangedEventArgs? optionChanged = null;
                 var copied = false;
                 var pasted = false;
+                var imageRequested = false;
+                var imageCleared = false;
                 editor.AdjustmentChanged += (_, args) => changed = args;
+                editor.OptionChanged += (_, args) => optionChanged = args;
                 editor.CopyRequested += (_, _) => copied = true;
                 editor.PasteRequested += (_, _) => pasted = true;
+                editor.ChooseImageRequested += (_, _) => imageRequested = true;
+                editor.ClearImageRequested += (_, _) => imageCleared = true;
 
-                editor.SetAdjustment(new ThemeArtworkAdjustment { Brightness = 91, Blur = 2.5 });
-                Ensure(editor.BrightnessValue.Text == "91%" && editor.BlurValue.Text == "2.5 px",
-                    "The precise value editors must reflect the current adjustment.");
+                editor.SetAdjustment(new ThemeArtworkAdjustment
+                {
+                    Brightness = 91,
+                    Blur = 2.5,
+                    CustomImagePath = "personalization/images/probe.png",
+                    OverlayColor = "#223344",
+                    OverlayOpacity = 28,
+                    GradientStrength = 42,
+                    Vignette = 16,
+                    BlendMode = "soft-light",
+                    ReadabilityProtection = true,
+                });
+                Ensure(editor.BrightnessValue.Text == "91%" &&
+                       editor.BlurValue.Text == "2.5 px" &&
+                       editor.CustomImageStatusText.Text.Contains("probe.png", StringComparison.Ordinal) &&
+                       editor.OverlayColorTextBox.Text == "#223344" &&
+                       editor.BlendModeComboBox.SelectedValue as string == "soft-light" &&
+                       editor.ReadabilityCheckBox.IsChecked == true,
+                    "The editor must reflect precise values, personal images, and advanced effects.");
                 editor.BrightnessValue.Text = "137%";
                 var commit = typeof(Tessalume.App.Controls.ArtworkAdjustmentEditor).GetMethod(
                     "CommitValueEditor",
@@ -40,7 +62,14 @@ internal static partial class TestSuite
                 editor.CopyButton.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
                 editor.SetPasteAvailable(true);
                 editor.PasteButton.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
-                Ensure(copied && pasted && editor.PasteButton.IsEnabled,
+                editor.ChooseImageButton.RaiseEvent(
+                    new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
+                editor.ClearImageButton.RaiseEvent(
+                    new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
+                editor.BlendModeComboBox.SelectedValue = "screen";
+                Ensure(copied && pasted && imageRequested && imageCleared &&
+                       editor.PasteButton.IsEnabled &&
+                       optionChanged is { Property: "blendMode", Value: "screen" },
                     "Region copy and paste actions must be exposed by the reusable editor.");
             }
             catch (System.Reflection.TargetInvocationException exception)
@@ -172,12 +201,35 @@ internal static partial class TestSuite
                            window.ExportVisualPresetButton.IsEnabled,
                         "A personal preset must save and restore the complete current visual mode.");
 
+                    window.DisplayPreferencesPage.MotionComboBox.SelectedValue = "reduced";
+                    window.DisplayPreferencesPage.TextScaleComboBox.SelectedValue = "large";
+                    window.DisplayPreferencesPage.DensityComboBox.SelectedValue = "spacious";
+                    settings["editor.probe"] = settings["editor.probe"] with
+                    {
+                        Light = settings["editor.probe"].Light with
+                        {
+                            Hero = settings["editor.probe"].Light.Hero with
+                            {
+                                CustomImagePath = "personalization/images/experience.png",
+                            },
+                        },
+                    };
+                    window.ExperienceProfilesPage.ProfileNameBox.Text = "夜间创作";
+                    window.ExperienceProfilesPage.SaveButton.RaiseEvent(
+                        new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
+
                     await Task.Delay(220);
                     using var savedStore = new UiPreferencesStore(dataDirectory);
                     var saved = savedStore.Load();
-                    Ensure(saved.SchemaVersion == 3 &&
-                           saved.ArtworkPresets is [{ Name: "明亮构图" }],
-                        "Personal image presets must persist in schema three.");
+                    Ensure(saved.SchemaVersion == UiPreferences.CurrentSchemaVersion &&
+                           saved.ArtworkPresets is [{ Name: "明亮构图" }] &&
+                           saved.ExperiencePresets is
+                           [{ Name: "夜间创作", ThemeId: "editor.probe" } experience] &&
+                           experience.Settings.Display is
+                           { MotionIntensity: "reduced", TextScale: "large", Density: "spacious" } &&
+                           experience.Settings.Light.Hero.CustomImagePath ==
+                           "personalization/images/experience.png",
+                        "Parameter presets and full experience profiles must persist distinct portable scopes.");
                 }
                 catch (System.Reflection.TargetInvocationException exception)
                 {
@@ -213,6 +265,68 @@ internal static partial class TestSuite
             if (Directory.Exists(root)) Directory.Delete(root, recursive: true);
         }
         return Task.CompletedTask;
+    }
+
+    static async Task PersonalImagesAreStoredSafelyAsync()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"tessalume-personal-images-{Guid.NewGuid():N}");
+        var dataDirectory = Path.Combine(root, "data");
+        Directory.CreateDirectory(dataDirectory);
+        try
+        {
+            var sourcePath = Path.Combine(root, "background.png");
+            await File.WriteAllBytesAsync(sourcePath, [137, 80, 78, 71, 13, 10, 26, 10]);
+            var store = new Tessalume.App.Features.Personalization.PersonalImageStore(dataDirectory);
+            var storedPath = await store.ImportAsync(sourcePath);
+            var duplicatePath = await store.ImportAsync(sourcePath);
+            var absolutePath = store.ResolvePath(storedPath);
+            var runtimeSettings = store.ResolveForRuntime(new ThemeVisualSettings
+            {
+                Light = new ThemeVisualModeSettings
+                {
+                    Hero = new ThemeArtworkAdjustment { CustomImagePath = storedPath },
+                },
+            });
+
+            Ensure(storedPath == duplicatePath &&
+                   storedPath.StartsWith("personalization/images/", StringComparison.Ordinal) &&
+                   absolutePath is not null && File.Exists(absolutePath) &&
+                   runtimeSettings.Light.Hero.CustomImagePath == absolutePath,
+                "Personal images must be content-addressed inside the portable data directory and resolve only at runtime.");
+            Ensure(store.ResolvePath("../outside.png") is null &&
+                   store.ResolvePath(Path.Combine(root, "outside.png")) is null,
+                "Personal image references must never escape the dedicated image store.");
+
+            var unsupportedPath = Path.Combine(root, "background.txt");
+            await File.WriteAllTextAsync(unsupportedPath, "not an image");
+            var rejected = false;
+            try
+            {
+                _ = await store.ImportAsync(unsupportedPath);
+            }
+            catch (InvalidDataException)
+            {
+                rejected = true;
+            }
+            Ensure(rejected, "Unsupported personal image extensions must be rejected before persistence.");
+
+            var disguisedPath = Path.Combine(root, "disguised.png");
+            await File.WriteAllTextAsync(disguisedPath, "not really a png");
+            rejected = false;
+            try
+            {
+                _ = await store.ImportAsync(disguisedPath);
+            }
+            catch (InvalidDataException)
+            {
+                rejected = true;
+            }
+            Ensure(rejected, "A personal image extension must match its file signature.");
+        }
+        finally
+        {
+            if (Directory.Exists(root)) Directory.Delete(root, recursive: true);
+        }
     }
 
     static async Task ArtworkPresetFilesRoundTripSafelyAsync()
@@ -394,7 +508,7 @@ internal static partial class TestSuite
                         "这是一段用于验证更新说明排版和滚动区域的长文本，标题栏与关闭按钮必须保持固定。",
                         24));
                 dialog = new ProductDialogWindow(
-                    "发现 Tessalume v1.4.1",
+                    "发现 Tessalume v2.0.1",
                     longMessage,
                     ProductDialogKind.Confirmation,
                     darkMode: false,
@@ -424,7 +538,7 @@ internal static partial class TestSuite
 
                 compactDialog = new ProductDialogWindow(
                     "当前已是最新版本",
-                    "你正在使用 v1.4.1，暂时没有可安装的新版本。",
+                    "你正在使用 v2.0.0，暂时没有可安装的新版本。",
                     ProductDialogKind.Information,
                     darkMode: false,
                     confirmText: "知道了",
@@ -507,12 +621,7 @@ internal static partial class TestSuite
     static async Task ArtworkAdjustmentsAreRuntimeOwnedAsync()
     {
         var repositoryRoot = FindRepositoryRoot();
-        var runtimeSource = await File.ReadAllTextAsync(Path.Combine(
-            repositoryRoot,
-            "src",
-            "Tessalume.App",
-            "Compatibility",
-            "theme-runtime-v2.js"));
+        var runtimeSource = await ReadCompatibilityRuntimeSourceAsync(repositoryRoot);
         var sharedCss = await File.ReadAllTextAsync(Path.Combine(
             repositoryRoot,
             "src",
@@ -549,6 +658,16 @@ internal static partial class TestSuite
                mainWindowSource.Contains("ThemeArtworkPresetExchange.ImportAsync", StringComparison.Ordinal) &&
                mainWindowSource.Contains("ThemeArtworkPresetExchange.ExportAsync", StringComparison.Ordinal),
             "The image editor must support reversible editing, original comparison, region transfer, and shareable personal presets.");
+        Ensure(mainWindowXaml.Contains("ChooseImageRequested=\"ArtworkAdjustmentEditor_ChooseImageRequested\"", StringComparison.Ordinal) &&
+               mainWindowXaml.Contains("OptionChanged=\"ArtworkAdjustmentEditor_OptionChanged\"", StringComparison.Ordinal) &&
+               mainWindowXaml.Contains("<personalization:DisplayPreferencesView", StringComparison.Ordinal) &&
+               mainWindowXaml.Contains("<personalization:ExperienceProfilesView", StringComparison.Ordinal) &&
+               runtimeSource.Contains("customImageDataUrl", StringComparison.Ordinal) &&
+               runtimeSource.Contains("tessalumeMotion", StringComparison.Ordinal) &&
+               runtimeSource.Contains("tessalumeReadability", StringComparison.Ordinal) &&
+               sharedCss.Contains("background-blend-mode", StringComparison.Ordinal) &&
+               sharedCss.Contains("data-tessalume-density", StringComparison.Ordinal),
+            "Personalization 2.0 must connect local images, visual effects, readability, display preferences, and full experience profiles.");
         Ensure(mainWindowXaml.Contains("PreviewKeyDown=\"ValueEditor_PreviewKeyDown\"", StringComparison.Ordinal) &&
                mainWindowXaml.Contains("LostKeyboardFocus=\"ValueEditor_LostKeyboardFocus\"", StringComparison.Ordinal),
             "Every advanced image value must support precise keyboard entry in addition to sliders.");
@@ -580,7 +699,18 @@ internal static partial class TestSuite
                     Grayscale = 400,
                     HueRotation = -900,
                     Blur = 900,
+                    OverlayColor = "invalid",
+                    OverlayOpacity = 900,
+                    GradientStrength = -50,
+                    Vignette = 900,
+                    BlendMode = "unsupported",
                 },
+            },
+            Display = new ThemeDisplayPreferences
+            {
+                MotionIntensity = "unknown",
+                TextScale = "LARGE",
+                Density = "spacious",
             },
         }.Normalize();
         Ensure(normalized.Light.Hero.Brightness == 20 &&
@@ -592,7 +722,14 @@ internal static partial class TestSuite
                normalized.Light.Hero.OffsetY == 200 &&
                normalized.Light.Hero.Grayscale == 100 &&
                normalized.Light.Hero.HueRotation == -180 &&
-               normalized.Light.Hero.Blur == 20,
+               normalized.Light.Hero.Blur == 20 &&
+               normalized.Light.Hero.OverlayColor == "#000000" &&
+               normalized.Light.Hero.OverlayOpacity == 100 &&
+               normalized.Light.Hero.GradientStrength == 0 &&
+               normalized.Light.Hero.Vignette == 100 &&
+               normalized.Light.Hero.BlendMode == "normal" &&
+               normalized.Display is
+               { MotionIntensity: "full", TextScale: "large", Density: "spacious" },
             "Persisted artwork values must be normalized before entering the renderer.");
         var finiteFallback = new ThemeArtworkAdjustment
         {
@@ -609,11 +746,17 @@ internal static partial class TestSuite
             Name = $"  {new string('A', 40)}  ",
             Settings = new ThemeVisualModeSettings
             {
-                Chat = new ThemeArtworkAdjustment { Blur = 99 },
+                Chat = new ThemeArtworkAdjustment
+                {
+                    Blur = 99,
+                    CustomImagePath = "personalization/images/private.png",
+                },
             },
         }.Normalize();
-        Ensure(normalizedPreset.Name.Length == 32 && normalizedPreset.Settings.Chat.Blur == 20,
-            "Personal artwork presets must normalize names and renderer values before persistence.");
+        Ensure(normalizedPreset.Name.Length == 32 &&
+               normalizedPreset.Settings.Chat.Blur == 20 &&
+               normalizedPreset.Settings.Chat.CustomImagePath is null,
+            "Shareable artwork presets must normalize renderer values and omit machine-local images.");
         Ensure(runtimeSource.Contains("grayscale(${grayscale})", StringComparison.Ordinal) &&
                runtimeSource.Contains("hue-rotate(${hueRotation}deg)", StringComparison.Ordinal) &&
                runtimeSource.Contains("blur(${blur}px)", StringComparison.Ordinal) &&
@@ -650,6 +793,11 @@ internal static partial class TestSuite
         var appRoot = Path.Combine(repositoryRoot, "src", "Tessalume.App");
         var xaml = await ReadMainWindowXamlAsync(appRoot);
         var source = await ReadMainWindowSourceAsync(appRoot);
+        var diagnosticsViewSource = await File.ReadAllTextAsync(Path.Combine(
+            appRoot,
+            "Features",
+            "Diagnostics",
+            "DiagnosticsView.xaml.cs"));
         var cardModel = await File.ReadAllTextAsync(Path.Combine(
             repositoryRoot,
             "src",
@@ -672,7 +820,7 @@ internal static partial class TestSuite
                 $"The unified product surface is missing {marker}.");
         }
 
-        Ensure(source.Contains("DiagnosticHealthBodyText", StringComparison.Ordinal) &&
+        Ensure(diagnosticsViewSource.Contains("DiagnosticHealthBodyText", StringComparison.Ordinal) &&
                source.Contains("EmptyStateAction_Click", StringComparison.Ordinal),
             "Product surfaces must expose live diagnostic summaries and useful empty-state actions.");
         Ensure(!cardModel.Contains("BUILT-IN", StringComparison.Ordinal) &&
@@ -719,7 +867,7 @@ internal static partial class TestSuite
             "The Windows application manifest must opt into per-monitor DPI scaling.");
     }
 
-    static async Task Version14ProductWorkflowIsCompleteAsync()
+    static async Task Version20ProductFoundationIsConnectedAsync()
     {
         var repositoryRoot = FindRepositoryRoot();
         var appRoot = Path.Combine(repositoryRoot, "src", "Tessalume.App");
@@ -739,9 +887,9 @@ internal static partial class TestSuite
                      "x:Name=\"DarkThemesFilterButton\"",
                      "x:Name=\"ThemeResultText\"",
                      "x:Name=\"ToastPanel\"",
-                     "x:Name=\"AboutInfoPanel\"",
-                     "x:Name=\"AboutLibrarySummaryText\"",
-                     "1.4 版本亮点",
+                     "x:Name=\"AboutPage\"",
+                     "x:Name=\"LibrarySummaryText\"",
+                     "2.0 版本亮点",
                  })
         {
             Ensure(xaml.Contains(marker, StringComparison.Ordinal), $"The product interface is missing {marker}.");
@@ -766,13 +914,13 @@ internal static partial class TestSuite
                !xaml.Contains("Storyboard.TargetName=\"PrimaryMotion\"", StringComparison.Ordinal) &&
                !xaml.Contains("x:Name=\"ButtonScale\"", StringComparison.Ordinal),
             "Shared actions, dialogs, and onboarding must keep stable text rendering without hover scaling.");
-        Ensure(project.Contains("<Version>1.4.1</Version>", StringComparison.Ordinal) &&
+        Ensure(project.Contains("<Version>2.0.0</Version>", StringComparison.Ordinal) &&
                firstRunXaml.Contains("{x:Static local:BrandInfo.VersionLabel}", StringComparison.Ordinal) &&
                !firstRunXaml.Contains("Text=\"v1.2\"", StringComparison.Ordinal) &&
-               readme.Contains("## Tessalume 1.4.1", StringComparison.Ordinal) &&
+               readme.Contains("## Tessalume 2.0.0", StringComparison.Ordinal) &&
                readme.Contains("十套内置旗舰主题", StringComparison.Ordinal) &&
                File.Exists(Path.Combine(repositoryRoot, "CHANGELOG.md")),
-            "Version metadata and release documentation must agree on Tessalume 1.4.1.");
+            "Version metadata and release documentation must agree on Tessalume 2.0.0.");
     }
 
 
@@ -783,6 +931,26 @@ internal static partial class TestSuite
         var xaml = await ReadMainWindowXamlAsync(appRoot);
         var mainSource = await ReadMainWindowSourceAsync(appRoot);
         var diagnosticsSource = await File.ReadAllTextAsync(Path.Combine(appRoot, "MainWindow.Diagnostics.cs"));
+        var diagnosticsViewXaml = await File.ReadAllTextAsync(Path.Combine(
+            appRoot,
+            "Features",
+            "Diagnostics",
+            "DiagnosticsView.xaml"));
+        var diagnosticsViewSource = await File.ReadAllTextAsync(Path.Combine(
+            appRoot,
+            "Features",
+            "Diagnostics",
+            "DiagnosticsView.xaml.cs"));
+        var diagnosticsServiceSource = await File.ReadAllTextAsync(Path.Combine(
+            appRoot,
+            "Features",
+            "Diagnostics",
+            "DiagnosticsInspectionService.cs"));
+        var aboutViewXaml = await File.ReadAllTextAsync(Path.Combine(
+            appRoot,
+            "Features",
+            "About",
+            "AboutView.xaml"));
         var appSource = await File.ReadAllTextAsync(Path.Combine(appRoot, "App.xaml.cs"));
         var installerSource = await File.ReadAllTextAsync(Path.Combine(
             appRoot,
@@ -799,39 +967,38 @@ internal static partial class TestSuite
                      "Content=\"恢复内置主题\"",
                  })
         {
-            Ensure(xaml.Contains(marker, StringComparison.Ordinal),
+            Ensure(diagnosticsViewXaml.Contains(marker, StringComparison.Ordinal),
                 $"The recovery surface is missing {marker}.");
         }
 
         Ensure(mainSource.Contains("RefreshDiagnosticsAsync", StringComparison.Ordinal) &&
-               mainSource.Contains("RestoreBuiltInThemes_Click", StringComparison.Ordinal) &&
+               mainSource.Contains("DiagnosticsPage_RestoreBuiltInThemesRequested", StringComparison.Ordinal) &&
                !mainSource.Contains("CopyDiagnosticReport_Click", StringComparison.Ordinal) &&
-               !xaml.Contains("复制诊断报告", StringComparison.Ordinal),
+               !diagnosticsViewXaml.Contains("复制诊断报告", StringComparison.Ordinal) &&
+               diagnosticsViewSource.Contains("RestoreBuiltInThemesRequested", StringComparison.Ordinal) &&
+               diagnosticsServiceSource.Contains("InspectAsync", StringComparison.Ordinal),
             "The diagnostics page must retain local status and recovery without clipboard report actions.");
         var diagnosticsHandlerStart = diagnosticsSource.IndexOf("private async void Diagnostics_Click", StringComparison.Ordinal);
         var diagnosticsHandlerEnd = diagnosticsSource.IndexOf("private async Task RefreshDiagnosticsAsync", StringComparison.Ordinal);
         var diagnosticsHandler = diagnosticsHandlerStart >= 0 && diagnosticsHandlerEnd > diagnosticsHandlerStart
             ? diagnosticsSource[diagnosticsHandlerStart..diagnosticsHandlerEnd]
             : string.Empty;
-        Ensure(xaml.Contains("x:Name=\"DiagnosticLoadingPanel\"", StringComparison.Ordinal) &&
-               diagnosticsHandler.Contains("ShowInfoPage(RightPane.Diagnostics)", StringComparison.Ordinal) &&
-               diagnosticsHandler.IndexOf("ShowInfoPage(RightPane.Diagnostics)", StringComparison.Ordinal) <
+        Ensure(diagnosticsViewXaml.Contains("x:Name=\"DiagnosticLoadingPanel\"", StringComparison.Ordinal) &&
+               diagnosticsHandler.Contains("NavigateTo(Features.Navigation.AppRoute.Diagnostics)", StringComparison.Ordinal) &&
+               diagnosticsHandler.IndexOf("NavigateTo(Features.Navigation.AppRoute.Diagnostics)", StringComparison.Ordinal) <
                diagnosticsHandler.IndexOf("await RefreshDiagnosticsAsync()", StringComparison.Ordinal) &&
-               diagnosticsHandler.Contains("Dispatcher.Yield(DispatcherPriority.Render)", StringComparison.Ordinal),
+               diagnosticsSource.Contains("DiagnosticsPage.SetLoading(true)", StringComparison.Ordinal) &&
+               diagnosticsSource.Contains("Dispatcher.Yield(DispatcherPriority.Render)", StringComparison.Ordinal),
             "Diagnostics navigation must render an explicit loading state before local inspection begins.");
         var settingsStart = xaml.IndexOf("x:Name=\"SettingsInfoPanel\"", StringComparison.Ordinal);
-        var aboutStart = xaml.IndexOf("x:Name=\"AboutInfoPanel\"", StringComparison.Ordinal);
-        var diagnosticsStart = xaml.IndexOf("x:Name=\"DiagnosticsInfoPanel\"", StringComparison.Ordinal);
-        var settingsMarkup = settingsStart >= 0 && aboutStart > settingsStart
-            ? xaml[settingsStart..aboutStart]
-            : string.Empty;
-        var aboutMarkup = aboutStart >= 0 && diagnosticsStart > aboutStart
-            ? xaml[aboutStart..diagnosticsStart]
+        var experienceStart = xaml.IndexOf("x:Name=\"ExperienceInfoPanel\"", StringComparison.Ordinal);
+        var settingsMarkup = settingsStart >= 0 && experienceStart > settingsStart
+            ? xaml[settingsStart..experienceStart]
             : string.Empty;
         Ensure(!settingsMarkup.Contains("x:Name=\"StartupCheckBox\"", StringComparison.Ordinal) &&
                !settingsMarkup.Contains("x:Name=\"AutomaticUpdatesCheckBox\"", StringComparison.Ordinal) &&
-               aboutMarkup.Contains("x:Name=\"StartupCheckBox\"", StringComparison.Ordinal) &&
-               aboutMarkup.Contains("x:Name=\"AutomaticUpdatesCheckBox\"", StringComparison.Ordinal) &&
+               aboutViewXaml.Contains("x:Name=\"StartupCheckBox\"", StringComparison.Ordinal) &&
+               aboutViewXaml.Contains("x:Name=\"AutomaticUpdatesCheckBox\"", StringComparison.Ordinal) &&
                settingsMarkup.Contains("x:Name=\"VisualHeroRegionButton\"", StringComparison.Ordinal),
             "Application behavior belongs on About while personalization remains a focused image workflow.");
         Ensure(appSource.Contains("LocalLog.Initialize(layout.DataDirectory)", StringComparison.Ordinal) &&

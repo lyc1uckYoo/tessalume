@@ -10,7 +10,7 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using Tessalume.App.Creator;
-using Tessalume.App.Diagnostics;
+using Tessalume.App.Features.Diagnostics;
 using Tessalume.App.Infrastructure;
 using Tessalume.App.Models;
 using Tessalume.Core.Runtime;
@@ -76,23 +76,48 @@ public partial class MainWindow
             }
 
             resolvedPort = port.Value;
+            var activeCompatibilityPack = _compatibilityPacks.Resolve();
             var compatibility = await CompatibilityHealthService.InspectAsync(
                 previousState,
+                activeCompatibilityPack,
                 cancellationToken);
-            if (compatibility.RequiresPreflight || previousState?.LastSuccessfulApplyAt is null)
+            var requiresPreflight = compatibility.RequiresPreflight ||
+                                    previousState?.LastSuccessfulApplyAt is null;
+            try
             {
-                SetStatus(compatibility.RequiresPreflight
-                    ? "检测到 Codex 或主题运行时版本变化，正在重新预检…"
-                    : "正在完成首次兼容性预检…");
-                await _runtime.PreflightAsync(port.Value, package, cancellationToken);
-            }
+                if (requiresPreflight)
+                {
+                    SetStatus(compatibility.RequiresPreflight
+                        ? "检测到 Codex 或主题运行时版本变化，正在重新预检…"
+                        : "正在完成首次兼容性预检…");
+                    await _runtime.PreflightAsync(port.Value, package, cancellationToken);
+                }
 
-            SetStatus("正在应用本地主题…");
-            await _runtime.StartAsync(
-                port.Value,
-                package,
-                GetVisualSettings(package.Manifest.Id),
-                cancellationToken);
+                SetStatus("正在应用本地主题…");
+                await _runtime.StartAsync(
+                    port.Value,
+                    package,
+                    GetVisualSettings(package.Manifest.Id),
+                    cancellationToken);
+            }
+            catch (ThemeRuntimeException exception) when (
+                !activeCompatibilityPack.IsBuiltIn &&
+                exception.Stage == ThemeRuntimeFailureStage.RuntimeInjectionFailed)
+            {
+                var fallback = _compatibilityPacks.Rollback();
+                LocalLog.Write(
+                    $"Compatibility pack {activeCompatibilityPack.PackVersionLabel} failed at runtime; " +
+                    $"rolled back to {fallback.PackVersionLabel}.",
+                    exception);
+                SetStatus($"兼容补丁运行失败，已自动回退到 {fallback.PackVersionLabel} 并重新验证…");
+                await _runtime.PreflightAsync(port.Value, package, cancellationToken);
+                await _runtime.StartAsync(
+                    port.Value,
+                    package,
+                    GetVisualSettings(package.Manifest.Id),
+                    cancellationToken);
+                ShowToast($"兼容规则已自动回退到 {fallback.PackVersionLabel}");
+            }
             await LegacyInjectorMigrator.TryStopAsync(cancellationToken);
             await _stateStore.SaveAsync((previousState ?? new StudioState()) with
             {
@@ -104,6 +129,7 @@ public partial class MainWindow
                 CodexVersionAtLastApply = compatibility.InstalledCodexVersion ??
                     previousState?.CodexVersionAtLastApply,
                 RuntimeContractVersion = ThemeRuntime.ContractVersion,
+                CompatibilityPackVersionAtLastApply = _compatibilityPacks.Resolve().PackVersion.ToString(),
                 LastFailureStage = ThemeRuntimeFailureStage.None,
                 LastFailureMessage = null,
                 LastFailureAt = null,
@@ -422,12 +448,12 @@ public partial class MainWindow
             _activePort = port.Value;
             var dark = await _runtime.ToggleColorSchemeAsync(port.Value, cancellationToken);
             _codexDarkMode = dark;
-            if (_rightPane == RightPane.Settings)
+            if (_currentRoute is Features.Navigation.AppRoute.ArtworkStudio or Features.Navigation.AppRoute.ExperienceProfiles)
             {
                 _editingVisualDarkMode = dark;
             }
             UpdateCodexModeButton();
-            if (_rightPane == RightPane.Settings)
+            if (_currentRoute is Features.Navigation.AppRoute.ArtworkStudio or Features.Navigation.AppRoute.ExperienceProfiles)
             {
                 UpdateVisualAdjustmentControls();
             }
@@ -469,12 +495,12 @@ public partial class MainWindow
             _activePort = port.Value;
             var dark = await _runtime.ReadColorSchemeAsync(port.Value);
             _codexDarkMode = dark;
-            if (_rightPane == RightPane.Settings)
+            if (_currentRoute is Features.Navigation.AppRoute.ArtworkStudio or Features.Navigation.AppRoute.ExperienceProfiles)
             {
                 _editingVisualDarkMode = dark;
             }
             UpdateCodexModeButton();
-            if (_rightPane == RightPane.Settings)
+            if (_currentRoute is Features.Navigation.AppRoute.ArtworkStudio or Features.Navigation.AppRoute.ExperienceProfiles)
             {
                 UpdateVisualAdjustmentControls();
             }

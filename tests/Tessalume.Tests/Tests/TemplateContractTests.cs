@@ -9,13 +9,7 @@ internal static partial class TestSuite
             "Tessalume.App",
             "Compatibility",
             "theme-template-v1.css"));
-        var runtimePath = Path.Combine(
-            repositoryRoot,
-            "src",
-            "Tessalume.App",
-            "Compatibility",
-            "theme-runtime-v2.js");
-        var runtime = await File.ReadAllTextAsync(runtimePath);
+        var runtime = await ReadCompatibilityRuntimeSourceAsync(repositoryRoot);
         Ensure(runtime.Contains("mountCanonicalTheme", StringComparison.Ordinal),
             "The open runtime must expose the canonical theme host.");
         Ensure(runtime.Contains("renderTemplateV1", StringComparison.Ordinal) &&

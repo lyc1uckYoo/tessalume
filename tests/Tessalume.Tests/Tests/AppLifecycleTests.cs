@@ -24,6 +24,7 @@ internal static partial class TestSuite
         Ensure(migratedPreferences.FavoriteThemeIds.Count == 0 &&
                migratedPreferences.ThemeVisualSettings.Count == 0 &&
                migratedPreferences.ArtworkPresets.Count == 0 &&
+               migratedPreferences.ExperiencePresets.Count == 0 &&
                migratedPreferences.ThemeLibrarySort == ThemeLibraryState.DefaultSort &&
                migratedPreferences.RecentThemeUsage.Count == 0 &&
                migratedPreferences.CreatorPromptDraft.WorkName == "鸣潮" &&
@@ -102,7 +103,7 @@ internal static partial class TestSuite
                versionTwoPreferences.SchemaVersion == UiPreferences.CurrentSchemaVersion &&
                versionTwoPreferences.ThemeVisualSettings["advanced.theme"].Dark.Sidebar.Zoom == 128 &&
                versionTwoPreferences.ArtworkPresets.Count == 0,
-            "Schema-two preferences must migrate to schema three without losing advanced image adjustments.");
+            "Schema-two preferences must migrate to the current schema without losing advanced image adjustments.");
 
         var currentJson = JsonSerializer.Serialize(migratedPreferences with
         {
@@ -140,6 +141,24 @@ internal static partial class TestSuite
                     },
                 },
             ],
+            ExperiencePresets =
+            [
+                new ThemeExperiencePreset
+                {
+                    Name = "夜间创作",
+                    ThemeId = "advanced.theme",
+                    DarkMode = true,
+                    Settings = new ThemeVisualSettings
+                    {
+                        Display = new ThemeDisplayPreferences
+                        {
+                            MotionIntensity = "reduced",
+                            TextScale = "large",
+                            Density = "spacious",
+                        },
+                    },
+                },
+            ],
             ThemeLibrarySort = ThemeLibraryState.RecentSort,
             RecentThemeUsage =
             [
@@ -172,11 +191,15 @@ internal static partial class TestSuite
                advancedAdjustment.Blur == 3.5 &&
                currentPreferences.ArtworkPresets is [{ Name: "柔和背景" } preset] &&
                preset.Settings.Chat.Blur == 2.5 &&
+               currentPreferences.ExperiencePresets is
+               [{ Name: "夜间创作", ThemeId: "advanced.theme", DarkMode: true } experience] &&
+               experience.Settings.Display is
+               { MotionIntensity: "reduced", TextScale: "large", Density: "spacious" } &&
                currentPreferences.ThemeLibrarySort == ThemeLibraryState.RecentSort &&
                currentPreferences.RecentThemeUsage is [{ ThemeId: "advanced.theme", UseCount: 7 }] &&
                currentPreferences.CreatorPromptDraft is
                { WorkName: "原神", CharacterName: "芙宁娜", UsesReferenceImages: true },
-            "Schema-three preferences must round-trip image editing and theme library state without another migration.");
+            "Schema-four preferences must round-trip personalization and theme library state without another migration.");
 
         var futureJson = currentJson.Replace(
             $"\"SchemaVersion\": {UiPreferences.CurrentSchemaVersion}",
@@ -221,11 +244,12 @@ internal static partial class TestSuite
                 _ = store.Load();
             }
             Ensure(File.Exists(snapshotPath) && File.ReadAllText(snapshotPath) == versionTwoJson,
-                "The schema-two to schema-three migration must preserve the original preferences JSON.");
+                "The schema-two migration must preserve the original preferences JSON.");
             using (var migratedDocument = JsonDocument.Parse(File.ReadAllText(preferencesPath)))
             {
-                Ensure(migratedDocument.RootElement.GetProperty("SchemaVersion").GetInt32() == 3,
-                    "The schema-two migration must persist schema three without waiting for another setting change.");
+                Ensure(migratedDocument.RootElement.GetProperty("SchemaVersion").GetInt32() ==
+                       UiPreferences.CurrentSchemaVersion,
+                    "The schema-two migration must persist the current schema without waiting for another setting change.");
             }
 
             File.Delete(snapshotPath);
@@ -295,6 +319,13 @@ internal static partial class TestSuite
             repositoryRoot,
             "src",
             "Tessalume.App"));
+        var aboutViewSource = await File.ReadAllTextAsync(Path.Combine(
+            repositoryRoot,
+            "src",
+            "Tessalume.App",
+            "Features",
+            "About",
+            "AboutView.xaml.cs"));
         var cleanupStart = startupSource.IndexOf("public static bool TryCleanLegacyRegistration()", StringComparison.Ordinal);
         var cleanupEnd = cleanupStart < 0
             ? -1
@@ -308,7 +339,8 @@ internal static partial class TestSuite
             "Application startup may clean the predecessor value but must never opt users into startup.");
         Ensure(appSource.Contains("StartupRegistration.TryCleanLegacyRegistration()", StringComparison.Ordinal),
             "Application startup must clean only the predecessor registration.");
-        Ensure(mainWindowSource.Contains("StartupCheckBox.IsChecked = enabled;", StringComparison.Ordinal),
+        Ensure(mainWindowSource.Contains("AboutPage.SetStartupEnabled(enabled);", StringComparison.Ordinal) &&
+               aboutViewSource.Contains("StartupCheckBox.IsChecked = enabled;", StringComparison.Ordinal),
             "The settings checkbox and toolbar startup button must share one current registry state.");
     }
 
@@ -321,9 +353,11 @@ internal static partial class TestSuite
         var mainSource = await ReadMainWindowSourceAsync(appRoot);
         var appSource = await File.ReadAllTextAsync(Path.Combine(appRoot, "App.xaml.cs"));
         var bootstrapper = await File.ReadAllTextAsync(Path.Combine(appRoot, "Infrastructure", "UpdateBootstrapper.cs"));
+        var helperRuntime = await File.ReadAllTextAsync(Path.Combine(appRoot, "Infrastructure", "UpdateHelperRuntime.cs"));
         var preferences = await ReadUiPreferencesSourceAsync(appRoot);
         Ensure(xaml.Contains("x:Name=\"AutomaticUpdatesCheckBox\"", StringComparison.Ordinal) &&
                xaml.Contains("x:Name=\"CheckForUpdatesButton\"", StringComparison.Ordinal) &&
+               xaml.Contains("x:Name=\"RollbackVersionButton\"", StringComparison.Ordinal) &&
                xaml.Contains("x:Name=\"UpdateAvailableBadge\"", StringComparison.Ordinal) &&
                xaml.Contains("Click=\"UpdateAvailableBadge_Click\"", StringComparison.Ordinal) &&
                xaml.Contains("x:Name=\"UpdateProgressBar\"", StringComparison.Ordinal),
@@ -347,9 +381,14 @@ internal static partial class TestSuite
                mainSource.Contains("无法连接 GitHub 更新服务", StringComparison.Ordinal),
             "Every enabled startup must check once, surface a non-blocking badge, and guard confirmed installation against concurrent or unhandled failures.");
         Ensure(appSource.Contains("UpdateBootstrapper.TryParseHelperArguments", StringComparison.Ordinal) &&
-               bootstrapper.Contains("PortableUpdateInstaller.ApplyAndWriteResultAsync", StringComparison.Ordinal) &&
-               bootstrapper.Contains("UseShellExecute = false", StringComparison.Ordinal),
-            "A hidden standalone helper path must apply the update after the main EXE exits.");
+               helperRuntime.Contains("PortableUpdateInstaller.ApplyAndWriteResultAsync", StringComparison.Ordinal) &&
+               bootstrapper.Contains("UseShellExecute = false", StringComparison.Ordinal) &&
+               helperRuntime.Contains("ConfirmStartupHealthyAsync", StringComparison.Ordinal) &&
+               helperRuntime.Contains("RestoreAfterFailedStartupAsync", StringComparison.Ordinal) &&
+               !bootstrapper.Contains(
+                   "Path.Combine(layout.RootDirectory, $\"{BrandInfo.ProductName}.exe.previous\")",
+                   StringComparison.Ordinal),
+            "A hidden standalone helper must health-check the new EXE, auto-restore failures, and retain the previous version.");
         var readResultAt = appSource.IndexOf("var startupUpdateResult = UpdateBootstrapper.ReadResult", StringComparison.Ordinal);
         var cleanupAt = appSource.IndexOf("UpdateBootstrapper.CleanupStaleArtifactsAsync", StringComparison.Ordinal);
         var handoffAt = appSource.IndexOf("mainWindow.SetStartupUpdateResult(startupUpdateResult)", StringComparison.Ordinal);

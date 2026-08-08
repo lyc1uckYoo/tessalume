@@ -79,12 +79,7 @@ internal static partial class TestSuite
             new LoopbackCdpDiscovery(),
             new ThemePayloadBuilder(new Dictionary<string, string>
             {
-                [ThemePayloadBuilder.OpenRuntimeAdapterKey] = Path.Combine(
-                    repositoryRoot,
-                    "src",
-                    "Tessalume.App",
-                    "Compatibility",
-                    "theme-runtime-v2.js"),
+                [ThemePayloadBuilder.OpenRuntimeAdapterKey] = GetSourceRuntimeAssets(repositoryRoot).RuntimePath,
             }));
 
         JsonElement? probe = null;
@@ -307,12 +302,7 @@ internal static partial class TestSuite
             new LoopbackCdpDiscovery(),
             new ThemePayloadBuilder(new Dictionary<string, string>
             {
-                [ThemePayloadBuilder.OpenRuntimeAdapterKey] = Path.Combine(
-                    repositoryRoot,
-                    "src",
-                    "Tessalume.App",
-                    "Compatibility",
-                    "theme-runtime-v2.js"),
+                [ThemePayloadBuilder.OpenRuntimeAdapterKey] = GetSourceRuntimeAssets(repositoryRoot).RuntimePath,
             }));
         await runtime.StartAsync(port, package);
         await runtime.StopAsync();
@@ -329,12 +319,7 @@ internal static partial class TestSuite
             new LoopbackCdpDiscovery(),
             new ThemePayloadBuilder(new Dictionary<string, string>
             {
-                [ThemePayloadBuilder.OpenRuntimeAdapterKey] = Path.Combine(
-                    repositoryRoot,
-                    "src",
-                    "Tessalume.App",
-                    "Compatibility",
-                    "theme-runtime-v2.js"),
+                [ThemePayloadBuilder.OpenRuntimeAdapterKey] = GetSourceRuntimeAssets(repositoryRoot).RuntimePath,
             }));
         await runtime.StartAsync(port, package);
         await runtime.StopAsync();
@@ -345,12 +330,7 @@ internal static partial class TestSuite
     static async Task<string> BuildPayloadAsync(string repositoryRoot, ThemePackage package) =>
         await new ThemePayloadBuilder(new Dictionary<string, string>
         {
-            [ThemePayloadBuilder.OpenRuntimeAdapterKey] = Path.Combine(
-                repositoryRoot,
-                "src",
-                "Tessalume.App",
-                "Compatibility",
-                "theme-runtime-v2.js"),
+            [ThemePayloadBuilder.OpenRuntimeAdapterKey] = GetSourceRuntimeAssets(repositoryRoot).RuntimePath,
         }).BuildAsync(package);
 
     static async Task<int> ProbeThemeModesAsync(int port)

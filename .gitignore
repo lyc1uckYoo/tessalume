@@ -13,6 +13,7 @@ dist/
 optimized-themes/
 .test-output/
 .qa/
+/Compatibility/
 
 # Local visual QA and working files
 tmp/

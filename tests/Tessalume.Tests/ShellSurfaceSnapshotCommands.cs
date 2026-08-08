@@ -28,7 +28,7 @@ internal static partial class TestSuite
                 try
                 {
                     current = new ProductDialogWindow(
-                        "发现 Tessalume v1.4.1",
+                        "发现 Tessalume v2.0.1",
                         "新版本已经准备好。下载后会校验完整性，并保留现有主题、收藏、图像参数和本地设置。",
                         ProductDialogKind.Confirmation,
                         darkMode: false,

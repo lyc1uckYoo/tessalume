@@ -7,7 +7,7 @@ namespace Tessalume.App.Infrastructure;
 
 internal sealed record StudioState
 {
-    public const int CurrentSchemaVersion = 2;
+    public const int CurrentSchemaVersion = 3;
 
     public int SchemaVersion { get; init; } = CurrentSchemaVersion;
 
@@ -24,6 +24,8 @@ internal sealed record StudioState
     public string? CodexVersionAtLastApply { get; init; }
 
     public int RuntimeContractVersion { get; init; }
+
+    public string? CompatibilityPackVersionAtLastApply { get; init; }
 
     public ThemeRuntimeFailureStage LastFailureStage { get; init; }
 

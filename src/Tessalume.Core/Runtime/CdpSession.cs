@@ -55,6 +55,12 @@ public sealed class CdpSession : IAsyncDisposable
             : default;
     }
 
+    internal Task<JsonElement> SendCommandAsync(
+        string method,
+        object? parameters,
+        CancellationToken cancellationToken = default) =>
+        SendAsync(method, parameters, cancellationToken);
+
     public async ValueTask DisposeAsync()
     {
         _lifetime.Cancel();

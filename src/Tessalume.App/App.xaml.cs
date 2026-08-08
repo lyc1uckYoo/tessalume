@@ -15,6 +15,7 @@ public partial class App : Application, IDisposable
 
     protected override async void OnStartup(StartupEventArgs e)
     {
+        string? startupHealthToken = null;
         try
         {
             if (UpdateBootstrapper.TryParseHelperArguments(e.Args, out var updateRequest) && updateRequest is not null)
@@ -24,6 +25,7 @@ public partial class App : Application, IDisposable
                 Shutdown(exitCode);
                 return;
             }
+            _ = UpdateBootstrapper.TryParseStartupHealthToken(e.Args, out startupHealthToken);
         }
         catch (Exception exception) when (exception is InvalidDataException or ArgumentException)
         {
@@ -81,6 +83,7 @@ public partial class App : Application, IDisposable
             BuiltInAssetInstaller.EnsureInstalled(layout);
             var mainWindow = new MainWindow(layout);
             mainWindow.SetStartupUpdateResult(startupUpdateResult);
+            mainWindow.SetStartupHealthToken(startupHealthToken);
             MainWindow = mainWindow;
             StartActivationListener();
             await mainWindow.StartInQuickModeAsync();

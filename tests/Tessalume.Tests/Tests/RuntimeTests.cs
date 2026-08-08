@@ -20,12 +20,7 @@ internal static partial class TestSuite
         var package = await LoadRepresentativePackageAsync(repositoryRoot);
         var builder = new ThemePayloadBuilder(new Dictionary<string, string>
         {
-            [ThemePayloadBuilder.OpenRuntimeAdapterKey] = Path.Combine(
-                repositoryRoot,
-                "src",
-                "Tessalume.App",
-                "Compatibility",
-                "theme-runtime-v2.js"),
+            [ThemePayloadBuilder.OpenRuntimeAdapterKey] = GetSourceRuntimeAssets(repositoryRoot).RuntimePath,
         });
         var payload = await builder.BuildRuntimeAsync(package);
         Ensure(payload.Contains("__TESSALUME_STAGED_ASSETS__", StringComparison.Ordinal),
@@ -37,13 +32,7 @@ internal static partial class TestSuite
     static async Task SkippedPetOverlaysRetainProcessedMarkerAsync()
     {
         var repositoryRoot = FindRepositoryRoot();
-        var runtimePath = Path.Combine(
-            repositoryRoot,
-            "src",
-            "Tessalume.App",
-            "Compatibility",
-            "theme-runtime-v2.js");
-        var runtime = await File.ReadAllTextAsync(runtimePath);
+        var runtime = await ReadCompatibilityRuntimeSourceAsync(repositoryRoot);
         var skippedBranchStart = runtime.IndexOf(
             "if (isPetOverlay && !allowPetOverlay)",
             StringComparison.Ordinal);
@@ -59,13 +48,7 @@ internal static partial class TestSuite
     static async Task RuntimeDisposesCompatiblePredecessorInjectionAsync()
     {
         var repositoryRoot = FindRepositoryRoot();
-        var runtimePath = Path.Combine(
-            repositoryRoot,
-            "src",
-            "Tessalume.App",
-            "Compatibility",
-            "theme-runtime-v2.js");
-        var runtime = await File.ReadAllTextAsync(runtimePath);
+        var runtime = await ReadCompatibilityRuntimeSourceAsync(repositoryRoot);
         Ensure(runtime.Contains("Object.getOwnPropertyNames(window)", StringComparison.Ordinal),
             "The runtime must discover an already injected compatible predecessor without retaining its brand key.");
         Ensure(runtime.Contains("typeof candidate.context.mountCanonicalTheme === \"function\"", StringComparison.Ordinal),
@@ -77,12 +60,7 @@ internal static partial class TestSuite
     static async Task RuntimePreflightsAssetsBeforeReplacementAsync()
     {
         var repositoryRoot = FindRepositoryRoot();
-        var runtime = await File.ReadAllTextAsync(Path.Combine(
-            repositoryRoot,
-            "src",
-            "Tessalume.App",
-            "Compatibility",
-            "theme-runtime-v2.js"));
+        var runtime = await ReadCompatibilityRuntimeSourceAsync(repositoryRoot);
         var preflightIndex = runtime.IndexOf(
             "assetAssignments.push([variable, createAssetObjectUrl(dataUrl)]);",
             StringComparison.Ordinal);
@@ -109,12 +87,7 @@ internal static partial class TestSuite
     static async Task RuntimeFailuresAreClassifiedAndRolledBackAsync()
     {
         var repositoryRoot = FindRepositoryRoot();
-        var runtimeAdapterPath = Path.Combine(
-            repositoryRoot,
-            "src",
-            "Tessalume.App",
-            "Compatibility",
-            "theme-runtime-v2.js");
+        var runtimeAdapterPath = GetSourceRuntimeAssets(repositoryRoot).RuntimePath;
         var runtimeSource = await File.ReadAllTextAsync(Path.Combine(
             repositoryRoot,
             "src",
@@ -122,7 +95,7 @@ internal static partial class TestSuite
             "Runtime",
             "ThemeRuntime.cs"));
         var adapterSource = await File.ReadAllTextAsync(runtimeAdapterPath);
-        Ensure(ThemeRuntime.ContractVersion == 2 &&
+        Ensure(ThemeRuntime.ContractVersion == 3 &&
                adapterSource.Contains("TESSALUME_THEME_SCRIPT:", StringComparison.Ordinal),
             "The compatibility contract and theme-script failure marker must be explicit.");
         Ensure(runtimeSource.Contains("await CleanupTargetsAsync(targets);", StringComparison.Ordinal) &&
@@ -278,13 +251,7 @@ internal static partial class TestSuite
     static async Task RuntimeDecoratesTaskSurfacesBeforeDeferredRepairAsync()
     {
         var repositoryRoot = FindRepositoryRoot();
-        var runtimePath = Path.Combine(
-            repositoryRoot,
-            "src",
-            "Tessalume.App",
-            "Compatibility",
-            "theme-runtime-v2.js");
-        var runtime = await File.ReadAllTextAsync(runtimePath);
+        var runtime = await ReadCompatibilityRuntimeSourceAsync(repositoryRoot);
         const string criticalSignature = "const decorateTaskCriticalSurfaces = (mutations) => {";
         const string sharedSignature = "const decorateSharedSurfaces = (main, aside, home) => {";
         var criticalStart = runtime.IndexOf(criticalSignature, StringComparison.Ordinal);
@@ -342,12 +309,7 @@ internal static partial class TestSuite
         var package = await LoadRepresentativePackageAsync(repositoryRoot);
         var payload = await new ThemePayloadBuilder(new Dictionary<string, string>
         {
-            [ThemePayloadBuilder.OpenRuntimeAdapterKey] = Path.Combine(
-                repositoryRoot,
-                "src",
-                "Tessalume.App",
-                "Compatibility",
-                "theme-runtime-v2.js"),
+            [ThemePayloadBuilder.OpenRuntimeAdapterKey] = GetSourceRuntimeAssets(repositoryRoot).RuntimePath,
         }).BuildAsync(package);
         Ensure(!payload.Contains("__DREAM_", StringComparison.Ordinal), "A dream placeholder remained in the payload.");
         Ensure(!payload.Contains("__TESSALUME_PAYLOAD_", StringComparison.Ordinal), "A Tessalume payload placeholder remained unresolved.");

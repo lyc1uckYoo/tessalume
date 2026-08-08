@@ -1,4 +1,5 @@
 using System.Windows;
+using Tessalume.App.Features.About;
 using Tessalume.App.Infrastructure;
 
 namespace Tessalume.App;
@@ -40,9 +41,7 @@ public partial class MainWindow
         StartupButton.Tag = enabled ? "active" : "inactive";
         StartupButton.Content = enabled ? "开机启动已开启" : "开启开机启动";
         StartupButton.ToolTip = enabled ? "点击关闭登录 Windows 后自动启动" : "点击开启登录 Windows 后自动启动";
-        _updatingStartupSetting = true;
-        StartupCheckBox.IsChecked = enabled;
-        _updatingStartupSetting = false;
+        AboutPage.SetStartupEnabled(enabled);
     }
 
     private void UpdateQuickSwitchButton()
@@ -55,22 +54,20 @@ public partial class MainWindow
         QuickSwitchButton.ToolTip = enabled ? "点击关闭主题浮窗" : "点击打开主题浮窗";
     }
 
-    private void StartupCheckBox_Changed(object sender, RoutedEventArgs e)
+    private void AboutPage_StartupSettingChanged(
+        object? sender,
+        AboutBooleanSettingChangedEventArgs e)
     {
-        if (_updatingStartupSetting) return;
-
         try
         {
-            var enabled = StartupCheckBox.IsChecked == true;
+            var enabled = e.Enabled;
             StartupRegistration.SetEnabled(enabled);
             UpdateStartupButton();
             StatusText.Text = enabled ? "已启用开机自动启动" : "已关闭开机自动启动";
         }
         catch (Exception exception)
         {
-            _updatingStartupSetting = true;
-            StartupCheckBox.IsChecked = StartupRegistration.IsEnabled();
-            _updatingStartupSetting = false;
+            AboutPage.SetStartupEnabled(StartupRegistration.IsEnabled());
             UpdateStartupButton();
             ShowProductMessage("无法更新开机启动设置", exception.Message, ProductDialogKind.Error);
         }
@@ -92,5 +89,6 @@ public partial class MainWindow
             pair => pair.Value.Normalize(),
             StringComparer.OrdinalIgnoreCase),
         ArtworkPresets = _artworkPresets.Select(preset => preset.Normalize()).ToList(),
+        ExperiencePresets = _experiencePresets.Select(preset => preset.Normalize()).ToList(),
     });
 }

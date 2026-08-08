@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.IO;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
@@ -26,6 +27,18 @@ public sealed class ArtworkAdjustmentChangedEventArgs(
     public string Property { get; } = property;
 
     public double Value { get; } = value;
+}
+
+public sealed class ArtworkAdjustmentOptionChangedEventArgs(
+    string region,
+    string property,
+    string value) : EventArgs
+{
+    public string Region { get; } = region;
+
+    public string Property { get; } = property;
+
+    public string Value { get; } = value;
 }
 
 public partial class ArtworkAdjustmentEditor : UserControl
@@ -79,11 +92,17 @@ public partial class ArtworkAdjustmentEditor : UserControl
 
     public event EventHandler<ArtworkAdjustmentChangedEventArgs>? AdjustmentChanged;
 
+    public event EventHandler<ArtworkAdjustmentOptionChangedEventArgs>? OptionChanged;
+
     public event RoutedEventHandler? ResetRequested;
 
     public event RoutedEventHandler? CopyRequested;
 
     public event RoutedEventHandler? PasteRequested;
+
+    public event RoutedEventHandler? ChooseImageRequested;
+
+    public event RoutedEventHandler? ClearImageRequested;
 
     public string RegionKey
     {
@@ -136,6 +155,16 @@ public partial class ArtworkAdjustmentEditor : UserControl
             GrayscaleSlider.Value = adjustment.Grayscale;
             HueRotationSlider.Value = adjustment.HueRotation;
             BlurSlider.Value = adjustment.Blur;
+            OverlayOpacitySlider.Value = adjustment.OverlayOpacity;
+            GradientStrengthSlider.Value = adjustment.GradientStrength;
+            VignetteSlider.Value = adjustment.Vignette;
+            BlendModeComboBox.SelectedValue = adjustment.BlendMode;
+            OverlayColorTextBox.Text = adjustment.OverlayColor;
+            ReadabilityCheckBox.IsChecked = adjustment.ReadabilityProtection;
+            CustomImageStatusText.Text = string.IsNullOrWhiteSpace(adjustment.CustomImagePath)
+                ? "使用主题原图"
+                : $"本地图片 · {Path.GetFileName(adjustment.CustomImagePath)}";
+            ClearImageButton.IsEnabled = !string.IsNullOrWhiteSpace(adjustment.CustomImagePath);
             UpdateLabels();
         }
         finally
@@ -173,6 +202,60 @@ public partial class ArtworkAdjustmentEditor : UserControl
     private void Copy_Click(object sender, RoutedEventArgs e) => CopyRequested?.Invoke(this, e);
 
     private void Paste_Click(object sender, RoutedEventArgs e) => PasteRequested?.Invoke(this, e);
+
+    private void ChooseImage_Click(object sender, RoutedEventArgs e) =>
+        ChooseImageRequested?.Invoke(this, e);
+
+    private void ClearImage_Click(object sender, RoutedEventArgs e) =>
+        ClearImageRequested?.Invoke(this, e);
+
+    private void BlendMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_updating || BlendModeComboBox.SelectedValue is not string value) return;
+        RaiseOptionChanged("blendMode", value);
+    }
+
+    private void Readability_Changed(object sender, RoutedEventArgs e)
+    {
+        if (_updating) return;
+        RaiseOptionChanged(
+            "readabilityProtection",
+            ReadabilityCheckBox.IsChecked == true ? "true" : "false");
+    }
+
+    private void OverlayColor_LostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e) =>
+        CommitOverlayColor();
+
+    private void OverlayColor_PreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Enter)
+        {
+            CommitOverlayColor();
+            e.Handled = true;
+        }
+        else if (e.Key == Key.Escape)
+        {
+            OverlayColorTextBox.Text = "#000000";
+            OverlayColorTextBox.SelectAll();
+            e.Handled = true;
+        }
+    }
+
+    private void CommitOverlayColor()
+    {
+        var value = OverlayColorTextBox.Text.Trim().ToUpperInvariant();
+        if (value.Length != 7 || value[0] != '#' || !value[1..].All(Uri.IsHexDigit))
+        {
+            value = "#000000";
+        }
+        OverlayColorTextBox.Text = value;
+        if (!_updating) RaiseOptionChanged("overlayColor", value);
+    }
+
+    private void RaiseOptionChanged(string property, string value) =>
+        OptionChanged?.Invoke(
+            this,
+            new ArtworkAdjustmentOptionChangedEventArgs(RegionKey, property, value));
 
     private void ValueEditor_GotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
     {
@@ -249,6 +332,9 @@ public partial class ArtworkAdjustmentEditor : UserControl
         "grayscale" => GrayscaleSlider,
         "hueRotation" => HueRotationSlider,
         "blur" => BlurSlider,
+        "overlayOpacity" => OverlayOpacitySlider,
+        "gradientStrength" => GradientStrengthSlider,
+        "vignette" => VignetteSlider,
         _ => null,
     };
 
@@ -271,6 +357,9 @@ public partial class ArtworkAdjustmentEditor : UserControl
         AutomationProperties.SetName(GrayscaleSlider, $"{Title}灰度");
         AutomationProperties.SetName(HueRotationSlider, $"{Title}色相旋转");
         AutomationProperties.SetName(BlurSlider, $"{Title}柔化");
+        AutomationProperties.SetName(OverlayOpacitySlider, $"{Title}叠色强度");
+        AutomationProperties.SetName(GradientStrengthSlider, $"{Title}渐变遮罩");
+        AutomationProperties.SetName(VignetteSlider, $"{Title}暗角");
         AutomationProperties.SetName(BrightnessValue, $"精确输入{Title}亮度");
         AutomationProperties.SetName(ContrastValue, $"精确输入{Title}对比度");
         AutomationProperties.SetName(SaturationValue, $"精确输入{Title}饱和度");
@@ -281,6 +370,9 @@ public partial class ArtworkAdjustmentEditor : UserControl
         AutomationProperties.SetName(GrayscaleValue, $"精确输入{Title}灰度");
         AutomationProperties.SetName(HueRotationValue, $"精确输入{Title}色相旋转");
         AutomationProperties.SetName(BlurValue, $"精确输入{Title}柔化");
+        AutomationProperties.SetName(OverlayOpacityValue, $"精确输入{Title}叠色强度");
+        AutomationProperties.SetName(GradientStrengthValue, $"精确输入{Title}渐变遮罩");
+        AutomationProperties.SetName(VignetteValue, $"精确输入{Title}暗角");
     }
 
     private void UpdateLabels(bool force = false)
@@ -296,6 +388,9 @@ public partial class ArtworkAdjustmentEditor : UserControl
         SetValueText(GrayscaleValue, $"{GrayscaleSlider.Value:0}%", force);
         SetValueText(HueRotationValue, $"{HueRotationSlider.Value:+0;-0;0}°", force);
         SetValueText(BlurValue, $"{BlurSlider.Value:0.#} px", force);
+        SetValueText(OverlayOpacityValue, $"{OverlayOpacitySlider.Value:0}%", force);
+        SetValueText(GradientStrengthValue, $"{GradientStrengthSlider.Value:0}%", force);
+        SetValueText(VignetteValue, $"{VignetteSlider.Value:0}%", force);
     }
 
     private static void SetValueText(TextBox textBox, string value, bool force)

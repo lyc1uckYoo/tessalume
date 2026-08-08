@@ -254,7 +254,7 @@ internal static partial class TestSuite
     static async Task<string> ReadMainWindowSourceAsync(string appRoot)
     {
         var sources = Directory
-            .EnumerateFiles(appRoot, "MainWindow*.cs", SearchOption.TopDirectoryOnly)
+            .EnumerateFiles(appRoot, "MainWindow*.cs", SearchOption.AllDirectories)
             .Order(StringComparer.OrdinalIgnoreCase)
             .Select(path => File.ReadAllTextAsync(path));
         return string.Join("\n", await Task.WhenAll(sources));
@@ -267,15 +267,25 @@ internal static partial class TestSuite
             appRoot,
             "Styles",
             "MainWindowResources.xaml"));
-        var creatorCenter = await File.ReadAllTextAsync(Path.Combine(
-            appRoot,
-            "Creator",
-            "CreatorCenterView.xaml"));
+        var creatorViews = await Task.WhenAll(Directory
+            .EnumerateFiles(Path.Combine(appRoot, "Creator"), "*.xaml", SearchOption.AllDirectories)
+            .Order(StringComparer.OrdinalIgnoreCase)
+            .Select(path => File.ReadAllTextAsync(path)));
         var artworkAdjustmentEditor = await File.ReadAllTextAsync(Path.Combine(
             appRoot,
             "Controls",
             "ArtworkAdjustmentEditor.xaml"));
-        return mainWindow + "\n" + resources + "\n" + creatorCenter + "\n" + artworkAdjustmentEditor;
+        var featureViews = Directory.Exists(Path.Combine(appRoot, "Features"))
+            ? await Task.WhenAll(Directory
+                .EnumerateFiles(Path.Combine(appRoot, "Features"), "*.xaml", SearchOption.AllDirectories)
+                .Order(StringComparer.OrdinalIgnoreCase)
+                .Select(path => File.ReadAllTextAsync(path)))
+            : [];
+        return string.Join(
+            "\n",
+            new[] { mainWindow, resources, artworkAdjustmentEditor }
+                .Concat(creatorViews)
+                .Concat(featureViews));
     }
 
     static async Task<string> ReadUiPreferencesSourceAsync(string appRoot)

@@ -1,0 +1,74 @@
+<UserControl x:Class="Tessalume.App.Creator.CreatorWorkspacePage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:creator="clr-namespace:Tessalume.App.Creator">
+    <StackPanel>
+        <Border Style="{DynamicResource ProductCard}" Padding="18">
+            <StackPanel>
+                <Grid>
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="48" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                    <Border Width="40" Height="40" CornerRadius="13" Background="{DynamicResource PrimaryGradient}" VerticalAlignment="Top">
+                        <Path Width="19" Height="19" Data="M 4,4 C 8,3 10,4 12,6 L 12,20 C 10,18 8,17 4,18 Z M 20,4 C 16,3 14,4 12,6 L 12,20 C 14,18 16,17 20,18 Z" Stroke="White" StrokeThickness="1.8" Fill="Transparent" Stretch="Uniform" />
+                    </Border>
+                    <StackPanel Grid.Column="1">
+                        <TextBlock Text="准备 Codex 创作工作区" Foreground="{DynamicResource PrimaryText}" FontSize="16" FontWeight="SemiBold" />
+                        <TextBlock Text="标准工作区包含 Template 1.0、11 个素材位、创作 Skill 和本地校验工具。" Foreground="{DynamicResource MutedText}" FontSize="10.5" TextWrapping="Wrap" Margin="0,5,15,0" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Orientation="Horizontal">
+                        <Button Style="{DynamicResource PrimaryActionButton}" Content="创建新工作区" Height="36" Padding="16,0" Click="CreateWorkspace_Click" />
+                        <Button Style="{DynamicResource QuietActionButton}" Content="打开已有工作区" Margin="8,0,0,0" Padding="14,0" Click="OpenWorkspace_Click" />
+                        <Button Style="{DynamicResource QuietActionButton}" Content="复制裸模板" Margin="8,0,0,0" Padding="14,0" Click="CopyTemplate_Click" />
+                    </StackPanel>
+                </Grid>
+                <creator:CreatorPromptView x:Name="PromptView" Margin="0,15,0,0"
+                                           ToggleEditorRequested="Prompt_ToggleEditorRequested"
+                                           CopyRequested="Prompt_CopyRequested"
+                                           ResetRequested="Prompt_ResetRequested"
+                                           PromptChanged="Prompt_Changed" />
+            </StackPanel>
+        </Border>
+
+        <Grid Margin="0,16,0,0">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="286" /><ColumnDefinition Width="14" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+            <Border Style="{DynamicResource ProductCard}" Padding="15">
+                <Grid>
+                    <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="10" /><RowDefinition Height="206" /><RowDefinition Height="10" /><RowDefinition Height="Auto" /><RowDefinition Height="10" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                    <Grid>
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                        <StackPanel><TextBlock Text="最近工作区" Foreground="{DynamicResource PrimaryText}" FontSize="13" FontWeight="SemiBold" /><TextBlock Text="路径仅保存在本机" Foreground="{DynamicResource MutedText}" FontSize="10" Margin="0,3,0,0" /></StackPanel>
+                        <Border Grid.Column="1" Background="{DynamicResource SurfaceAlt}" CornerRadius="8" Padding="7,4" VerticalAlignment="Center"><TextBlock Text="{Binding WorkspaceCountText}" Foreground="{DynamicResource MutedText}" FontSize="10" /></Border>
+                    </Grid>
+                    <Grid Grid.Row="2">
+                        <ListBox x:Name="WorkspaceList" ItemsSource="{Binding Workspaces}" SelectedItem="{Binding SelectedWorkspace, Mode=OneWay}" Style="{DynamicResource CreatorListBox}" ItemContainerStyle="{DynamicResource CreatorListItem}" SelectionChanged="WorkspaceList_SelectionChanged">
+                            <ListBox.ItemTemplate><DataTemplate><Grid Margin="11,9"><Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><TextBlock Text="{Binding DisplayName}" Foreground="{DynamicResource PrimaryText}" FontSize="10.5" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" /><Border Grid.Column="1" Style="{DynamicResource CreatorStatusPill}" Margin="7,0,0,0"><TextBlock Text="{Binding StatusText}" Style="{DynamicResource CreatorStatusText}" /></Border><TextBlock Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding DirectoryPath}" Foreground="{DynamicResource SubtleText}" FontSize="9.5" TextTrimming="CharacterEllipsis" Margin="0,5,0,0" ToolTip="{Binding DirectoryPath}" /><TextBlock Grid.Row="2" Grid.ColumnSpan="2" Text="{Binding LastOpenedText}" Foreground="{DynamicResource MutedText}" FontSize="9.5" Margin="0,4,0,0" /></Grid></DataTemplate></ListBox.ItemTemplate>
+                        </ListBox>
+                        <StackPanel x:Name="WorkspaceEmptyPanel" VerticalAlignment="Center" HorizontalAlignment="Center"><Border Width="38" Height="38" CornerRadius="12" Background="{DynamicResource SurfaceAlt}"><TextBlock Text="+" Foreground="{DynamicResource Accent}" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border><TextBlock Text="还没有工作区" Foreground="{DynamicResource PrimaryText}" FontSize="10.5" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,8,0,0" /><TextBlock Text="创建或打开后会显示在这里" Foreground="{DynamicResource MutedText}" FontSize="9.5" Margin="0,4,0,0" /></StackPanel>
+                    </Grid>
+                    <Grid Grid.Row="4"><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="7" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions><Button Style="{DynamicResource QuietActionButton}" Content="打开目录" IsEnabled="{Binding HasSelectedWorkspace}" Click="OpenWorkspaceFolder_Click" /><Button Grid.Column="2" Style="{DynamicResource QuietActionButton}" Content="移除记录" IsEnabled="{Binding HasSelectedWorkspace}" Click="RemoveWorkspace_Click" /></Grid>
+                    <Border x:Name="WorkspaceVersionPanel" Grid.Row="6" Background="{DynamicResource AccentSoft}" BorderBrush="{DynamicResource Accent}" BorderThickness="1" CornerRadius="10" Padding="10,8" Visibility="Collapsed">
+                        <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><StackPanel><TextBlock Text="{Binding WorkspaceVersionText}" Foreground="{DynamicResource PrimaryText}" FontSize="10" FontWeight="SemiBold" /><TextBlock Text="{Binding WorkspaceVersionDetail}" Foreground="{DynamicResource MutedText}" FontSize="9.5" TextWrapping="Wrap" Margin="0,3,8,0" /></StackPanel><Button Grid.Column="1" Style="{DynamicResource CreatorMiniButton}" Content="安全升级" IsEnabled="{Binding CanUpgradeWorkspace}" Click="UpgradeWorkspace_Click" /></Grid>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <Border Grid.Column="2" Style="{DynamicResource ProductCard}" Padding="15">
+                <Grid>
+                    <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="10" /><RowDefinition Height="262" /></Grid.RowDefinitions>
+                    <Grid>
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="8" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                        <StackPanel><TextBlock Text="工作区项目" Foreground="{DynamicResource PrimaryText}" FontSize="13" FontWeight="SemiBold" /><TextBlock Text="{Binding WorkspaceSummary}" Foreground="{DynamicResource MutedText}" FontSize="10" Margin="0,3,12,0" TextTrimming="CharacterEllipsis" /></StackPanel>
+                        <Button Grid.Column="1" Style="{DynamicResource QuietActionButton}" Content="重新定位" IsEnabled="{Binding CanRelocateWorkspace}" Click="RelocateWorkspace_Click" />
+                        <Button Grid.Column="3" Style="{DynamicResource QuietActionButton}" Content="刷新" IsEnabled="{Binding HasSelectedWorkspace}" Click="RefreshWorkspace_Click" />
+                    </Grid>
+                    <Grid Grid.Row="2">
+                        <StackPanel x:Name="ProjectLoadingPanel" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed"><Border Width="44" Height="44" CornerRadius="14" Background="{DynamicResource AccentSoft}"><TextBlock Text="…" Foreground="{DynamicResource Accent}" FontSize="22" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border><TextBlock Text="正在检查项目" Foreground="{DynamicResource PrimaryText}" FontSize="11" FontWeight="SemiBold" Margin="0,9,0,0" /><TextBlock Text="读取清单、入口和素材引用" Foreground="{DynamicResource MutedText}" FontSize="10" Margin="0,4,0,0" /></StackPanel>
+                        <StackPanel x:Name="ProjectStatePanel" VerticalAlignment="Center" HorizontalAlignment="Center"><Border Width="44" Height="44" CornerRadius="14" Background="{DynamicResource InfoSurface}"><TextBlock Text="?" Foreground="{DynamicResource Accent}" FontSize="19" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border><TextBlock Text="{Binding StateTitle}" Foreground="{DynamicResource PrimaryText}" FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,9,0,0" /><TextBlock Text="{Binding StateMessage}" Foreground="{DynamicResource MutedText}" FontSize="10" TextWrapping="Wrap" TextAlignment="Center" MaxWidth="360" Margin="0,4,0,0" /></StackPanel>
+                        <ListBox x:Name="ProjectList" ItemsSource="{Binding Projects}" SelectedItem="{Binding SelectedProject, Mode=OneWay}" Style="{DynamicResource CreatorListBox}" ItemContainerStyle="{DynamicResource CreatorListItem}" SelectionChanged="ProjectList_SelectionChanged" Visibility="Collapsed">
+                            <ListBox.ItemTemplate><DataTemplate><Grid Margin="12,10"><Grid.ColumnDefinitions><ColumnDefinition Width="38" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><Border Width="32" Height="32" CornerRadius="10" Background="{DynamicResource SurfaceAlt}"><TextBlock Text="T" Foreground="{DynamicResource Accent}" FontSize="11" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border><StackPanel Grid.Column="1"><TextBlock Text="{Binding DisplayName}" Foreground="{DynamicResource PrimaryText}" FontSize="10.5" FontWeight="SemiBold" /><TextBlock Foreground="{DynamicResource MutedText}" FontSize="9.5" Margin="0,4,0,0"><Run Text="{Binding ThemeId, Mode=OneWay}" /><Run Text=" · " /><Run Text="{Binding VersionText, Mode=OneWay}" /><Run Text=" · " /><Run Text="{Binding AssetText, Mode=OneWay}" /></TextBlock></StackPanel><Border Grid.Column="2" Style="{DynamicResource CreatorStatusPill}" Margin="8,0,0,0" VerticalAlignment="Top"><TextBlock Text="{Binding StatusText}" Style="{DynamicResource CreatorStatusText}" /></Border></Grid></DataTemplate></ListBox.ItemTemplate>
+                        </ListBox>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+    </StackPanel>
+</UserControl>

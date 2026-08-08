@@ -82,6 +82,44 @@ internal static partial class TestSuite
 
         if (args is [
                 "--creator-snapshots",
+                var completeWorkspacePath,
+                var completeLightSnapshotPath,
+                var completePromptSnapshotPath,
+                var completeDetailSnapshotPath,
+                var completeDarkSnapshotPath,
+                var completeAcceptanceSnapshotPath,
+                var completeReleaseSnapshotPath])
+        {
+            return await RenderCreatorCenterSnapshotsAsync(
+                completeWorkspacePath,
+                completeLightSnapshotPath,
+                completeDetailSnapshotPath,
+                completeDarkSnapshotPath,
+                completePromptSnapshotPath,
+                completeReleaseSnapshotPath,
+                completeAcceptanceSnapshotPath);
+        }
+
+        if (args is [
+                "--creator-snapshots",
+                var routedWorkspacePath,
+                var routedLightSnapshotPath,
+                var routedPromptSnapshotPath,
+                var routedDetailSnapshotPath,
+                var routedDarkSnapshotPath,
+                var routedReleaseSnapshotPath])
+        {
+            return await RenderCreatorCenterSnapshotsAsync(
+                routedWorkspacePath,
+                routedLightSnapshotPath,
+                routedDetailSnapshotPath,
+                routedDarkSnapshotPath,
+                routedPromptSnapshotPath,
+                routedReleaseSnapshotPath);
+        }
+
+        if (args is [
+                "--creator-snapshots",
                 var expandedWorkspacePath,
                 var expandedLightSnapshotPath,
                 var promptSnapshotPath,
@@ -112,6 +150,22 @@ internal static partial class TestSuite
 
         if (args is [
                 "--stage-d-snapshots",
+                var aboutExpandedSnapshotPath,
+                var diagnosticsExpandedSnapshotPath,
+                var diagnosticsDarkExpandedSnapshotPath,
+                var updateBadgeExpandedSnapshotPath,
+                var aboutDarkSnapshotPath])
+        {
+            return await RenderStageDSnapshotsAsync(
+                aboutExpandedSnapshotPath,
+                diagnosticsExpandedSnapshotPath,
+                diagnosticsDarkExpandedSnapshotPath,
+                updateBadgeExpandedSnapshotPath,
+                aboutDarkSnapshotPath);
+        }
+
+        if (args is [
+                "--stage-d-snapshots",
                 var aboutWithBadgeSnapshotPath,
                 var diagnosticsWithBadgeSnapshotPath,
                 var diagnosticsDarkWithBadgeSnapshotPath,
@@ -134,6 +188,28 @@ internal static partial class TestSuite
                 aboutSnapshotPath,
                 diagnosticsSnapshotPath,
                 diagnosticsDarkSnapshotPath);
+        }
+
+        if (args is [
+                "--personalization-snapshots",
+                var compactLightSnapshotPath,
+                var compactDarkSnapshotPath,
+                var personalizationCompactSnapshotPath])
+        {
+            return await RenderPersonalizationSnapshotsAsync(
+                compactLightSnapshotPath,
+                compactDarkSnapshotPath,
+                personalizationCompactSnapshotPath);
+        }
+
+        if (args is [
+                "--personalization-snapshots",
+                var personalizationLightSnapshotPath,
+                var personalizationDarkSnapshotPath])
+        {
+            return await RenderPersonalizationSnapshotsAsync(
+                personalizationLightSnapshotPath,
+                personalizationDarkSnapshotPath);
         }
 
         if (args is [
@@ -216,29 +292,35 @@ internal static partial class TestSuite
             ("artwork adjustments are runtime-owned", ArtworkAdjustmentsAreRuntimeOwnedAsync),
             ("artwork editor supports precise input and region transfer", ArtworkEditorSupportsPreciseInputAndTransferAsync),
             ("artwork editor history and presets work", ArtworkEditorHistoryAndPresetsWorkAsync),
+            ("personal images are stored and resolved safely", PersonalImagesAreStoredSafelyAsync),
             ("artwork preset files round-trip safely", ArtworkPresetFilesRoundTripSafelyAsync),
             ("theme library state is normalized and version aware", ThemeLibraryStateIsNormalizedAndVersionAwareAsync),
             ("theme library details and recent sorting work", ThemeLibraryDetailsAndRecentSortingWorkAsync),
             ("cold-start settings are immediately interactive", ColdStartSettingsAreImmediatelyInteractiveAsync),
             ("main product surfaces share the design system", MainProductSurfacesShareDesignSystemAsync),
+            ("navigation routes keep dense workflows separated", NavigationRoutesKeepDenseWorkflowsSeparatedAsync),
             ("source layout keeps product feature boundaries", SourceLayoutKeepsFeatureBoundariesAsync),
             ("WPF shell loads split resources", WpfShellLoadsSplitResourcesAsync),
             ("long product dialogs keep a fixed header and scrollable body", LongProductDialogUsesScrollableBodyAsync),
             ("adaptive layout and keyboard accessibility are available", AdaptiveLayoutAndKeyboardAccessibilityAsync),
-            ("version 1.4.1 product workflow is complete", Version14ProductWorkflowIsCompleteAsync),
+            ("version 2.0.0 product foundation is connected", Version20ProductFoundationIsConnectedAsync),
             ("portable Codex creator workspace is self-contained", PortableCreatorWorkspaceIsSelfContainedAsync),
             ("creator prompt composer builds a durable contract prompt", CreatorPromptComposerBuildsDurableContractPromptAsync),
+            ("creator repair prompt is scoped to project health", CreatorRepairPromptUsesOnlyBoundedProjectHealthAsync),
+            ("creator workflow builds a five-stage release gate", CreatorWorkflowEvaluatorBuildsFiveStageReleaseGateAsync),
             ("creator workspace history is normalized and bounded", CreatorWorkspaceHistoryIsNormalizedAsync),
             ("creator workspace contract upgrade preserves projects", CreatorWorkspaceContractUpgradePreservesProjectsAsync),
             ("creator center orchestrates workspace projects", CreatorCenterOrchestratesWorkspaceProjectsAsync),
             ("creator watcher debounces stable changes and releases", CreatorWatcherDebouncesStableChangesAndReleasesAsync),
             ("creator center auto-applies only healthy stable projects", CreatorCenterAutoAppliesOnlyHealthyStableProjectsAsync),
+            ("creator runtime acceptance classifies issues and gates release", CreatorRuntimeAcceptanceClassifiesIssuesAndGatesReleaseAsync),
             ("creator project scanner produces structured health", CreatorProjectScannerProducesStructuredHealthAsync),
             ("theme archive export is deterministic and round-trips", ThemeArchiveExportIsDeterministicAndRoundTripsAsync),
             ("portable backup round-trips user data and imported themes", PortableBackupRoundTripsUserDataAndImportedThemesAsync),
             ("portable backup rejects corruption, cancellation, and rolls back", PortableBackupRejectsCorruptionCancellationAndRollsBackAsync),
             ("compatibility health state survives restart", CompatibilityHealthStateIsDurableAsync),
-            ("version 1.3 isolated creator-to-recovery flow completes", Version13IsolatedCreatorToRecoveryFlowAsync),
+            ("compatibility packs validate, install, and roll back atomically", CompatibilityPacksInstallValidateAndRollBackAsync),
+            ("version 2.0 isolated creator-to-recovery flow completes", Version20IsolatedCreatorToRecoveryFlowAsync),
             ("local diagnostics and built-in recovery are available", DiagnosticsRecoveryIsAvailableAsync),
             ("local importer copies a validated package", LocalImporterCopiesPackageAsync),
             ("ZIP theme import is bounded and rejects traversal", ZipThemeImportIsBoundedAsync),
@@ -249,12 +331,21 @@ internal static partial class TestSuite
             ("main window disposal is idempotent", MainWindowDisposalIsIdempotentAsync),
             ("startup stays opt-in and cleans the predecessor brand", StartupRegistrationStaysOptInAsync),
             ("release updater checks downloads and verifies SHA-256", ReleaseUpdaterChecksAndDownloadsAsync),
+            ("compatibility updater discovers dedicated verified packs", CompatibilityUpdaterFindsDedicatedVerifiedPacksAsync),
+            ("compatibility updater paginates and ignores prereleases", CompatibilityUpdaterPaginatesAndIgnoresPrereleasesAsync),
             ("portable updater replaces and preserves a rollback backup", PortableUpdaterReplacesAndBacksUpAsync),
+            ("portable updater rolls back without touching user data", PortableUpdaterRollsBackWithoutTouchingUserDataAsync),
+            ("version rollback snapshots restore compatible settings atomically", UpdateDataSnapshotsRestoreVersionedSettingsAtomicallyAsync),
+            ("update helper preserves schemas across successful and failed rollback", UpdateHelperPreservesSchemasAcrossRollbackAsync),
+            ("update rollback state rejects a tampered previous executable", UpdateRollbackStateRequiresAnUntamperedBackupAsync),
+            ("updated application writes a startup health marker", UpdatedApplicationWritesAStartupHealthMarkerAsync),
             ("automatic update workflow is connected to the product UI", AutomaticUpdateWorkflowIsConnectedAsync),
             ("first-run onboarding never applies a random theme", FirstRunOnboardingNeverAppliesRandomThemeAsync),
             ("build script launches the published executable by default", BuildScriptLaunchesPublishedExecutableAsync),
             ("release artifacts and feedback paths are documented", ReleaseReadinessAssetsAreDocumentedAsync),
-            ("UI preferences migrate through schema three", UiPreferencesMigrateFromUnversionedSchemaAsync),
+            ("GitHub automation separates application and compatibility releases", GitHubAutomationSeparatesApplicationAndCompatibilityReleasesAsync),
+            ("compatibility release packages are reproducible", CompatibilityPackBuildIsDeterministicAsync),
+            ("UI preferences migrate through schema four", UiPreferencesMigrateFromUnversionedSchemaAsync),
         };
 
         var failures = new List<string>();
