@@ -917,8 +917,8 @@ internal static partial class TestSuite
         Ensure(project.Contains("<Version>2.0.0</Version>", StringComparison.Ordinal) &&
                firstRunXaml.Contains("{x:Static local:BrandInfo.VersionLabel}", StringComparison.Ordinal) &&
                !firstRunXaml.Contains("Text=\"v1.2\"", StringComparison.Ordinal) &&
-               readme.Contains("## Tessalume 2.0.0", StringComparison.Ordinal) &&
-               readme.Contains("十套内置旗舰主题", StringComparison.Ordinal) &&
+               readme.Contains("release-2.0.0", StringComparison.Ordinal) &&
+               readme.Contains("内置 10 套支持亮色与暗色的完整角色主题", StringComparison.Ordinal) &&
                File.Exists(Path.Combine(repositoryRoot, "CHANGELOG.md")),
             "Version metadata and release documentation must agree on Tessalume 2.0.0.");
     }

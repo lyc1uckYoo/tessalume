@@ -35,6 +35,7 @@ try {
     }
     else {
         & $buildScript -Configuration Release -Runtime win-x64 -NoLaunch
+        if ($LASTEXITCODE -ne 0) { throw 'Complete release build failed.' }
     }
 
     $runtimeManifest = Get-Content -LiteralPath (Join-Path $repositoryRoot 'src\Tessalume.App\Compatibility\Runtime\runtime-bundle.json') -Raw -Encoding UTF8 |

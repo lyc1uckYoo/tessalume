@@ -14,6 +14,10 @@ internal static partial class TestSuite
     {
         var repositoryRoot = FindRepositoryRoot();
         var buildScript = await File.ReadAllTextAsync(Path.Combine(repositoryRoot, "一键构建EXE.ps1"));
+        var releaseCandidateScript = await File.ReadAllTextAsync(Path.Combine(
+            repositoryRoot,
+            "tools",
+            "Test-ReleaseCandidate.ps1"));
         var readme = await File.ReadAllTextAsync(Path.Combine(repositoryRoot, "README.md"));
         var securityPath = Path.Combine(repositoryRoot, "SECURITY.md");
         var licensePath = Path.Combine(repositoryRoot, "LICENSE");
@@ -22,10 +26,12 @@ internal static partial class TestSuite
         var license = await File.ReadAllTextAsync(licensePath);
         var changelog = await File.ReadAllTextAsync(changelogPath);
         var security = await File.ReadAllTextAsync(securityPath);
+        var publicScreenshots = Path.Combine(repositoryRoot, ".github", "assets", "screenshots");
 
         Ensure(buildScript.Contains("Get-FileHash -LiteralPath $finalExe -Algorithm SHA256", StringComparison.Ordinal) &&
-               buildScript.Contains("SHA256SUMS.txt", StringComparison.Ordinal),
-            "The release build must create a SHA-256 manifest beside the executable.");
+               buildScript.Contains("SHA256SUMS.txt", StringComparison.Ordinal) &&
+               releaseCandidateScript.Contains("Complete release build failed", StringComparison.Ordinal),
+            "The release build must create a checksum and propagate complete-build failures.");
         Ensure(File.Exists(securityPath) && File.Exists(issueTemplatePath) && File.Exists(changelogPath) &&
                changelog.Contains("## 2.0.0", StringComparison.Ordinal) &&
                license.Contains("MIT License", StringComparison.Ordinal) &&
@@ -34,14 +40,31 @@ internal static partial class TestSuite
         Ensure(readme.Contains("issues/new?template=bug-report.yml", StringComparison.Ordinal) &&
                readme.Contains("Microsoft Defender SmartScreen", StringComparison.Ordinal) &&
                readme.Contains("SHA256SUMS.txt", StringComparison.Ordinal) &&
-               readme.Contains("从 1.2.x / 1.3.0 / 1.4.x 升级到 2.0.0", StringComparison.Ordinal) &&
-               readme.Contains("项目化主题创作", StringComparison.Ordinal) &&
-               readme.Contains("便携备份与恢复", StringComparison.Ordinal) &&
-               readme.Contains("从 1.1 升级到 1.2", StringComparison.Ordinal) &&
+               readme.Contains("把 Codex Desktop 变成属于你的主题工作空间", StringComparison.Ordinal) &&
+               readme.Contains("一个软件，完成整套主题体验", StringComparison.Ordinal) &&
+               readme.Contains("个性化不再需要手改 CSS", StringComparison.Ordinal) &&
+               readme.Contains("让 Codex 帮你制作自己的皮肤", StringComparison.Ordinal) &&
+               readme.Contains("更新不会重置你的主题和设置", StringComparison.Ordinal) &&
+               readme.Contains("tessalume-personalization-light.png", StringComparison.Ordinal) &&
+               readme.Contains("tessalume-creator.png", StringComparison.Ordinal) &&
+               !readme.Contains("## Tessalume 1.4.1", StringComparison.Ordinal) &&
+               readme.Split('\n').Length <= 160 &&
                readme.Contains("[MIT License](LICENSE)", StringComparison.Ordinal) &&
                security.Contains("最新的 `2.0.x`", StringComparison.Ordinal) &&
                security.Contains("备份 ZIP", StringComparison.Ordinal),
-            "The download guide must expose feedback, signature status, checksum verification, and licensing.");
+            "The public README must stay product-focused while exposing download, safety, feedback, and licensing.");
+        foreach (var screenshot in new[]
+                 {
+                     "tessalume-light.png",
+                     "tessalume-dark.png",
+                     "tessalume-personalization-light.png",
+                     "tessalume-personalization-dark.png",
+                     "tessalume-creator.png",
+                 })
+        {
+            Ensure(File.Exists(Path.Combine(publicScreenshots, screenshot)),
+                $"The 2.0 public product screenshot is missing: {screenshot}.");
+        }
     }
 
     static async Task GitHubAutomationSeparatesApplicationAndCompatibilityReleasesAsync()

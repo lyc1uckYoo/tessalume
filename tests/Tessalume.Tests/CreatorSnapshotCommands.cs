@@ -1,6 +1,7 @@
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Tessalume.App.Creator;
+using Tessalume.App.Features.Navigation;
 
 internal static partial class TestSuite
 {
@@ -58,13 +59,12 @@ internal static partial class TestSuite
                         ?? throw new MissingMethodException(nameof(MainWindow), "EnsureMainUiInitialized");
                     initialize.Invoke(window, null);
 
-                    window.ThemeLibraryPage.Visibility = Visibility.Collapsed;
-                    window.InfoPage.Visibility = Visibility.Visible;
-                    window.ImportInfoPanel.Visibility = Visibility.Collapsed;
-                    window.SettingsInfoPanel.Visibility = Visibility.Collapsed;
-                    window.DiagnosticsPage.Visibility = Visibility.Collapsed;
-                    window.AboutPage.Visibility = Visibility.Collapsed;
-                    window.CreatorCenter.Visibility = Visibility.Visible;
+                    var navigate = typeof(MainWindow).GetMethod(
+                        "NavigateTo",
+                        System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+                        ?? throw new MissingMethodException(nameof(MainWindow), "NavigateTo");
+                    navigate.Invoke(window, [AppRoute.CreatorCenter]);
+                    CompletePageAnimation(window.InfoPage);
                     if (window.CreatorCenter.DataContext is not CreatorCenterViewModel viewModel)
                     {
                         throw new InvalidOperationException(
@@ -81,6 +81,12 @@ internal static partial class TestSuite
                     }
 
                     ArrangeMainSurface(window);
+                    if (!string.Equals(window.CreatorCenterButton.Tag?.ToString(), "active", StringComparison.Ordinal) ||
+                        string.Equals(window.ThemesButton.Tag?.ToString(), "active", StringComparison.Ordinal))
+                    {
+                        throw new InvalidOperationException(
+                            "Creator Center snapshots must preserve the matching shell navigation state.");
+                    }
                     if (window.InfoScroll.ScrollableHeight <= 0)
                     {
                         throw new InvalidOperationException(
@@ -207,6 +213,17 @@ internal static partial class TestSuite
         window.InfoScroll.UpdateLayout();
         window.InfoScroll.ScrollToVerticalOffset(0);
         ArrangeMainSurface(window);
+    }
+
+    private static void CompletePageAnimation(FrameworkElement page)
+    {
+        page.BeginAnimation(UIElement.OpacityProperty, null);
+        page.Opacity = 1;
+        if (page.RenderTransform is System.Windows.Media.TranslateTransform translate)
+        {
+            translate.BeginAnimation(System.Windows.Media.TranslateTransform.YProperty, null);
+            translate.Y = 0;
+        }
     }
 
     private static void SaveWindowContent(MainWindow window, string path)
