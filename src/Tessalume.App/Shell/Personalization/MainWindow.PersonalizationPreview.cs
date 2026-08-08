@@ -102,7 +102,7 @@ public partial class MainWindow
             await SavePreferencesAsync();
             if (!string.Equals(themeId, _activeThemeId, StringComparison.OrdinalIgnoreCase))
             {
-                SetStatus($"{theme.Name} 的图像参数已保存，应用主题后生效");
+                SetStatus($"{theme.Name} 的显示与图像参数已保存，应用主题后生效");
                 return;
             }
 
@@ -110,16 +110,16 @@ public partial class MainWindow
             var port = _activePort ?? state?.Port;
             if (port is null || !await _launcher.IsDebugPortReadyAsync(port.Value))
             {
-                SetStatus("图像参数已保存；Codex 下次连接时自动生效");
+                SetStatus("显示与图像参数已保存；Codex 下次连接时自动生效");
                 return;
             }
 
             await _runtime.ApplyVisualSettingsAsync(port.Value, themeId, GetVisualSettings(themeId));
-            SetStatus($"已实时更新 {theme.Name} 的图像参数");
+            SetStatus($"已实时更新 {theme.Name} 的显示与图像参数");
         }
         catch (Exception exception)
         {
-            SetStatus($"图像参数已保留，但实时更新失败：{exception.Message}");
+            SetStatus($"显示与图像参数已保留，但实时更新失败：{exception.Message}");
         }
     }
 }

@@ -54,6 +54,7 @@
       markSurface(content, "markdown");
       const unit = closestFirst(content, "messageUnitAncestor", ["[data-content-search-unit-key]"]);
       const key = unit?.getAttribute("data-content-search-unit-key") || "";
+      const unitId = key.split(":").at(-1) || "";
       const label = unit?.querySelector("h4.sr-only")?.textContent?.trim() || "";
       const isUserMessage = Boolean(queryFirst(
         unit,
@@ -62,7 +63,7 @@
       )) ||
         /^(?:you|你)\s*(?:said|说)/i.test(label);
       const isAssistantMessage = !isUserMessage &&
-        /^(?:chatgpt|assistant|助手)\s*(?:said|说)/i.test(label);
+        (/^(?:chatgpt|assistant|助手)\s*(?:said|说)/i.test(label) || /^msg_/i.test(unitId));
       if (isAssistantMessage || key.endsWith(":assistant")) {
         mark(unit, roleClass("message-assistant"));
         markMessage(unit, "assistant");
@@ -135,7 +136,7 @@
       if (!mutations?.length || !html.classList.contains(roleClass("is-task"))) return;
       const markdownSelector = selectorList(
         "markdownContent",
-        ['[class*="_markdownContent_"]'],
+        ['[class*="_MarkdownRoot_"]', '[class*="_markdownContent_"]'],
       ).join(",");
       const contents = new Set();
       const collectMarkdown = (node, includeDescendants = false) => {
@@ -188,7 +189,7 @@
       queryAll(
         document,
         "markdownContent",
-        ['[class*="_markdownContent_"]'],
+        ['[class*="_MarkdownRoot_"]', '[class*="_markdownContent_"]'],
       ).forEach((content) => {
         const unit = decorateMarkdownSurface(content);
         if (unit) {

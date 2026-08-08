@@ -219,12 +219,12 @@ html[data-tessalume-readability~="chat-dark"].electron-dark.tessalume-is-task ma
   background:linear-gradient(90deg,color-mix(in srgb,var(--color-background-primary,#fff) 88%,transparent),color-mix(in srgb,var(--color-background-primary,#fff) 56%,transparent) 58%,transparent 92%)!important;
 }
 
-/* User display preferences affect only Tessalume surfaces and theme-owned motion. */
-html[data-tessalume-motion="reduced"] #tessalume-theme-root *,
-html[data-tessalume-motion="reduced"] #tessalume-theme-root *::before,
-html[data-tessalume-motion="reduced"] #tessalume-theme-root *::after {
-  animation-duration:.8s!important;
-  transition-duration:.18s!important;
+/* Display preferences use runtime-computed values. These selectors provide an
+   immediate fallback while React surfaces are being discovered. */
+html[data-tessalume-motion="reduced"] #tessalume-theme-root [data-theme-part="hero-motion"] {
+  opacity:.72!important;
+  filter:saturate(.82)!important;
+  transition-duration:.14s!important;
 }
 
 html[data-tessalume-motion="off"] #tessalume-theme-root *,
@@ -234,20 +234,42 @@ html[data-tessalume-motion="off"] #tessalume-theme-root *::after {
   transition-duration:.001ms!important;
 }
 
-html[data-tessalume-text-scale="small"] :is([data-tessalume-surface="main"],[data-tessalume-surface="sidebar"]) {
-  font-size:94%!important;
+html[data-tessalume-text-scale="small"] :is([data-tessalume-surface="markdown"],[data-user-message-bubble="true"]) {
+  font-size:13px!important;
 }
 
-html[data-tessalume-text-scale="large"] :is([data-tessalume-surface="main"],[data-tessalume-surface="sidebar"]) {
-  font-size:106%!important;
+html[data-tessalume-text-scale="large"] :is([data-tessalume-surface="markdown"],[data-user-message-bubble="true"]) {
+  font-size:16px!important;
+}
+
+html[data-tessalume-text-scale="small"] [data-tessalume-surface="sidebar"] :is([data-app-action-sidebar-project-row],[data-app-action-sidebar-thread-row]) {
+  font-size:12px!important;
+}
+
+html[data-tessalume-text-scale="large"] [data-tessalume-surface="sidebar"] :is([data-app-action-sidebar-project-row],[data-app-action-sidebar-thread-row]) {
+  font-size:15px!important;
 }
 
 html[data-tessalume-density="compact"] [data-tessalume-message] {
-  margin-block:6px!important;
+  margin-block:-4px!important;
+  padding-block:2px!important;
 }
 
 html[data-tessalume-density="spacious"] [data-tessalume-message] {
-  margin-block:18px!important;
+  margin-block:10px!important;
+  padding-block:10px!important;
+}
+
+html[data-tessalume-density="compact"] [data-tessalume-surface="sidebar"] :is([data-app-action-sidebar-project-row],[data-app-action-sidebar-thread-row]) {
+  height:32px!important;
+  min-height:28px!important;
+  padding-block:1px!important;
+}
+
+html[data-tessalume-density="spacious"] [data-tessalume-surface="sidebar"] :is([data-app-action-sidebar-project-row],[data-app-action-sidebar-thread-row]) {
+  height:50px!important;
+  min-height:46px!important;
+  padding-block:10px!important;
 }
 
 html.tessalume-theme-active:not(.electron-dark) [data-tessalume-surface="sidebar"] :is([data-app-action-sidebar-project-row],[data-app-action-sidebar-thread-row]):is(:hover,[aria-current="page"],[data-sidebar-thread-active="true"]) {

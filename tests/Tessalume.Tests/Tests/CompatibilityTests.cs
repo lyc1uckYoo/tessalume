@@ -80,25 +80,25 @@ internal static partial class TestSuite
                 new Version(1, 4, 1),
                 ThemeRuntime.ContractVersion);
             var baseline = store.Resolve();
-            Ensure(baseline.IsBuiltIn && baseline.PackVersion == new Version(3, 0, 0),
+            Ensure(baseline.IsBuiltIn && baseline.PackVersion == new Version(3, 0, 1),
                 "A verified embedded compatibility profile must always remain available as the baseline.");
 
-            var firstArchive = await CreateCompatibilityArchiveAsync(root, sourceAssets, new Version(3, 0, 1));
+            var firstArchive = await CreateCompatibilityArchiveAsync(root, sourceAssets, new Version(3, 0, 2));
             var firstHash = Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(firstArchive)));
             var firstInstall = await store.InstallAsync(firstArchive, firstHash);
             Ensure(firstInstall.Changed && !firstInstall.ActivePack.IsBuiltIn &&
-                   firstInstall.ActivePack.PackVersion == new Version(3, 0, 1),
+                   firstInstall.ActivePack.PackVersion == new Version(3, 0, 2),
                 "A fully verified official compatibility pack must become active without replacing the executable.");
 
-            var secondArchive = await CreateCompatibilityArchiveAsync(root, sourceAssets, new Version(3, 0, 2));
+            var secondArchive = await CreateCompatibilityArchiveAsync(root, sourceAssets, new Version(3, 0, 3));
             var secondHash = Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(secondArchive)));
             var secondInstall = await store.InstallAsync(secondArchive, secondHash);
-            Ensure(secondInstall.ActivePack.PackVersion == new Version(3, 0, 2) &&
-                   secondInstall.PreviousPack.PackVersion == new Version(3, 0, 1),
+            Ensure(secondInstall.ActivePack.PackVersion == new Version(3, 0, 3) &&
+                   secondInstall.PreviousPack.PackVersion == new Version(3, 0, 2),
                 "Installing a newer compatibility pack must preserve the last known-good pack for rollback.");
 
             var rolledBack = store.Rollback();
-            Ensure(!rolledBack.IsBuiltIn && rolledBack.PackVersion == new Version(3, 0, 1),
+            Ensure(!rolledBack.IsBuiltIn && rolledBack.PackVersion == new Version(3, 0, 2),
                 "A failed active compatibility pack must roll back atomically to the previous verified pack.");
 
             await File.AppendAllTextAsync(rolledBack.RuntimeAssets.RuntimePath, "\n// corrupted by fixture");
@@ -136,10 +136,16 @@ internal static partial class TestSuite
         var runtime = await File.ReadAllTextAsync(sourceAssets.RuntimePath);
         await File.WriteAllTextAsync(runtimePath, $"{runtime}\n// compatibility fixture {version}");
         var profile = await File.ReadAllTextAsync(sourceAssets.CompatibilityProfilePath);
-        profile = profile.Replace(
-            "\"profileVersion\": \"3.0.0\"",
-            $"\"profileVersion\": \"{version}\"",
-            StringComparison.Ordinal);
+        using (var profileDocument = JsonDocument.Parse(profile))
+        {
+            var currentProfileVersion = profileDocument.RootElement
+                .GetProperty("profileVersion")
+                .GetString() ?? throw new InvalidDataException("Compatibility fixture profile version is missing.");
+            profile = profile.Replace(
+                $"\"profileVersion\": \"{currentProfileVersion}\"",
+                $"\"profileVersion\": \"{version}\"",
+                StringComparison.Ordinal);
+        }
         await File.WriteAllTextAsync(profilePath, profile);
         var files = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {

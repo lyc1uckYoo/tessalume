@@ -81,6 +81,19 @@ internal static partial class TestSuite
         }
 
         if (args is [
+                "--display-preferences-probe",
+                var displayPortText,
+                var displayPackagePath,
+                var displayDataDirectory] &&
+            int.TryParse(displayPortText, out var displayPort))
+        {
+            return await ProbeDisplayPreferencesAsync(
+                displayPort,
+                displayPackagePath,
+                displayDataDirectory);
+        }
+
+        if (args is [
                 "--creator-snapshots",
                 var completeWorkspacePath,
                 var completeLightSnapshotPath,
@@ -286,6 +299,7 @@ internal static partial class TestSuite
             ("runtime diagnostics use Tessalume markers", RuntimeDiagnosticsUseTessalumeMarkersAsync),
             ("skipped pet overlays retain the processed marker", SkippedPetOverlaysRetainProcessedMarkerAsync),
             ("runtime removes native composer fade", RuntimeRemovesNativeComposerFadeAsync),
+            ("display preferences change effective runtime styles", DisplayPreferencesChangeEffectiveRuntimeStylesAsync),
             ("runtime decorates task surfaces before deferred repair", RuntimeDecoratesTaskSurfacesBeforeDeferredRepairAsync),
             ("published themes use canonical injection contract", PublishedThemesUseCanonicalInjectionContractAsync),
             ("flagship template v1 freezes shared structure", FlagshipTemplateV1FreezesSharedStructureAsync),

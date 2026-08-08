@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "profileVersion": "3.0.0",
+  "profileVersion": "3.0.1",
   "runtimeContractVersion": 3,
   "selectors": {
     "main": [
@@ -46,6 +46,7 @@
       ".group\\/application-menu-top-bar"
     ],
     "markdownContent": [
+      "[class*=\"_MarkdownRoot_\"]",
       "[class*=\"_markdownContent_\"]"
     ],
     "messageUnitAncestor": [

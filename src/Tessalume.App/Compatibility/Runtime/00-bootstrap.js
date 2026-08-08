@@ -108,6 +108,7 @@
   const visualSettingVariables = new Set();
   let definition = null;
   let disposed = false;
+  let syncDisplayPreferences = () => {};
 
   const addCleanup = (cleanup) => {
     if (typeof cleanup !== "function") throw new TypeError("cleanup must be a function");
@@ -220,6 +221,7 @@
       "comfortable",
       ["compact", "comfortable", "spacious"],
     );
+    syncDisplayPreferences();
     return true;
   };
 

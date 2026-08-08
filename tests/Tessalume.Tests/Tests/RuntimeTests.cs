@@ -248,6 +248,47 @@ internal static partial class TestSuite
             "The runtime must hide Codex's native home prompt title for themed home pages.");
     }
 
+    static async Task DisplayPreferencesChangeEffectiveRuntimeStylesAsync()
+    {
+        var repositoryRoot = FindRepositoryRoot();
+        var runtime = await ReadCompatibilityRuntimeSourceAsync(repositoryRoot);
+        var sharedCss = await File.ReadAllTextAsync(Path.Combine(
+            repositoryRoot,
+            "src",
+            "Tessalume.App",
+            "Compatibility",
+            ThemePayloadBuilder.SharedTemplateStyleFileName));
+
+        Ensure(!sharedCss.Contains("animation-duration:.8s!important", StringComparison.Ordinal) &&
+               runtime.Contains("MotionReductionFactor = .55", StringComparison.Ordinal) &&
+               runtime.Contains("removeLegacyReducedMotionRule", StringComparison.Ordinal) &&
+               runtime.Contains("sheet.deleteRule(index)", StringComparison.Ordinal) &&
+               runtime.Contains("root.getAnimations({ subtree:true })", StringComparison.Ordinal) &&
+               runtime.Contains("softenKeyframes", StringComparison.Ordinal) &&
+               runtime.Contains("new DOMMatrixReadOnly", StringComparison.Ordinal) &&
+               runtime.Contains("effect.setKeyframes(reduced ? softenKeyframes(frames) : frames)", StringComparison.Ordinal) &&
+               runtime.Contains("animation.updatePlaybackRate(targetRate)", StringComparison.Ordinal),
+            "Reduced motion must slow and soften the theme's real animations instead of forcing every animation to 0.8 seconds.");
+        Ensure(runtime.Contains("collectTextTargets", StringComparison.Ordinal) &&
+               runtime.Contains("getComputedStyle(node)", StringComparison.Ordinal) &&
+               runtime.Contains("setManagedStyle(textStyles, node, \"font-size\"", StringComparison.Ordinal) &&
+               runtime.Contains("setManagedStyle(textStyles, node, \"line-height\"", StringComparison.Ordinal),
+            "Text scale must change computed native text sizes, including fixed-pixel descendants.");
+        Ensure(runtime.Contains("[data-tessalume-message]", StringComparison.Ordinal) &&
+               runtime.Contains("data-app-action-sidebar-thread-row", StringComparison.Ordinal) &&
+               runtime.Contains("setManagedStyle(densityStyles, node, \"padding-top\"", StringComparison.Ordinal) &&
+               runtime.Contains("setManagedStyle(densityStyles, node, \"height\"", StringComparison.Ordinal) &&
+               runtime.Contains("setManagedStyle(densityStyles, node, \"min-height\"", StringComparison.Ordinal),
+            "Density must affect both message rhythm and native sidebar rows.");
+        Ensure(runtime.Contains("new MutationObserver(scheduleDisplayPreferences)", StringComparison.Ordinal) &&
+               runtime.Contains("restoreManagedStyles(textStyles)", StringComparison.Ordinal) &&
+               runtime.Contains("restoreManagedStyles(densityStyles)", StringComparison.Ordinal),
+            "Display preferences must follow React DOM updates and restore every managed inline style on cleanup.");
+        Ensure(sharedCss.Contains("data-tessalume-text-scale=\"large\"", StringComparison.Ordinal) &&
+               sharedCss.Contains("data-tessalume-density=\"spacious\"", StringComparison.Ordinal),
+            "Display preferences must retain immediate CSS fallbacks while semantic surfaces are discovered.");
+    }
+
     static async Task RuntimeDecoratesTaskSurfacesBeforeDeferredRepairAsync()
     {
         var repositoryRoot = FindRepositoryRoot();
@@ -277,6 +318,9 @@ internal static partial class TestSuite
         Ensure(criticalBlock.Contains("mutation.addedNodes", StringComparison.Ordinal) &&
                criticalBlock.Contains("mutation.target", StringComparison.Ordinal),
             "The immediate task decorator must cover inserted task trees and streamed child updates.");
+        Ensure(runtime.Contains("[class*=\"_MarkdownRoot_\"]", StringComparison.Ordinal) &&
+               runtime.Contains("/^msg_/i.test(unitId)", StringComparison.Ordinal),
+            "The runtime must recognize current MarkdownRoot and msg_ assistant units while retaining legacy selectors.");
         Ensure(!criticalBlock.Contains("getBoundingClientRect", StringComparison.Ordinal) &&
                !criticalBlock.Contains("requestAnimationFrame", StringComparison.Ordinal) &&
                !criticalBlock.Contains("setTimeout", StringComparison.Ordinal) &&

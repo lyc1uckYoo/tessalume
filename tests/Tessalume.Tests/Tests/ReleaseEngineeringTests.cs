@@ -306,6 +306,7 @@ internal static partial class TestSuite
         {
             "00-bootstrap.js",
             "10-page-recognition.js",
+            "15-display-preferences.js",
             "20-adaptive-layout.js",
             "30-surface-decoration.js",
             "40-cleanup-recovery.js",
@@ -324,6 +325,7 @@ internal static partial class TestSuite
         }
         var composedRuntime = CompatibilityRuntimeComposer.ComposeSource(compatibilityRoot);
         Ensure(composedRuntime.Contains("mountCanonicalTheme", StringComparison.Ordinal) &&
+               composedRuntime.Contains("syncDisplayPreferences", StringComparison.Ordinal) &&
                composedRuntime.Contains("syncAdaptiveVisibility", StringComparison.Ordinal) &&
                composedRuntime.Contains("decorateSharedSurfaces", StringComparison.Ordinal) &&
                composedRuntime.TrimEnd().EndsWith("})()", StringComparison.Ordinal),

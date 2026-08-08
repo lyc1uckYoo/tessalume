@@ -104,6 +104,7 @@ internal static class CompatibilityRuntimeComposer
         if (source.Length is 0 or > MaximumRuntimeCharacters ||
             !source.Contains("TESSALUME_RUNTIME_FRAGMENT", StringComparison.Ordinal) ||
             !source.Contains("mountCanonicalTheme", StringComparison.Ordinal) ||
+            !source.Contains("syncDisplayPreferences", StringComparison.Ordinal) ||
             !source.Contains("syncRouteState", StringComparison.Ordinal) ||
             !source.Contains("syncAdaptiveVisibility", StringComparison.Ordinal) ||
             !source.Contains("decorateSharedSurfaces", StringComparison.Ordinal) ||
