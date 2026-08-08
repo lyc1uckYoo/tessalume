@@ -5,7 +5,7 @@
 Tessalume 是一款开源、便携、以本机为中心的 Windows 主题工作室。它不仅能切换配色，还能统一管理首页横幅、左栏、聊天背景、消息框、输入框、角色组件和动效；也能让你直接使用 Codex 创建、体检和导出自己的完整主题。
 
 ![Release](https://img.shields.io/badge/release-2.0.0-6C5CE7?style=flat-square)
-![Platform](https://img.shields.io/badge/platform-Windows%20x64-2563EB?style=flat-square)
+![Platform](https://img.shields.io/badge/platform-Windows%20x64%20%7C%20macOS%20(Node)-2563EB?style=flat-square)
 ![Local first](https://img.shields.io/badge/data-local%20first-0F9D87?style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT-F59E0B?style=flat-square)
 
@@ -97,9 +97,19 @@ Tessalume 是便携软件。想保留原有数据时，不要把新 EXE 放到�
 ## 系统要求与当前边界
 
 - Windows x64 与 Windows 版 Codex Desktop。
-- 当前没有 macOS、Linux 或 ARM64 构建。
 - 当前 EXE 没有商业代码签名，首次下载可能触发 Microsoft Defender SmartScreen；请只从本仓库下载并核对 SHA-256。
 - 主题运行依赖 Codex Desktop 的本机调试端口。连接异常时请先打开“运行与诊断”，不要手工修改 Codex 安装目录。
+
+### 跨平台：macOS 上的纯 Node 控制台
+
+除 Windows 版 EXE 外，仓库还提供 **纯 Node.js（零依赖）的 Web 控制台**，可在 macOS 上把主题注入 ChatGPT 桌面端，无需 .NET / WPF / PowerShell。它复用仓库原生主题资源与兼容层，行为与原 C# 核心一致。
+
+- 适用：**macOS（Apple Silicon / Intel 均可）** + ChatGPT 桌面端（Electron 外壳），已验证可用。
+- 依赖：Node.js **>= 21**（macOS 自带 `node` 通常已满足）。
+- 用法：在调试端口下启动 ChatGPT 桌面端后，运行 `node web/server.js` 并打开 `http://127.0.0.1:5173`，即可探测、应用、移除主题并切换深 / 浅色。
+- 详见 [web/README.md](web/README.md)。
+
+> 说明：Linux 同样无需 .NET，可参考 `web/` 目录的纯 Node 实现运行；此处以 macOS 为已验证环境。
 
 ## 从源码构建
 

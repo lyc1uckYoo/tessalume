@@ -1,0 +1,17 @@
+{
+  "name": "tessalume-web",
+  "version": "1.0.0",
+  "description": "Tessalume 的跨平台 Web 控制台：通过本机 CDP 为 Codex Desktop 注入主题。纯 Node.js，零运行时依赖。",
+  "type": "module",
+  "bin": {
+    "tessalume": "server.js"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "engines": {
+    "node": ">=21"
+  },
+  "license": "MIT"
+}
