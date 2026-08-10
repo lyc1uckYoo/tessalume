@@ -4,16 +4,19 @@
     <StackPanel>
         <Border Background="{DynamicResource InfoSurface}" BorderBrush="{DynamicResource InfoBorder}" BorderThickness="1" CornerRadius="13" Padding="15,13">
             <Grid>
-                <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="8" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="12" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
                 <StackPanel>
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="给 Codex 的完整创作提示词" Foreground="{DynamicResource Accent}" FontSize="10" FontWeight="Bold" />
-                        <TextBlock x:Name="CreatorPromptStatusText" Text="已包含角色确认与最终校验" Foreground="{DynamicResource Teal}" FontSize="10" Margin="10,0,0,0" />
-                    </StackPanel>
-                    <TextBlock x:Name="CreatorPromptText" TextWrapping="Wrap" Foreground="{DynamicResource PrimaryText}" FontSize="11" LineHeight="19" MaxHeight="96" Margin="0,6,14,0" />
+                    <Grid>
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                        <TextBlock Text="给 Codex 的专属创作提示词" Foreground="{DynamicResource Accent}" FontSize="10.5" FontWeight="Bold" />
+                        <TextBlock x:Name="CreatorPromptStatusText" Grid.Column="1" Text="已包含角色确认与最终校验" Foreground="{DynamicResource Teal}" FontSize="10.5" Margin="12,0,0,0" TextTrimming="CharacterEllipsis" />
+                    </Grid>
+                    <TextBlock x:Name="CreatorPromptText" TextWrapping="Wrap" Foreground="{DynamicResource PrimaryText}" FontSize="11.5" LineHeight="20" MaxHeight="100" Margin="0,7,0,0" />
                 </StackPanel>
-                <Button x:Name="TogglePromptEditorButton" Grid.Column="1" Style="{DynamicResource QuietActionButton}" Content="定制提示词" Width="92" Height="34" VerticalAlignment="Center" Click="ToggleEditor_Click" />
-                <Button x:Name="CopyPromptButton" Grid.Column="3" Style="{DynamicResource PrimaryActionButton}" Content="复制提示词" Width="92" Height="36" VerticalAlignment="Center" Click="Copy_Click" AutomationProperties.Name="复制创作提示词" />
+                <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button x:Name="TogglePromptEditorButton" Style="{DynamicResource QuietActionButton}" Content="编辑创作需求" MinWidth="116" Height="38" Padding="15,0" FontSize="11" Click="ToggleEditor_Click" />
+                    <Button x:Name="CopyPromptButton" Style="{DynamicResource PrimaryActionButton}" Content="复制给 Codex" MinWidth="124" Height="40" Padding="17,0" FontSize="11" Margin="9,0,0,0" Click="Copy_Click" AutomationProperties.Name="复制创作提示词" />
+                </StackPanel>
             </Grid>
         </Border>
 
@@ -24,7 +27,7 @@
                 <Grid Grid.ColumnSpan="3">
                     <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                     <StackPanel><TextBlock Text="角色与视觉方向" Foreground="{DynamicResource PrimaryText}" FontSize="12" FontWeight="SemiBold" /><TextBlock Text="草稿只保存在本机；作品名和角色名填写后即可复制。" Foreground="{DynamicResource MutedText}" FontSize="10" Margin="0,3,0,0" /></StackPanel>
-                    <Button Grid.Column="1" Style="{DynamicResource CreatorMiniButton}" Content="恢复示例" Click="Reset_Click" />
+                    <Button Grid.Column="1" Style="{DynamicResource CreatorMiniButton}" Content="清空内容" Click="Reset_Click" />
                 </Grid>
                 <StackPanel Grid.Row="2"><TextBlock Text="作品名称 *" Foreground="{DynamicResource MutedText}" FontSize="10" FontWeight="SemiBold" Margin="1,0,0,5" /><TextBox x:Name="PromptWorkNameBox" Style="{DynamicResource CreatorTextBox}" MaxLength="80" TextChanged="PromptField_Changed" AutomationProperties.Name="主题作品名称" /></StackPanel>
                 <StackPanel Grid.Row="2" Grid.Column="2"><TextBlock Text="角色名称 *" Foreground="{DynamicResource MutedText}" FontSize="10" FontWeight="SemiBold" Margin="1,0,0,5" /><TextBox x:Name="PromptCharacterNameBox" Style="{DynamicResource CreatorTextBox}" MaxLength="80" TextChanged="PromptField_Changed" AutomationProperties.Name="主题角色名称" /></StackPanel>

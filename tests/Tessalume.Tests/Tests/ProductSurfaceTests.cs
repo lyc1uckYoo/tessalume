@@ -18,12 +18,14 @@ internal static partial class TestSuite
                 var pasted = false;
                 var imageRequested = false;
                 var imageCleared = false;
+                var resetRequested = false;
                 editor.AdjustmentChanged += (_, args) => changed = args;
                 editor.OptionChanged += (_, args) => optionChanged = args;
                 editor.CopyRequested += (_, _) => copied = true;
                 editor.PasteRequested += (_, _) => pasted = true;
                 editor.ChooseImageRequested += (_, _) => imageRequested = true;
                 editor.ClearImageRequested += (_, _) => imageCleared = true;
+                editor.ResetRequested += (_, _) => resetRequested = true;
 
                 editor.SetAdjustment(new ThemeArtworkAdjustment
                 {
@@ -44,6 +46,27 @@ internal static partial class TestSuite
                        editor.BlendModeComboBox.SelectedValue as string == "soft-light" &&
                        editor.ReadabilityCheckBox.IsChecked == true,
                     "The editor must reflect precise values, personal images, and advanced effects.");
+                editor.ShowGroup(Tessalume.App.Features.Personalization.ArtworkAdjustmentGroup.Effects);
+                Ensure(editor.ResetButtonText.Text == "重置效果" && editor.ResetButton.IsEnabled,
+                    "The editor must name the exact reset scope instead of exposing an ambiguous icon button.");
+                var original = new ThemeArtworkAdjustment
+                {
+                    Brightness = 82,
+                    Zoom = 143,
+                    OffsetX = 17,
+                    Vignette = 31,
+                    CustomImagePath = "personalization/images/probe.png",
+                };
+                var basicReset = MainWindow.ResetArtworkAdjustmentGroup(
+                    original,
+                    Tessalume.App.Features.Personalization.ArtworkAdjustmentGroup.Basic);
+                Ensure(basicReset.Brightness == 100 &&
+                       basicReset.Zoom == 143 &&
+                       basicReset.OffsetX == 17 &&
+                       basicReset.Vignette == 31 &&
+                       basicReset.CustomImagePath == original.CustomImagePath,
+                    "Resetting basic adjustments must preserve composition, effects, and the selected image.");
+                editor.ShowGroup(Tessalume.App.Features.Personalization.ArtworkAdjustmentGroup.Basic);
                 editor.BrightnessValue.Text = "137%";
                 var commit = typeof(Tessalume.App.Controls.ArtworkAdjustmentEditor).GetMethod(
                     "CommitValueEditor",
@@ -51,8 +74,14 @@ internal static partial class TestSuite
                     ?? throw new MissingMethodException("ArtworkAdjustmentEditor.CommitValueEditor");
                 commit.Invoke(editor, [editor.BrightnessValue]);
                 Ensure(editor.BrightnessSlider.Value == 137 &&
-                       changed is { Region: "hero", Property: "brightness", Value: 137 },
+                       changed is { Region: "hero", Property: "brightness", Value: 137 } &&
+                       editor.ResetButton.IsEnabled,
                     "Precise text input must update the same live adjustment pipeline as the slider.");
+
+                editor.ResetButton.RaiseEvent(
+                    new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
+                Ensure(resetRequested,
+                    "The visible reset action must remain clickable after a live parameter edit.");
 
                 editor.BrightnessValue.Text = "NaN";
                 commit.Invoke(editor, [editor.BrightnessValue]);
@@ -182,12 +211,38 @@ internal static partial class TestSuite
                     Ensure(settings["editor.probe"].Light.Hero.Brightness == 125,
                         "Redo must restore the reverted image adjustment.");
 
+                    window.HeroAdjustmentEditor.ResetButton.RaiseEvent(
+                        new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
+                    Ensure(settings["editor.probe"].Light.Hero.Brightness == 100,
+                        "The reset button must reset the visible parameter group through the main editor state.");
+                    window.VisualUndoButton.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
+                    Ensure(settings["editor.probe"].Light.Hero.Brightness == 125,
+                        "A parameter-group reset must remain undoable.");
+
+                    settings["editor.probe"] = settings["editor.probe"] with
+                    {
+                        Light = settings["editor.probe"].Light with
+                        {
+                            Hero = settings["editor.probe"].Light.Hero with
+                            {
+                                CustomImagePath = "personalization/images/hero.png",
+                            },
+                            Sidebar = settings["editor.probe"].Light.Sidebar with
+                            {
+                                CustomImagePath = "personalization/images/sidebar.png",
+                            },
+                        },
+                    };
+                    typeof(MainWindow).GetMethod("UpdateVisualAdjustmentControls", flags)?.Invoke(window, null);
+
                     window.HeroAdjustmentEditor.CopyButton.RaiseEvent(
                         new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
                     window.SidebarAdjustmentEditor.PasteButton.RaiseEvent(
                         new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
-                    Ensure(settings["editor.probe"].Light.Sidebar.Brightness == 125,
-                        "Pasting a region must transfer all values through the main editor state.");
+                    Ensure(settings["editor.probe"].Light.Sidebar.Brightness == 125 &&
+                           settings["editor.probe"].Light.Sidebar.CustomImagePath ==
+                           "personalization/images/sidebar.png",
+                        "Pasting a region must transfer values without replacing the target image source.");
 
                     window.VisualPresetNameBox.Text = "明亮构图";
                     window.SaveVisualPresetButton.RaiseEvent(
@@ -671,6 +726,13 @@ internal static partial class TestSuite
         Ensure(mainWindowXaml.Contains("PreviewKeyDown=\"ValueEditor_PreviewKeyDown\"", StringComparison.Ordinal) &&
                mainWindowXaml.Contains("LostKeyboardFocus=\"ValueEditor_LostKeyboardFocus\"", StringComparison.Ordinal),
             "Every advanced image value must support precise keyboard entry in addition to sliders.");
+        Ensure(mainWindowXaml.Contains("Text=\"图像区域\"", StringComparison.Ordinal) &&
+               mainWindowXaml.Contains("Text=\"参数组\"", StringComparison.Ordinal) &&
+               mainWindowXaml.Contains("重置全部图像", StringComparison.Ordinal) &&
+               mainWindowSource.Contains("ResetArtworkAdjustmentGroup", StringComparison.Ordinal) &&
+               mainWindowSource.Contains("Light = new ThemeVisualModeSettings()", StringComparison.Ordinal) &&
+               mainWindowSource.Contains("Dark = new ThemeVisualModeSettings()", StringComparison.Ordinal),
+            "The artwork workbench must expose a compact region/group hierarchy and keep group and all-image resets bounded.");
         foreach (var region in new[] { "hero", "sidebar", "chat" })
         {
             foreach (var mode in new[] { "light", "dark" })
@@ -914,13 +976,13 @@ internal static partial class TestSuite
                !xaml.Contains("Storyboard.TargetName=\"PrimaryMotion\"", StringComparison.Ordinal) &&
                !xaml.Contains("x:Name=\"ButtonScale\"", StringComparison.Ordinal),
             "Shared actions, dialogs, and onboarding must keep stable text rendering without hover scaling.");
-        Ensure(project.Contains("<Version>2.0.0</Version>", StringComparison.Ordinal) &&
+        Ensure(project.Contains("<Version>2.0.1</Version>", StringComparison.Ordinal) &&
                firstRunXaml.Contains("{x:Static local:BrandInfo.VersionLabel}", StringComparison.Ordinal) &&
                !firstRunXaml.Contains("Text=\"v1.2\"", StringComparison.Ordinal) &&
-               readme.Contains("release-2.0.0", StringComparison.Ordinal) &&
+               readme.Contains("release-2.0.1", StringComparison.Ordinal) &&
                readme.Contains("内置 10 套支持亮色与暗色的完整角色主题", StringComparison.Ordinal) &&
                File.Exists(Path.Combine(repositoryRoot, "CHANGELOG.md")),
-            "Version metadata and release documentation must agree on Tessalume 2.0.0.");
+            "Version metadata and release documentation must agree on Tessalume 2.0.1.");
     }
 
 

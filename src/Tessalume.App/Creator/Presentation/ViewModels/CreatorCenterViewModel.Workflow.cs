@@ -55,6 +55,7 @@ internal sealed partial class CreatorCenterViewModel
         OnPropertyChanged(nameof(WorkflowProgressText));
         OnPropertyChanged(nameof(ReleaseReadinessText));
         OnPropertyChanged(nameof(CanReleaseSelectedProject));
+        UpdateGuidance();
     }
 
     private CreatorWorkflowStage ApplyAcceptanceToStage(CreatorWorkflowStage stage)

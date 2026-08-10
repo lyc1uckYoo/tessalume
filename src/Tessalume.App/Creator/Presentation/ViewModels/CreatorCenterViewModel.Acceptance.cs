@@ -65,5 +65,6 @@ internal sealed partial class CreatorCenterViewModel
         OnPropertyChanged(nameof(RuntimeCompatibilityIssueCount));
         OnPropertyChanged(nameof(AcceptanceSummaryText));
         OnPropertyChanged(nameof(AcceptanceCompletedText));
+        UpdateGuidance();
     }
 }

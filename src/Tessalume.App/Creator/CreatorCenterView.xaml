@@ -21,33 +21,46 @@
         <Grid>
             <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
             <StackPanel>
-                <TextBlock Text="创作项目中心" Foreground="{DynamicResource PrimaryText}" FontSize="28" FontWeight="Bold" />
-                <TextBlock Text="从角色需求到体检、亮暗验收和分享包，按阶段管理本地主题项目。" Foreground="{DynamicResource MutedText}" FontSize="12" Margin="1,6,0,0" />
+                <TextBlock Text="主题创作助手" Foreground="{DynamicResource PrimaryText}" FontSize="28" FontWeight="Bold" />
+                <TextBlock Text="告诉 Tessalume 你想做谁，剩下的每一步都会根据项目状态自动提醒。" Foreground="{DynamicResource MutedText}" FontSize="12" Margin="1,6,0,0" />
             </StackPanel>
             <Border Grid.Column="1" Background="{DynamicResource AccentSoft}" BorderBrush="{DynamicResource Accent}" BorderThickness="1" CornerRadius="11" Padding="11,6" VerticalAlignment="Center">
                 <StackPanel Orientation="Horizontal"><Ellipse Width="6" Height="6" Fill="{DynamicResource Positive}" Margin="0,0,7,0" /><TextBlock Text="CREATOR STUDIO 2.0" Foreground="{DynamicResource Accent}" FontSize="10" FontWeight="SemiBold" /></StackPanel>
             </Border>
         </Grid>
 
-        <Border x:Name="CreatorRouteBar" Style="{DynamicResource ProductCard}" Padding="10" Margin="0,18,0,0">
+        <Border x:Name="CreatorGuidanceCard" Background="{DynamicResource InfoSurface}" BorderBrush="{DynamicResource InfoBorder}" BorderThickness="1" CornerRadius="14" Padding="14,12" Margin="0,15,0,0">
             <Grid>
-                <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="8" /><ColumnDefinition Width="*" /><ColumnDefinition Width="8" /><ColumnDefinition Width="*" /><ColumnDefinition Width="8" /><ColumnDefinition Width="*" /><ColumnDefinition Width="8" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                <Button x:Name="WorkspaceRouteButton" Tag="active" Style="{DynamicResource CreatorRouteButton}" Click="WorkspaceRoute_Click">
-                    <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="30" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions><Border Width="24" Height="24" CornerRadius="8" Background="{DynamicResource AccentSoft}"><TextBlock Text="01" Foreground="{DynamicResource Accent}" FontSize="9" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border><StackPanel Grid.Column="1"><TextBlock Text="工作区与项目" FontSize="11" FontWeight="SemiBold" /><TextBlock Text="创建、打开和选择主题" Foreground="{DynamicResource MutedText}" FontSize="9.5" Margin="0,2,0,0" /></StackPanel></Grid>
-                </Button>
-                <Button x:Name="WorkflowRouteButton" Grid.Column="2" Style="{DynamicResource CreatorRouteButton}" Click="WorkflowRoute_Click">
-                    <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="30" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions><Border Width="24" Height="24" CornerRadius="8" Background="{DynamicResource TealSoft}"><TextBlock Text="02" Foreground="{DynamicResource Teal}" FontSize="9" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border><StackPanel Grid.Column="1"><TextBlock Text="创作流程" FontSize="11" FontWeight="SemiBold" /><TextBlock Text="五阶段进度与开发会话" Foreground="{DynamicResource MutedText}" FontSize="9.5" Margin="0,2,0,0" /></StackPanel></Grid>
-                </Button>
-                <Button x:Name="InspectionRouteButton" Grid.Column="4" Style="{DynamicResource CreatorRouteButton}" Click="InspectionRoute_Click">
-                    <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="30" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions><Border Width="24" Height="24" CornerRadius="8" Background="{DynamicResource AmberSoft}"><TextBlock Text="03" Foreground="{DynamicResource Amber}" FontSize="9" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border><StackPanel Grid.Column="1"><TextBlock Text="项目体检" FontSize="11" FontWeight="SemiBold" /><TextBlock Text="定位问题并生成修复提示" Foreground="{DynamicResource MutedText}" FontSize="9.5" Margin="0,2,0,0" /></StackPanel></Grid>
-                </Button>
-                <Button x:Name="AcceptanceRouteButton" Grid.Column="6" Style="{DynamicResource CreatorRouteButton}" Click="AcceptanceRoute_Click">
-                    <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="30" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions><Border Width="24" Height="24" CornerRadius="8" Background="{DynamicResource SkySoft}"><TextBlock Text="04" Foreground="{DynamicResource Sky}" FontSize="9" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border><StackPanel Grid.Column="1"><TextBlock Text="运行验收" FontSize="11" FontWeight="SemiBold" /><TextBlock Text="亮暗与关键表面批量检查" Foreground="{DynamicResource MutedText}" FontSize="9.5" Margin="0,2,0,0" /></StackPanel></Grid>
-                </Button>
-                <Button x:Name="ReleaseRouteButton" Grid.Column="8" Style="{DynamicResource CreatorRouteButton}" Click="ReleaseRoute_Click">
-                    <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="30" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions><Border Width="24" Height="24" CornerRadius="8" Background="{DynamicResource TealSoft}"><TextBlock Text="05" Foreground="{DynamicResource Teal}" FontSize="9" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border><StackPanel Grid.Column="1"><TextBlock Text="发布清单" FontSize="11" FontWeight="SemiBold" /><TextBlock Text="最终门禁与 ZIP 导出" Foreground="{DynamicResource MutedText}" FontSize="9.5" Margin="0,2,0,0" /></StackPanel></Grid>
-                </Button>
+                <Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                <Border Width="36" Height="36" CornerRadius="11" Background="{DynamicResource AccentSoft}" BorderBrush="{DynamicResource Accent}" BorderThickness="1" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding Guidance.StepText}" Foreground="{DynamicResource Accent}" FontSize="8.5" FontWeight="Bold" TextAlignment="Center" TextWrapping="Wrap" HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="31" />
+                </Border>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock x:Name="GuidanceTitleText" Text="{Binding Guidance.Title}" Foreground="{DynamicResource PrimaryText}" FontSize="13.5" FontWeight="SemiBold" TextWrapping="Wrap" />
+                    <TextBlock x:Name="GuidanceDescriptionText" Text="{Binding Guidance.Description}" Foreground="{DynamicResource MutedText}" FontSize="10.5" TextTrimming="CharacterEllipsis" Margin="0,4,16,0" />
+                </StackPanel>
+                <Button x:Name="GuidancePrimaryButton" Grid.Column="2" Style="{DynamicResource PrimaryActionButton}" Content="{Binding Guidance.PrimaryActionText}" MinWidth="148" Height="38" Padding="17,0" FontSize="10.5" Click="GuidancePrimary_Click" />
             </Grid>
+        </Border>
+
+        <Border x:Name="CreatorRouteBar" Style="{DynamicResource ProductCard}" Padding="10" Margin="0,12,0,0">
+            <UniformGrid Rows="1" Columns="5">
+                <Button x:Name="WorkspaceRouteButton" Tag="active" Style="{DynamicResource CreatorRouteButton}" Click="WorkspaceRoute_Click" Margin="0,0,4,0" ToolTip="需求、工作区与项目">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"><Border Width="24" Height="24" CornerRadius="8" Background="{DynamicResource Surface}"><TextBlock Text="01" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" FontSize="9" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border><TextBlock Text="开始" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" FontSize="11" FontWeight="SemiBold" Margin="8,0,0,0" VerticalAlignment="Center" /></StackPanel>
+                </Button>
+                <Button x:Name="WorkflowRouteButton" Style="{DynamicResource CreatorRouteButton}" Click="WorkflowRoute_Click" Margin="4,0" ToolTip="查看当前创作进度">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"><Border Width="24" Height="24" CornerRadius="8" Background="{DynamicResource Surface}"><TextBlock Text="02" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" FontSize="9" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border><TextBlock Text="制作" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" FontSize="11" FontWeight="SemiBold" Margin="8,0,0,0" VerticalAlignment="Center" /></StackPanel>
+                </Button>
+                <Button x:Name="InspectionRouteButton" Style="{DynamicResource CreatorRouteButton}" Click="InspectionRoute_Click" Margin="4,0" ToolTip="定位问题并交给 Codex">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"><Border Width="24" Height="24" CornerRadius="8" Background="{DynamicResource Surface}"><TextBlock Text="03" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" FontSize="9" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border><TextBlock Text="修复" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" FontSize="11" FontWeight="SemiBold" Margin="8,0,0,0" VerticalAlignment="Center" /></StackPanel>
+                </Button>
+                <Button x:Name="AcceptanceRouteButton" Style="{DynamicResource CreatorRouteButton}" Click="AcceptanceRoute_Click" Margin="4,0" ToolTip="自动检查真实页面">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"><Border Width="24" Height="24" CornerRadius="8" Background="{DynamicResource Surface}"><TextBlock Text="04" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" FontSize="9" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border><TextBlock Text="验收" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" FontSize="11" FontWeight="SemiBold" Margin="8,0,0,0" VerticalAlignment="Center" /></StackPanel>
+                </Button>
+                <Button x:Name="ReleaseRouteButton" Style="{DynamicResource CreatorRouteButton}" Click="ReleaseRoute_Click" Margin="4,0,0,0" ToolTip="最终清单与分享包">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"><Border Width="24" Height="24" CornerRadius="8" Background="{DynamicResource Surface}"><TextBlock Text="05" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" FontSize="9" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border><TextBlock Text="导出" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" FontSize="11" FontWeight="SemiBold" Margin="8,0,0,0" VerticalAlignment="Center" /></StackPanel>
+                </Button>
+            </UniformGrid>
         </Border>
 
         <Grid Margin="0,14,0,0">
@@ -65,7 +78,9 @@
                 TogglePromptEditorRequested="TogglePromptEditor_Click"
                 CopyPromptRequested="CopyPrompt_Click"
                 ResetPromptRequested="ResetPrompt_Click"
-                PromptChanged="PromptField_Changed" />
+                PromptChanged="PromptField_Changed"
+                StartNewThemeRequested="StartNewTheme_Click"
+                CancelNewThemeRequested="CancelNewTheme_Click" />
             <creator:CreatorWorkflowPage x:Name="WorkflowPage" Visibility="Collapsed"
                 OpenProjectFolderRequested="OpenProjectFolder_Click"
                 RevalidateProjectRequested="RevalidateProject_Click"

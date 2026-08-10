@@ -322,6 +322,7 @@ internal static partial class TestSuite
             ("creator prompt composer builds a durable contract prompt", CreatorPromptComposerBuildsDurableContractPromptAsync),
             ("creator repair prompt is scoped to project health", CreatorRepairPromptUsesOnlyBoundedProjectHealthAsync),
             ("creator workflow builds a five-stage release gate", CreatorWorkflowEvaluatorBuildsFiveStageReleaseGateAsync),
+            ("creator guidance provides one contextual next action", CreatorGuidanceProvidesOneContextualNextActionAsync),
             ("creator workspace history is normalized and bounded", CreatorWorkspaceHistoryIsNormalizedAsync),
             ("creator workspace contract upgrade preserves projects", CreatorWorkspaceContractUpgradePreservesProjectsAsync),
             ("creator center orchestrates workspace projects", CreatorCenterOrchestratesWorkspaceProjectsAsync),
@@ -360,7 +361,7 @@ internal static partial class TestSuite
             ("release artifacts and feedback paths are documented", ReleaseReadinessAssetsAreDocumentedAsync),
             ("GitHub automation separates application and compatibility releases", GitHubAutomationSeparatesApplicationAndCompatibilityReleasesAsync),
             ("compatibility release packages are reproducible", CompatibilityPackBuildIsDeterministicAsync),
-            ("UI preferences migrate through schema four", UiPreferencesMigrateFromUnversionedSchemaAsync),
+            ("UI preferences migrate through schema five", UiPreferencesMigrateFromUnversionedSchemaAsync),
         };
 
         var failures = new List<string>();

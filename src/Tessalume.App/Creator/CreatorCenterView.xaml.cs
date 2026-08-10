@@ -9,8 +9,10 @@ public partial class CreatorCenterView : UserControl, IDisposable
     private ICreatorWorkspaceProvisioningService? _provisioner;
     private Func<bool>? _isDarkMode;
     private Action<string>? _showToast;
-    private Func<CreatorPromptDraft, Task>? _savePromptDraftAsync;
+    private Func<string?, CreatorPromptDraft>? _loadPromptDraft;
+    private Func<string?, CreatorPromptDraft, Task>? _savePromptDraftAsync;
     private CreatorPromptDraft _promptDraft = new();
+    private string? _promptWorkspacePath;
     private readonly DispatcherTimer _promptSaveTimer;
     private bool _updatingPrompt;
     private bool _promptEditorExpanded;
@@ -32,8 +34,8 @@ public partial class CreatorCenterView : UserControl, IDisposable
         string applicationRoot,
         CreatorWorkspaceStore workspaceStore,
         Func<Task> savePreferencesAsync,
-        CreatorPromptDraft promptDraft,
-        Func<CreatorPromptDraft, Task> savePromptDraftAsync,
+        Func<string?, CreatorPromptDraft> loadPromptDraft,
+        Func<string?, CreatorPromptDraft, Task> savePromptDraftAsync,
         CreatorRuntimeBridge runtimeBridge,
         Func<bool> isDarkMode,
         Action<string> showToast)
@@ -44,11 +46,13 @@ public partial class CreatorCenterView : UserControl, IDisposable
         _provisioner = CreateProvisioningService(applicationRoot);
         _isDarkMode = isDarkMode;
         _showToast = showToast;
+        _loadPromptDraft = loadPromptDraft;
         _savePromptDraftAsync = savePromptDraftAsync;
-        LoadPromptDraft(promptDraft);
+        LoadPromptDraft(loadPromptDraft(null));
         _viewModel = new CreatorCenterViewModel(workspaceStore, savePreferencesAsync, runtimeBridge);
         _viewModel.PropertyChanged += ViewModel_PropertyChanged;
         DataContext = _viewModel;
+        UpdatePromptGuidanceState(copied: false);
         RenderState();
     }
 
@@ -65,6 +69,7 @@ public partial class CreatorCenterView : UserControl, IDisposable
         await RunOperationAsync(
             () => _viewModel.ActivateAsync(),
             "无法打开创作项目中心");
+        await SwitchPromptContextAsync(_viewModel.SelectedWorkspace?.DirectoryPath);
     }
 
     public void Dispose()

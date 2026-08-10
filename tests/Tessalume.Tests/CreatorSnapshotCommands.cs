@@ -1,3 +1,4 @@
+using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Tessalume.App.Creator;
@@ -70,7 +71,7 @@ internal static partial class TestSuite
                         throw new InvalidOperationException(
                             "Creator Center view model is unavailable for visual verification.");
                     }
-                    await viewModel.ActivateAsync();
+                    await window.CreatorCenter.ActivateAsync();
 
                     if (
                         viewModel.Projects.Count == 0 ||
@@ -80,7 +81,7 @@ internal static partial class TestSuite
                             "Creator Center did not load a project for visual verification.");
                     }
 
-                    ArrangeMainSurface(window);
+                    ArrangeCreatorSurface(window);
                     if (!string.Equals(window.CreatorCenterButton.Tag?.ToString(), "active", StringComparison.Ordinal) ||
                         string.Equals(window.ThemesButton.Tag?.ToString(), "active", StringComparison.Ordinal))
                     {
@@ -103,8 +104,19 @@ internal static partial class TestSuite
 
                     if (!string.IsNullOrWhiteSpace(promptSnapshotPath))
                     {
-                        window.CreatorCenter.TogglePromptEditorButton.RaiseEvent(
-                            new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
+                        if (window.CreatorCenter.WorkspacePage.NewThemeCard.Visibility != Visibility.Visible)
+                        {
+                            window.CreatorCenter.WorkspacePage.StartNewThemeButton.RaiseEvent(
+                                new RoutedEventArgs(Button.ClickEvent));
+                            await Dispatcher.Yield(DispatcherPriority.Background);
+                            ArrangeCreatorSurface(window);
+                        }
+                        var expandedForSnapshot = window.CreatorCenter.CreatorPromptEditor.Visibility != Visibility.Visible;
+                        if (expandedForSnapshot)
+                        {
+                            window.CreatorCenter.TogglePromptEditorButton.RaiseEvent(
+                                new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
+                        }
                         ResetCreatorScroll(window);
                         if (window.CreatorCenter.CreatorPromptEditor.Visibility != Visibility.Visible ||
                             window.CreatorCenter.PromptCharacterNameBox.ActualWidth <= 0)
@@ -113,11 +125,15 @@ internal static partial class TestSuite
                                 "The creator prompt editor must expand into a visible input surface.");
                         }
                         SaveWindowContent(window, promptSnapshotPath);
-                        window.CreatorCenter.TogglePromptEditorButton.RaiseEvent(
-                            new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
+                        if (expandedForSnapshot)
+                        {
+                            window.CreatorCenter.TogglePromptEditorButton.RaiseEvent(
+                                new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
+                        }
                     }
 
                     window.CreatorCenter.NavigateTo(CreatorCenterRoute.Workflow);
+                    await Dispatcher.Yield(DispatcherPriority.Render);
                     ResetCreatorScroll(window);
                     SaveWindowContent(window, detailSnapshotPath);
 
@@ -127,6 +143,7 @@ internal static partial class TestSuite
                         ?? throw new MissingMethodException(nameof(MainWindow), "ApplyStudioTheme");
                     applyTheme.Invoke(window, [true]);
                     window.CreatorCenter.NavigateTo(CreatorCenterRoute.Inspection);
+                    await Dispatcher.Yield(DispatcherPriority.Render);
                     ResetCreatorScroll(window);
                     SaveWindowContent(window, darkSnapshotPath);
 
@@ -135,10 +152,12 @@ internal static partial class TestSuite
                         if (!string.IsNullOrWhiteSpace(acceptanceSnapshotPath))
                         {
                             window.CreatorCenter.NavigateTo(CreatorCenterRoute.Acceptance);
+                            await Dispatcher.Yield(DispatcherPriority.Render);
                             ResetCreatorScroll(window);
                             SaveWindowContent(window, acceptanceSnapshotPath);
                         }
                         window.CreatorCenter.NavigateTo(CreatorCenterRoute.Release);
+                        await Dispatcher.Yield(DispatcherPriority.Render);
                         ResetCreatorScroll(window);
                         SaveWindowContent(window, releaseSnapshotPath);
                     }
@@ -206,13 +225,91 @@ internal static partial class TestSuite
         surface.UpdateLayout();
     }
 
+    private static void ArrangeCreatorSurface(MainWindow window)
+    {
+        ArrangeMainSurface(window, new Size(1080, 820));
+        foreach (var routeButton in new[]
+                 {
+                     window.CreatorCenter.WorkspaceRouteButton,
+                     window.CreatorCenter.WorkflowRouteButton,
+                     window.CreatorCenter.InspectionRouteButton,
+                     window.CreatorCenter.AcceptanceRouteButton,
+                     window.CreatorCenter.ReleaseRouteButton,
+                 })
+        {
+            EnsureButtonContentFits(routeButton, 46, "Creator route");
+        }
+        foreach (var action in new[]
+                 {
+                     window.CreatorCenter.GuidancePrimaryButton,
+                 })
+        {
+            if (action.Visibility == Visibility.Visible) EnsureButtonContentFits(action, 38, "Creator");
+        }
+        if (window.CreatorCenter.WorkspacePage.NewThemeCard.Visibility == Visibility.Visible)
+        {
+            foreach (var action in new[]
+                     {
+                         window.CreatorCenter.WorkspacePage.CreateWorkspaceButton,
+                         window.CreatorCenter.WorkspacePage.OpenWorkspaceButton,
+                         window.CreatorCenter.WorkspacePage.CopyTemplateButton,
+                         window.CreatorCenter.TogglePromptEditorButton,
+                         window.CreatorCenter.CopyPromptButton,
+                     })
+            {
+                EnsureButtonContentFits(action, 38, "Creator");
+            }
+        }
+        if (window.CreatorCenter.WorkspacePage.CurrentProjectTools.Visibility == Visibility.Visible)
+        {
+            EnsureButtonContentFits(
+                window.CreatorCenter.WorkspacePage.StartNewThemeButton,
+                38,
+                "Creator new-theme entry");
+        }
+    }
+
+    private static void EnsureButtonContentFits(
+        System.Windows.Controls.Button button,
+        double minimumHeight,
+        string surface)
+    {
+        if (button.ActualHeight < minimumHeight || button.ActualWidth <= 0)
+        {
+            throw new InvalidOperationException(
+                $"{surface} action '{button.Name}' has no usable layout at the minimum product width.");
+        }
+
+        FrameworkElement content = button.Content switch
+        {
+            FrameworkElement element => element,
+            string text => new TextBlock
+            {
+                Text = text,
+                FontFamily = button.FontFamily,
+                FontSize = button.FontSize,
+                FontWeight = button.FontWeight,
+            },
+            _ => new Border(),
+        };
+        content.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+        var available = button.ActualWidth - button.Padding.Left - button.Padding.Right -
+            button.BorderThickness.Left - button.BorderThickness.Right - 4;
+        if (content.DesiredSize.Width > available + 0.5)
+        {
+            throw new InvalidOperationException(
+                $"{surface} action '{button.Name}' clips {content.DesiredSize.Width:0.#} DIPs of content " +
+                $"into {available:0.#} available DIPs.");
+        }
+    }
+
     private static void ResetCreatorScroll(MainWindow window)
     {
         window.InfoScroll.ScrollToVerticalOffset(0);
-        ArrangeMainSurface(window);
+        ArrangeCreatorSurface(window);
         window.InfoScroll.UpdateLayout();
         window.InfoScroll.ScrollToVerticalOffset(0);
-        ArrangeMainSurface(window);
+        ArrangeCreatorSurface(window);
     }
 
     private static void CompletePageAnimation(FrameworkElement page)

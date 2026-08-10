@@ -10,27 +10,42 @@ public partial class CreatorCenterView
 
     private void CopyPrompt_Click(object sender, RoutedEventArgs e)
     {
-        if (!CreatorPromptComposer.CanCopy(_promptDraft)) return;
+        TryCopyPrompt();
+    }
+
+    private bool TryCopyPrompt()
+    {
+        if (!CreatorPromptComposer.CanCopy(_promptDraft)) return false;
         try
         {
             Clipboard.SetText(PromptView.CreatorPromptText.Text);
             _showToast?.Invoke("提示词已复制");
+            UpdatePromptGuidanceState(copied: true);
+            return true;
         }
         catch (ExternalException)
         {
             _showToast?.Invoke("剪贴板正忙，请再点一次");
+            return false;
         }
     }
 
     private void TogglePromptEditor_Click(object sender, RoutedEventArgs e)
     {
-        _promptEditorExpanded = !_promptEditorExpanded;
+        SetPromptEditorExpanded(!_promptEditorExpanded);
+    }
+
+    private void ExpandPromptEditor() => SetPromptEditorExpanded(true);
+
+    private void SetPromptEditorExpanded(bool expanded)
+    {
+        _promptEditorExpanded = expanded;
         PromptView.CreatorPromptEditor.Visibility = _promptEditorExpanded
             ? Visibility.Visible
             : Visibility.Collapsed;
         PromptView.TogglePromptEditorButton.Content = _promptEditorExpanded
-            ? "收起定制"
-            : "定制提示词";
+            ? "收起需求编辑"
+            : "编辑创作需求";
     }
 
     private void PromptField_Changed(object sender, RoutedEventArgs e)
@@ -38,6 +53,7 @@ public partial class CreatorCenterView
         if (_updatingPrompt) return;
         _promptDraft = ReadPromptDraft();
         RenderPromptDraft();
+        UpdatePromptGuidanceState(copied: false);
         _promptDraftDirty = true;
         _promptSaveTimer.Stop();
         _promptSaveTimer.Start();
@@ -45,11 +61,20 @@ public partial class CreatorCenterView
 
     private void ResetPrompt_Click(object sender, RoutedEventArgs e)
     {
+        if (!ProductDialogWindow.Confirm(
+                GetOwner(),
+                "清空当前创作需求？",
+                "将清空作品名称、角色名称、视觉方向和其他要求。工作区与已经生成的主题不会改变。",
+                "清空内容",
+                "取消",
+                dangerous: false,
+                darkMode: IsDarkMode())) return;
         LoadPromptDraft(new CreatorPromptDraft());
         _promptDraftDirty = true;
         _promptSaveTimer.Stop();
         _promptSaveTimer.Start();
-        _showToast?.Invoke("已恢复提示词示例");
+        _showToast?.Invoke("创作需求已清空");
+        UpdatePromptGuidanceState(copied: false);
     }
 
     private void LoadPromptDraft(CreatorPromptDraft draft)
@@ -69,6 +94,7 @@ public partial class CreatorCenterView
             _updatingPrompt = false;
         }
         RenderPromptDraft();
+        UpdatePromptGuidanceState(copied: false);
     }
 
     private CreatorPromptDraft ReadPromptDraft() => new()
@@ -100,7 +126,7 @@ public partial class CreatorCenterView
         var saving = _promptDraft.Normalize();
         try
         {
-            await _savePromptDraftAsync(saving);
+            await _savePromptDraftAsync(_promptWorkspacePath, saving);
             if (saving == _promptDraft.Normalize()) _promptDraftDirty = false;
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
@@ -115,11 +141,36 @@ public partial class CreatorCenterView
         if (!_promptDraftDirty || _savePromptDraftAsync is null) return;
         try
         {
-            await _savePromptDraftAsync(_promptDraft.Normalize());
+            await _savePromptDraftAsync(_promptWorkspacePath, _promptDraft.Normalize());
             _promptDraftDirty = false;
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
         }
     }
+
+    private async Task SwitchPromptContextAsync(
+        string? workspacePath,
+        CreatorPromptDraft? seed = null)
+    {
+        if (string.Equals(
+                _promptWorkspacePath,
+                workspacePath,
+                StringComparison.OrdinalIgnoreCase) && seed is null) return;
+
+        await FlushPendingPromptDraftAsync();
+        _promptWorkspacePath = workspacePath;
+        var draft = (seed ?? _loadPromptDraft?.Invoke(workspacePath) ?? new CreatorPromptDraft()).Normalize();
+        if (seed is not null && _savePromptDraftAsync is not null)
+        {
+            await _savePromptDraftAsync(workspacePath, draft);
+        }
+        LoadPromptDraft(draft);
+    }
+
+    private void UpdatePromptGuidanceState(bool copied) =>
+        _viewModel?.SetPromptState(
+            CreatorPromptComposer.CanCopy(_promptDraft),
+            copied,
+            _promptWorkspacePath is null);
 }

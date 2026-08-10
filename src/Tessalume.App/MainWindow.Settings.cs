@@ -80,7 +80,7 @@ public partial class MainWindow
         AutomaticUpdateChecks = _automaticUpdateChecks,
         LastUpdateCheckAt = _lastUpdateCheckAt,
         RecentCreatorWorkspaces = _creatorWorkspaces.Snapshot(),
-        CreatorPromptDraft = _creatorPromptDraft.Normalize(),
+        CreatorPromptDrafts = _creatorPromptDrafts.Snapshot(),
         FavoriteThemeIds = _favoriteThemeIds.Order(StringComparer.OrdinalIgnoreCase).ToList(),
         ThemeLibrarySort = ThemeLibraryState.NormalizeSort(_themeLibrarySort),
         RecentThemeUsage = ThemeLibraryState.NormalizeUsage(_themeUsage.Values),

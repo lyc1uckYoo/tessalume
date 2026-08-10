@@ -60,6 +60,7 @@ public partial class CreatorCenterView
         InspectionRouteButton.Tag = route == CreatorCenterRoute.Inspection ? "active" : null;
         AcceptanceRouteButton.Tag = route == CreatorCenterRoute.Acceptance ? "active" : null;
         ReleaseRouteButton.Tag = route == CreatorCenterRoute.Release ? "active" : null;
+        RenderGuidance();
     }
 
     private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e) => RenderState();

@@ -4,7 +4,7 @@
 
 Tessalume 是一款开源、便携、以本机为中心的 Windows 主题工作室。它不仅能切换配色，还能统一管理首页横幅、左栏、聊天背景、消息框、输入框、角色组件和动效；也能让你直接使用 Codex 创建、体检和导出自己的完整主题。
 
-![Release](https://img.shields.io/badge/release-2.0.0-6C5CE7?style=flat-square)
+![Release](https://img.shields.io/badge/release-2.0.1-6C5CE7?style=flat-square)
 ![Platform](https://img.shields.io/badge/platform-Windows%20x64-2563EB?style=flat-square)
 ![Local first](https://img.shields.io/badge/data-local%20first-0F9D87?style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT-F59E0B?style=flat-square)

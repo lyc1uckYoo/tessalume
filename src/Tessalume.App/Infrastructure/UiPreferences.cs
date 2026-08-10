@@ -6,7 +6,7 @@ namespace Tessalume.App.Infrastructure;
 
 internal sealed record UiPreferences
 {
-    public const int CurrentSchemaVersion = 4;
+    public const int CurrentSchemaVersion = 5;
 
     public int SchemaVersion { get; init; } = CurrentSchemaVersion;
 
@@ -32,6 +32,9 @@ internal sealed record UiPreferences
     public List<ThemeUsageRecord> RecentThemeUsage { get; init; } = [];
 
     public CreatorPromptDraft CreatorPromptDraft { get; init; } = new();
+
+    public Dictionary<string, CreatorPromptDraft> CreatorPromptDrafts { get; init; } =
+        new(StringComparer.OrdinalIgnoreCase);
 
     public List<CreatorWorkspaceRecord> RecentCreatorWorkspaces { get; init; } = [];
 }
@@ -63,6 +66,7 @@ internal static class UiPreferencesMigration
             1 => DeserializeVersionOne(json, options),
             2 => DeserializeVersionTwo(json, options),
             3 => DeserializeVersionThree(json, options),
+            4 => DeserializeVersionFour(json, options),
             UiPreferences.CurrentSchemaVersion => DeserializeCurrent(json, options),
             _ => throw new JsonException($"Unsupported UI preferences schema {sourceVersion}."),
         };
@@ -105,6 +109,10 @@ internal static class UiPreferencesMigration
         JsonSerializer.Deserialize<UiPreferences>(json, options)
         ?? throw new JsonException("UI preferences could not be read.");
 
+    private static UiPreferences DeserializeVersionFour(string json, JsonSerializerOptions options) =>
+        JsonSerializer.Deserialize<UiPreferences>(json, options)
+        ?? throw new JsonException("UI preferences could not be read.");
+
     private static UiPreferences DeserializeCurrent(string json, JsonSerializerOptions options) =>
         JsonSerializer.Deserialize<UiPreferences>(json, options)
         ?? throw new JsonException("UI preferences could not be read.");
@@ -119,7 +127,10 @@ internal static class UiPreferencesMigration
         ExperiencePresets = NormalizeExperiencePresets(preferences.ExperiencePresets),
         ThemeLibrarySort = ThemeLibraryState.NormalizeSort(preferences.ThemeLibrarySort),
         RecentThemeUsage = ThemeLibraryState.NormalizeUsage(preferences.RecentThemeUsage),
-        CreatorPromptDraft = (preferences.CreatorPromptDraft ?? new CreatorPromptDraft()).Normalize(),
+        CreatorPromptDrafts = CreatorPromptDraftStore.Normalize(
+            preferences.CreatorPromptDrafts,
+            preferences.CreatorPromptDraft),
+        CreatorPromptDraft = new CreatorPromptDraft(),
         RecentCreatorWorkspaces = CreatorWorkspaceStore
             .Normalize(preferences.RecentCreatorWorkspaces)
             .ToList(),

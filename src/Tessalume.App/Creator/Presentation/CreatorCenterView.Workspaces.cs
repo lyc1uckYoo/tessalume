@@ -7,9 +7,35 @@ namespace Tessalume.App.Creator;
 
 public partial class CreatorCenterView
 {
+    private async void StartNewTheme_Click(object sender, RoutedEventArgs e)
+    {
+        await RunOperationAsync(async () =>
+        {
+            await SwitchPromptContextAsync(null);
+            SetPromptEditorExpanded(!CreatorPromptComposer.CanCopy(_promptDraft));
+            if (_promptEditorExpanded) PromptView.PromptWorkNameBox.Focus();
+        }, "无法开始新的主题创作");
+    }
+
+    private async void CancelNewTheme_Click(object sender, RoutedEventArgs e)
+    {
+        await RunOperationAsync(async () =>
+        {
+            await SwitchPromptContextAsync(_viewModel?.SelectedWorkspace?.DirectoryPath);
+            SetPromptEditorExpanded(false);
+        }, "无法返回当前主题项目");
+    }
+
     private async void CreateWorkspace_Click(object sender, RoutedEventArgs e)
     {
         if (_viewModel is null || _provisioner is null) return;
+        if (!CreatorPromptComposer.CanCopy(_promptDraft))
+        {
+            ExpandPromptEditor();
+            PromptView.PromptWorkNameBox.Focus();
+            _showToast?.Invoke("请先填写作品名称和角色名称");
+            return;
+        }
         var dialog = new OpenFolderDialog
         {
             Title = "选择新创作者工作区的保存位置",
@@ -19,12 +45,21 @@ public partial class CreatorCenterView
 
         await RunOperationAsync(async () =>
         {
+            var creatingDraft = _promptDraft.Normalize();
             var destination = _provisioner.CreateWorkspace(dialog.FolderName);
             await _viewModel.AddWorkspaceAsync(destination);
+            await SwitchPromptContextAsync(destination, creatingDraft);
+            WorkspacePage.ExitNewThemeComposer();
+            var promptCopied = TryCopyPrompt();
             OpenDirectory(destination);
             ShowMessage(
-                "创作工作区已准备",
-                $"工作区已经创建并加入最近项目：\n{destination}\n\n请在 Codex 中打开整个文件夹，然后发送上方提示词或你自己的角色需求。",
+                promptCopied ? "工作区已创建，提示词也已复制" : "工作区已创建",
+                $"下一步只需：\n\n" +
+                $"1. 在 Codex 中打开整个工作区：\n{destination}\n\n" +
+                (promptCopied
+                    ? "2. 粘贴并发送刚刚复制的创作提示词。\n\n"
+                    : "2. 返回 Tessalume 填写作品与角色名称，再复制提示词。\n\n") +
+                "3. Codex 写入主题后返回这里，Tessalume 会自动发现并体检。",
                 ProductDialogKind.Information);
         }, "无法创建创作工作区");
     }
@@ -38,6 +73,8 @@ public partial class CreatorCenterView
         {
             var workspace = _provisioner.ResolveExistingWorkspace(selected);
             await _viewModel.AddWorkspaceAsync(workspace);
+            WorkspacePage.ExitNewThemeComposer();
+            await SwitchPromptContextAsync(workspace);
             _showToast?.Invoke("工作区已打开并完成扫描");
         }, "无法打开创作工作区");
     }
@@ -47,10 +84,12 @@ public partial class CreatorCenterView
         if (_viewModel?.SelectedWorkspace is null || _provisioner is null) return;
         var selected = PickWorkspaceDirectory("重新定位创作者工作区");
         if (selected is null) return;
+        var currentDraft = _promptDraft.Normalize();
         await RunOperationAsync(async () =>
         {
             var workspace = _provisioner.ResolveExistingWorkspace(selected);
             await _viewModel.RelocateSelectedWorkspaceAsync(workspace);
+            await SwitchPromptContextAsync(workspace, currentDraft);
             _showToast?.Invoke("工作区位置已更新");
         }, "无法重新定位工作区");
     }
@@ -67,9 +106,11 @@ public partial class CreatorCenterView
                 dangerous: false,
                 darkMode: IsDarkMode())) return;
 
-        await RunOperationAsync(
-            () => _viewModel.RemoveSelectedWorkspaceAsync(),
-            "无法移除工作区记录");
+        await RunOperationAsync(async () =>
+        {
+            await _viewModel.RemoveSelectedWorkspaceAsync();
+            await SwitchPromptContextAsync(_viewModel.SelectedWorkspace?.DirectoryPath);
+        }, "无法移除工作区记录");
     }
 
     private async void RefreshWorkspace_Click(object sender, RoutedEventArgs e)
@@ -84,9 +125,12 @@ public partial class CreatorCenterView
             WorkspacePage.SelectedWorkspace is not { } selected ||
             ReferenceEquals(selected, _viewModel.SelectedWorkspace)) return;
 
-        await RunOperationAsync(
-            () => _viewModel.SelectWorkspaceAsync(selected),
-            "无法切换工作区");
+        await RunOperationAsync(async () =>
+        {
+            await _viewModel.SelectWorkspaceAsync(selected);
+            WorkspacePage.ExitNewThemeComposer();
+            await SwitchPromptContextAsync(selected.DirectoryPath);
+        }, "无法切换工作区");
     }
 
     private void OpenWorkspaceFolder_Click(object sender, RoutedEventArgs e)

@@ -89,6 +89,7 @@ internal sealed partial class CreatorCenterViewModel : INotifyPropertyChanged, I
             {
                 OnPropertyChanged(nameof(HasSelectedWorkspace));
                 OnPropertyChanged(nameof(CanRelocateWorkspace));
+                UpdateGuidance();
             }
         }
     }
@@ -103,6 +104,7 @@ internal sealed partial class CreatorCenterViewModel : INotifyPropertyChanged, I
                 OnPropertyChanged(nameof(HasSelectedProject));
                 OnPropertyChanged(nameof(CanExportSelectedProject));
                 NotifyDevelopmentCommandsChanged();
+                UpdateGuidance();
             }
         }
     }
@@ -115,6 +117,7 @@ internal sealed partial class CreatorCenterViewModel : INotifyPropertyChanged, I
             if (SetField(ref _isBusy, value))
             {
                 NotifyDevelopmentCommandsChanged();
+                UpdateGuidance();
             }
         }
     }
@@ -127,6 +130,7 @@ internal sealed partial class CreatorCenterViewModel : INotifyPropertyChanged, I
             if (SetField(ref _isDevelopmentBusy, value))
             {
                 NotifyDevelopmentCommandsChanged();
+                UpdateGuidance();
             }
         }
     }
@@ -157,6 +161,7 @@ internal sealed partial class CreatorCenterViewModel : INotifyPropertyChanged, I
             if (SetField(ref _workspaceExists, value))
             {
                 OnPropertyChanged(nameof(CanRelocateWorkspace));
+                UpdateGuidance();
             }
         }
     }

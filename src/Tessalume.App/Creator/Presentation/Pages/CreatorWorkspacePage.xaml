@@ -3,22 +3,47 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:creator="clr-namespace:Tessalume.App.Creator">
     <StackPanel>
-        <Border Style="{DynamicResource ProductCard}" Padding="18">
+        <Border x:Name="CurrentProjectTools" Style="{DynamicResource ProductCard}" Padding="15" Visibility="Collapsed">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="46" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="8" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Border Width="38" Height="38" CornerRadius="12" Background="{DynamicResource TealSoft}">
+                    <Path Width="17" Height="17" Data="M 5,5 L 19,5 L 19,19 L 5,19 Z M 8,9 L 16,9 M 8,13 L 15,13 M 8,17 L 13,17" Stroke="{DynamicResource Teal}" StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Fill="Transparent" Stretch="Uniform" />
+                </Border>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock Text="当前项目已载入" Foreground="{DynamicResource PrimaryText}" FontSize="13" FontWeight="SemiBold" />
+                    <TextBlock Foreground="{DynamicResource MutedText}" FontSize="10" Margin="0,4,12,0" TextTrimming="CharacterEllipsis">
+                        <Run Text="正在继续 " /><Run Text="{Binding SelectedProject.DisplayName, Mode=OneWay}" /><Run Text="；可按上方流程制作，也可另开一个主题。" />
+                    </TextBlock>
+                </StackPanel>
+                <Button Grid.Column="2" Style="{DynamicResource QuietActionButton}" Content="打开其他工作区" MinWidth="116" Height="38" Padding="14,0" FontSize="10.5" Click="OpenWorkspace_Click" />
+                <Button x:Name="StartNewThemeButton" Grid.Column="4" Style="{DynamicResource PrimaryActionButton}" Content="创作新主题" MinWidth="112" Height="38" Padding="15,0" FontSize="10.5" Click="StartNewTheme_Click" />
+            </Grid>
+        </Border>
+
+        <Border x:Name="NewThemeCard" Style="{DynamicResource ProductCard}" Padding="18">
             <StackPanel>
                 <Grid>
+                    <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
                     <Grid.ColumnDefinitions><ColumnDefinition Width="48" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                    <Border Width="40" Height="40" CornerRadius="13" Background="{DynamicResource PrimaryGradient}" VerticalAlignment="Top">
+                    <Border Grid.RowSpan="2" Width="40" Height="40" CornerRadius="13" Background="{DynamicResource PrimaryGradient}" VerticalAlignment="Top">
                         <Path Width="19" Height="19" Data="M 4,4 C 8,3 10,4 12,6 L 12,20 C 10,18 8,17 4,18 Z M 20,4 C 16,3 14,4 12,6 L 12,20 C 14,18 16,17 20,18 Z" Stroke="White" StrokeThickness="1.8" Fill="Transparent" Stretch="Uniform" />
                     </Border>
                     <StackPanel Grid.Column="1">
-                        <TextBlock Text="准备 Codex 创作工作区" Foreground="{DynamicResource PrimaryText}" FontSize="16" FontWeight="SemiBold" />
-                        <TextBlock Text="标准工作区包含 Template 1.0、11 个素材位、创作 Skill 和本地校验工具。" Foreground="{DynamicResource MutedText}" FontSize="10.5" TextWrapping="Wrap" Margin="0,5,15,0" />
+                        <TextBlock Text="从一个清晰的角色需求开始" Foreground="{DynamicResource PrimaryText}" FontSize="16" FontWeight="SemiBold" />
+                        <TextBlock Text="新建工作区后提示词会自动复制；你只需在 Codex 中打开文件夹并发送。" Foreground="{DynamicResource MutedText}" FontSize="11" TextWrapping="Wrap" LineHeight="18" Margin="0,5,0,0" />
                     </StackPanel>
-                    <StackPanel Grid.Column="2" Orientation="Horizontal">
-                        <Button Style="{DynamicResource PrimaryActionButton}" Content="创建新工作区" Height="36" Padding="16,0" Click="CreateWorkspace_Click" />
-                        <Button Style="{DynamicResource QuietActionButton}" Content="打开已有工作区" Margin="8,0,0,0" Padding="14,0" Click="OpenWorkspace_Click" />
-                        <Button Style="{DynamicResource QuietActionButton}" Content="复制裸模板" Margin="8,0,0,0" Padding="14,0" Click="CopyTemplate_Click" />
-                    </StackPanel>
+                    <Button x:Name="ReturnToProjectButton" Grid.Column="2" Style="{DynamicResource CreatorMiniButton}" Content="返回当前项目" Click="CancelNewTheme_Click" Visibility="Collapsed" Margin="12,0,0,0" VerticalAlignment="Top" />
+                    <UniformGrid Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Rows="1" Columns="3" MaxWidth="540" HorizontalAlignment="Left" Margin="0,13,0,0">
+                        <Button x:Name="CreateWorkspaceButton" Style="{DynamicResource PrimaryActionButton}" Content="创建主题工作区" MinWidth="136" Height="40" Margin="0,0,4,0" Padding="16,0" FontSize="11" Click="CreateWorkspace_Click" />
+                        <Button x:Name="OpenWorkspaceButton" Style="{DynamicResource QuietActionButton}" Content="继续已有项目" MinWidth="124" Height="40" Margin="4,0" Padding="14,0" FontSize="11" Click="OpenWorkspace_Click" />
+                        <Button x:Name="CopyTemplateButton" Style="{DynamicResource QuietActionButton}" Content="复制创作模板" MinWidth="124" Height="40" Margin="4,0,0,0" Padding="14,0" FontSize="11" Click="CopyTemplate_Click" ToolTip="高级用法：复制一个空白 Template 1.0 工作区" />
+                    </UniformGrid>
                 </Grid>
                 <creator:CreatorPromptView x:Name="PromptView" Margin="0,15,0,0"
                                            ToggleEditorRequested="Prompt_ToggleEditorRequested"

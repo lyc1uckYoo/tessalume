@@ -6,6 +6,8 @@ namespace Tessalume.App.Creator;
 public partial class CreatorWorkspacePage : UserControl
 {
     private bool _isSynchronizingSelection;
+    private bool _showNewThemeComposer;
+    private bool _hasSelectedProject;
 
     public CreatorWorkspacePage() => InitializeComponent();
 
@@ -21,6 +23,8 @@ public partial class CreatorWorkspacePage : UserControl
         try
         {
             var hasWorkspaces = viewModel.Workspaces.Count > 0;
+            _hasSelectedProject = viewModel.HasSelectedProject;
+            UpdateNewThemePresentation();
             WorkspaceEmptyPanel.Visibility = hasWorkspaces ? Visibility.Collapsed : Visibility.Visible;
             WorkspaceList.Visibility = hasWorkspaces ? Visibility.Visible : Visibility.Collapsed;
             WorkspaceList.SelectedItem = viewModel.SelectedWorkspace;
@@ -57,6 +61,26 @@ public partial class CreatorWorkspacePage : UserControl
     public event RoutedEventHandler? CopyPromptRequested;
     public event RoutedEventHandler? ResetPromptRequested;
     public event RoutedEventHandler? PromptChanged;
+    public event RoutedEventHandler? StartNewThemeRequested;
+    public event RoutedEventHandler? CancelNewThemeRequested;
+
+    internal void ExitNewThemeComposer()
+    {
+        _showNewThemeComposer = false;
+        UpdateNewThemePresentation();
+    }
+
+    private void UpdateNewThemePresentation()
+    {
+        var showComposer = !_hasSelectedProject || _showNewThemeComposer;
+        NewThemeCard.Visibility = showComposer ? Visibility.Visible : Visibility.Collapsed;
+        CurrentProjectTools.Visibility = _hasSelectedProject && !_showNewThemeComposer
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+        ReturnToProjectButton.Visibility = _hasSelectedProject && _showNewThemeComposer
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+    }
 
     private void CreateWorkspace_Click(object sender, RoutedEventArgs e) => CreateWorkspaceRequested?.Invoke(this, e);
     private void OpenWorkspace_Click(object sender, RoutedEventArgs e) => OpenWorkspaceRequested?.Invoke(this, e);
@@ -66,6 +90,19 @@ public partial class CreatorWorkspacePage : UserControl
     private void RefreshWorkspace_Click(object sender, RoutedEventArgs e) => RefreshWorkspaceRequested?.Invoke(this, e);
     private void OpenWorkspaceFolder_Click(object sender, RoutedEventArgs e) => OpenWorkspaceFolderRequested?.Invoke(this, e);
     private void UpgradeWorkspace_Click(object sender, RoutedEventArgs e) => UpgradeWorkspaceRequested?.Invoke(this, e);
+    private void StartNewTheme_Click(object sender, RoutedEventArgs e)
+    {
+        _showNewThemeComposer = true;
+        UpdateNewThemePresentation();
+        StartNewThemeRequested?.Invoke(this, e);
+    }
+
+    private void CancelNewTheme_Click(object sender, RoutedEventArgs e)
+    {
+        _showNewThemeComposer = false;
+        UpdateNewThemePresentation();
+        CancelNewThemeRequested?.Invoke(this, e);
+    }
     private void WorkspaceList_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (!_isSynchronizingSelection) WorkspaceSelectionChanged?.Invoke(this, e);

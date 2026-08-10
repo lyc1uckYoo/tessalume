@@ -10,6 +10,7 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using Tessalume.App.Controls;
+using Tessalume.App.Features.Personalization;
 using Tessalume.App.Infrastructure;
 using Tessalume.App.Models;
 using Tessalume.Core.Runtime;
@@ -182,29 +183,42 @@ public partial class MainWindow
 
     private void ArtworkAdjustmentEditor_ResetRequested(object sender, RoutedEventArgs e)
     {
-        if (sender is not ArtworkAdjustmentEditor { RegionKey: { Length: > 0 } region }) return;
+        if (sender is not ArtworkAdjustmentEditor { RegionKey: { Length: > 0 } region } editor) return;
         var theme = GetVisualAdjustmentTheme();
         if (theme?.ThemeId is not { Length: > 0 } themeId) return;
 
         var settings = GetVisualSettings(themeId);
         var mode = _editingVisualDarkMode ? settings.Dark : settings.Light;
-        mode = region switch
-        {
-            "hero" => mode with { Hero = new ThemeArtworkAdjustment() },
-            "sidebar" => mode with { Sidebar = new ThemeArtworkAdjustment() },
-            "chat" => mode with { Chat = new ThemeArtworkAdjustment() },
-            _ => mode,
-        };
+        var current = GetRegionAdjustment(mode, region);
+        var group = editor.VisibleGroup;
+        var reset = ResetArtworkAdjustmentGroup(current, group);
+        mode = SetRegionAdjustment(mode, region, reset);
         var replacement = (_editingVisualDarkMode
             ? settings with { Dark = mode }
             : settings with { Light = mode }).Normalize();
-        if (replacement == settings.Normalize()) return;
+        if (replacement == settings.Normalize())
+        {
+            ShowToast($"{GetRegionDisplayName(region)}的{GetAdjustmentGroupDisplayName(group)}参数已经是默认值");
+            return;
+        }
 
         RecordVisualUndo(themeId, settings);
         _themeVisualSettings[themeId] = replacement;
         UpdateVisualAdjustmentControls();
         ScheduleVisualSettingsUpdate();
+        ShowToast($"已重置{GetRegionDisplayName(region)}的{GetAdjustmentGroupDisplayName(group)}参数 · 可撤销");
     }
+
+    internal static ThemeArtworkAdjustment ResetArtworkAdjustmentGroup(
+        ThemeArtworkAdjustment adjustment,
+        ArtworkAdjustmentGroup group) => ArtworkAdjustmentResetPolicy.ResetGroup(adjustment, group);
+
+    private static string GetAdjustmentGroupDisplayName(ArtworkAdjustmentGroup group) => group switch
+    {
+        ArtworkAdjustmentGroup.Composition => "构图",
+        ArtworkAdjustmentGroup.Effects => "效果",
+        _ => "基础",
+    };
 
     private void ArtworkAdjustmentEditor_CopyRequested(object sender, RoutedEventArgs e)
     {
@@ -213,9 +227,11 @@ public partial class MainWindow
         if (theme?.ThemeId is not { Length: > 0 } themeId) return;
         var settings = GetVisualSettings(themeId);
         var mode = _editingVisualDarkMode ? settings.Dark : settings.Light;
-        _visualAdjustmentClipboard = GetRegionAdjustment(mode, region).Normalize();
+        _visualAdjustmentClipboard = GetRegionAdjustment(mode, region)
+            .WithoutCustomImage()
+            .Normalize();
         UpdateVisualEditorActions();
-        ShowToast($"已复制 {GetRegionDisplayName(region)} 的全部参数");
+        ShowToast($"已复制{GetRegionDisplayName(region)}参数 · 不包含图片来源");
     }
 
     private void ArtworkAdjustmentEditor_PasteRequested(object sender, RoutedEventArgs e)
@@ -227,7 +243,12 @@ public partial class MainWindow
 
         var settings = GetVisualSettings(themeId);
         var mode = _editingVisualDarkMode ? settings.Dark : settings.Light;
-        var replacementMode = SetRegionAdjustment(mode, region, _visualAdjustmentClipboard);
+        var currentTarget = GetRegionAdjustment(mode, region);
+        var pasted = _visualAdjustmentClipboard with
+        {
+            CustomImagePath = currentTarget.CustomImagePath,
+        };
+        var replacementMode = SetRegionAdjustment(mode, region, pasted);
         var replacement = (_editingVisualDarkMode
             ? settings with { Dark = replacementMode }
             : settings with { Light = replacementMode }).Normalize();
@@ -262,19 +283,6 @@ public partial class MainWindow
             _ => "hero",
         };
         UpdateVisualAdjustmentRegion();
-    }
-
-    private void ResetAllVisualSettings_Click(object sender, RoutedEventArgs e)
-    {
-        var theme = GetVisualAdjustmentTheme();
-        if (theme?.ThemeId is not { Length: > 0 } themeId) return;
-        var settings = GetVisualSettings(themeId);
-        var replacement = new ThemeVisualSettings();
-        if (settings.Normalize() == replacement) return;
-        RecordVisualUndo(themeId, settings);
-        _themeVisualSettings[themeId] = replacement;
-        UpdateVisualAdjustmentControls();
-        ScheduleVisualSettingsUpdate();
     }
 
     private void VisualUndo_Click(object sender, RoutedEventArgs e) => UndoVisualSettings();
@@ -313,28 +321,6 @@ public partial class MainWindow
         UpdateVisualAdjustmentControls();
         ScheduleVisualSettingsUpdate();
         ShowToast("已重做图像修改");
-    }
-
-    private void CopyVisualMode_Click(object sender, RoutedEventArgs e)
-    {
-        var theme = GetVisualAdjustmentTheme();
-        if (theme?.ThemeId is not { Length: > 0 } themeId) return;
-        var settings = GetVisualSettings(themeId);
-        var replacement = _editingVisualDarkMode
-            ? settings with { Light = settings.Dark }
-            : settings with { Dark = settings.Light };
-        replacement = replacement.Normalize();
-        if (replacement == settings.Normalize())
-        {
-            ShowToast("另一显示模式已经使用相同参数");
-            return;
-        }
-
-        RecordVisualUndo(themeId, settings);
-        _themeVisualSettings[themeId] = replacement;
-        UpdateVisualAdjustmentControls();
-        ScheduleVisualSettingsUpdate();
-        ShowToast(_editingVisualDarkMode ? "已复制到亮色参数" : "已复制到暗色参数");
     }
 
 }

@@ -1,21 +1,13 @@
 using System.Globalization;
-using System.IO;
 using System.Windows;
-using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
+using Tessalume.App.Features.Personalization;
 using Tessalume.Core.Runtime;
 
 namespace Tessalume.App.Controls;
-
-public enum ArtworkAdjustmentGroup
-{
-    Basic,
-    Composition,
-    Effects,
-}
 
 public sealed class ArtworkAdjustmentChangedEventArgs(
     string region,
@@ -81,6 +73,9 @@ public partial class ArtworkAdjustmentEditor : UserControl
 
     private bool _updating;
     private bool _initialized;
+    private bool _darkMode;
+    private ArtworkAdjustmentGroup _visibleGroup;
+    private ThemeArtworkAdjustment _currentAdjustment = new();
 
     public ArtworkAdjustmentEditor()
     {
@@ -142,30 +137,30 @@ public partial class ArtworkAdjustmentEditor : UserControl
 
     public void SetAdjustment(ThemeArtworkAdjustment adjustment)
     {
+        _currentAdjustment = adjustment.Normalize();
         _updating = true;
         try
         {
-            BrightnessSlider.Value = adjustment.Brightness;
-            ContrastSlider.Value = adjustment.Contrast;
-            SaturationSlider.Value = adjustment.Saturation;
-            OpacitySlider.Value = adjustment.Opacity;
-            ZoomSlider.Value = adjustment.Zoom;
-            OffsetXSlider.Value = adjustment.OffsetX;
-            OffsetYSlider.Value = adjustment.OffsetY;
-            GrayscaleSlider.Value = adjustment.Grayscale;
-            HueRotationSlider.Value = adjustment.HueRotation;
-            BlurSlider.Value = adjustment.Blur;
-            OverlayOpacitySlider.Value = adjustment.OverlayOpacity;
-            GradientStrengthSlider.Value = adjustment.GradientStrength;
-            VignetteSlider.Value = adjustment.Vignette;
-            BlendModeComboBox.SelectedValue = adjustment.BlendMode;
-            OverlayColorTextBox.Text = adjustment.OverlayColor;
-            ReadabilityCheckBox.IsChecked = adjustment.ReadabilityProtection;
-            CustomImageStatusText.Text = string.IsNullOrWhiteSpace(adjustment.CustomImagePath)
-                ? "使用主题原图"
-                : $"本地图片 · {Path.GetFileName(adjustment.CustomImagePath)}";
-            ClearImageButton.IsEnabled = !string.IsNullOrWhiteSpace(adjustment.CustomImagePath);
+            BrightnessSlider.Value = _currentAdjustment.Brightness;
+            ContrastSlider.Value = _currentAdjustment.Contrast;
+            SaturationSlider.Value = _currentAdjustment.Saturation;
+            OpacitySlider.Value = _currentAdjustment.Opacity;
+            ZoomSlider.Value = _currentAdjustment.Zoom;
+            OffsetXSlider.Value = _currentAdjustment.OffsetX;
+            OffsetYSlider.Value = _currentAdjustment.OffsetY;
+            GrayscaleSlider.Value = _currentAdjustment.Grayscale;
+            HueRotationSlider.Value = _currentAdjustment.HueRotation;
+            BlurSlider.Value = _currentAdjustment.Blur;
+            OverlayOpacitySlider.Value = _currentAdjustment.OverlayOpacity;
+            GradientStrengthSlider.Value = _currentAdjustment.GradientStrength;
+            VignetteSlider.Value = _currentAdjustment.Vignette;
+            BlendModeComboBox.SelectedValue = _currentAdjustment.BlendMode;
+            OverlayColorTextBox.Text = _currentAdjustment.OverlayColor;
+            ReadabilityCheckBox.IsChecked = _currentAdjustment.ReadabilityProtection;
+            UpdateImageStatus();
+            ClearImageButton.IsEnabled = !string.IsNullOrWhiteSpace(_currentAdjustment.CustomImagePath);
             UpdateLabels();
+            UpdateGroupPresentation();
         }
         finally
         {
@@ -173,8 +168,9 @@ public partial class ArtworkAdjustmentEditor : UserControl
         }
     }
 
-    public void ShowGroup(ArtworkAdjustmentGroup group)
+    internal void ShowGroup(ArtworkAdjustmentGroup group)
     {
+        _visibleGroup = group;
         BasicPanel.Visibility = group == ArtworkAdjustmentGroup.Basic
             ? Visibility.Visible
             : Visibility.Collapsed;
@@ -184,6 +180,15 @@ public partial class ArtworkAdjustmentEditor : UserControl
         EffectsPanel.Visibility = group == ArtworkAdjustmentGroup.Effects
             ? Visibility.Visible
             : Visibility.Collapsed;
+        UpdateGroupPresentation();
+    }
+
+    internal ArtworkAdjustmentGroup VisibleGroup => _visibleGroup;
+
+    public void SetEditingMode(bool darkMode)
+    {
+        _darkMode = darkMode;
+        UpdateImageStatus();
     }
 
     public void SetPasteAvailable(bool available) => PasteButton.IsEnabled = available;
@@ -338,63 +343,4 @@ public partial class ArtworkAdjustmentEditor : UserControl
         _ => null,
     };
 
-    private static void OnTitleChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e) =>
-        ((ArtworkAdjustmentEditor)dependencyObject).UpdateAutomationNames();
-
-    private void UpdateAutomationNames()
-    {
-        if (BrightnessSlider is null || string.IsNullOrWhiteSpace(Title)) return;
-        AutomationProperties.SetName(ResetButton, $"恢复{Title}原图参数");
-        AutomationProperties.SetName(CopyButton, $"复制{Title}参数");
-        AutomationProperties.SetName(PasteButton, $"粘贴参数到{Title}");
-        AutomationProperties.SetName(BrightnessSlider, $"{Title}亮度");
-        AutomationProperties.SetName(ContrastSlider, $"{Title}对比度");
-        AutomationProperties.SetName(SaturationSlider, $"{Title}饱和度");
-        AutomationProperties.SetName(OpacitySlider, $"{Title}不透明度");
-        AutomationProperties.SetName(ZoomSlider, $"{Title}缩放");
-        AutomationProperties.SetName(OffsetXSlider, $"{Title}水平位置");
-        AutomationProperties.SetName(OffsetYSlider, $"{Title}垂直位置");
-        AutomationProperties.SetName(GrayscaleSlider, $"{Title}灰度");
-        AutomationProperties.SetName(HueRotationSlider, $"{Title}色相旋转");
-        AutomationProperties.SetName(BlurSlider, $"{Title}柔化");
-        AutomationProperties.SetName(OverlayOpacitySlider, $"{Title}叠色强度");
-        AutomationProperties.SetName(GradientStrengthSlider, $"{Title}渐变遮罩");
-        AutomationProperties.SetName(VignetteSlider, $"{Title}暗角");
-        AutomationProperties.SetName(BrightnessValue, $"精确输入{Title}亮度");
-        AutomationProperties.SetName(ContrastValue, $"精确输入{Title}对比度");
-        AutomationProperties.SetName(SaturationValue, $"精确输入{Title}饱和度");
-        AutomationProperties.SetName(OpacityValue, $"精确输入{Title}不透明度");
-        AutomationProperties.SetName(ZoomValue, $"精确输入{Title}缩放");
-        AutomationProperties.SetName(OffsetXValue, $"精确输入{Title}水平位置");
-        AutomationProperties.SetName(OffsetYValue, $"精确输入{Title}垂直位置");
-        AutomationProperties.SetName(GrayscaleValue, $"精确输入{Title}灰度");
-        AutomationProperties.SetName(HueRotationValue, $"精确输入{Title}色相旋转");
-        AutomationProperties.SetName(BlurValue, $"精确输入{Title}柔化");
-        AutomationProperties.SetName(OverlayOpacityValue, $"精确输入{Title}叠色强度");
-        AutomationProperties.SetName(GradientStrengthValue, $"精确输入{Title}渐变遮罩");
-        AutomationProperties.SetName(VignetteValue, $"精确输入{Title}暗角");
-    }
-
-    private void UpdateLabels(bool force = false)
-    {
-        if (!_initialized) return;
-        SetValueText(BrightnessValue, $"{BrightnessSlider.Value:0}%", force);
-        SetValueText(ContrastValue, $"{ContrastSlider.Value:0}%", force);
-        SetValueText(SaturationValue, $"{SaturationSlider.Value:0}%", force);
-        SetValueText(OpacityValue, $"{OpacitySlider.Value:0}%", force);
-        SetValueText(ZoomValue, $"{ZoomSlider.Value:0}%", force);
-        SetValueText(OffsetXValue, $"{OffsetXSlider.Value:+0;-0;0} px", force);
-        SetValueText(OffsetYValue, $"{OffsetYSlider.Value:+0;-0;0} px", force);
-        SetValueText(GrayscaleValue, $"{GrayscaleSlider.Value:0}%", force);
-        SetValueText(HueRotationValue, $"{HueRotationSlider.Value:+0;-0;0}°", force);
-        SetValueText(BlurValue, $"{BlurSlider.Value:0.#} px", force);
-        SetValueText(OverlayOpacityValue, $"{OverlayOpacitySlider.Value:0}%", force);
-        SetValueText(GradientStrengthValue, $"{GradientStrengthSlider.Value:0}%", force);
-        SetValueText(VignetteValue, $"{VignetteSlider.Value:0}%", force);
-    }
-
-    private static void SetValueText(TextBox textBox, string value, bool force)
-    {
-        if (force || !textBox.IsKeyboardFocusWithin) textBox.Text = value;
-    }
 }

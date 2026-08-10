@@ -123,9 +123,20 @@ internal static partial class TestSuite
         window.HeroAdjustmentEditor.InvalidateMeasure();
         window.VisualAdjustmentEditor.InvalidateMeasure();
         window.InfoScroll.InvalidateMeasure();
-        ArrangeMainSurface(window);
+        ArrangeMainSurface(window, new Size(1080, 820));
         window.InfoScroll.ScrollToVerticalOffset(126);
-        ArrangeMainSurface(window);
+        ArrangeMainSurface(window, new Size(1080, 820));
+        foreach (var (action, minimumHeight) in new (Button Action, double MinimumHeight)[]
+                 {
+                     (window.HeroAdjustmentEditor.ChooseImageButton, 36),
+                     (window.HeroAdjustmentEditor.ClearImageButton, 36),
+                     (window.HeroAdjustmentEditor.CopyButton, 32),
+                     (window.HeroAdjustmentEditor.PasteButton, 32),
+                     (window.HeroAdjustmentEditor.ResetButton, 32),
+                 })
+        {
+            EnsureButtonContentFits(action, minimumHeight, "Artwork");
+        }
         SaveWindowContent(window, snapshotPath);
     }
 }

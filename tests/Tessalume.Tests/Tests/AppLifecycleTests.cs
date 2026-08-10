@@ -27,8 +27,9 @@ internal static partial class TestSuite
                migratedPreferences.ExperiencePresets.Count == 0 &&
                migratedPreferences.ThemeLibrarySort == ThemeLibraryState.DefaultSort &&
                migratedPreferences.RecentThemeUsage.Count == 0 &&
-               migratedPreferences.CreatorPromptDraft.WorkName == "鸣潮" &&
-               migratedPreferences.CreatorPromptDraft.CharacterName == "椿" &&
+               string.IsNullOrEmpty(migratedPreferences.CreatorPromptDraft.WorkName) &&
+               string.IsNullOrEmpty(migratedPreferences.CreatorPromptDraft.CharacterName) &&
+               migratedPreferences.CreatorPromptDrafts.Count == 0 &&
                migratedPreferences.RecentCreatorWorkspaces.Count == 0,
             "The UI preferences migration must normalize legacy null collections.");
 
@@ -171,12 +172,15 @@ internal static partial class TestSuite
                     UseCount = 7,
                 },
             ],
-            CreatorPromptDraft = new CreatorPromptDraft
+            CreatorPromptDrafts = new Dictionary<string, CreatorPromptDraft>
             {
-                WorkName = "原神",
-                CharacterName = "芙宁娜",
-                VisualDirection = "蓝白歌剧舞台",
-                UsesReferenceImages = true,
+                [CreatorPromptDraftStore.NewThemeKey] = new CreatorPromptDraft
+                {
+                    WorkName = "原神",
+                    CharacterName = "芙宁娜",
+                    VisualDirection = "蓝白歌剧舞台",
+                    UsesReferenceImages = true,
+                },
             },
         }, options);
         var currentPreferences = UiPreferencesMigration.Deserialize(currentJson, options, out var currentMigrated);
@@ -197,9 +201,41 @@ internal static partial class TestSuite
                { MotionIntensity: "reduced", TextScale: "large", Density: "spacious" } &&
                currentPreferences.ThemeLibrarySort == ThemeLibraryState.RecentSort &&
                currentPreferences.RecentThemeUsage is [{ ThemeId: "advanced.theme", UseCount: 7 }] &&
-               currentPreferences.CreatorPromptDraft is
+               currentPreferences.CreatorPromptDrafts[CreatorPromptDraftStore.NewThemeKey] is
                { WorkName: "原神", CharacterName: "芙宁娜", UsesReferenceImages: true },
-            "Schema-four preferences must round-trip personalization and theme library state without another migration.");
+            "Schema-five preferences must round-trip personalization, creator drafts, and theme library state without another migration.");
+
+        const string versionFourDemoJson = """
+            {
+              "SchemaVersion": 4,
+              "CreatorPromptDraft": { "WorkName": "鸣潮", "CharacterName": "椿" }
+            }
+            """;
+        var versionFourDemo = UiPreferencesMigration.Deserialize(
+            versionFourDemoJson,
+            options,
+            out var versionFourDemoMigrated);
+        Ensure(versionFourDemoMigrated && versionFourDemo.CreatorPromptDrafts.Count == 0,
+            "Schema-four untouched demo prompts must not leak into a real user's creator flow.");
+
+        const string versionFourUserJson = """
+            {
+              "SchemaVersion": 4,
+              "CreatorPromptDraft": {
+                "WorkName": "原神",
+                "CharacterName": "芙宁娜",
+                "VisualDirection": "蓝白歌剧舞台"
+              }
+            }
+            """;
+        var versionFourUser = UiPreferencesMigration.Deserialize(
+            versionFourUserJson,
+            options,
+            out var versionFourUserMigrated);
+        Ensure(versionFourUserMigrated &&
+               versionFourUser.CreatorPromptDrafts[CreatorPromptDraftStore.NewThemeKey] is
+               { WorkName: "原神", CharacterName: "芙宁娜" },
+            "Schema-four user-authored prompts must migrate into the unassigned new-theme draft.");
 
         var futureJson = currentJson.Replace(
             $"\"SchemaVersion\": {UiPreferences.CurrentSchemaVersion}",

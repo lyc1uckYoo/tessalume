@@ -59,7 +59,7 @@ public partial class MainWindow : Window, IAsyncDisposable
         new(StringComparer.OrdinalIgnoreCase);
     private readonly ObservableCollection<ThemeArtworkPreset> _artworkPresets = [];
     private readonly ObservableCollection<ThemeExperiencePreset> _experiencePresets = [];
-    private CreatorPromptDraft _creatorPromptDraft;
+    private readonly CreatorPromptDraftStore _creatorPromptDrafts;
     private ThemeCardModel? _selectedTheme;
     private ThemeQuickSwitchWindow? _quickSwitchWindow;
     private string? _activeThemeId;
@@ -130,7 +130,9 @@ public partial class MainWindow : Window, IAsyncDisposable
         _lastUpdateCheckAt = preferences.LastUpdateCheckAt;
         _themeLibrarySort = ThemeLibraryState.NormalizeSort(preferences.ThemeLibrarySort);
         _creatorWorkspaces = new CreatorWorkspaceStore(preferences.RecentCreatorWorkspaces);
-        _creatorPromptDraft = preferences.CreatorPromptDraft.Normalize();
+        _creatorPromptDrafts = new CreatorPromptDraftStore(
+            preferences.CreatorPromptDrafts,
+            preferences.CreatorPromptDraft);
         _aboutDataService = new AboutDataService(
             _layout.RootDirectory,
             _layout.DataDirectory,
@@ -182,10 +184,10 @@ public partial class MainWindow : Window, IAsyncDisposable
             _layout.RootDirectory,
             _creatorWorkspaces,
             SavePreferencesAsync,
-            _creatorPromptDraft,
-            draft =>
+            workspacePath => _creatorPromptDrafts.Get(workspacePath),
+            (workspacePath, draft) =>
             {
-                _creatorPromptDraft = draft.Normalize();
+                _creatorPromptDrafts.Set(workspacePath, draft);
                 return SavePreferencesAsync();
             },
             new CreatorRuntimeBridge(

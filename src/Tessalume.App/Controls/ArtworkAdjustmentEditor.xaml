@@ -44,45 +44,48 @@
         <StackPanel>
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="38" />
+                    <ColumnDefinition Width="46" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <Border Width="30" Height="30" CornerRadius="10" Background="{Binding HeaderAccentSoft, ElementName=Root}">
-                    <Path Width="14" Height="14" Data="{Binding IconData, ElementName=Root}"
+                <Border Width="38" Height="38" CornerRadius="12" Background="{Binding HeaderAccentSoft, ElementName=Root}">
+                    <Path Width="17" Height="17" Data="{Binding IconData, ElementName=Root}"
                           Stroke="{Binding HeaderAccent, ElementName=Root}" StrokeThickness="1.8"
                           StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
                           Fill="Transparent" Stretch="Uniform" />
                 </Border>
                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                    <TextBlock Text="{Binding Title, ElementName=Root}" Foreground="{DynamicResource PrimaryText}" FontWeight="SemiBold" FontSize="13" />
-                    <TextBlock Text="{Binding Subtitle, ElementName=Root}" Foreground="{DynamicResource MutedText}" FontSize="10" Margin="0,2,0,0" />
-                    <TextBlock x:Name="CustomImageStatusText" Text="使用主题原图" Foreground="{DynamicResource SubtleText}" FontSize="9.5" Margin="0,2,8,0" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Text="{Binding Title, ElementName=Root}" Foreground="{DynamicResource PrimaryText}" FontWeight="SemiBold" FontSize="14" />
+                    <TextBlock x:Name="CustomImageStatusText" Text="亮色模式 · 主题原图" Foreground="{Binding HeaderAccent, ElementName=Root}" FontSize="10.5" FontWeight="SemiBold" Margin="0,4,8,0" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Text="{Binding Subtitle, ElementName=Root}" Foreground="{DynamicResource MutedText}" FontSize="10" Margin="0,3,0,0" />
                 </StackPanel>
-                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                     <Button x:Name="ChooseImageButton" Style="{DynamicResource SettingsMiniButton}" Click="ChooseImage_Click"
-                            Content="换图" Padding="8,0" ToolTip="为当前亮暗模式选择本地图片" AutomationProperties.Name="选择本地替换图片" />
-                    <Button x:Name="ClearImageButton" Style="{DynamicResource SettingsMiniButton}" Click="ClearImage_Click" Margin="4,0,0,0"
-                            Content="原图" Padding="8,0" ToolTip="清除本地图片并恢复主题原图" AutomationProperties.Name="恢复主题原图" />
-                    <Button x:Name="CopyButton" Style="{DynamicResource SettingsMiniButton}" Click="Copy_Click"
-                            Margin="8,0,0,0" ToolTip="复制这个区域的全部参数" AutomationProperties.Name="复制当前区域参数">
-                        <Path Width="12" Height="12" Data="M 8,8 L 19,8 L 19,19 L 8,19 Z M 5,16 L 5,5 L 16,5"
-                              Stroke="{DynamicResource MutedText}" StrokeThickness="1.8" Fill="Transparent" Stretch="Uniform" />
-                    </Button>
-                    <Button x:Name="PasteButton" Style="{DynamicResource SettingsMiniButton}" Click="Paste_Click" Margin="4,0,0,0"
-                            ToolTip="粘贴已复制的区域参数" AutomationProperties.Name="粘贴区域参数" IsEnabled="False">
-                        <Path Width="12" Height="12" Data="M 8,6 L 17,6 C 18,6 19,7 19,8 L 19,19 L 7,19 L 7,8 C 7,7 8,6 9,6 M 10,4 L 16,4 L 16,8 L 10,8 Z"
-                              Stroke="{DynamicResource MutedText}" StrokeThickness="1.7" Fill="Transparent" Stretch="Uniform" />
-                    </Button>
-                    <Button x:Name="ResetButton" Style="{DynamicResource SettingsMiniButton}" Click="Reset_Click" Margin="4,0,0,0"
-                            ToolTip="恢复这个区域当前亮暗模式的原图参数" AutomationProperties.Name="恢复当前区域原图参数">
-                        <Path Width="13" Height="13" Data="M 7,8 L 3,8 L 3,4 M 3.5,8 C 5.8,3.5 11,2 15.5,4.2 C 20,6.5 21.5,12 19,16.5"
-                              Stroke="{DynamicResource MutedText}" StrokeThickness="1.8" Fill="Transparent" Stretch="Uniform" />
-                    </Button>
+                            Width="92" Height="36" Padding="12,0" FontSize="10.5" FontWeight="SemiBold" Content="更换图片" ToolTip="为当前亮暗模式选择本地图片" AutomationProperties.Name="选择本地替换图片" />
+                    <Button x:Name="ClearImageButton" Style="{DynamicResource SettingsMiniButton}" Click="ClearImage_Click" Margin="7,0,0,0"
+                            Width="106" Height="36" Padding="12,0" FontSize="10.5" FontWeight="SemiBold" Content="使用主题原图" ToolTip="只撤下本地替换图片，保留当前调节参数" AutomationProperties.Name="撤下替换图片并使用主题原图" />
                 </StackPanel>
             </Grid>
 
-            <Border Height="1" Background="{DynamicResource HomeToolbarBorder}" Margin="0,12,0,8" />
+            <Border Height="1" Background="{DynamicResource HomeToolbarBorder}" Margin="0,12,0,10" />
+
+            <Grid Margin="0,0,0,7">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock x:Name="GroupTitleText" Text="基础调节" Foreground="{DynamicResource PrimaryText}" FontSize="11.5" FontWeight="SemiBold" />
+                    <TextBlock x:Name="GroupHintText" Text="改善明暗与色彩；建议一次只调整一个参数。" Foreground="{DynamicResource MutedText}" FontSize="9.5" TextTrimming="CharacterEllipsis" Margin="0,3,12,0" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button x:Name="CopyButton" Style="{DynamicResource SettingsMiniButton}" Click="Copy_Click"
+                            Width="76" Height="32" Padding="10,0" FontSize="10" FontWeight="SemiBold" Content="复制参数" ToolTip="复制当前区域参数，不包含图片来源" AutomationProperties.Name="复制当前区域参数" />
+                    <Button x:Name="PasteButton" Style="{DynamicResource SettingsMiniButton}" Click="Paste_Click" Margin="6,0,0,0"
+                            Width="76" Height="32" Padding="10,0" FontSize="10" FontWeight="SemiBold" Content="粘贴参数" ToolTip="粘贴参数并保留目标区域的图片来源" AutomationProperties.Name="粘贴区域参数" IsEnabled="False" />
+                    <Button x:Name="ResetButton" Style="{DynamicResource SettingsMiniButton}" Click="Reset_Click" Margin="6,0,0,0"
+                            Width="88" Height="32" Padding="10,0" FontSize="10" FontWeight="SemiBold" ToolTip="只重置当前显示的参数组，可使用撤销恢复" AutomationProperties.Name="重置当前参数组">
+                        <TextBlock x:Name="ResetButtonText" Text="重置基础" FontSize="10" FontWeight="SemiBold" VerticalAlignment="Center" />
+                    </Button>
+                </StackPanel>
+            </Grid>
 
             <StackPanel x:Name="BasicPanel">
                 <Grid Margin="0,4">

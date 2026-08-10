@@ -760,22 +760,14 @@
                                             <TextBlock x:Name="VisualEditingModeText" Text="亮色参数" Foreground="{DynamicResource Accent}" FontSize="10" FontWeight="SemiBold" />
                                         </StackPanel>
                                     </Border>
-                                    <Button Grid.Column="4" Style="{StaticResource RoundButton}" Click="ResetAllVisualSettings_Click" Padding="11,7" ToolTip="恢复当前主题亮色与暗色的全部原图参数">
-                                        <StackPanel Orientation="Horizontal"><Path Width="13" Height="13" Data="M 7,8 L 3,8 L 3,4 M 3.5,8 C 5.8,3.5 11,2 15.5,4.2 C 20,6.5 21.5,12 19,16.5 C 16.5,21 10.8,22 6.7,19.2" Stroke="{DynamicResource MutedText}" StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Fill="Transparent" Stretch="Uniform" Margin="0,0,7,0" /><TextBlock Text="全部恢复原图" FontSize="10" FontWeight="SemiBold" /></StackPanel>
+                                    <Button Grid.Column="4" Style="{StaticResource RoundButton}" Click="ResetAllVisualSettings_Click" Padding="11,7" ToolTip="重置当前主题亮暗模式下三个图像区域的全部图像参数">
+                                        <StackPanel Orientation="Horizontal"><Path Width="13" Height="13" Data="M 7,8 L 3,8 L 3,4 M 3.5,8 C 5.8,3.5 11,2 15.5,4.2 C 20,6.5 21.5,12 19,16.5 C 16.5,21 10.8,22 6.7,19.2" Stroke="{DynamicResource MutedText}" StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Fill="Transparent" Stretch="Uniform" Margin="0,0,7,0" /><TextBlock Text="重置全部图像" FontSize="10" FontWeight="SemiBold" /></StackPanel>
                                     </Button>
                                 </Grid>
-                                <Border Background="{DynamicResource InfoSurface}" BorderBrush="{DynamicResource InfoBorder}" BorderThickness="1" CornerRadius="12" Padding="14,10" Margin="0,14,0,14">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                                        <TextBlock Text="调整顺序" Foreground="{DynamicResource Accent}" FontSize="10" FontWeight="SemiBold" VerticalAlignment="Center" />
-                                        <TextBlock Grid.Column="1" Text="01 选择主题  →  02 确认亮暗模式  →  03 选择图像区域  →  04 调整并实时预览" Foreground="{DynamicResource PrimaryText}" FontSize="10.5" FontWeight="SemiBold" VerticalAlignment="Center" Margin="14,0" />
-                                        <TextBlock Grid.Column="2" Text="参数自动保存在当前主题" Foreground="{DynamicResource MutedText}" FontSize="10" VerticalAlignment="Center" />
-                                    </Grid>
-                                </Border>
-                                <Grid Margin="0,0,0,12">
+                                <Grid Margin="0,14,0,12">
                                     <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="14" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                                     <StackPanel>
-                                        <TextBlock Text="03 · 选择要调整的图像区域" Foreground="{DynamicResource MutedText}" FontSize="10" FontWeight="SemiBold" Margin="2,0,0,7" />
+                                        <TextBlock Text="图像区域" Foreground="{DynamicResource MutedText}" FontSize="10" FontWeight="SemiBold" Margin="2,0,0,7" />
                                         <UniformGrid Columns="3">
                                             <Button x:Name="VisualHeroRegionButton" Style="{StaticResource HomeUtilityButton}" Height="40" Tag="active" CommandParameter="hero" Content="首页横幅" Click="VisualAdjustmentRegion_Click" Margin="0,0,7,0" AutomationProperties.Name="调整首页横幅" />
                                             <Button x:Name="VisualSidebarRegionButton" Style="{StaticResource HomeUtilityButton}" Height="40" CommandParameter="sidebar" Content="左栏图片" Click="VisualAdjustmentRegion_Click" Margin="0,0,7,0" AutomationProperties.Name="调整左栏图片" />
@@ -783,7 +775,7 @@
                                         </UniformGrid>
                                     </StackPanel>
                                     <StackPanel Grid.Column="2">
-                                        <TextBlock Text="04 · 选择参数类型" Foreground="{DynamicResource MutedText}" FontSize="10" FontWeight="SemiBold" Margin="2,0,0,7" />
+                                        <TextBlock Text="参数组" Foreground="{DynamicResource MutedText}" FontSize="10" FontWeight="SemiBold" Margin="2,0,0,7" />
                                         <Border Height="40" Background="{DynamicResource SettingsControlSurface}" BorderBrush="{DynamicResource SettingsControlBorder}" BorderThickness="1" CornerRadius="11" Padding="4">
                                             <StackPanel Orientation="Horizontal">
                                                 <Button x:Name="VisualBasicGroupButton" Style="{StaticResource ModeToggleButton}" Tag="basic" Click="VisualAdjustmentGroup_Click" AutomationProperties.Name="显示基础图像调节"><TextBlock Text="基础" FontSize="10" FontWeight="SemiBold" /></Button>

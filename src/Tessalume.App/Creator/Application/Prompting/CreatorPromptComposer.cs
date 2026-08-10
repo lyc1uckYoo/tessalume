@@ -2,9 +2,9 @@ namespace Tessalume.App.Creator;
 
 internal sealed record CreatorPromptDraft
 {
-    public string WorkName { get; init; } = "鸣潮";
+    public string WorkName { get; init; } = string.Empty;
 
-    public string CharacterName { get; init; } = "椿";
+    public string CharacterName { get; init; } = string.Empty;
 
     public string VisualDirection { get; init; } = string.Empty;
 

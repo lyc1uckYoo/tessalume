@@ -132,9 +132,9 @@
     <Style x:Key="CreatorRouteButton" TargetType="Button" BasedOn="{StaticResource CreatorButtonBase}">
         <Setter Property="Background" Value="{DynamicResource SurfaceAlt}" />
         <Setter Property="BorderBrush" Value="Transparent" />
-        <Setter Property="Height" Value="42" />
-        <Setter Property="Padding" Value="14,0" />
-        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="Height" Value="46" />
+        <Setter Property="Padding" Value="10,0" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Style.Triggers>
             <Trigger Property="Tag" Value="active"><Setter Property="Background" Value="{DynamicResource AccentSoft}" /><Setter Property="BorderBrush" Value="{DynamicResource Accent}" /><Setter Property="Foreground" Value="{DynamicResource Accent}" /></Trigger>
         </Style.Triggers>

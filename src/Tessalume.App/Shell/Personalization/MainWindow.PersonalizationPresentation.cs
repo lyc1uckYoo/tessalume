@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using Tessalume.App.Controls;
+using Tessalume.App.Features.Personalization;
 using Tessalume.Core.Runtime;
 
 namespace Tessalume.App;
@@ -42,6 +43,9 @@ public partial class MainWindow
         var settings = GetVisualSettings(theme!.ThemeId!);
         var mode = _editingVisualDarkMode ? settings.Dark : settings.Light;
         DisplayPreferencesPage.Render(settings.Display, enabled: true);
+        HeroAdjustmentEditor.SetEditingMode(_editingVisualDarkMode);
+        SidebarAdjustmentEditor.SetEditingMode(_editingVisualDarkMode);
+        ChatAdjustmentEditor.SetEditingMode(_editingVisualDarkMode);
         HeroAdjustmentEditor.SetAdjustment(mode.Hero);
         SidebarAdjustmentEditor.SetAdjustment(mode.Sidebar);
         ChatAdjustmentEditor.SetAdjustment(mode.Chat);
