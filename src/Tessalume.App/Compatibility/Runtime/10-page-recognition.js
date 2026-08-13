@@ -120,7 +120,16 @@
       const icon = queryFirst(document, "homeIcon", ['[data-testid="home-icon"]']);
       return closestFirst(icon, "homeAncestor", ['[role="main"]', "main"]);
     };
-    const findMain = () => queryFirst(document, "main", ["main.main-surface", "main"]);
+    const findMain = () => queryFirst(
+      document,
+      "main",
+      [
+        'main[data-app-shell-main-surface="default"]',
+        'main[class*="MainContentSurface"]',
+        "main.main-surface",
+        "main",
+      ],
+    );
     const findComposerSurface = () => {
       const legacySurface = queryFirst(
         document,

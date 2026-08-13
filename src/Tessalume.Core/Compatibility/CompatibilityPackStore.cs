@@ -190,7 +190,12 @@ public sealed class CompatibilityPackStore
                 Path.Combine(stagingDirectory, ManifestFileName),
                 manifestBytes,
                 cancellationToken);
-            _ = LoadInstalledPack(stagingDirectory, manifest);
+            var staged = LoadInstalledPack(stagingDirectory, manifest);
+            if (staged.PackVersion <= _builtInPack.PackVersion)
+            {
+                throw new InvalidDataException(
+                    "A compatibility pack must be newer than the embedded baseline.");
+            }
 
             lock (_gate)
             {
@@ -241,7 +246,11 @@ public sealed class CompatibilityPackStore
                 return active;
             }
 
-            var fallback = TryLoadInstalledPack(state?.PreviousPackVersion) ?? _builtInPack;
+            var previous = TryLoadInstalledPack(state?.PreviousPackVersion);
+            var fallback = previous is not null &&
+                           previous.PackVersion > _builtInPack.PackVersion
+                ? previous
+                : _builtInPack;
             SaveState(new CompatibilityPackState
             {
                 ActivePackVersion = fallback.IsBuiltIn ? null : fallback.PackVersion.ToString(),
@@ -257,12 +266,28 @@ public sealed class CompatibilityPackStore
         var active = TryLoadInstalledPack(state?.ActivePackVersion);
         if (active is not null)
         {
-            return active;
+            if (active.PackVersion > _builtInPack.PackVersion)
+            {
+                return active;
+            }
+
+            // An application update can ship a newer embedded compatibility
+            // baseline than the pack selected by the previous executable. Do
+            // not let that stale selection keep overriding the repaired
+            // runtime after the application itself has been upgraded.
+            SaveState(new CompatibilityPackState());
+            return _builtInPack;
         }
 
         var previous = TryLoadInstalledPack(state?.PreviousPackVersion);
         if (previous is not null)
         {
+            if (previous.PackVersion <= _builtInPack.PackVersion)
+            {
+                SaveState(new CompatibilityPackState());
+                return _builtInPack;
+            }
+
             SaveState(new CompatibilityPackState
             {
                 ActivePackVersion = previous.PackVersion.ToString(),

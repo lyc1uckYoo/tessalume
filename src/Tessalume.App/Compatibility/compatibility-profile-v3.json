@@ -1,9 +1,11 @@
 {
   "schemaVersion": 1,
-  "profileVersion": "3.0.1",
+  "profileVersion": "3.0.2",
   "runtimeContractVersion": 3,
   "selectors": {
     "main": [
+      "main[data-app-shell-main-surface=\"default\"]",
+      "main[class*=\"MainContentSurface\"]",
       "main.main-surface",
       "main"
     ],

@@ -113,8 +113,12 @@ internal sealed class ThemeRuntimeAcceptanceProbe(LoopbackCdpDiscovery discovery
           const html = document.documentElement;
           const runtime = window.__TESSALUME_RUNTIME__;
           const root = document.querySelector('#tessalume-theme-root');
-          const main = document.querySelector('main.main-surface, main');
+          const main = document.querySelector('main[data-app-shell-main-surface="default"]') ||
+            document.querySelector('main[class*="MainContentSurface"]') ||
+            document.querySelector('main.main-surface') ||
+            document.querySelector('main');
           const mainBox = main?.getBoundingClientRect();
+          const mainStyle = main ? getComputedStyle(main) : null;
           const composer = document.querySelector('[data-tessalume-surface="composer"]') ||
             document.querySelector('.composer-surface-chrome') ||
             document.querySelector('[data-codex-composer="true"]')?.closest('[class*="ComposerLayoutRoot"], [class*="ComposerLayoutBody"]');
@@ -135,7 +139,9 @@ internal sealed class ThemeRuntimeAcceptanceProbe(LoopbackCdpDiscovery discovery
             runtimeReady: Boolean(runtime?.context &&
               typeof runtime.context.mountCanonicalTheme === 'function'),
             themeMounted: Boolean(root && runtime?.themeId),
-            mainSurfaceReady: Boolean(mainBox && mainBox.width > 0 && mainBox.height > 0),
+            mainSurfaceReady: Boolean(mainBox && mainBox.width > 0 && mainBox.height > 0 &&
+              mainStyle?.display !== 'none' && mainStyle?.visibility !== 'hidden' &&
+              main?.getAttribute('data-tessalume-surface') === 'main'),
             composerPresent: Boolean(composer),
             composerDecorated: composer?.getAttribute('data-tessalume-surface') === 'composer',
             messageCount: messageUnits.length,
