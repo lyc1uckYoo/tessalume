@@ -145,7 +145,16 @@
     let reviewFrame = 0;
     const syncCodeReview = () => {
       reviewFrame = 0;
-      const main = queryFirst(document, "main", ["main.main-surface", "main"]);
+      const main = queryFirst(
+        document,
+        "main",
+        [
+          'main[data-app-shell-main-surface="default"]',
+          'main[class*="MainContentSurface"]',
+          "main.main-surface",
+          "main",
+        ],
+      );
       const mainBox = main?.getBoundingClientRect();
       const reviewLabel = /review|diff|changes|审阅|差异|更改/i;
       const rightEdge = mainBox ? mainBox.left + mainBox.width * .6 : window.innerWidth * .6;

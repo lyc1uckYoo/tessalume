@@ -217,6 +217,45 @@ internal static partial class TestSuite
         Ensure(payload.Contains("syncStageGeometry", StringComparison.Ordinal) &&
                payload.Contains("startLayoutTracking", StringComparison.Ordinal),
             "The runtime must keep its fixed theme stage aligned throughout native layout transitions.");
+        var runtime = await ReadCompatibilityRuntimeSourceAsync(repositoryRoot);
+        Ensure(runtime.Contains("main[data-app-shell-main-surface=\"default\"]", StringComparison.Ordinal) &&
+               runtime.Contains("main[class*=\"MainContentSurface\"]", StringComparison.Ordinal) &&
+               runtime.IndexOf("main[data-app-shell-main-surface=\"default\"]", StringComparison.Ordinal) <
+               runtime.IndexOf("main.main-surface", StringComparison.Ordinal),
+            "The runtime must prefer Codex's visible content main over the hidden full-window main.");
+        using (var profileDocument = JsonDocument.Parse(await File.ReadAllTextAsync(Path.Combine(
+                   repositoryRoot,
+                   "src",
+                   "Tessalume.App",
+                   "Compatibility",
+                   "compatibility-profile-v3.json"))))
+        {
+            var mainSelectors = profileDocument.RootElement
+                .GetProperty("selectors")
+                .GetProperty("main")
+                .EnumerateArray()
+                .Select(selector => selector.GetString())
+                .ToArray();
+            Ensure(mainSelectors.Length >= 4 &&
+                   mainSelectors[0] == "main[data-app-shell-main-surface=\"default\"]" &&
+                   mainSelectors[1] == "main[class*=\"MainContentSurface\"]" &&
+                   mainSelectors[2] == "main.main-surface" &&
+                   mainSelectors[3] == "main",
+                "The compatibility profile must keep visible semantic main selectors ahead of generic fallbacks.");
+        }
+        var acceptanceProbe = await File.ReadAllTextAsync(Path.Combine(
+            repositoryRoot,
+            "src",
+            "Tessalume.Core",
+            "Runtime",
+            "ThemeRuntimeAcceptanceProbe.cs"));
+        Ensure(acceptanceProbe.Contains(
+                "document.querySelector('main[data-app-shell-main-surface=\"default\"]') ||",
+                StringComparison.Ordinal) &&
+               acceptanceProbe.Contains(
+                "document.querySelector('main[class*=\"MainContentSurface\"]') ||",
+                StringComparison.Ordinal),
+            "Runtime acceptance must preserve selector priority instead of using document order across a selector list.");
         Ensure(payload.Contains("validateTemplateStructure", StringComparison.Ordinal) &&
                payload.Contains("data-tessalume-template-version", StringComparison.Ordinal),
             "The runtime must validate and expose the declared flagship template version.");
