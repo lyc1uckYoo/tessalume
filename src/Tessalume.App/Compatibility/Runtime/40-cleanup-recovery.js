@@ -12,6 +12,14 @@
       layoutResizeObserver?.disconnect();
       layoutResizeObserver = null;
       layoutObserved = new Set();
+      if (taskTitleWidthManaged) {
+        if (taskTitleWidthPrevious) {
+          html.style.setProperty("--tessalume-task-title-primary-width", taskTitleWidthPrevious);
+        } else {
+          html.style.removeProperty("--tessalume-task-title-primary-width");
+        }
+        taskTitleWidthManaged = false;
+      }
       spec.onCleanup?.(api);
       for (const [node, className] of marked) {
         try { node?.classList?.remove(className); } catch { }

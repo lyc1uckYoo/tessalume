@@ -1019,8 +1019,8 @@ html.xyl-theme .xyl-task-title[data-tessalume-surface="task-title"],html.xyl-the
   min-height:32px!important;
   box-sizing:border-box!important;
   width:max-content!important;
-  max-width:min(480px,48vw)!important;
-  padding:5px 92px 5px 9px!important;
+  max-width:min(680px,calc(50vw - 215px))!important;
+  padding:5px 9px!important;
   border:1px solid color-mix(in srgb,var(--xyl-cyan) 54%,var(--xyl-gold))!important;
   border-radius:4px 14px 4px 14px!important;
   color:var(--xyl-text)!important;
@@ -1028,12 +1028,16 @@ html.xyl-theme .xyl-task-title[data-tessalume-surface="task-title"],html.xyl-the
   box-shadow:inset 3px 0 var(--xyl-cyan),0 5px 18px color-mix(in srgb,var(--xyl-blue) 15%,transparent)!important;
 }
 
-html.xyl-theme .xyl-task-title>span {
-  flex:0 1 auto!important;
-  min-width:0;
+html.xyl-theme .xyl-task-title[data-tessalume-surface="task-title"]:has(button.truncate) {
+  width:max-content!important;
+  max-width:var(--tessalume-task-title-primary-width,min(680px,max(160px,calc(50vw - 330px))))!important;
 }
 
-html.xyl-theme .xyl-task-title button.truncate {
+html.xyl-theme .xyl-task-title>span {
+  flex:0 1 auto!important; width:max-content!important; max-width:100%!important; min-width:0;
+}
+
+html.xyl-theme .xyl-task-title button.truncate { margin-inline-start:0!important;
   max-width:100%!important;
   overflow:hidden!important;
   background:transparent!important;
@@ -1052,10 +1056,12 @@ html.xyl-theme .xyl-task-title svg {
 
 html.xyl-theme .xyl-task-title::after {
   content:"AZURE PLUME / 09";
-  position:absolute;
-  right:12px;
-  top:50%;
-  transform:translateY(-50%);
+  display:inline-flex!important;
+  position:static!important;
+  inset:auto!important;
+  flex:0 0 auto!important;
+  margin-left:12px!important;
+  transform:none!important;
   color:color-mix(in srgb,var(--xyl-gold) 82%,var(--xyl-text-3));
   font:700 7px/1 var(--xyl-mono);
   letter-spacing:.12em;
@@ -1069,7 +1075,7 @@ html.xyl-theme.electron-dark .xyl-task-header {
   box-shadow:0 9px 27px rgba(0,0,0,.46),inset 0 1px rgba(255,255,255,.07)!important;
 }
 
-html.xyl-theme.electron-dark .xyl-task-title button.truncate {
+html.xyl-theme.electron-dark .xyl-task-title button.truncate { margin-inline-start:0!important;
   text-shadow:0 1px 3px #000;
 }
 
@@ -1081,6 +1087,20 @@ html.xyl-theme.electron-dark .xyl-task-title svg {
 html.xyl-theme.electron-dark .xyl-task-title::after {
   content:"XUANLING / PLUME SEAL";
   color:color-mix(in srgb,var(--xyl-gold) 88%,var(--xyl-text-3));
+}
+
+@media (max-width:920px) {
+  html.xyl-theme .xyl-task-title[data-tessalume-surface="task-title"]:has(button.truncate) {
+    width:max-content!important;
+    max-width:var(--tessalume-task-title-primary-width,max(160px,calc(100vw - 390px)))!important;
+  }
+}
+
+@media (max-width:600px) {
+  html.xyl-theme .xyl-task-title[data-tessalume-surface="task-title"]:has(button.truncate) {
+    width:max-content!important;
+    max-width:var(--tessalume-task-title-primary-width,calc(100vw - 180px))!important;
+  }
 }
 
 .xyl-message-assistant .xyl-markdown {

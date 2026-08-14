@@ -1,0 +1,51 @@
+{
+  "$schema": "../../schemas/theme-manifest-v2.schema.json",
+  "schemaVersion": 2,
+  "id": "sigrika.semantic-sunrise",
+  "name": "西格莉卡 · 语义昭日",
+  "version": "1.0",
+  "author": "lyc1uckYoo",
+  "description": "以星炬学院、罗伊符文、日灵与西格莉卡的语义显化能力为核心，沿着期望、答问与句点展开的旗舰主题。",
+  "engineVersion": 2,
+  "type": "advanced",
+  "template": {
+    "id": "flagship",
+    "version": "1.0",
+    "style": "shared"
+  },
+  "capabilities": {
+    "light": true,
+    "dark": true
+  },
+  "entryPoints": {
+    "css": "skin.css",
+    "script": "theme.js"
+  },
+  "previews": {
+    "light": "assets/hero-light.png",
+    "dark": "assets/hero-dark.png"
+  },
+  "assets": {
+    "hero-light": "assets/hero-light.png",
+    "hero-dark": "assets/hero-dark.png",
+    "sidebar-light": "assets/sidebar-light.png",
+    "sidebar-dark": "assets/sidebar-dark.png",
+    "chat-light": "assets/chat-light.png",
+    "chat-dark": "assets/chat-dark.png",
+    "task-left": "assets/task-left.png",
+    "task-right-secondary": "assets/task-right-secondary.png",
+    "task-right-primary": "assets/task-right-primary.png",
+    "memory-light": "assets/memory-light.png",
+    "memory-dark": "assets/memory-dark.png"
+  },
+  "config": {
+    "qualityGate": "flagship-complete-1",
+    "title": "西格莉卡 · 语义昭日",
+    "subtitle": "让期望获得语义，让疑问抵达答案；与日灵一起，为每段未完成的叙述写下明亮句点。",
+    "status": "ROYA SEMANTICS · SOLISKIN LINKED",
+    "memory": "她把每一次期待认真译成罗伊语义，也把每一个问题留给日灵共同作答。句点落下，并非终止，而是新的昭日开始。"
+  },
+  "compatibility": {
+    "petOverlay": false
+  }
+}

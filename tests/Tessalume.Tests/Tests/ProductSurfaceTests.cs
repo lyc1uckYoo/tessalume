@@ -976,13 +976,13 @@ internal static partial class TestSuite
                !xaml.Contains("Storyboard.TargetName=\"PrimaryMotion\"", StringComparison.Ordinal) &&
                !xaml.Contains("x:Name=\"ButtonScale\"", StringComparison.Ordinal),
             "Shared actions, dialogs, and onboarding must keep stable text rendering without hover scaling.");
-        Ensure(project.Contains("<Version>2.0.1</Version>", StringComparison.Ordinal) &&
+        Ensure(project.Contains("<Version>2.0.2</Version>", StringComparison.Ordinal) &&
                firstRunXaml.Contains("{x:Static local:BrandInfo.VersionLabel}", StringComparison.Ordinal) &&
                !firstRunXaml.Contains("Text=\"v1.2\"", StringComparison.Ordinal) &&
-               readme.Contains("release-2.0.1", StringComparison.Ordinal) &&
-               readme.Contains("内置 10 套支持亮色与暗色的完整角色主题", StringComparison.Ordinal) &&
+               readme.Contains("release-2.0.2", StringComparison.Ordinal) &&
+               readme.Contains("内置 12 套支持亮色与暗色的完整角色主题", StringComparison.Ordinal) &&
                File.Exists(Path.Combine(repositoryRoot, "CHANGELOG.md")),
-            "Version metadata and release documentation must agree on Tessalume 2.0.1.");
+            "Version metadata and release documentation must agree on Tessalume 2.0.2.");
     }
 
 

@@ -1133,8 +1133,8 @@ html.ae3-theme .ae3-task-title[data-tessalume-surface="task-title"],html.ae3-the
   min-height:32px!important;
   box-sizing:border-box!important;
   width:max-content!important;
-  max-width:min(480px,48vw)!important;
-  padding:5px 92px 5px 9px!important;
+  max-width:min(680px,calc(50vw - 215px))!important;
+  padding:5px 9px!important;
   border:1px solid color-mix(in srgb,var(--ae3-pink) 54%,var(--ae3-cyan))!important;
   border-radius:4px 14px 4px 14px!important;
   color:var(--ae3-text)!important;
@@ -1142,12 +1142,16 @@ html.ae3-theme .ae3-task-title[data-tessalume-surface="task-title"],html.ae3-the
   box-shadow:inset 3px 0 var(--ae3-pink),0 5px 18px color-mix(in srgb,var(--ae3-cyan) 15%,transparent)!important;
 }
 
-html.ae3-theme .ae3-task-title>span {
-  flex:0 1 auto!important;
-  min-width:0;
+html.ae3-theme .ae3-task-title[data-tessalume-surface="task-title"]:has(button.truncate) {
+  width:max-content!important;
+  max-width:var(--tessalume-task-title-primary-width,min(680px,max(160px,calc(50vw - 330px))))!important;
 }
 
-html.ae3-theme .ae3-task-title button.truncate {
+html.ae3-theme .ae3-task-title>span {
+  flex:0 1 auto!important; width:max-content!important; max-width:100%!important; min-width:0;
+}
+
+html.ae3-theme .ae3-task-title button.truncate { margin-inline-start:0!important;
   max-width:100%!important;
   overflow:hidden!important;
   border:0!important;
@@ -1166,10 +1170,12 @@ html.ae3-theme .ae3-task-title svg {
 
 html.ae3-theme .ae3-task-title::after {
   content:"STAR VOYAGE / 09";
-  position:absolute;
-  right:12px;
-  top:50%;
-  transform:translateY(-50%);
+  display:inline-flex!important;
+  position:static!important;
+  inset:auto!important;
+  flex:0 0 auto!important;
+  margin-left:12px!important;
+  transform:none!important;
   color:color-mix(in srgb,var(--ae3-cyan) 84%,var(--ae3-text3));
   font:700 7px/1 "Cascadia Code",Consolas,monospace;
   letter-spacing:.12em;
@@ -1183,7 +1189,7 @@ html.ae3-theme.electron-dark .ae3-task-header {
   box-shadow:0 9px 27px rgba(0,0,0,.46),inset 0 1px rgba(255,255,255,.07)!important;
 }
 
-html.ae3-theme.electron-dark .ae3-task-title button.truncate {
+html.ae3-theme.electron-dark .ae3-task-title button.truncate { margin-inline-start:0!important;
   text-shadow:0 1px 3px #000;
 }
 
@@ -1195,6 +1201,20 @@ html.ae3-theme.electron-dark .ae3-task-title svg {
 html.ae3-theme.electron-dark .ae3-task-title::after {
   content:"TUNNELER / 09";
   color:color-mix(in srgb,var(--ae3-cyan) 88%,var(--ae3-text3));
+}
+
+@media (max-width:920px) {
+  html.ae3-theme .ae3-task-title[data-tessalume-surface="task-title"]:has(button.truncate) {
+    width:max-content!important;
+    max-width:var(--tessalume-task-title-primary-width,max(160px,calc(100vw - 390px)))!important;
+  }
+}
+
+@media (max-width:600px) {
+  html.ae3-theme .ae3-task-title[data-tessalume-surface="task-title"]:has(button.truncate) {
+    width:max-content!important;
+    max-width:var(--tessalume-task-title-primary-width,calc(100vw - 180px))!important;
+  }
 }
 
 .ae3-message-assistant .ae3-markdown {

@@ -1,0 +1,83 @@
+{
+  "$schema": "../../schemas/theme-manifest-v2.schema.json",
+  "schemaVersion": 2,
+  "id": "mornye.first-star-observatory",
+  "name": "莫宁 · 初星穹镜",
+  "version": "1.0",
+  "author": "lyc1uckYoo",
+  "description": "以改良星栈、星枢演算与神经接入式义肢为核心的莫宁沉浸式主题，兼具银白淡紫的观测站常服与暖棕雪夜的呢绒梦服饰。",
+  "engineVersion": 2,
+  "type": "advanced",
+  "template": {
+    "id": "flagship",
+    "version": "1.0",
+    "style": "shared"
+  },
+  "capabilities": {
+    "light": true,
+    "dark": true
+  },
+  "entryPoints": {
+    "css": "skin.css",
+    "script": "theme.js"
+  },
+  "previews": {
+    "light": "assets/hero-light.png",
+    "dark": "assets/hero-dark.png"
+  },
+  "assets": {
+    "hero-light": "assets/hero-light.png",
+    "hero-dark": "assets/hero-dark.png",
+    "sidebar-light": "assets/sidebar-light.png",
+    "sidebar-dark": "assets/sidebar-dark.png",
+    "chat-light": "assets/chat-light.png",
+    "chat-dark": "assets/chat-dark.png",
+    "task-left": "assets/task-left.png",
+    "task-right-secondary": "assets/task-right-secondary.png",
+    "task-right-primary": "assets/task-right-primary.png",
+    "memory-light": "assets/memory-light.png",
+    "memory-dark": "assets/memory-dark.png"
+  },
+  "config": {
+    "qualityGate": "flagship-complete-1",
+    "title": "莫宁 · 初星穹镜",
+    "subtitle": "让星枢收束每一条可能性，再以透明神经回路丈量抵达的距离。",
+    "status": "NEURAL LINK / STABLE",
+    "kickerLight": "FIRST STAR CALCULATION · OBSERVATORY",
+    "kickerDark": "WOOLLEN DREAM · WINTER TRAJECTORY",
+    "headingLight": "以初星为尺",
+    "headingLightAccent": "丈量穹镜",
+    "headingDark": "呢绒梦醒时",
+    "headingDarkAccent": "星轨仍清明",
+    "motionLabel": "改良星栈、星枢演算、义肢能量与宙算仪轨的四重节律",
+    "noteLabel": "教授手记",
+    "noteLight": "演算无误，下一次抵达已经写入星图",
+    "noteDark": "暖绒收拢雪夜，精密轨迹从未停息",
+    "leftCardTitle": "星枢校准",
+    "leftCardMeta": "NEURAL PROFESSOR / 01",
+    "secondaryCardTitle": "呢绒梦",
+    "secondaryCardMeta": "WOOLLEN DREAM / 02",
+    "primaryCardTitle": "宙算仪轨",
+    "primaryCardMeta": "LONG BLADE / 03",
+    "memoryLabel": "星枢记忆档案",
+    "memoryLightCode": "FS-03",
+    "memoryDarkCode": "WD-07",
+    "memoryLight": "教授离席片刻，三枚星枢仍在晨光中继续推演，将第一颗星的轨迹收进档案。",
+    "memoryDark": "透明伞倚在望远镜旁，呢绒围巾留住雪夜余温；未完成的星图等待她回来。",
+    "syncLabel": "星枢演算全息面板",
+    "syncTitle": "穹镜收敛",
+    "syncValue": "97.8",
+    "syncTotal": "100",
+    "syncCore": "星栈",
+    "syncCoreLabel": "三节点",
+    "syncStateLabel": "接入状态",
+    "syncState": "双路稳定",
+    "accessorySymbol": "刃",
+    "accessoryLabel": "宙算仪轨",
+    "pinnedSection": "星栈坐标",
+    "projectSection": "穹镜课题"
+  },
+  "compatibility": {
+    "petOverlay": false
+  }
+}

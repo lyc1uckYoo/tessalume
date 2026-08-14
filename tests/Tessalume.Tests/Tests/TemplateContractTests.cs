@@ -209,6 +209,11 @@ internal static partial class TestSuite
                sharedCss.Contains("calc(100cqh - var(--tessalume-v1-home-composer-reserve))", StringComparison.Ordinal) &&
                sharedCss.Contains("data-tessalume-surface=\"chat-paper\"", StringComparison.Ordinal),
             "Runtime-owned Template 1.0 geometry must preserve the accepted Xin layout.");
+        Ensure(sharedCss.Contains("--tessalume-task-title-primary-width", StringComparison.Ordinal) &&
+               sharedCss.Contains(":has(button.truncate)", StringComparison.Ordinal) &&
+               sharedCss.Contains("margin-inline-start:0!important", StringComparison.Ordinal) &&
+               !sharedCss.Contains("padding-right:145px", StringComparison.Ordinal),
+            "Template 1.0 task-title frames must grow with their content before falling back to ellipsis.");
         Ensure(!templateCss.Contains("[data-theme-role=", StringComparison.Ordinal) &&
                !templateCss.Contains("TESSALUME_TEMPLATE_V1_", StringComparison.Ordinal),
             "The reusable skin must not contain shared geometry.");

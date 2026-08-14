@@ -383,6 +383,10 @@ internal static partial class TestSuite
                 "context.observe(document.documentElement, { childList:true, subtree:true }, onDocumentMutations);",
                 StringComparison.Ordinal),
             "The document observer must use the immediate task-surface callback.");
+        Ensure(runtime.Contains("const syncTaskTitleWidth = () => {", StringComparison.Ordinal) &&
+               runtime.Contains("--tessalume-task-title-primary-width", StringComparison.Ordinal) &&
+               runtime.Contains("syncTaskTitleWidth();", StringComparison.Ordinal),
+            "The canonical runtime must size the primary task title from the live header region.");
     }
 
 

@@ -1363,8 +1363,8 @@ html.qxo-theme .qxo-task-title[data-tessalume-surface="task-title"],html.qxo-the
   min-height:32px!important;
   box-sizing:border-box!important;
   width:max-content!important;
-  max-width:min(480px,48vw)!important;
-  padding:5px 104px 5px 9px!important;
+  max-width:min(680px,calc(50vw - 215px))!important;
+  padding:5px 9px!important;
   border:1px solid color-mix(in srgb,var(--qxo-red) 52%,var(--qxo-gold))!important;
   border-radius:5px 14px 5px 14px!important;
   color:var(--qxo-text)!important;
@@ -1372,12 +1372,16 @@ html.qxo-theme .qxo-task-title[data-tessalume-surface="task-title"],html.qxo-the
   box-shadow:inset 3px 0 var(--qxo-red),0 5px 18px color-mix(in srgb,var(--qxo-green) 15%,transparent)!important;
 }
 
-html.qxo-theme .qxo-task-title>span {
-  flex:0 1 auto!important;
-  min-width:0;
+html.qxo-theme .qxo-task-title[data-tessalume-surface="task-title"]:has(button.truncate) {
+  width:max-content!important;
+  max-width:var(--tessalume-task-title-primary-width,min(680px,max(160px,calc(50vw - 330px))))!important;
 }
 
-html.qxo-theme .qxo-task-title button.truncate {
+html.qxo-theme .qxo-task-title>span {
+  flex:0 1 auto!important; width:max-content!important; max-width:100%!important; min-width:0;
+}
+
+html.qxo-theme .qxo-task-title button.truncate { margin-inline-start:0!important;
   max-width:100%!important;
   overflow:hidden!important;
   background:transparent!important;
@@ -1396,10 +1400,12 @@ html.qxo-theme .qxo-task-title svg {
 
 html.qxo-theme .qxo-task-title::after {
   content:"CLOUD GATE / 01";
-  position:absolute;
-  right:12px;
-  top:50%;
-  transform:translateY(-50%);
+  display:inline-flex!important;
+  position:static!important;
+  inset:auto!important;
+  flex:0 0 auto!important;
+  margin-left:12px!important;
+  transform:none!important;
   color:color-mix(in srgb,var(--qxo-red) 82%,var(--qxo-text-3));
   font:700 7px/1 var(--qxo-mono);
   letter-spacing:.12em;
@@ -1413,7 +1419,7 @@ html.qxo-theme.electron-dark .qxo-task-header {
   box-shadow:0 9px 27px rgba(0,0,0,.46),inset 0 1px rgba(255,255,255,.07)!important;
 }
 
-html.qxo-theme.electron-dark .qxo-task-title button.truncate {
+html.qxo-theme.electron-dark .qxo-task-title button.truncate { margin-inline-start:0!important;
   text-shadow:0 1px 3px #000;
 }
 
@@ -1425,6 +1431,20 @@ html.qxo-theme.electron-dark .qxo-task-title svg {
 html.qxo-theme.electron-dark .qxo-task-title::after {
   content:"MOON VIGIL / QXO";
   color:color-mix(in srgb,var(--qxo-gold) 88%,var(--qxo-text-3));
+}
+
+@media (max-width:920px) {
+  html.qxo-theme .qxo-task-title[data-tessalume-surface="task-title"]:has(button.truncate) {
+    width:max-content!important;
+    max-width:var(--tessalume-task-title-primary-width,max(160px,calc(100vw - 390px)))!important;
+  }
+}
+
+@media (max-width:600px) {
+  html.qxo-theme .qxo-task-title[data-tessalume-surface="task-title"]:has(button.truncate) {
+    width:max-content!important;
+    max-width:var(--tessalume-task-title-primary-width,calc(100vw - 180px))!important;
+  }
 }
 
 .qxo-message-user [class*="bg-"] {

@@ -76,6 +76,7 @@ html.cthy-theme.electron-dark .cthy-dark-only {
   --color-background-panel:var(--cthy-panel)!important;
   --color-background-elevated-primary:var(--cthy-solid)!important;
   --color-background-elevated-secondary:var(--cthy-bg-2)!important;
+  --color-background-control:var(--cthy-panel)!important;
   --color-border:var(--cthy-line)!important;
   --color-text-foreground:var(--cthy-text)!important;
   --color-text-foreground-secondary:var(--cthy-text-2)!important;
@@ -1009,8 +1010,8 @@ html.cthy-theme .cthy-task-title {
   min-height:32px!important;
   box-sizing:border-box!important;
   width:max-content!important;
-  max-width:min(500px,50vw)!important;
-  padding:5px 108px 5px 10px!important;
+  max-width:min(680px,calc(50vw - 215px))!important;
+  padding:5px 10px!important;
   border:1px solid color-mix(in srgb,var(--cthy-blue) 58%,var(--cthy-gold))!important;
   border-radius:16px 3px 16px 3px!important;
   color:var(--cthy-text)!important;
@@ -1018,12 +1019,16 @@ html.cthy-theme .cthy-task-title {
   box-shadow:inset 3px 0 var(--cthy-blue),0 6px 20px color-mix(in srgb,var(--cthy-blue) 18%,transparent)!important;
 }
 
-html.cthy-theme .cthy-task-title>span {
-  flex:0 1 auto!important;
-  min-width:0;
+html.cthy-theme .cthy-task-title[data-tessalume-surface="task-title"]:has(button.truncate) {
+  width:max-content!important;
+  max-width:var(--tessalume-task-title-primary-width,min(680px,max(160px,calc(50vw - 330px))))!important;
 }
 
-html.cthy-theme .cthy-task-title button.truncate {
+html.cthy-theme .cthy-task-title>span {
+  flex:0 1 auto!important; width:max-content!important; max-width:100%!important; min-width:0;
+}
+
+html.cthy-theme .cthy-task-title button.truncate { margin-inline-start:0!important;
   max-width:100%!important;
   overflow:hidden!important;
   border:0!important;
@@ -1042,10 +1047,12 @@ html.cthy-theme .cthy-task-title svg {
 
 html.cthy-theme .cthy-task-title::after {
   content:"GALE BLADE / III";
-  position:absolute;
-  right:12px;
-  top:50%;
-  transform:translateY(-50%);
+  display:inline-flex!important;
+  position:static!important;
+  inset:auto!important;
+  flex:0 0 auto!important;
+  margin-left:12px!important;
+  transform:none!important;
   color:color-mix(in srgb,var(--cthy-gold) 82%,var(--cthy-text-3));
   font:700 7px/1 var(--cthy-mono);
   letter-spacing:.11em;
@@ -1058,13 +1065,27 @@ html.cthy-theme.electron-dark .cthy-task-header {
   box-shadow:0 10px 30px rgba(0,0,0,.48),inset 0 1px rgba(255,255,255,.07)!important;
 }
 
-html.cthy-theme.electron-dark .cthy-task-title button.truncate {
+html.cthy-theme.electron-dark .cthy-task-title button.truncate { margin-inline-start:0!important;
   text-shadow:0 1px 4px #000;
 }
 
 html.cthy-theme.electron-dark .cthy-task-title::after {
   content:"BLACK TIDE / III";
   color:color-mix(in srgb,var(--cthy-cyan) 80%,var(--cthy-gold));
+}
+
+@media (max-width:920px) {
+  html.cthy-theme .cthy-task-title[data-tessalume-surface="task-title"]:has(button.truncate) {
+    width:max-content!important;
+    max-width:var(--tessalume-task-title-primary-width,max(160px,calc(100vw - 390px)))!important;
+  }
+}
+
+@media (max-width:600px) {
+  html.cthy-theme .cthy-task-title[data-tessalume-surface="task-title"]:has(button.truncate) {
+    width:max-content!important;
+    max-width:var(--tessalume-task-title-primary-width,calc(100vw - 180px))!important;
+  }
 }
 
 html.cthy-theme .cthy-message-assistant {
@@ -1331,6 +1352,11 @@ html.cthy-theme .composer-surface-chrome {
 html.cthy-theme.electron-dark .composer-surface-chrome {
   background:linear-gradient(145deg,#10254d,#07142e 72%,#17153d)!important;
   box-shadow:0 0 0 1px rgba(116,181,255,.13),0 22px 60px rgba(0,0,0,.68),inset 3px 0 rgba(111,205,255,.44),inset -3px 0 rgba(214,193,141,.35)!important;
+}
+
+html.cthy-theme.cthy-is-home .composer-surface-chrome[data-composer-utility-bar-variant="home"]
+> [class*="ComposerLayoutBody"][data-composer-layout] {
+  background:var(--color-background-control)!important;
 }
 
 .cthy-theme .composer-surface-chrome::after {

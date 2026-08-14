@@ -587,7 +587,40 @@ html.tessalume-theme-active [data-tessalume-surface="sidebar"] [data-app-action-
   padding-right:30px!important;
 }
 
-html.tessalume-theme-active [data-tessalume-surface="task-title"] { padding-right:145px!important; }
+/* The primary title is content-sized, while its maximum width follows the
+   measured lane before the centered identity. The native inner max-width is
+   lifted so ellipsis appears only after that whole lane is exhausted. */
+html.tessalume-theme-active.tessalume-is-task body [data-tessalume-surface="task-title"] {
+  display:inline-flex!important;
+  align-items:center!important;
+  width:max-content!important;
+  min-width:0!important;
+  max-width:calc(100vw - 24px)!important;
+  padding-right:9px!important;
+  overflow:hidden!important;
+}
+
+html.tessalume-theme-active.tessalume-is-task body [data-tessalume-surface="task-title"]:has(button.truncate) {
+  width:max-content!important;
+  max-width:var(--tessalume-task-title-primary-width,min(680px,max(160px,calc(50vw - 330px))))!important;
+}
+
+html.tessalume-theme-active.tessalume-is-task body [data-tessalume-surface="task-title"]>span {
+  flex:0 1 auto!important;
+  width:max-content!important;
+  max-width:100%!important;
+  min-width:0!important;
+}
+
+html.tessalume-theme-active.tessalume-is-task body [data-tessalume-surface="task-title"] :is(button.truncate,span.truncate) {
+  width:auto!important;
+  min-width:0!important;
+  max-width:100%!important;
+  margin-inline-start:0!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
 
 html.tessalume-theme-active [data-tessalume-message="assistant"] {
   position:relative!important;
@@ -624,6 +657,15 @@ html.tessalume-theme-active.tessalume-is-task .thread-scroll-container > :first-
   #tessalume-theme-root[data-tessalume-template-version="1.0"] [data-theme-part="identity-copy"] { display:none; }
   #tessalume-theme-root[data-tessalume-template-version="1.0"] [data-theme-role="hero"] { left:3%;top:13%;width:61%; }
   #tessalume-theme-root[data-tessalume-template-version="1.0"] [data-theme-part="hero-motion"] { width:min(260px,92%);gap:18px; }
+  html.tessalume-theme-active.tessalume-is-task body [data-tessalume-surface="task-title"]:has(button.truncate) {
+    max-width:var(--tessalume-task-title-primary-width,max(160px,calc(100vw - 390px)))!important;
+  }
+}
+
+@media (max-width:600px) {
+  html.tessalume-theme-active.tessalume-is-task body [data-tessalume-surface="task-title"]:has(button.truncate) {
+    max-width:var(--tessalume-task-title-primary-width,calc(100vw - 180px))!important;
+  }
 }
 
 @media (max-height:720px) {

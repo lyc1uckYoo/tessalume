@@ -1532,8 +1532,8 @@ html.dny-theme .dny-task-title[data-tessalume-surface="task-title"],html.dny-the
   min-height:32px!important;
   box-sizing:border-box!important;
   width:max-content!important;
-  max-width:min(480px,48vw)!important;
-  padding:5px 104px 5px 9px!important;
+  max-width:min(680px,calc(50vw - 215px))!important;
+  padding:5px 9px!important;
   border:1px solid color-mix(in srgb,var(--dny-secondary) 52%,var(--dny-primary))!important;
   border-radius:5px 14px 5px 14px!important;
   color:var(--dny-text)!important;
@@ -1541,12 +1541,16 @@ html.dny-theme .dny-task-title[data-tessalume-surface="task-title"],html.dny-the
   box-shadow:inset 3px 0 var(--dny-secondary),0 5px 18px color-mix(in srgb,var(--dny-deep) 16%,transparent)!important;
 }
 
-html.dny-theme .dny-task-title>span {
-  flex:0 1 auto!important;
-  min-width:0;
+html.dny-theme .dny-task-title[data-tessalume-surface="task-title"]:has(button.truncate) {
+  width:max-content!important;
+  max-width:var(--tessalume-task-title-primary-width,min(680px,max(160px,calc(50vw - 330px))))!important;
 }
 
-html.dny-theme .dny-task-title button.truncate {
+html.dny-theme .dny-task-title>span {
+  flex:0 1 auto!important; width:max-content!important; max-width:100%!important; min-width:0;
+}
+
+html.dny-theme .dny-task-title button.truncate { margin-inline-start:0!important;
   max-width:100%!important;
   overflow:hidden!important;
   background:transparent!important;
@@ -1565,10 +1569,12 @@ html.dny-theme .dny-task-title svg {
 
 html.dny-theme .dny-task-title::after {
   content:"BUBBLE DOMAIN / 01";
-  position:absolute;
-  right:12px;
-  top:50%;
-  transform:translateY(-50%);
+  display:inline-flex!important;
+  position:static!important;
+  inset:auto!important;
+  flex:0 0 auto!important;
+  margin-left:12px!important;
+  transform:none!important;
   color:color-mix(in srgb,var(--dny-primary) 82%,var(--dny-text-3));
   font:700 7px/1 var(--dny-font-mono);
   letter-spacing:.12em;
@@ -1591,7 +1597,7 @@ html.dny-theme.electron-dark .dny-task-title {
   box-shadow:inset 3px 0 var(--dny-secondary),0 5px 18px rgba(0,0,0,.44)!important;
 }
 
-html.dny-theme.electron-dark .dny-task-title button.truncate {
+html.dny-theme.electron-dark .dny-task-title button.truncate { margin-inline-start:0!important;
   text-shadow:0 1px 3px #000;
 }
 
@@ -1603,6 +1609,20 @@ html.dny-theme.electron-dark .dny-task-title svg {
 html.dny-theme.electron-dark .dny-task-title::after {
   content:"VOID DOMAIN / DNY";
   color:color-mix(in srgb,var(--dny-accent) 88%,var(--dny-text-3));
+}
+
+@media (max-width:920px) {
+  html.dny-theme .dny-task-title[data-tessalume-surface="task-title"]:has(button.truncate) {
+    width:max-content!important;
+    max-width:var(--tessalume-task-title-primary-width,max(160px,calc(100vw - 390px)))!important;
+  }
+}
+
+@media (max-width:600px) {
+  html.dny-theme .dny-task-title[data-tessalume-surface="task-title"]:has(button.truncate) {
+    width:max-content!important;
+    max-width:var(--tessalume-task-title-primary-width,calc(100vw - 180px))!important;
+  }
 }
 
 html.dny-theme:not(.electron-dark) .dny-task-title {

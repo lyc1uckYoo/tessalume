@@ -29,6 +29,8 @@
     let layoutTrackingStartedAt = 0;
     let layoutLastSignature = "";
     let layoutStableFrames = 0;
+    let taskTitleWidthManaged = false;
+    let taskTitleWidthPrevious = "";
     const adaptiveLayout = spec.adaptiveLayout === true ||
       (spec.adaptiveLayout && typeof spec.adaptiveLayout === "object");
 
