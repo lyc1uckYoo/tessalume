@@ -981,6 +981,8 @@ internal static partial class TestSuite
                !firstRunXaml.Contains("Text=\"v1.2\"", StringComparison.Ordinal) &&
                readme.Contains("release-2.0.2", StringComparison.Ordinal) &&
                readme.Contains("内置 12 套支持亮色与暗色的完整角色主题", StringComparison.Ordinal) &&
+               readme.Contains("莫宁·初星穹镜与西格莉卡·语义晨曦", StringComparison.Ordinal) &&
+               readme.Contains("themes/                          12 套内置主题源码", StringComparison.Ordinal) &&
                File.Exists(Path.Combine(repositoryRoot, "CHANGELOG.md")),
             "Version metadata and release documentation must agree on Tessalume 2.0.2.");
     }

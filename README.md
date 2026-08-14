@@ -19,7 +19,7 @@ Tessalume 是一款开源、便携、以本机为中心的 Windows 主题工作�
 
 ## 一个软件，完成整套主题体验
 
-Tessalume 内置 12 套支持亮色与暗色的完整角色主题。你可以搜索、筛选、收藏和预览主题，再一键应用到 Codex；顶部浮窗则负责日常快速切换、亮暗模式和恢复默认外观。
+Tessalume 内置 12 套支持亮色与暗色的完整角色主题，本次新增莫宁·初星穹镜与西格莉卡·语义晨曦。你可以搜索、筛选、收藏和预览主题，再一键应用到 Codex；顶部浮窗则负责日常快速切换、亮暗模式和恢复默认外观。
 
 所有主题与设置都保存在程序所在目录。Tessalume 不修改 Codex 安装文件，不读取聊天内容，也不会替你发送 Codex 任务。
 
@@ -124,7 +124,7 @@ src/Tessalume.App/Creator/       创作中心的领域、应用、基础设施�
 src/Tessalume.App/Compatibility/ 页面兼容运行时源码
 src/Tessalume.Core/              主题、备份、兼容、运行时与更新核心
 tests/                           产品回归测试和真实更新进程夹具
-themes/                          10 套内置主题源码
+themes/                          12 套内置主题源码
 .agents/skills/                  Codex 主题创作 Skill 与模板
 ```
 
