@@ -83,56 +83,7 @@
         </Style>
     </UserControl.Resources>
     <StackPanel>
-        <Border Background="{DynamicResource HomeToolbarSurface}"
-                BorderBrush="{DynamicResource HomeToolbarBorder}"
-                BorderThickness="1"
-                CornerRadius="14"
-                Padding="11,9">
-            <WrapPanel x:Name="WorkbenchContextPanel">
-                <StackPanel Width="304" Margin="0,0,14,0">
-                    <TextBlock Text="编辑区域" Foreground="{DynamicResource MutedText}" FontSize="9" FontWeight="SemiBold" Margin="2,0,0,5" />
-                    <Border Height="34" Background="{DynamicResource SettingsControlSurface}" BorderBrush="{DynamicResource SettingsControlBorder}" BorderThickness="1" CornerRadius="10" Padding="3">
-                        <UniformGrid Columns="3">
-                            <Button x:Name="HeroRegionButton" Style="{StaticResource WorkbenchSegmentButton}" Tag="active" CommandParameter="hero" Content="首页横幅" Click="Region_Click" Margin="0,0,3,0" AutomationProperties.Name="编辑首页横幅" />
-                            <Button x:Name="SidebarRegionButton" Style="{StaticResource WorkbenchSegmentButton}" Tag="inactive" CommandParameter="sidebar" Content="左栏图片" Click="Region_Click" Margin="0,0,3,0" AutomationProperties.Name="编辑左栏图片" />
-                            <Button x:Name="ChatRegionButton" Style="{StaticResource WorkbenchSegmentButton}" Tag="inactive" CommandParameter="chat" Content="聊天背景" Click="Region_Click" AutomationProperties.Name="编辑聊天背景" />
-                        </UniformGrid>
-                    </Border>
-                </StackPanel>
-                <StackPanel Width="136" Margin="0,0,14,0">
-                    <TextBlock Text="参数套" Foreground="{DynamicResource MutedText}" FontSize="9" FontWeight="SemiBold" Margin="2,0,0,5" />
-                    <Border Height="34" Background="{DynamicResource SettingsControlSurface}" BorderBrush="{DynamicResource SettingsControlBorder}" BorderThickness="1" CornerRadius="10" Padding="3">
-                        <UniformGrid Columns="2">
-                            <Button x:Name="LightModeButton" Style="{StaticResource WorkbenchSegmentButton}" Content="亮色" Click="EditingMode_Click" Tag="active" CommandParameter="light" ToolTip="只切换工作台编辑目标，不要求 Codex 在线" AutomationProperties.Name="编辑亮色参数" />
-                            <Button x:Name="DarkModeButton" Style="{StaticResource WorkbenchSegmentButton}" Content="暗色" Click="EditingMode_Click" Tag="inactive" CommandParameter="dark" ToolTip="只切换工作台编辑目标，不要求 Codex 在线" AutomationProperties.Name="编辑暗色参数" />
-                        </UniformGrid>
-                    </Border>
-                </StackPanel>
-                <StackPanel MinWidth="164">
-                    <TextBlock Text="同步状态" Foreground="{DynamicResource MutedText}" FontSize="9" FontWeight="SemiBold" Margin="2,0,0,5" />
-                    <Border x:Name="SyncStatusBadge"
-                            Height="34"
-                            Background="{DynamicResource SettingsControlSurface}"
-                            BorderBrush="{DynamicResource SettingsControlBorder}"
-                            BorderThickness="1"
-                            CornerRadius="10"
-                            Padding="9,0"
-                            AutomationProperties.Name="工作台应用状态"
-                            AutomationProperties.LiveSetting="Polite">
-                        <Grid VerticalAlignment="Center">
-                            <Grid.ColumnDefinitions><ColumnDefinition Width="13" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                            <Ellipse x:Name="SyncStatusDot" Width="6" Height="6" Fill="{DynamicResource SubtleText}" VerticalAlignment="Center" />
-                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                <TextBlock x:Name="SyncStatusText" Text="未连接" Foreground="{DynamicResource PrimaryText}" FontSize="9.5" FontWeight="SemiBold" AutomationProperties.LiveSetting="Polite" />
-                                <TextBlock x:Name="SyncStatusDetailText" Text="仍可编辑与预览" Foreground="{DynamicResource MutedText}" FontSize="8.5" Margin="6,0,0,0" AutomationProperties.LiveSetting="Polite" />
-                            </StackPanel>
-                        </Grid>
-                    </Border>
-                </StackPanel>
-            </WrapPanel>
-        </Border>
-
-        <Grid x:Name="WorkspaceGrid" Margin="0,12,0,0">
+        <Grid x:Name="WorkspaceGrid">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition x:Name="CanvasColumn" Width="1.7*" />
                 <ColumnDefinition x:Name="WorkspaceGapColumn" Width="12" />
@@ -154,13 +105,63 @@
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
+                        <RowDefinition Height="10" />
+                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="9" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="9" />
                         <RowDefinition Height="*" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    <Grid>
+                    <Border Grid.Row="0"
+                            BorderBrush="{DynamicResource SettingsControlBorder}"
+                            BorderThickness="0,0,0,1"
+                            Padding="0,0,0,10">
+                        <WrapPanel x:Name="WorkbenchContextPanel">
+                            <StackPanel Width="286" Margin="0,0,12,0">
+                                <TextBlock Text="编辑区域" Foreground="{DynamicResource MutedText}" FontSize="8.5" FontWeight="SemiBold" Margin="2,0,0,4" />
+                                <Border Height="32" Background="{DynamicResource SettingsControlSurface}" BorderBrush="{DynamicResource SettingsControlBorder}" BorderThickness="1" CornerRadius="9" Padding="3">
+                                    <UniformGrid Columns="3">
+                                        <Button x:Name="HeroRegionButton" Style="{StaticResource WorkbenchSegmentButton}" Tag="active" CommandParameter="hero" Content="首页横幅" Click="Region_Click" Margin="0,0,3,0" AutomationProperties.Name="编辑首页横幅" />
+                                        <Button x:Name="SidebarRegionButton" Style="{StaticResource WorkbenchSegmentButton}" Tag="inactive" CommandParameter="sidebar" Content="左栏图片" Click="Region_Click" Margin="0,0,3,0" AutomationProperties.Name="编辑左栏图片" />
+                                        <Button x:Name="ChatRegionButton" Style="{StaticResource WorkbenchSegmentButton}" Tag="inactive" CommandParameter="chat" Content="聊天背景" Click="Region_Click" AutomationProperties.Name="编辑聊天背景" />
+                                    </UniformGrid>
+                                </Border>
+                            </StackPanel>
+                            <StackPanel Width="134" Margin="0,0,12,0">
+                                <TextBlock Text="编辑参数套" Foreground="{DynamicResource MutedText}" FontSize="8.5" FontWeight="SemiBold" Margin="2,0,0,4" />
+                                <Border Height="32" Background="{DynamicResource SettingsControlSurface}" BorderBrush="{DynamicResource SettingsControlBorder}" BorderThickness="1" CornerRadius="9" Padding="3">
+                                    <UniformGrid Columns="2">
+                                        <Button x:Name="LightModeButton" Style="{StaticResource WorkbenchSegmentButton}" Content="亮色" Click="EditingMode_Click" Tag="active" CommandParameter="light" ToolTip="只切换工作台编辑目标，不要求 Codex 在线" AutomationProperties.Name="编辑亮色参数" />
+                                        <Button x:Name="DarkModeButton" Style="{StaticResource WorkbenchSegmentButton}" Content="暗色" Click="EditingMode_Click" Tag="inactive" CommandParameter="dark" ToolTip="只切换工作台编辑目标，不要求 Codex 在线" AutomationProperties.Name="编辑暗色参数" />
+                                    </UniformGrid>
+                                </Border>
+                            </StackPanel>
+                            <StackPanel MinWidth="158">
+                                <TextBlock Text="保存与同步" Foreground="{DynamicResource MutedText}" FontSize="8.5" FontWeight="SemiBold" Margin="2,0,0,4" />
+                                <Border x:Name="SyncStatusBadge"
+                                        Height="32"
+                                        Background="{DynamicResource SettingsControlSurface}"
+                                        BorderBrush="{DynamicResource SettingsControlBorder}"
+                                        BorderThickness="1"
+                                        CornerRadius="9"
+                                        Padding="9,0"
+                                        AutomationProperties.Name="工作台应用状态"
+                                        AutomationProperties.LiveSetting="Polite">
+                                    <Grid VerticalAlignment="Center">
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="13" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                        <Ellipse x:Name="SyncStatusDot" Width="6" Height="6" Fill="{DynamicResource SubtleText}" VerticalAlignment="Center" />
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                            <TextBlock x:Name="SyncStatusText" Text="未连接" Foreground="{DynamicResource PrimaryText}" FontSize="9.5" FontWeight="SemiBold" AutomationProperties.LiveSetting="Polite" />
+                                            <TextBlock x:Name="SyncStatusDetailText" Text="仍可编辑与预览" Foreground="{DynamicResource MutedText}" FontSize="8.5" Margin="6,0,0,0" AutomationProperties.LiveSetting="Polite" />
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </StackPanel>
+                        </WrapPanel>
+                    </Border>
+
+                    <Grid Grid.Row="2">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
@@ -197,7 +198,7 @@
                         </StackPanel>
                     </Grid>
 
-                    <Grid Grid.Row="2">
+                    <Grid Grid.Row="4">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
@@ -266,9 +267,9 @@
                         </Border>
                     </Grid>
 
-                    <local:ArtworkCanvasControl x:Name="PreviewCanvas" Grid.Row="4" MinHeight="470" />
+                    <local:ArtworkCanvasControl x:Name="PreviewCanvas" Grid.Row="6" MinHeight="470" />
 
-                    <Grid Grid.Row="5" Margin="0,9,0,0">
+                    <Grid Grid.Row="7" Margin="0,9,0,0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />

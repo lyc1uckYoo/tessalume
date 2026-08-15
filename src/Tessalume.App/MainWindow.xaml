@@ -706,26 +706,26 @@
                         </Grid>
 
                         <Border x:Name="SettingsThemeControlBar"
-                                Margin="0,15,0,0"
-                                MinHeight="66"
-                                Background="{DynamicResource SurfaceElevated}"
-                                BorderBrush="{DynamicResource HomeToolbarBorder}"
+                                Margin="0,11,0,0"
+                                MinHeight="54"
+                                Background="{DynamicResource SettingsControlSurface}"
+                                BorderBrush="{DynamicResource SettingsControlBorder}"
                                 BorderThickness="1"
-                                CornerRadius="16"
-                                Padding="12,9"
+                                CornerRadius="13"
+                                Padding="10,7"
                                 SnapsToDevicePixels="True">
                             <Grid x:Name="SettingsThemeSwitchPanel">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="34" />
-                                    <ColumnDefinition Width="10" />
+                                    <ColumnDefinition Width="28" />
+                                    <ColumnDefinition Width="9" />
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="12" />
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="9" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
-                                <Border Width="34" Height="34" CornerRadius="11" Background="{DynamicResource AccentSoft}" VerticalAlignment="Center">
-                                    <Path Width="16" Height="16" Data="M 8,1 L 9.7,6.3 L 15,8 L 9.7,9.7 L 8,15 L 6.3,9.7 L 1,8 L 6.3,6.3 Z"
+                                <Border Width="28" Height="28" CornerRadius="9" Background="{DynamicResource AccentSoft}" VerticalAlignment="Center">
+                                    <Path Width="13" Height="13" Data="M 8,1 L 9.7,6.3 L 15,8 L 9.7,9.7 L 8,15 L 6.3,9.7 L 1,8 L 6.3,6.3 Z"
                                           Stretch="Uniform" Fill="{DynamicResource Accent}" />
                                 </Border>
                                 <StackPanel Grid.Column="2" VerticalAlignment="Center" MinWidth="80">
@@ -733,7 +733,7 @@
                                         <TextBlock x:Name="SettingsCurrentThemeNameText"
                                                    Text="Codex 默认外观"
                                                    Foreground="{DynamicResource PrimaryText}"
-                                                   FontSize="12.5"
+                                                   FontSize="11.5"
                                                    FontWeight="SemiBold"
                                                    TextTrimming="CharacterEllipsis"
                                                    MaxWidth="360" />
@@ -749,7 +749,7 @@
                                 <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center">
                                     <Button x:Name="SettingsPreviousThemeButton"
                                             Style="{StaticResource SettingsIconButton}"
-                                            Width="34" Height="34"
+                                            Width="30" Height="30"
                                             Click="SettingsPreviousTheme_Click"
                                             ToolTip="应用上一个可切换主题"
                                             AutomationProperties.Name="应用上一个可切换主题">
@@ -757,7 +757,7 @@
                                     </Button>
                                     <Button x:Name="SettingsNextThemeButton"
                                             Style="{StaticResource SettingsIconButton}"
-                                            Width="34" Height="34"
+                                            Width="30" Height="30"
                                             Margin="5,0,0,0"
                                             Click="SettingsNextTheme_Click"
                                             ToolTip="应用下一个可切换主题"
@@ -767,12 +767,12 @@
                                 </StackPanel>
                                 <Button x:Name="SettingsColorModeButton"
                                         Grid.Column="6"
-                                        Width="132"
-                                        Height="40"
+                                        Width="124"
+                                        Height="36"
                                         Style="{StaticResource SettingsWideControlButton}"
                                         Click="SettingsColorMode_Click"
                                         ToolTip="切换 Codex 亮暗模式">
-                                    <Grid Width="108">
+                                    <Grid Width="102">
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="24" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
                                         <Grid Width="20" Height="20" VerticalAlignment="Center">
                                             <Path x:Name="SettingsModeMoonIcon" Visibility="Collapsed" Data="M 15,3 C 9,4 7,9 8.5,13.5 C 10,18 14.5,19.5 19,17 C 17,20.5 12.5,22 8.5,20 C 4,17.8 2,12.5 4,8 C 6,3.8 11,1.7 15,3 Z" Fill="{DynamicResource PrimaryText}" Stretch="Uniform" Width="16" Height="16" />
