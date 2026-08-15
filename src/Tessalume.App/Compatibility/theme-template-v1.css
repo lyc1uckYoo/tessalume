@@ -124,13 +124,8 @@ html.tessalume-theme-active [data-tessalume-surface="chat-paper"] :is(div,button
   box-shadow:none!important;
 }
 
-/* Light-mode readability foundation. Themes provide the artwork-aware values
-   below; the shared layer keeps text opaque and gives the background a quiet
-   reading field without painting the message bubbles themselves. */
-html.tessalume-theme-active.tessalume-is-task:not(.electron-dark) [data-tessalume-surface="main"]::after {
-  background:var(--tessalume-v1-light-chat-mask,linear-gradient(90deg,rgba(250,252,255,.78),rgba(250,252,255,.48) 48%,rgba(250,252,255,.18) 78%,rgba(250,252,255,.08)))!important;
-}
-
+/* Light-mode text remains opaque while the artwork-aware reading field is
+   composed exactly once from each slot's versioned gradient/readability data. */
 html.tessalume-theme-active:not(.electron-dark) [data-tessalume-message="assistant"] [data-tessalume-surface="markdown"],
 html.tessalume-theme-active:not(.electron-dark) [data-tessalume-message="user"] [data-user-message-bubble="true"] {
   color:var(--tessalume-v1-light-text-primary,#14202a)!important;
@@ -268,11 +263,6 @@ html[data-tessalume-readability~="sidebar-light"]:not(.electron-dark) [data-tess
 html[data-tessalume-readability~="sidebar-dark"].electron-dark [data-tessalume-surface="sidebar"] :is([data-app-action-sidebar-project-row],[data-app-action-sidebar-thread-row]) {
   background:color-mix(in srgb,var(--color-background-primary,#fff) 78%,transparent)!important;
   backdrop-filter:blur(8px)!important;
-}
-
-html[data-tessalume-readability~="chat-light"]:not(.electron-dark).tessalume-is-task main[data-tessalume-surface="main"]::after,
-html[data-tessalume-readability~="chat-dark"].electron-dark.tessalume-is-task main[data-tessalume-surface="main"]::after {
-  background:linear-gradient(90deg,color-mix(in srgb,var(--color-background-primary,#fff) 88%,transparent),color-mix(in srgb,var(--color-background-primary,#fff) 56%,transparent) 58%,transparent 92%)!important;
 }
 
 /* Display preferences use runtime-computed values. These selectors provide an
