@@ -59,7 +59,13 @@ public sealed partial class ThemeRuntime
         ArgumentException.ThrowIfNullOrWhiteSpace(themeId);
         var themeIdJson = JsonSerializer.Serialize(themeId);
         var targets = await _discovery.DiscoverAsync(port, cancellationToken);
-        foreach (var target in targets)
+        // The avatar overlay is commonly returned before the main Codex page and
+        // can never contain the artwork surfaces. Prefer the main page so metrics
+        // become visible in the workbench with a single CDP round trip.
+        foreach (var target in targets.OrderBy(target =>
+                     target.Url.Contains("initialRoute=", StringComparison.OrdinalIgnoreCase)
+                         ? 1
+                         : 0))
         {
             await using var session = new CdpSession();
             try

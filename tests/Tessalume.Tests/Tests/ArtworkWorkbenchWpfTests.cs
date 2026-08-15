@@ -87,6 +87,34 @@ internal static partial class TestSuite
                 { Brightness: 112, Zoom: 118, OffsetX: 24, OffsetY: -12 },
                     "The view must render the normalized settings produced by its application session.");
 
+                view.SidebarRegionButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                view.SetConnectionState(true);
+                view.SetSurfaceMetrics(
+                    ArtworkRegion.Sidebar,
+                    new ArtworkSurfacePreviewMetrics(
+                        1d,
+                        1d,
+                        1d,
+                        IsLive: false,
+                        "theme-not-committed-yet"));
+                Ensure(view.SurfaceMetricsText.Text.Contains(
+                           "在线待校准 · 标准预览 260×800",
+                           StringComparison.Ordinal) &&
+                       view.PreviewCanvas.TargetSize == new ArtworkSize(260d, 800d),
+                    "An early connected probe miss must stay explicitly labeled as a standard preview.");
+                view.SetSurfaceMetrics(
+                    ArtworkRegion.Sidebar,
+                    new ArtworkSurfacePreviewMetrics(
+                        275d,
+                        998d,
+                        1.25d,
+                        IsLive: true,
+                        "current Codex task surface"));
+                Ensure(view.SurfaceMetricsText.Text == "在线实测 275×998 · DPR 1.25" &&
+                       view.PreviewCanvas.TargetSize == new ArtworkSize(275d, 998d),
+                    "The next successful probe must replace standard geometry in both the badge and primary canvas without another user action.");
+                view.HeroRegionButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+
                 var typedInspector = new ArtworkInspectorView();
                 var cartethyiaPlacement = new ThemeArtworkPlacementSpec
                 {

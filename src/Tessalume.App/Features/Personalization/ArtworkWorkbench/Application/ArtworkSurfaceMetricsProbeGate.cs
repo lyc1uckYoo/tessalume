@@ -13,6 +13,12 @@ internal static class ArtworkSurfaceMetricsProbeGate
 {
     internal const int SupportedCompositionProtocolVersion = 1;
 
+    // A theme handoff is atomic in the renderer, but the first workbench probe can
+    // still land just before that commit. Keep the Artwork Studio refresh cadence
+    // below one second so a connected standard preview is replaced by live geometry
+    // without requiring another click or edit.
+    internal static readonly TimeSpan RefreshInterval = TimeSpan.FromMilliseconds(800);
+
     public static ArtworkSurfaceMetricsProbeDisposition Evaluate(
         ThemeArtworkSurfaceMetricsSnapshot? snapshot,
         int probeVersion,

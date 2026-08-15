@@ -34,7 +34,7 @@ public partial class MainWindow
         ArtworkWorkbench.NotificationRequested += message => ShowToast(message);
         _artworkConnectionTimer = new DispatcherTimer(DispatcherPriority.Background)
         {
-            Interval = TimeSpan.FromSeconds(3),
+            Interval = ArtworkSurfaceMetricsProbeGate.RefreshInterval,
         };
         _artworkConnectionTimer.Tick += ArtworkConnectionTimer_Tick;
     }
@@ -295,6 +295,10 @@ public partial class MainWindow
     {
         _editingVisualDarkMode = e.Mode == ArtworkColorMode.Dark;
         UpdateSettingsVisualHeader();
+        // Do not leave the canvas showing the opposite color mode's computed
+        // values until the periodic refresh. A mode switch is an explicit metrics
+        // invalidation point and should probe the live surface immediately.
+        _ = ProbeArtworkConnectionAsync(_artworkContextThemeId);
     }
 
 }

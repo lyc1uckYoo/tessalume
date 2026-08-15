@@ -117,6 +117,26 @@ internal static partial class TestSuite
                    snapshot.ThemeId,
                    editingDarkMode: true) == ArtworkSurfaceMetricsProbeDisposition.ClearCurrent,
             "A previous renderer composition protocol must never be presented as exact live artwork geometry.");
+        Ensure(ArtworkSurfaceMetricsProbeGate.RefreshInterval <= TimeSpan.FromSeconds(1),
+            "A connected standard preview must retry quickly after an early pre-commit metrics miss.");
+
+        var firstPreCommitProbe = ArtworkSurfaceMetricsProbeGate.Evaluate(
+            snapshot: null,
+            probeVersion: 20,
+            currentVersion: 20,
+            requestedThemeId: snapshot.ThemeId,
+            contextThemeId: snapshot.ThemeId,
+            editingDarkMode: true);
+        var nextPostCommitProbe = ArtworkSurfaceMetricsProbeGate.Evaluate(
+            snapshot,
+            probeVersion: 21,
+            currentVersion: 21,
+            requestedThemeId: snapshot.ThemeId,
+            contextThemeId: snapshot.ThemeId,
+            editingDarkMode: true);
+        Ensure(firstPreCommitProbe == ArtworkSurfaceMetricsProbeDisposition.ClearCurrent &&
+               nextPostCommitProbe == ArtworkSurfaceMetricsProbeDisposition.Apply,
+            "An early probe before the atomic theme commit must not block the next automatic live-metrics refresh.");
     }
 
     static Task ArtworkWorkbenchUndoPreservesExternalDisplayAsync()
