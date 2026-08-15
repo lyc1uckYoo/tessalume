@@ -4,7 +4,7 @@
   const themeId = __TESSALUME_PAYLOAD_THEME_ID_JSON__;
   const templateCssText = __TESSALUME_PAYLOAD_TEMPLATE_CSS_JSON__;
   const cssText = __TESSALUME_PAYLOAD_CSS_JSON__;
-  const scriptText = __TESSALUME_PAYLOAD_SCRIPT_JSON__;
+  const hasThemeScript = __TESSALUME_PAYLOAD_HAS_SCRIPT__;
   const stagedAssetDataUrls = window.__TESSALUME_STAGED_ASSETS__;
   const stagedVisualSettings = window.__TESSALUME_STAGED_VISUAL_SETTINGS__;
   const stagedVisualImages = window.__TESSALUME_STAGED_VISUAL_IMAGES__;

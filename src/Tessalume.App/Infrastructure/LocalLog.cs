@@ -47,6 +47,15 @@ internal static class LocalLog
                         .Append(exception.GetType().Name)
                         .Append(": ")
                         .Append(exception.Message.ReplaceLineEndings(" "));
+                    var inner = exception.InnerException;
+                    for (var depth = 0; inner is not null && depth < 3; depth++)
+                    {
+                        line.Append("  <-  ")
+                            .Append(inner.GetType().Name)
+                            .Append(": ")
+                            .Append(inner.Message.ReplaceLineEndings(" "));
+                        inner = inner.InnerException;
+                    }
                 }
                 File.AppendAllText(_logPath, line.AppendLine().ToString(), Encoding.UTF8);
             }

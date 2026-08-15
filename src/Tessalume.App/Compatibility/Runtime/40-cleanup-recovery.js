@@ -276,7 +276,7 @@
     repairCodexHomeDom();
     context.observe(document.documentElement, { childList: true, subtree: true }, repairCodexHomeDom);
 
-    if (scriptText) {
+    if (hasThemeScript) {
       const registerTheme = (candidate) => {
         if (!candidate || typeof candidate !== "object") {
           throw new TypeError("registerTheme expects a theme lifecycle object");
@@ -284,7 +284,9 @@
         definition = candidate;
       };
       try {
-        eval(scriptText);
+        (() => {
+          __TESSALUME_PAYLOAD_SCRIPT_BODY__
+        })();
       } catch (error) {
         throw new Error(`TESSALUME_THEME_SCRIPT: ${error?.message || String(error)}`);
       }
@@ -299,7 +301,7 @@
     }
 
     window.__TESSALUME_THEME_ID__ = themeId;
-    return { installed: true, themeId, fingerprint, advanced: Boolean(scriptText) };
+    return { installed: true, themeId, fingerprint, advanced: hasThemeScript };
   } catch (error) {
     await dispose();
     throw error;

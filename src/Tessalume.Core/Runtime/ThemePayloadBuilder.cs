@@ -79,7 +79,14 @@ public sealed class ThemePayloadBuilder
             .Replace("__TESSALUME_PAYLOAD_COMPATIBILITY_PROFILE_JSON__", compatibilityProfile, StringComparison.Ordinal)
             .Replace("__TESSALUME_PAYLOAD_TEMPLATE_CSS_JSON__", JsonSerializer.Serialize(templateCss), StringComparison.Ordinal)
             .Replace("__TESSALUME_PAYLOAD_CSS_JSON__", JsonSerializer.Serialize(css), StringComparison.Ordinal)
-            .Replace("__TESSALUME_PAYLOAD_SCRIPT_JSON__", JsonSerializer.Serialize(script), StringComparison.Ordinal)
+            .Replace(
+                "__TESSALUME_PAYLOAD_HAS_SCRIPT__",
+                string.IsNullOrWhiteSpace(script) ? "false" : "true",
+                StringComparison.Ordinal)
+            .Replace(
+                "__TESSALUME_PAYLOAD_SCRIPT_BODY__",
+                script,
+                StringComparison.Ordinal)
             .Replace("__TESSALUME_PAYLOAD_ASSETS_JSON__", JsonSerializer.Serialize(assets), StringComparison.Ordinal)
             .Replace("__TESSALUME_PAYLOAD_CONFIG_JSON__", JsonSerializer.Serialize(package.Manifest.Config), StringComparison.Ordinal)
             .Replace("__TESSALUME_PAYLOAD_ALLOW_PET_OVERLAY__", package.Manifest.Compatibility.PetOverlay ? "true" : "false", StringComparison.Ordinal)
