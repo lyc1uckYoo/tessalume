@@ -108,7 +108,7 @@ internal static class CompatibilityRuntimeComposer
             !source.Contains("syncRouteState", StringComparison.Ordinal) ||
             !source.Contains("syncAdaptiveVisibility", StringComparison.Ordinal) ||
             !source.Contains("decorateSharedSurfaces", StringComparison.Ordinal) ||
-            !source.Contains("const dispose = async () =>", StringComparison.Ordinal) ||
+            !source.Contains("const dispose = async (options = null) =>", StringComparison.Ordinal) ||
             !source.TrimEnd().EndsWith("})()", StringComparison.Ordinal))
         {
             throw new InvalidDataException("兼容运行时模块组装结果不完整。");

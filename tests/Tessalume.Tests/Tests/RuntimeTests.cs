@@ -53,31 +53,49 @@ internal static partial class TestSuite
             "The runtime must discover an already injected compatible predecessor without retaining its brand key.");
         Ensure(runtime.Contains("typeof candidate.context.mountCanonicalTheme === \"function\"", StringComparison.Ordinal),
             "Predecessor discovery must require the canonical Tessalume runtime shape.");
-        Ensure(runtime.Contains("await candidate.dispose()", StringComparison.Ordinal),
-            "A compatible predecessor runtime must be disposed before the renamed runtime mounts.");
+        Ensure(runtime.Contains(
+                "await candidate.dispose({ preserveSharedAppearance });",
+                StringComparison.Ordinal),
+            "A compatible predecessor runtime must preserve the prepared successor shell during handoff.");
     }
 
     static async Task RuntimePreflightsAssetsBeforeReplacementAsync()
     {
         var repositoryRoot = FindRepositoryRoot();
         var runtime = await ReadCompatibilityRuntimeSourceAsync(repositoryRoot);
-        var preflightIndex = runtime.IndexOf(
-            "assetAssignments.push([variable, createAssetObjectUrl(dataUrl)]);",
+        var preloadIndex = runtime.IndexOf(
+            "pendingAssetDecodes.push(preloadAssetObjectUrl(dataUrl, objectUrl));",
             StringComparison.Ordinal);
-        var replacementIndex = preflightIndex < 0
+        var decodeIndex = preloadIndex < 0
             ? -1
             : runtime.IndexOf(
-                "if (!(await disposeCompatibleRuntime())",
-                preflightIndex,
+                "await Promise.all(pendingAssetDecodes);",
+                preloadIndex,
                 StringComparison.Ordinal);
-        var attachIndex = replacementIndex < 0
+        var attachIndex = decodeIndex < 0
             ? -1
             : runtime.IndexOf(
                 "appendChild(style);",
+                decodeIndex,
+                StringComparison.Ordinal);
+        var replacementIndex = attachIndex < 0
+            ? -1
+            : runtime.IndexOf(
+                "if (!(await disposeCompatibleRuntime(true))",
+                attachIndex,
+                StringComparison.Ordinal);
+        var reassertIndex = replacementIndex < 0
+            ? -1
+            : runtime.IndexOf(
+                "document.documentElement.classList.add(\"tessalume-theme-active\"",
                 replacementIndex,
                 StringComparison.Ordinal);
-        Ensure(preflightIndex >= 0 && replacementIndex > preflightIndex && attachIndex > replacementIndex,
-            "Theme assets must be decoded before the active runtime is disposed, then attached after replacement.");
+        Ensure(preloadIndex >= 0 &&
+               decodeIndex > preloadIndex &&
+               attachIndex > decodeIndex &&
+               replacementIndex > attachIndex &&
+               reassertIndex > replacementIndex,
+            "The successor theme must decode and attach before predecessor disposal, then reassert shared appearance atomically.");
         Ensure(runtime.Contains(
                 "for (const objectUrl of assetObjectUrls) URL.revokeObjectURL(objectUrl);",
                 StringComparison.Ordinal),

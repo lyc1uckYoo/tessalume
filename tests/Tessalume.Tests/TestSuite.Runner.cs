@@ -67,6 +67,19 @@ internal static partial class TestSuite
             return await ApplyPackageDefaultsRuntimeAsync(defaultsPort, defaultsPackagePath);
         }
 
+        if (args is [
+                "--theme-switch-continuity",
+                var continuityPortText,
+                var continuityFromPath,
+                var continuityToPath] &&
+            int.TryParse(continuityPortText, out var continuityPort))
+        {
+            return await ProbeThemeSwitchContinuityAsync(
+                continuityPort,
+                continuityFromPath,
+                continuityToPath);
+        }
+
         if (args is ["--check-live-update", var currentVersionText] &&
             Version.TryParse(currentVersionText, out var currentVersion))
         {

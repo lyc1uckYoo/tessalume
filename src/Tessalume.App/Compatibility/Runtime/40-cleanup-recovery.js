@@ -144,9 +144,10 @@
     },
   });
 
-  const dispose = async () => {
+  const dispose = async (options = null) => {
     if (disposed) return true;
     disposed = true;
+    const preserveSharedAppearance = options?.preserveSharedAppearance === true;
     try {
       if (definition?.unmount) await definition.unmount(context);
     } finally {
@@ -155,14 +156,17 @@
       }
       style.remove();
       root.remove();
-      document.documentElement.classList.remove("tessalume-theme-active", `tessalume-theme-${safeThemeId}`);
-      for (const variable of assetVariables) document.documentElement.style.removeProperty(variable);
-      for (const variable of visualSettingVariables) document.documentElement.style.removeProperty(variable);
-      delete document.documentElement.dataset.tessalumeReadability;
-      delete document.documentElement.dataset.tessalumeMotion;
-      delete document.documentElement.dataset.tessalumeTextScale;
-      delete document.documentElement.dataset.tessalumeDensity;
-      delete document.documentElement.dataset.tessalumeVisualPlacement;
+      document.documentElement.classList.remove(`tessalume-theme-${safeThemeId}`);
+      if (!preserveSharedAppearance) {
+        document.documentElement.classList.remove("tessalume-theme-active");
+        for (const variable of assetVariables) document.documentElement.style.removeProperty(variable);
+        for (const variable of visualSettingVariables) document.documentElement.style.removeProperty(variable);
+        delete document.documentElement.dataset.tessalumeReadability;
+        delete document.documentElement.dataset.tessalumeMotion;
+        delete document.documentElement.dataset.tessalumeTextScale;
+        delete document.documentElement.dataset.tessalumeDensity;
+        delete document.documentElement.dataset.tessalumeVisualPlacement;
+      }
       delete window.__TESSALUME_STAGED_VISUAL_SETTINGS__;
       delete window.__TESSALUME_STAGED_VISUAL_IMAGES__;
       for (const objectUrl of customImageObjectUrls.values()) URL.revokeObjectURL(objectUrl);
@@ -178,10 +182,28 @@
     return true;
   };
 
+  try {
+    if (!(await disposeCompatibleRuntime(true)) && window.__CODEX_DREAM_SKIN_STATE__?.cleanup) {
+      window.__CODEX_DREAM_SKIN_STATE__.cleanup();
+    }
+    // Older compatible runtimes do not understand the handoff option and may
+    // clear shared variables while disposing. Reassert the fully decoded new
+    // shell before the browser can present another frame.
+    for (const [variable, objectUrl] of assetAssignments) {
+      document.documentElement.style.setProperty(variable, `url("${objectUrl}")`);
+    }
+    document.documentElement.classList.add("tessalume-theme-active", `tessalume-theme-${safeThemeId}`);
+    await setVisualSettings(stagedVisualSettings || {}, stagedVisualImages || Object.create(null));
+  } catch (error) {
+    await dispose();
+    throw error;
+  }
+
   window[RUNTIME_KEY] = {
     themeId,
     fingerprint,
     compatibilityProfileVersion: compatibilityProfile.profileVersion,
+    appearanceHandoffVersion: 1,
     artworkCompositionProtocolVersion: 1,
     visualImageProtocolVersion: 1,
     dispose,

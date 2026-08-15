@@ -56,9 +56,9 @@
     return null;
   };
 
-  const disposeCompatibleRuntime = async () => {
+  const disposeCompatibleRuntime = async (preserveSharedAppearance = false) => {
     if (window[RUNTIME_KEY]?.dispose) {
-      await window[RUNTIME_KEY].dispose();
+      await window[RUNTIME_KEY].dispose({ preserveSharedAppearance });
       return true;
     }
     for (const key of Object.getOwnPropertyNames(window)) {
@@ -74,7 +74,7 @@
         candidate.context &&
         typeof candidate.context.mountCanonicalTheme === "function"
       ) {
-        await candidate.dispose();
+        await candidate.dispose({ preserveSharedAppearance });
         return true;
       }
     }
@@ -154,20 +154,23 @@
     return objectUrl;
   };
 
-  try {
-    for (const [name, dataUrl] of Object.entries(assetDataUrls)) {
-      const variable = `--tessalume-asset-${name.replace(/[^a-z0-9_-]/gi, "-")}`;
-      assetAssignments.push([variable, createAssetObjectUrl(dataUrl)]);
-    }
-  } catch (error) {
-    for (const objectUrl of assetObjectUrls) URL.revokeObjectURL(objectUrl);
-    throw error;
-  }
+  const preloadAssetObjectUrl = async (dataUrl, objectUrl) => {
+    if (!dataUrl.startsWith("data:image/")) return;
+    const image = new Image();
+    image.decoding = "async";
+    image.src = objectUrl;
+    await image.decode();
+  };
 
   try {
-    if (!(await disposeCompatibleRuntime()) && window.__CODEX_DREAM_SKIN_STATE__?.cleanup) {
-      window.__CODEX_DREAM_SKIN_STATE__.cleanup();
+    const pendingAssetDecodes = [];
+    for (const [name, dataUrl] of Object.entries(assetDataUrls)) {
+      const variable = `--tessalume-asset-${name.replace(/[^a-z0-9_-]/gi, "-")}`;
+      const objectUrl = createAssetObjectUrl(dataUrl);
+      assetAssignments.push([variable, objectUrl]);
+      pendingAssetDecodes.push(preloadAssetObjectUrl(dataUrl, objectUrl));
     }
+    await Promise.all(pendingAssetDecodes);
   } catch (error) {
     for (const objectUrl of assetObjectUrls) URL.revokeObjectURL(objectUrl);
     throw error;

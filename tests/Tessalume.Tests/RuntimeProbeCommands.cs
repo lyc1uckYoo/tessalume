@@ -347,6 +347,117 @@ internal static partial class TestSuite
         return 0;
     }
 
+    static async Task<int> ProbeThemeSwitchContinuityAsync(
+        int port,
+        string fromPackagePath,
+        string toPackagePath)
+    {
+        var repositoryRoot = FindRepositoryRoot();
+        var loader = new ThemePackageLoader();
+        var fromPackage = (await loader.LoadAsync(fromPackagePath)).Package
+            ?? throw new InvalidOperationException("The source theme package could not be loaded.");
+        var toPackage = (await loader.LoadAsync(toPackagePath)).Package
+            ?? throw new InvalidOperationException("The destination theme package could not be loaded.");
+        var defaultsStore = new ArtworkThemeDefaultsStore();
+        var fromSettings = ThemeArtworkSettingsResolver.Resolve(
+            (await defaultsStore.LoadAsync(fromPackage)).Defaults,
+            null).Settings;
+        var toSettings = ThemeArtworkSettingsResolver.Resolve(
+            (await defaultsStore.LoadAsync(toPackage)).Defaults,
+            null).Settings;
+        await using var runtime = new ThemeRuntime(
+            new LoopbackCdpDiscovery(),
+            new ThemePayloadBuilder(new Dictionary<string, string>
+            {
+                [ThemePayloadBuilder.OpenRuntimeAdapterKey] = GetSourceRuntimeAssets(repositoryRoot).RuntimePath,
+            }));
+
+        await runtime.StartAsync(port, fromPackage, fromSettings);
+        using var discovery = new LoopbackCdpDiscovery();
+        var targets = await discovery.DiscoverAsync(port);
+        var monitoredTargets = new List<CdpTarget>();
+        foreach (var target in targets.Where(target =>
+                     !target.Url.Contains("avatar-overlay", StringComparison.OrdinalIgnoreCase)))
+        {
+            await using var session = new CdpSession();
+            await session.ConnectAsync(target.WebSocketDebuggerUrl);
+            var installed = await session.EvaluateAsync(
+                "!!window.__TESSALUME_RUNTIME__ && !!document.getElementById('tessalume-theme-style')");
+            if (installed.ValueKind != JsonValueKind.True) continue;
+            await session.EvaluateAsync(
+                """
+                (() => {
+                  const samples = [];
+                  let running = true;
+                  const sample = timestamp => {
+                    const html = document.documentElement;
+                    samples.push({
+                      timestamp,
+                      themeId: window.__TESSALUME_THEME_ID__ || null,
+                      active: html.classList.contains('tessalume-theme-active'),
+                      styleCount: document.querySelectorAll('#tessalume-theme-style').length,
+                      rootCount: document.querySelectorAll('#tessalume-theme-root').length,
+                      artworkAsset: Array.from(html.style).some(name =>
+                        name.startsWith('--tessalume-asset-') &&
+                        html.style.getPropertyValue(name).trim().startsWith('url(')),
+                    });
+                    if (running && samples.length < 600) requestAnimationFrame(sample);
+                  };
+                  window.__TESSALUME_HANDOFF_MONITOR__ = {
+                    samples,
+                    stop() { running = false; },
+                  };
+                  requestAnimationFrame(sample);
+                  return true;
+                })()
+                """);
+            monitoredTargets.Add(target);
+        }
+
+        if (monitoredTargets.Count == 0)
+        {
+            Console.Error.WriteLine("No themed Codex surface was available for continuity monitoring.");
+            return 2;
+        }
+
+        await Task.Delay(80);
+        await runtime.StartAsync(port, toPackage, toSettings);
+        await Task.Delay(250);
+
+        var passed = true;
+        foreach (var target in monitoredTargets)
+        {
+            await using var session = new CdpSession();
+            await session.ConnectAsync(target.WebSocketDebuggerUrl);
+            var result = await session.EvaluateAsync(
+                """
+                (() => {
+                  const monitor = window.__TESSALUME_HANDOFF_MONITOR__;
+                  monitor?.stop();
+                  const samples = monitor?.samples || [];
+                  const blankFrames = samples.filter(sample =>
+                    !sample.active || sample.styleCount < 1 || sample.rootCount < 1 || !sample.artworkAsset);
+                  return {
+                    frameCount: samples.length,
+                    blankFrameCount: blankFrames.length,
+                    firstThemeId: samples[0]?.themeId || null,
+                    lastThemeId: samples.at(-1)?.themeId || null,
+                    appearanceHandoffVersion: window.__TESSALUME_RUNTIME__?.appearanceHandoffVersion || 0,
+                    blankFrames: blankFrames.slice(0, 8),
+                  };
+                })()
+                """);
+            Console.WriteLine(result.GetRawText());
+            passed &= result.GetProperty("frameCount").GetInt32() > 0 &&
+                      result.GetProperty("blankFrameCount").GetInt32() == 0 &&
+                      result.GetProperty("lastThemeId").GetString() == toPackage.Manifest.Id &&
+                      result.GetProperty("appearanceHandoffVersion").GetInt32() == 1;
+        }
+
+        Console.WriteLine($"Theme handoff: {fromPackage.Manifest.Id} -> {toPackage.Manifest.Id}");
+        return passed ? 0 : 3;
+    }
+
     static async Task<string> BuildPayloadAsync(string repositoryRoot, ThemePackage package) =>
         await new ThemePayloadBuilder(new Dictionary<string, string>
         {
