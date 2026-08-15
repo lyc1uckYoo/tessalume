@@ -59,6 +59,22 @@ if ([string]::IsNullOrWhiteSpace($MinimumAppVersion)) {
     }
 }
 
+$profile = Get-Content -Raw -Encoding UTF8 -LiteralPath $profilePath | ConvertFrom-Json
+if ($profile.schemaVersion -ne 1 -or $profile.runtimeContractVersion -ne 4) {
+    throw 'Compatibility profile does not match runtime contract v4.'
+}
+$sourceProfileVersion = [string]$profile.profileVersion
+if ([string]::IsNullOrWhiteSpace($sourceProfileVersion) -or
+    $sourceProfileVersion -notmatch '^\d+\.\d+\.\d+(?:\.\d+)?$') {
+    throw 'The source compatibility profile does not define a valid profileVersion.'
+}
+if (-not [string]::Equals(
+        $Version,
+        $sourceProfileVersion,
+        [StringComparison]::Ordinal)) {
+    throw "Compatibility pack version '$Version' does not match source profileVersion '$sourceProfileVersion'. Update the source profile or pass -Version $sourceProfileVersion."
+}
+
 New-Item -ItemType Directory -Path $outputRoot -Force | Out-Null
 New-Item -ItemType Directory -Path $staging | Out-Null
 try {
@@ -68,11 +84,6 @@ try {
         -SourceDirectory $sourceDirectory `
         -Destination $runtimeDestination
 
-    $profile = Get-Content -Raw -Encoding UTF8 -LiteralPath $profilePath | ConvertFrom-Json
-    if ($profile.schemaVersion -ne 1 -or $profile.runtimeContractVersion -ne 3) {
-        throw 'Compatibility profile does not match runtime contract v3.'
-    }
-    $profile.profileVersion = $Version
     $profileJson = $profile | ConvertTo-Json -Depth 20
     [System.IO.File]::WriteAllText(
         $profileDestination,
@@ -85,7 +96,7 @@ try {
         schemaVersion = 1
         packVersion = $Version
         minimumAppVersion = $MinimumAppVersion
-        runtimeContractVersion = 3
+        runtimeContractVersion = 4
         runtime = 'theme-runtime-v2.js'
         profile = 'compatibility-profile-v3.json'
         files = [ordered]@{

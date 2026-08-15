@@ -1,4 +1,4 @@
-// TESSALUME_RUNTIME_FRAGMENT: payload bootstrap, visual settings, assets, and Template 1.0 rendering
+// TESSALUME_RUNTIME_FRAGMENT: payload bootstrap, assets, and Template 1.0 rendering
 (async () => {
   const RUNTIME_KEY = "__TESSALUME_RUNTIME__";
   const themeId = __TESSALUME_PAYLOAD_THEME_ID_JSON__;
@@ -7,8 +7,10 @@
   const scriptText = __TESSALUME_PAYLOAD_SCRIPT_JSON__;
   const stagedAssetDataUrls = window.__TESSALUME_STAGED_ASSETS__;
   const stagedVisualSettings = window.__TESSALUME_STAGED_VISUAL_SETTINGS__;
+  const stagedVisualImages = window.__TESSALUME_STAGED_VISUAL_IMAGES__;
   delete window.__TESSALUME_STAGED_ASSETS__;
   delete window.__TESSALUME_STAGED_VISUAL_SETTINGS__;
+  delete window.__TESSALUME_STAGED_VISUAL_IMAGES__;
   const assetDataUrls = stagedAssetDataUrls || __TESSALUME_PAYLOAD_ASSETS_JSON__;
   const config = __TESSALUME_PAYLOAD_CONFIG_JSON__;
   const allowPetOverlay = __TESSALUME_PAYLOAD_ALLOW_PET_OVERLAY__;
@@ -95,6 +97,9 @@
   style.id = "tessalume-theme-style";
   style.dataset.themeId = themeId;
   style.textContent = `${templateCssText}\n${cssText}`;
+  const visualMotionStyle = document.createElement("style");
+  visualMotionStyle.id = "tessalume-artwork-motion-style";
+  visualMotionStyle.dataset.themeId = themeId;
 
   const root = document.createElement("div");
   root.id = "tessalume-theme-root";
@@ -104,8 +109,13 @@
   const assetVariables = [];
   const assetAssignments = [];
   const assetObjectUrls = [];
-  const customAssetObjectUrls = new Map();
+  const customImageObjectUrls = new Map();
+  const customSlotImageKeys = new Map();
   const visualSettingVariables = new Set();
+  const visualSlotStates = new Map();
+  const visualImageDimensions = new Map();
+  let visualPlacementRevision = 0;
+  let visualSurfaceResizeObserver = null;
   let definition = null;
   let disposed = false;
   let syncDisplayPreferences = () => {};
@@ -116,122 +126,13 @@
     return cleanup;
   };
 
-  const setVisualSettings = (settings = {}) => {
-    const html = document.documentElement;
-    const readPercent = (value, fallback, minimum, maximum) => {
-      const number = Number(value);
-      return Number.isFinite(number) ? Math.min(maximum, Math.max(minimum, number)) : fallback;
-    };
-    const readChoice = (value, fallback, choices) => {
-      const candidate = String(value || "").trim().toLowerCase();
-      return choices.includes(candidate) ? candidate : fallback;
-    };
-    const readColor = (value) => /^#[0-9a-f]{6}$/i.test(String(value || ""))
-      ? String(value).toUpperCase()
-      : "#000000";
-    const rgba = (hex, opacity) => {
-      const value = Number.parseInt(hex.slice(1), 16);
-      return `rgba(${(value >> 16) & 255},${(value >> 8) & 255},${value & 255},${opacity})`;
-    };
-    const readability = [];
-    for (const mode of ["light", "dark"]) {
-      for (const region of ["hero", "sidebar", "chat"]) {
-        const adjustment = settings?.[mode]?.[region] || {};
-        const brightness = readPercent(adjustment.brightness, 100, 20, 180) / 100;
-        const contrast = readPercent(adjustment.contrast, 100, 20, 180) / 100;
-        const saturation = readPercent(adjustment.saturation, 100, 0, 200) / 100;
-        const opacity = readPercent(adjustment.opacity, 100, 0, 100) / 100;
-        const zoom = readPercent(adjustment.zoom, 100, 70, 200) / 100;
-        const offsetX = readPercent(adjustment.offsetX, 0, -200, 200);
-        const offsetY = readPercent(adjustment.offsetY, 0, -200, 200);
-        const grayscale = readPercent(adjustment.grayscale, 0, 0, 100) / 100;
-        const hueRotation = readPercent(adjustment.hueRotation, 0, -180, 180);
-        const blur = readPercent(adjustment.blur, 0, 0, 20);
-        const overlayColor = readColor(adjustment.overlayColor);
-        const overlayOpacity = readPercent(adjustment.overlayOpacity, 0, 0, 100) / 100;
-        const gradientStrength = readPercent(adjustment.gradientStrength, 0, 0, 100) / 100;
-        const vignette = readPercent(adjustment.vignette, 0, 0, 100) / 100;
-        const blendMode = readChoice(
-          adjustment.blendMode,
-          "normal",
-          ["normal", "multiply", "screen", "overlay", "soft-light", "luminosity"],
-        );
-        const filterVariable = `--tessalume-visual-${region}-${mode}-filter`;
-        const opacityVariable = `--tessalume-visual-${region}-${mode}-opacity`;
-        const translateVariable = `--tessalume-visual-${region}-${mode}-translate`;
-        const scaleVariable = `--tessalume-visual-${region}-${mode}-scale`;
-        const blendVariable = `--tessalume-visual-${region}-${mode}-blend`;
-        const assetVariable = `--tessalume-asset-${region}-${mode}`;
-        const originalAssetUrl = assetAssignments.find(([name]) => name === assetVariable)?.[1] || null;
-        const previousCustomUrl = customAssetObjectUrls.get(`${region}-${mode}`);
-        if (previousCustomUrl) {
-          URL.revokeObjectURL(previousCustomUrl);
-          customAssetObjectUrls.delete(`${region}-${mode}`);
-        }
-        let imageUrl = originalAssetUrl;
-        if (typeof adjustment.customImageDataUrl === "string" && adjustment.customImageDataUrl) {
-          imageUrl = createAssetObjectUrl(adjustment.customImageDataUrl);
-          customAssetObjectUrls.set(`${region}-${mode}`, imageUrl);
-        }
-        if (imageUrl) {
-          const layers = [];
-          if (vignette > 0) {
-            layers.push(`radial-gradient(circle at center,transparent 45%,rgba(0,0,0,${Math.min(.78, vignette * .78)}) 100%)`);
-          }
-          if (gradientStrength > 0) {
-            layers.push(`linear-gradient(90deg,${rgba(overlayColor, Math.min(.82, gradientStrength * .82))},transparent 72%)`);
-          }
-          if (overlayOpacity > 0) {
-            layers.push(`linear-gradient(${rgba(overlayColor, Math.min(.86, overlayOpacity * .86))},${rgba(overlayColor, Math.min(.86, overlayOpacity * .86))})`);
-          }
-          layers.push(`url("${imageUrl}")`);
-          html.style.setProperty(assetVariable, layers.join(","));
-          visualSettingVariables.add(assetVariable);
-        }
-        html.style.setProperty(
-          filterVariable,
-          `brightness(${brightness}) contrast(${contrast}) saturate(${saturation}) grayscale(${grayscale}) hue-rotate(${hueRotation}deg) blur(${blur}px)`,
-        );
-        html.style.setProperty(opacityVariable, String(opacity));
-        html.style.setProperty(translateVariable, `${offsetX}px ${offsetY}px`);
-        html.style.setProperty(scaleVariable, String(zoom));
-        html.style.setProperty(blendVariable, blendMode);
-        visualSettingVariables.add(filterVariable);
-        visualSettingVariables.add(opacityVariable);
-        visualSettingVariables.add(translateVariable);
-        visualSettingVariables.add(scaleVariable);
-        visualSettingVariables.add(blendVariable);
-        if (adjustment.readabilityProtection === true) readability.push(`${region}-${mode}`);
-      }
-    }
-    html.dataset.tessalumeReadability = readability.join(" ");
-    const display = settings?.display || {};
-    html.dataset.tessalumeMotion = readChoice(
-      display.motionIntensity,
-      "full",
-      ["full", "reduced", "off"],
-    );
-    html.dataset.tessalumeTextScale = readChoice(
-      display.textScale,
-      "standard",
-      ["small", "standard", "large"],
-    );
-    html.dataset.tessalumeDensity = readChoice(
-      display.density,
-      "comfortable",
-      ["compact", "comfortable", "spacious"],
-    );
-    syncDisplayPreferences();
-    return true;
-  };
-
   const assetDataUrl = (name) => {
     const value = assetDataUrls[name];
     if (!value) throw new Error(`Theme asset not found: ${name}`);
     return value;
   };
 
-  const createAssetObjectUrl = (dataUrl) => {
+  const createObjectUrl = (dataUrl) => {
     const comma = dataUrl.indexOf(",");
     if (comma < 0 || !dataUrl.slice(0, comma).endsWith(";base64")) {
       throw new Error("Theme asset is not a base64 data URL");
@@ -244,7 +145,11 @@
       bytes[index] = binary.charCodeAt(index);
     }
 
-    const objectUrl = URL.createObjectURL(new Blob([bytes], { type: mimeType }));
+    return URL.createObjectURL(new Blob([bytes], { type: mimeType }));
+  };
+
+  const createAssetObjectUrl = (dataUrl) => {
+    const objectUrl = createObjectUrl(dataUrl);
     assetObjectUrls.push(objectUrl);
     return objectUrl;
   };
@@ -269,13 +174,13 @@
   }
 
   (document.head || document.documentElement).appendChild(style);
+  (document.head || document.documentElement).appendChild(visualMotionStyle);
+  addCleanup(() => visualMotionStyle.remove());
   document.body?.appendChild(root);
   for (const [variable, objectUrl] of assetAssignments) {
     document.documentElement.style.setProperty(variable, `url("${objectUrl}")`);
     assetVariables.push(variable);
   }
-
-  setVisualSettings(stagedVisualSettings || {});
 
   document.documentElement.classList.add("tessalume-theme-active", `tessalume-theme-${safeThemeId}`);
 

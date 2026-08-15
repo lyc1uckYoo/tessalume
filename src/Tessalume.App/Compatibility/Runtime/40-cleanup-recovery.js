@@ -71,6 +71,40 @@
     return cleanup;
   };
 
+  // Every referenced helper is defined by the preceding runtime fragments at
+  // this point. Keeping initialization here avoids executing a later `const`
+  // from its temporal dead zone in the composed bundle.
+  await setVisualSettings(stagedVisualSettings || {}, stagedVisualImages || Object.create(null));
+
+  let visualPlacementFrame = 0;
+  const scheduleVisualPlacementSync = () => {
+    if (visualPlacementFrame || disposed) return;
+    visualPlacementFrame = requestAnimationFrame(async () => {
+      visualPlacementFrame = 0;
+      await synchronizeVisualPlacements(visualPlacementRevision);
+    });
+  };
+  window.addEventListener("resize", scheduleVisualPlacementSync, { passive: true });
+  addCleanup(() => window.removeEventListener("resize", scheduleVisualPlacementSync));
+  const visualSurfaceObserver = new MutationObserver(scheduleVisualPlacementSync);
+  visualSurfaceObserver.observe(document.documentElement, {
+    subtree: true,
+    attributes: true,
+    attributeFilter: ["class", "data-tessalume-surface"],
+  });
+  addCleanup(() => visualSurfaceObserver.disconnect());
+  if (typeof ResizeObserver === "function") {
+    visualSurfaceResizeObserver = new ResizeObserver(scheduleVisualPlacementSync);
+    addCleanup(() => visualSurfaceResizeObserver?.disconnect());
+  }
+  addCleanup(() => {
+    if (visualPlacementFrame) cancelAnimationFrame(visualPlacementFrame);
+  });
+  for (const delay of [0, 80, 240, 720]) {
+    const handle = setTimeout(scheduleVisualPlacementSync, delay);
+    addCleanup(() => clearTimeout(handle));
+  }
+
   context = Object.freeze({
     id: themeId,
     fingerprint,
@@ -128,6 +162,13 @@
       delete document.documentElement.dataset.tessalumeMotion;
       delete document.documentElement.dataset.tessalumeTextScale;
       delete document.documentElement.dataset.tessalumeDensity;
+      delete document.documentElement.dataset.tessalumeVisualPlacement;
+      delete window.__TESSALUME_STAGED_VISUAL_SETTINGS__;
+      delete window.__TESSALUME_STAGED_VISUAL_IMAGES__;
+      for (const objectUrl of customImageObjectUrls.values()) URL.revokeObjectURL(objectUrl);
+      customImageObjectUrls.clear();
+      customSlotImageKeys.clear();
+      visualImageDimensions.clear();
       for (const objectUrl of assetObjectUrls) URL.revokeObjectURL(objectUrl);
       if (window.__TESSALUME_THEME_ID__ === themeId) {
         delete window.__TESSALUME_THEME_ID__;
@@ -141,9 +182,12 @@
     themeId,
     fingerprint,
     compatibilityProfileVersion: compatibilityProfile.profileVersion,
+    artworkCompositionProtocolVersion: 1,
+    visualImageProtocolVersion: 1,
     dispose,
     context,
     setVisualSettings,
+    getVisualImageKeys: () => Array.from(customImageObjectUrls.keys()),
   };
 
   try {

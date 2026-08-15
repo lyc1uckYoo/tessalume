@@ -6,6 +6,10 @@ namespace Tessalume.Core.Runtime;
 
 public sealed partial class ThemeRuntime
 {
+    internal sealed record VisualSettingsPayload(
+        string SettingsJson,
+        IReadOnlyDictionary<string, string> ImagePaths);
+
     private async Task<string> BuildPayloadAsync(
         ThemePackage package,
         CancellationToken cancellationToken)
@@ -50,7 +54,7 @@ public sealed partial class ThemeRuntime
     private static string GetTargetKey(CdpTarget target) =>
         string.IsNullOrWhiteSpace(target.Id) ? target.WebSocketDebuggerUrl : target.Id;
 
-    private async Task<string> SerializeVisualSettingsAsync(
+    internal Task<VisualSettingsPayload> BuildVisualSettingsPayloadAsync(
         ThemeVisualSettings? settings,
         CancellationToken cancellationToken)
     {
@@ -62,6 +66,7 @@ public sealed partial class ThemeRuntime
 
         var root = JsonSerializer.SerializeToNode(normalized, VisualSettingsJsonOptions)?.AsObject()
             ?? throw new InvalidOperationException("无法序列化个性化视觉参数。");
+        var imagePaths = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (var modeName in new[] { "light", "dark" })
         {
             if (root[modeName] is not JsonObject mode) continue;
@@ -71,12 +76,73 @@ public sealed partial class ThemeRuntime
                 var path = adjustment["customImagePath"]?.GetValue<string?>();
                 adjustment.Remove("customImagePath");
                 if (string.IsNullOrWhiteSpace(path)) continue;
-                adjustment["customImageDataUrl"] = await ThemePayloadBuilder.ReadDataUrlAsync(
-                    path,
+                cancellationToken.ThrowIfCancellationRequested();
+                var imageKey = ImageDataUrlCache.GetFingerprint(path);
+                adjustment["customImageKey"] = imageKey;
+                imagePaths.TryAdd(imageKey, path);
+            }
+        }
+        return Task.FromResult(new VisualSettingsPayload(
+            root.ToJsonString(VisualSettingsJsonOptions),
+            imagePaths));
+    }
+
+    private async Task StageVisualSettingsAsync(
+        CdpSession session,
+        VisualSettingsPayload visualSettings,
+        CancellationToken cancellationToken)
+    {
+        await session.EvaluateAsync(
+            $"window.__TESSALUME_STAGED_VISUAL_SETTINGS__ = {visualSettings.SettingsJson}; " +
+            "window.__TESSALUME_STAGED_VISUAL_IMAGES__ = Object.create(null); true",
+            cancellationToken);
+        try
+        {
+            foreach (var (key, path) in visualSettings.ImagePaths)
+            {
+                var image = await _visualImageDataUrlCache.GetPayloadAsync(path, cancellationToken);
+                if (!string.Equals(image.Key, key, StringComparison.Ordinal))
+                {
+                    throw new IOException("本地图像在主题应用期间发生变化，请重试。");
+                }
+                await session.EvaluateAsync(
+                    $"window.__TESSALUME_STAGED_VISUAL_IMAGES__[{JsonSerializer.Serialize(key)}] = " +
+                    $"{JsonSerializer.Serialize(image.DataUrl)}; true",
                     cancellationToken);
             }
         }
-        return root.ToJsonString(VisualSettingsJsonOptions);
+        catch
+        {
+            await ClearStagedVisualSettingsAsync(session);
+            throw;
+        }
+    }
+
+    private static async Task ClearStagedVisualSettingsAsync(CdpSession session)
+    {
+        try
+        {
+            await session.EvaluateAsync(
+                "delete window.__TESSALUME_STAGED_VISUAL_SETTINGS__; " +
+                "delete window.__TESSALUME_STAGED_VISUAL_IMAGES__; true",
+                CancellationToken.None);
+        }
+        catch
+        {
+        }
+    }
+
+    private static async Task ClearStagedVisualImagesAsync(CdpSession session)
+    {
+        try
+        {
+            await session.EvaluateAsync(
+                "delete window.__TESSALUME_STAGED_VISUAL_IMAGES__; true",
+                CancellationToken.None);
+        }
+        catch
+        {
+        }
     }
 
     private static async Task StageAssetsAsync(

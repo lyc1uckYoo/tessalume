@@ -6,10 +6,8 @@ namespace Tessalume.Core.Runtime;
 
 public sealed partial class ThemeRuntime : IAsyncDisposable
 {
-    public const int ContractVersion = 3;
-
+    public const int ContractVersion = 4;
     private const string ThemeScriptFailureMarker = "TESSALUME_THEME_SCRIPT:";
-
     private const string RemoveCompatibleRuntimesScript = """
         (async () => {
           const candidates = new Set();
@@ -36,6 +34,8 @@ public sealed partial class ThemeRuntime : IAsyncDisposable
           delete window.__TESSALUME_RUNTIME__;
           delete window.__TESSALUME_THEME_ID__;
           delete window.__TESSALUME_STAGED_ASSETS__;
+          delete window.__TESSALUME_STAGED_VISUAL_SETTINGS__;
+          delete window.__TESSALUME_STAGED_VISUAL_IMAGES__;
           delete window.__CODEX_THEME_STUDIO_RUNTIME__;
           delete window.__CODEX_THEME_STUDIO_THEME_ID__;
           delete window.__CODEX_THEME_STUDIO_STAGED_ASSETS__;
@@ -48,6 +48,7 @@ public sealed partial class ThemeRuntime : IAsyncDisposable
           delete document.documentElement.dataset.tessalumeMotion;
           delete document.documentElement.dataset.tessalumeTextScale;
           delete document.documentElement.dataset.tessalumeDensity;
+          delete document.documentElement.dataset.tessalumeVisualPlacement;
           return true;
         })()
         """;
@@ -55,6 +56,7 @@ public sealed partial class ThemeRuntime : IAsyncDisposable
     private readonly SemaphoreSlim _applyLock = new(1, 1);
     private readonly LoopbackCdpDiscovery _discovery;
     private readonly ThemePayloadBuilder _payloadBuilder;
+    private readonly ImageDataUrlCache _visualImageDataUrlCache;
     private readonly Func<ThemeVisualSettings, ThemeVisualSettings>? _visualSettingsResolver;
     private readonly ThemeRuntimeAcceptanceProbe _acceptanceProbe;
     private static readonly JsonSerializerOptions VisualSettingsJsonOptions = new(JsonSerializerDefaults.Web);
@@ -66,12 +68,12 @@ public sealed partial class ThemeRuntime : IAsyncDisposable
     {
         _discovery = discovery ?? throw new ArgumentNullException(nameof(discovery));
         _payloadBuilder = payloadBuilder ?? throw new ArgumentNullException(nameof(payloadBuilder));
+        _visualImageDataUrlCache = new ImageDataUrlCache();
         _visualSettingsResolver = visualSettingsResolver;
         _acceptanceProbe = new ThemeRuntimeAcceptanceProbe(_discovery);
     }
 
     public event EventHandler<string>? StatusChanged;
-
     public async Task StartAsync(int port, ThemePackage package, CancellationToken cancellationToken = default)
         => await StartAsync(port, package, new ThemeVisualSettings(), cancellationToken);
 
@@ -86,14 +88,13 @@ public sealed partial class ThemeRuntime : IAsyncDisposable
             port,
             package,
             payload,
-            await SerializeVisualSettingsAsync(visualSettings, cancellationToken),
+            await BuildVisualSettingsPayloadAsync(visualSettings, cancellationToken),
             force: true,
             processedTargets: null,
             cancellationToken);
 
         StatusChanged?.Invoke(this, $"{package.Manifest.Name} 已应用");
     }
-
     public async Task PreflightAsync(
         int port,
         ThemePackage package,
@@ -139,55 +140,6 @@ public sealed partial class ThemeRuntime : IAsyncDisposable
             _applyLock.Release();
         }
     }
-
-    public async Task ApplyVisualSettingsAsync(
-        int port,
-        string themeId,
-        ThemeVisualSettings visualSettings,
-        CancellationToken cancellationToken = default)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(themeId);
-        var themeIdJson = JsonSerializer.Serialize(themeId);
-        var settingsJson = await SerializeVisualSettingsAsync(visualSettings, cancellationToken);
-        var expression = $$"""
-            (() => {
-              const runtime = window.__TESSALUME_RUNTIME__;
-              if (runtime?.themeId !== {{themeIdJson}} ||
-                  typeof runtime.setVisualSettings !== 'function') return false;
-              runtime.setVisualSettings({{settingsJson}});
-              return true;
-            })()
-            """;
-
-        await _applyLock.WaitAsync(cancellationToken);
-        try
-        {
-            var targets = await _discovery.DiscoverAsync(port, cancellationToken);
-            if (targets.Count == 0)
-            {
-                throw new InvalidOperationException($"本机端口 {port} 尚未发现 Codex 页面");
-            }
-
-            var applied = false;
-            foreach (var target in targets)
-            {
-                await using var session = new CdpSession();
-                await session.ConnectAsync(target.WebSocketDebuggerUrl, cancellationToken);
-                var result = await session.EvaluateAsync(expression, cancellationToken);
-                applied |= result.ValueKind == JsonValueKind.True;
-            }
-
-            if (!applied)
-            {
-                throw new InvalidOperationException("当前 Codex 页面尚未加载对应的 Tessalume 主题");
-            }
-        }
-        finally
-        {
-            _applyLock.Release();
-        }
-    }
-
     public async Task RemoveAsync(int port, CancellationToken cancellationToken = default)
     {
         await _applyLock.WaitAsync(cancellationToken);
@@ -208,7 +160,6 @@ public sealed partial class ThemeRuntime : IAsyncDisposable
 
         StatusChanged?.Invoke(this, "已恢复 Codex 默认外观");
     }
-
     public async Task<bool> ReadColorSchemeAsync(int port, CancellationToken cancellationToken = default)
     {
         await _applyLock.WaitAsync(cancellationToken);
@@ -257,7 +208,6 @@ public sealed partial class ThemeRuntime : IAsyncDisposable
             _applyLock.Release();
         }
     }
-
     public async Task<ThemeRuntimeAcceptanceSnapshot> InspectAcceptanceAsync(
         int port,
         CancellationToken cancellationToken = default)
@@ -272,7 +222,6 @@ public sealed partial class ThemeRuntime : IAsyncDisposable
             _applyLock.Release();
         }
     }
-
     public async Task<IReadOnlyList<ThemeRuntimeAcceptanceSnapshot>> InspectResponsiveAcceptanceAsync(
         int port,
         IReadOnlyList<int> viewportWidths,
@@ -288,7 +237,6 @@ public sealed partial class ThemeRuntime : IAsyncDisposable
             _applyLock.Release();
         }
     }
-
     public async Task<bool> ToggleColorSchemeAsync(int port, CancellationToken cancellationToken = default)
     {
         await _applyLock.WaitAsync(cancellationToken);
@@ -441,6 +389,7 @@ public sealed partial class ThemeRuntime : IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         await Task.CompletedTask;
+        _visualImageDataUrlCache.Dispose();
         _applyLock.Dispose();
         _discovery.Dispose();
     }
@@ -449,7 +398,7 @@ public sealed partial class ThemeRuntime : IAsyncDisposable
         int port,
         ThemePackage package,
         string payload,
-        string visualSettingsJson,
+        VisualSettingsPayload visualSettings,
         bool force,
         HashSet<string>? processedTargets,
         CancellationToken cancellationToken)
@@ -457,7 +406,7 @@ public sealed partial class ThemeRuntime : IAsyncDisposable
             port,
             package,
             payload,
-            visualSettingsJson,
+            visualSettings,
             force,
             processedTargets,
             skipKnownTargets: false,
@@ -467,7 +416,7 @@ public sealed partial class ThemeRuntime : IAsyncDisposable
         int port,
         ThemePackage package,
         string payload,
-        string visualSettingsJson,
+        VisualSettingsPayload visualSettings,
         bool force,
         HashSet<string>? processedTargets,
         bool skipKnownTargets,
@@ -539,9 +488,7 @@ public sealed partial class ThemeRuntime : IAsyncDisposable
                         exception);
                 }
 
-                await session.EvaluateAsync(
-                    $"window.__TESSALUME_STAGED_VISUAL_SETTINGS__ = {visualSettingsJson}; true",
-                    cancellationToken);
+                await StageVisualSettingsAsync(session, visualSettings, cancellationToken);
 
                 try
                 {
@@ -564,6 +511,10 @@ public sealed partial class ThemeRuntime : IAsyncDisposable
                             ? "主题脚本执行失败，所有 Codex 页面已统一恢复默认外观。"
                             : "主题运行时注入失败，所有 Codex 页面已统一恢复默认外观。",
                         exception);
+                }
+                finally
+                {
+                    await ClearStagedVisualSettingsAsync(session);
                 }
                 processedTargets?.Add(targetKey);
             }

@@ -144,6 +144,12 @@ public sealed class ThemePayloadBuilder
 
     internal static async Task<string> ReadDataUrlAsync(string path, CancellationToken cancellationToken)
     {
+        var bytes = await File.ReadAllBytesAsync(path, cancellationToken);
+        return CreateDataUrl(path, bytes);
+    }
+
+    internal static string CreateDataUrl(string path, byte[] bytes)
+    {
         var mimeType = Path.GetExtension(path).ToLowerInvariant() switch
         {
             ".png" => "image/png",
@@ -167,7 +173,6 @@ public sealed class ThemePayloadBuilder
             ".txt" or ".md" => "text/plain",
             _ => "image/jpeg",
         };
-        var bytes = await File.ReadAllBytesAsync(path, cancellationToken);
         return $"data:{mimeType};base64,{Convert.ToBase64String(bytes)}";
     }
 }

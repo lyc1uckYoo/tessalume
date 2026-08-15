@@ -152,7 +152,9 @@ html.tessalume-theme-active:not(.electron-dark) [data-tessalume-surface="sidebar
   opacity:1!important;
 }
 
-/* User-owned artwork correction. Theme packages own only the source image and crop. */
+/* Final resolved artwork. Theme packages provide source assets and versioned recommended
+   placement data; the runtime owns the only applied crop. Legacy translate/scale variables
+   are non-neutral only for migrated schema-five slots. */
 html.tessalume-theme-active:not(.electron-dark).tessalume-is-home [data-tessalume-surface="home"]>div:first-child>div:first-child>div:first-child::before {
   filter:var(--tessalume-visual-hero-light-filter,brightness(1) contrast(1) saturate(1) grayscale(0) hue-rotate(0deg) blur(0))!important;
   opacity:var(--tessalume-visual-hero-light-opacity,1)!important;
@@ -199,6 +201,60 @@ html.tessalume-theme-active.electron-dark.tessalume-is-task main[data-tessalume-
   translate:var(--tessalume-visual-chat-dark-translate,0px 0px)!important;
   scale:var(--tessalume-visual-chat-dark-scale,1)!important;
   background-blend-mode:var(--tessalume-visual-chat-dark-blend,normal)!important;
+}
+
+html[data-tessalume-visual-placement~="hero-light"].tessalume-theme-active:not(.electron-dark).tessalume-is-home [data-tessalume-surface="home"]>div:first-child>div:first-child>div:first-child::before {
+  background-image:var(--tessalume-asset-hero-light)!important;
+  background-size:var(--tessalume-visual-hero-light-background-size,cover)!important;
+  background-position:var(--tessalume-visual-hero-light-background-position,center)!important;
+  background-repeat:var(--tessalume-visual-hero-light-background-repeat,no-repeat)!important;
+  transform:var(--tessalume-visual-hero-light-geometry-transform,none)!important;
+  transform-origin:center!important;
+}
+
+html[data-tessalume-visual-placement~="hero-dark"].tessalume-theme-active.electron-dark.tessalume-is-home [data-tessalume-surface="home"]>div:first-child>div:first-child>div:first-child::before {
+  background-image:var(--tessalume-asset-hero-dark)!important;
+  background-size:var(--tessalume-visual-hero-dark-background-size,cover)!important;
+  background-position:var(--tessalume-visual-hero-dark-background-position,center)!important;
+  background-repeat:var(--tessalume-visual-hero-dark-background-repeat,no-repeat)!important;
+  transform:var(--tessalume-visual-hero-dark-geometry-transform,none)!important;
+  transform-origin:center!important;
+}
+
+html[data-tessalume-visual-placement~="sidebar-light"].tessalume-theme-active:not(.electron-dark) [data-tessalume-surface="sidebar"]::after {
+  background-image:var(--tessalume-asset-sidebar-light)!important;
+  background-size:var(--tessalume-visual-sidebar-light-background-size,cover)!important;
+  background-position:var(--tessalume-visual-sidebar-light-background-position,center)!important;
+  background-repeat:var(--tessalume-visual-sidebar-light-background-repeat,no-repeat)!important;
+  transform:var(--tessalume-visual-sidebar-light-geometry-transform,none)!important;
+  transform-origin:center!important;
+}
+
+html[data-tessalume-visual-placement~="sidebar-dark"].tessalume-theme-active.electron-dark [data-tessalume-surface="sidebar"]::after {
+  background-image:var(--tessalume-asset-sidebar-dark)!important;
+  background-size:var(--tessalume-visual-sidebar-dark-background-size,cover)!important;
+  background-position:var(--tessalume-visual-sidebar-dark-background-position,center)!important;
+  background-repeat:var(--tessalume-visual-sidebar-dark-background-repeat,no-repeat)!important;
+  transform:var(--tessalume-visual-sidebar-dark-geometry-transform,none)!important;
+  transform-origin:center!important;
+}
+
+html[data-tessalume-visual-placement~="chat-light"].tessalume-theme-active:not(.electron-dark).tessalume-is-task main[data-tessalume-surface="main"]::before {
+  background-image:var(--tessalume-asset-chat-light)!important;
+  background-size:var(--tessalume-visual-chat-light-background-size,cover)!important;
+  background-position:var(--tessalume-visual-chat-light-background-position,center)!important;
+  background-repeat:var(--tessalume-visual-chat-light-background-repeat,no-repeat)!important;
+  transform:var(--tessalume-visual-chat-light-geometry-transform,none)!important;
+  transform-origin:center!important;
+}
+
+html[data-tessalume-visual-placement~="chat-dark"].tessalume-theme-active.electron-dark.tessalume-is-task main[data-tessalume-surface="main"]::before {
+  background-image:var(--tessalume-asset-chat-dark)!important;
+  background-size:var(--tessalume-visual-chat-dark-background-size,cover)!important;
+  background-position:var(--tessalume-visual-chat-dark-background-position,center)!important;
+  background-repeat:var(--tessalume-visual-chat-dark-background-repeat,no-repeat)!important;
+  transform:var(--tessalume-visual-chat-dark-geometry-transform,none)!important;
+  transform-origin:center!important;
 }
 
 /* Optional user readability protection. It is disabled by default and scoped to

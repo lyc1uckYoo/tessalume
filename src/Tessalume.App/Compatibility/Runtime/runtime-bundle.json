@@ -3,6 +3,8 @@
   "output": "theme-runtime-v2.js",
   "fragments": [
     "00-bootstrap.js",
+    "05-artwork-composition.js",
+    "06-artwork-settings.js",
     "10-page-recognition.js",
     "15-display-preferences.js",
     "20-adaptive-layout.js",

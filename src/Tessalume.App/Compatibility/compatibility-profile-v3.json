@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "profileVersion": "3.0.2",
-  "runtimeContractVersion": 3,
+  "profileVersion": "3.0.3",
+  "runtimeContractVersion": 4,
   "selectors": {
     "main": [
       "main[data-app-shell-main-surface=\"default\"]",

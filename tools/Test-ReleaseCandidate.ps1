@@ -49,7 +49,7 @@ try {
     & $runtimeBuilder -Destination $runtimePath
     node --check $runtimePath
     if ($LASTEXITCODE -ne 0) { throw 'Assembled compatibility runtime syntax is invalid.' }
-    $compatibility = & $compatibilityBuilder -Version 3.0.2 -OutputDirectory $compatibilityOutput
+    $compatibility = & $compatibilityBuilder -Version 3.0.3 -OutputDirectory $compatibilityOutput
 
     if (-not $SkipPublish) {
         if (-not (Test-Path -LiteralPath $executablePath -PathType Leaf) -or
