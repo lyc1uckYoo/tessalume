@@ -153,6 +153,33 @@
       // mid-2026. Keep the stable Tessalume aliases at the compatibility layer
       // so every existing theme can continue styling the native composer.
       mark(surface, "composer-surface-chrome");
+      let stickyContainer = surface.parentElement;
+      while (stickyContainer && stickyContainer !== document.body) {
+        const stickyStyle = getComputedStyle(stickyContainer);
+        const stickyBottom = parseFloat(stickyStyle.bottom);
+        if (stickyStyle.position === "sticky" &&
+            Number.isFinite(stickyBottom) &&
+            Math.abs(stickyBottom) < .5) {
+          break;
+        }
+        stickyContainer = stickyContainer.parentElement;
+      }
+      if (stickyContainer && stickyContainer !== document.body) {
+        const stickyBox = stickyContainer.getBoundingClientRect();
+        const nativeFade = Array.from(stickyContainer.querySelectorAll("*"))
+          .find((node) => {
+            const style = getComputedStyle(node);
+            if (style.pointerEvents !== "none" || style.position !== "absolute") return false;
+            const className = typeof node.className === "string" ? node.className : "";
+            if (!style.backgroundImage.includes("linear-gradient") &&
+                !className.includes("bg-gradient")) return false;
+            const box = node.getBoundingClientRect();
+            return box.width >= stickyBox.width * .8 &&
+              box.height >= surface.getBoundingClientRect().height &&
+              Math.abs(box.bottom - stickyBox.bottom) < 2;
+          });
+        mark(nativeFade, "tessalume-composer-native-fade");
+      }
       const footer = queryFirst(
         surface,
         "composerFooter",

@@ -198,6 +198,19 @@ internal static partial class TestSuite
                   const styleOf = element => {
                     const style = getComputedStyle(element);
                     const box = element.getBoundingClientRect();
+                    const pseudo = name => {
+                      const value = getComputedStyle(element, name);
+                      return {
+                        content: value.content,
+                        background: value.background,
+                        backgroundColor: value.backgroundColor,
+                        backgroundImage: value.backgroundImage,
+                        opacity: value.opacity,
+                        position: value.position,
+                        zIndex: value.zIndex,
+                        inset: `${value.top} ${value.right} ${value.bottom} ${value.left}`
+                      };
+                    };
                     return {
                       tag: element.tagName,
                       className: typeof element.className === 'string' ? element.className : '',
@@ -207,6 +220,10 @@ internal static partial class TestSuite
                       background: style.background,
                       backgroundColor: style.backgroundColor,
                       backgroundImage: style.backgroundImage,
+                      maskImage: style.maskImage,
+                      backdropFilter: style.backdropFilter,
+                      filter: style.filter,
+                      clipPath: style.clipPath,
                       boxShadow: style.boxShadow,
                       border: style.border,
                       color: style.color,
@@ -216,6 +233,8 @@ internal static partial class TestSuite
                       position: style.position,
                       zIndex: style.zIndex,
                       overflow: style.overflow,
+                      beforePseudo: pseudo('::before'),
+                      afterPseudo: pseudo('::after'),
                       box: { left: Math.round(box.left), top: Math.round(box.top), width: Math.round(box.width), height: Math.round(box.height) }
                     };
                   };
@@ -230,7 +249,7 @@ internal static partial class TestSuite
                   const composer = document.querySelector('.composer-surface-chrome');
                   if (!editor && !composer) return null;
                   const ancestors = [];
-                  for (let node = editor || composer, depth = 0; node && depth < 14; node = node.parentElement, depth += 1) {
+                  for (let node = editor || composer, depth = 0; node && depth < 32; node = node.parentElement, depth += 1) {
                     ancestors.push(styleOf(node));
                   }
                   const surface = composer || (ancestors.length > 3
@@ -256,6 +275,35 @@ internal static partial class TestSuite
                       }
                     }
                   }
+                  const viewport = { width: window.innerWidth, height: window.innerHeight };
+                  const samplePoints = [
+                    [Math.round(viewport.width * .18), viewport.height - 18],
+                    [Math.round(viewport.width * .18), viewport.height - 72],
+                    [Math.round(viewport.width * .18), viewport.height - 126],
+                    [Math.round(viewport.width * .86), viewport.height - 18],
+                    [Math.round(viewport.width * .86), viewport.height - 72],
+                    [Math.round(viewport.width * .86), viewport.height - 126]
+                  ];
+                  const samples = samplePoints.map(([x, y]) => ({
+                    x,
+                    y,
+                    elements: document.elementsFromPoint(x, y).slice(0, 12).map(styleOf)
+                  }));
+                  const bandCandidates = Array.from(document.querySelectorAll('body *'))
+                    .filter(element => {
+                      const box = element.getBoundingClientRect();
+                      if (box.width < viewport.width * .5 || box.height < 20 || box.bottom < viewport.height - 180) return false;
+                      const style = getComputedStyle(element);
+                      const before = getComputedStyle(element, '::before');
+                      const after = getComputedStyle(element, '::after');
+                      return style.backgroundImage !== 'none' ||
+                        style.backgroundColor !== 'rgba(0, 0, 0, 0)' ||
+                        style.maskImage !== 'none' || style.backdropFilter !== 'none' ||
+                        (before.content !== 'none' && (before.backgroundImage !== 'none' || before.backgroundColor !== 'rgba(0, 0, 0, 0)')) ||
+                        (after.content !== 'none' && (after.backgroundImage !== 'none' || after.backgroundColor !== 'rgba(0, 0, 0, 0)'));
+                    })
+                    .slice(0, 80)
+                    .map(styleOf);
                   return {
                     url: location.href,
                     themeId: window.__TESSALUME_THEME_ID__ || null,
@@ -266,10 +314,17 @@ internal static partial class TestSuite
                       const footer = composer.querySelector('[class*="ComposerLayoutFooter"], [class*="_footer_"]');
                       return footer ? styleOf(footer) : null;
                     })() : null,
+                    nativeFade: (() => {
+                      const fade = document.querySelector('.tessalume-composer-native-fade');
+                      return fade ? styleOf(fade) : null;
+                    })(),
                     before: composer ? (() => { const s = getComputedStyle(composer, '::before'); return { content: s.content, background: s.background, boxShadow: s.boxShadow, display: s.display }; })() : null,
                     after: composer ? (() => { const s = getComputedStyle(composer, '::after'); return { content: s.content, background: s.background, boxShadow: s.boxShadow, display: s.display }; })() : null,
                     ancestors,
                     descendants,
+                    viewport,
+                    samples,
+                    bandCandidates,
                     rules,
                     outerHTML: (composer || editor).outerHTML.slice(0, 24000)
                   };

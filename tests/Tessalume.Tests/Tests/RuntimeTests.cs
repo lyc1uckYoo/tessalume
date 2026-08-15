@@ -208,8 +208,17 @@ internal static partial class TestSuite
         var payload = await BuildPayloadAsync(repositoryRoot, package);
         Ensure(payload.Contains("from-token-main-surface-primary", StringComparison.Ordinal),
             "The runtime must neutralize Codex's native bottom composer fade for every active theme.");
+        Ensure(payload.Contains("bg-gradient-to-t", StringComparison.Ordinal) &&
+               payload.Contains("from-surface", StringComparison.Ordinal),
+            "The runtime must neutralize the current Codex composer fade utility names.");
+        Ensure(payload.Contains("tessalume-composer-native-fade", StringComparison.Ordinal) &&
+               payload.Contains("style.pointerEvents !== \"none\"", StringComparison.Ordinal) &&
+               payload.Contains("style.backgroundImage.includes(\"linear-gradient\")", StringComparison.Ordinal),
+            "The runtime must semantically alias the native composer fade instead of relying only on unstable utility classes.");
         Ensure(payload.Contains("background:transparent!important", StringComparison.Ordinal),
             "The native composer fade override must remain transparent.");
+        Ensure(payload.Contains("background-image:none!important", StringComparison.Ordinal),
+            "The native composer fade image must be fully removed so it cannot obscure chat artwork.");
         Ensure(payload.Contains(":has(.composer-surface-chrome) .sticky.bottom-0", StringComparison.Ordinal),
             "The runtime must keep the sticky composer visible on Codex home layout changes.");
         Ensure(payload.Contains("min-height:64px!important", StringComparison.Ordinal),
