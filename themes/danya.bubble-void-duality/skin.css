@@ -73,10 +73,7 @@ html.dny-theme {
   --dny-glow:rgba(238,139,173,.22);
   --dny-shadow:0 12px 32px rgba(58,112,139,.14);
   --dny-shadow-deep:0 20px 54px rgba(49,91,117,.20);
-  --dny-hero:var(--tessalume-asset-hero-light);
-  --dny-chat-art:var(--tessalume-asset-chat-light);
   --dny-portrait:var(--tessalume-asset-task-left);
-  --dny-sidebar-art:var(--tessalume-asset-sidebar-light);
   --dny-companion:var(--tessalume-asset-task-right-primary);
   --dny-task-alt:var(--tessalume-asset-task-right-secondary);
   --dny-memory-art:var(--tessalume-asset-memory-light);
@@ -84,7 +81,6 @@ html.dny-theme {
   --dny-font-mono:"Cascadia Code",Consolas,monospace;
   --tessalume-v1-light-text-primary:#162a36;
   --tessalume-v1-light-text-secondary:#46606d;
-  --tessalume-v1-light-chat-mask:linear-gradient(90deg,rgba(247,253,255,.84),rgba(247,253,255,.60) 46%,rgba(247,253,255,.28) 76%,rgba(247,253,255,.12));
   --tessalume-v1-light-sidebar-row:linear-gradient(90deg,rgba(247,253,255,.80),rgba(247,253,255,.42) 72%,transparent);
   --tessalume-v1-light-sidebar-row-active:linear-gradient(90deg,rgba(247,253,255,.94),rgba(247,253,255,.64) 72%,transparent);
   color-scheme:light;
@@ -113,10 +109,7 @@ html.dny-theme.electron-dark {
   --dny-glow:rgba(65,91,255,.22);
   --dny-shadow:0 16px 38px rgba(0,0,0,.48);
   --dny-shadow-deep:0 26px 66px rgba(0,0,0,.68);
-  --dny-hero:var(--tessalume-asset-hero-dark);
-  --dny-chat-art:var(--tessalume-asset-chat-dark);
   --dny-portrait:var(--tessalume-asset-task-left-dark);
-  --dny-sidebar-art:var(--tessalume-asset-sidebar-dark);
   --dny-companion:var(--tessalume-asset-task-right-primary-dark);
   --dny-task-alt:var(--tessalume-asset-task-right-secondary-dark);
   --dny-memory-art:var(--tessalume-asset-memory-dark);
@@ -350,11 +343,6 @@ html.dny-theme aside.app-shell-left-panel::after {
   z-index:0;
   inset:0;
   pointer-events:none;
-  background:var(--dny-sidebar-art) 76% -140px/222% auto no-repeat;
-}
-
-html.dny-theme.electron-dark aside.app-shell-left-panel::after {
-  background:var(--dny-sidebar-art) 86% -90px/260% auto no-repeat;
 }
 
 html.dny-theme.dny-is-task main.dny-main {
@@ -363,18 +351,6 @@ html.dny-theme.dny-is-task main.dny-main {
 
 html.dny-theme.electron-dark.dny-is-task main.dny-main {
   background:linear-gradient(145deg,#02040b 0%,#050817 55%,#02040d 100%)!important;
-}
-
-html.dny-theme.dny-is-task main.dny-main::before {
-  background:var(--dny-chat-art) center center/cover no-repeat;
-}
-
-html.dny-theme.dny-is-task main.dny-main::after {
-  background:linear-gradient(90deg,rgba(238,247,250,.42),rgba(238,247,250,.27) 54%,rgba(238,247,250,.10) 78%,rgba(238,247,250,.03));
-}
-
-html.dny-theme.electron-dark.dny-is-task main.dny-main::after {
-  background:transparent;
 }
 
 html.dny-theme:not(.electron-dark) .dny-weapon-charm {
@@ -619,15 +595,10 @@ html.dny-theme .dny-home>div:first-child>div:first-child>div:first-child {
 
 html.dny-theme .dny-home>div:first-child>div:first-child>div:first-child::before {
   content:"";
-  background:var(--dny-hero) center/cover no-repeat!important;
-  transform:scale(1.015);
-  transform-origin:70% 50%;
-  animation:dny-hero-breathe 19s ease-in-out infinite alternate;
 }
 
 html.dny-theme .dny-home>div:first-child>div:first-child>div:first-child::after {
   content:"";
-  background:linear-gradient(90deg,color-mix(in srgb,var(--dny-solid) 69%,transparent) 0%,color-mix(in srgb,var(--dny-solid) 28%,transparent) 30%,transparent 51%);
 }
 
 html.dny-theme.electron-dark .dny-hero-copy h1 {
@@ -804,19 +775,6 @@ html.dny-theme.electron-dark .dny-domain-track {
   box-shadow:0 0 12px rgba(91,119,255,.42),inset 0 0 10px rgba(228,83,165,.22);
   transform:rotate(45deg);
   animation:dny-home-void-scan 7.4s cubic-bezier(.55,0,.25,1) infinite;
-}
-
-html.dny-theme:not(.electron-dark) .dny-home>div:first-child>div:first-child>div:first-child::before {
-  animation:dny-hero-light-drift 17s ease-in-out infinite alternate;
-}
-
-html.dny-theme.electron-dark .dny-home>div:first-child>div:first-child>div:first-child::before {
-  background:var(--dny-hero) center/cover no-repeat!important;
-  animation:dny-hero-dark-collapse 12s ease-in-out infinite alternate;
-}
-
-html.dny-theme.electron-dark .dny-home>div:first-child>div:first-child>div:first-child::after {
-  background:linear-gradient(90deg,rgba(7,10,24,.60) 0%,rgba(7,10,24,.25) 31%,transparent 51%);
 }
 
 .dny-is-home .dny-bubbles {
@@ -2610,7 +2568,16 @@ html.dny-theme:not(.electron-dark) .composer-surface-chrome:focus-within {
 /* 12 Theme-only media behavior */
 /* 12 主题专属响应式与动效降级：尺寸适配与减少动效。 */
 @media(prefers-reduced-motion:reduce) {
-  .dny-kicker i,.dny-identity>i,.dny-bubbles i,.dny-observer,.dny-memory-sigil *,.dny-sync *,.dny-sync::before,.dny-mode-seal::before,.dny-mode-seal::after,.dny-orbit-watermark,.dny-home>div:first-child>div:first-child>div:first-child::before {
+  .dny-kicker i,
+  .dny-identity>i,
+  .dny-bubbles i,
+  .dny-observer,
+  .dny-memory-sigil *,
+  .dny-sync *,
+  .dny-sync::before,
+  .dny-mode-seal::before,
+  .dny-mode-seal::after,
+  .dny-orbit-watermark {
     animation:none!important;
   }
 
@@ -2820,16 +2787,6 @@ html.dny-theme:not(.electron-dark) .composer-surface-chrome:focus-within {
   }
 }
 
-@keyframes dny-hero-breathe {
-  from {
-    transform:scale(1.015) translate3d(0,0,0);
-  }
-
-  to {
-    transform:scale(1.033) translate3d(-5px,-2px,0);
-  }
-}
-
 @keyframes dny-sigil-spin {
   to {
     transform:rotate(360deg);
@@ -2961,30 +2918,6 @@ html.dny-theme:not(.electron-dark) .composer-surface-chrome:focus-within {
 @keyframes dny-home-void-scan {
   0%,100% { right:0; transform:rotate(45deg) scale(.82); opacity:.54; }
   50% { right:calc(100% - 34px); transform:rotate(225deg) scale(1.08); opacity:1; }
-}
-
-@keyframes dny-hero-light-drift {
-  from {
-    transform:scale(1.012) translate3d(0,0,0);
-    filter:saturate(1) brightness(1.01);
-  }
-
-  to {
-    transform:scale(1.032) translate3d(-6px,-3px,0);
-    filter:saturate(1.08) brightness(1.04);
-  }
-}
-
-@keyframes dny-hero-dark-collapse {
-  from {
-    transform:scale(1.025) translate3d(0,0,0);
-    filter:saturate(1.03) brightness(.90);
-  }
-
-  to {
-    transform:scale(1.055) translate3d(-9px,-4px,0);
-    filter:saturate(1.18) brightness(1.02);
-  }
 }
 
 @keyframes dny-prop-sway {

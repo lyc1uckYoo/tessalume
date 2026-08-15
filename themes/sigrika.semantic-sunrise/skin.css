@@ -40,9 +40,6 @@ html.sgk-theme {
   --sgk-line-strong:rgba(67,154,150,.44);
   --sgk-line-gold:rgba(201,155,78,.52);
   --sgk-shadow:0 18px 48px rgba(66,47,91,.19);
-  --sgk-hero:var(--tessalume-asset-hero-light);
-  --sgk-sidebar-art:var(--tessalume-asset-sidebar-light);
-  --sgk-chat-art:var(--tessalume-asset-chat-light);
   --sgk-memory-art:var(--tessalume-asset-memory-light);
   --sgk-memory-position:center top;
   --sgk-memory-size:100% auto;
@@ -55,7 +52,6 @@ html.sgk-theme {
   --sgk-mono:"Cascadia Code",Consolas,monospace;
   --tessalume-v1-light-text-primary:#121018;
   --tessalume-v1-light-text-secondary:#3d3545;
-  --tessalume-v1-light-chat-mask:linear-gradient(90deg,rgba(255,251,244,.78),rgba(255,251,244,.53) 30%,rgba(255,251,244,.12) 47%,rgba(255,251,244,.10) 58%,rgba(255,251,244,.48) 77%,rgba(255,251,244,.67));
   --tessalume-v1-light-sidebar-row:linear-gradient(90deg,rgba(255,251,244,.78),rgba(255,251,244,.46) 70%,rgba(255,251,244,.12));
   --tessalume-v1-light-sidebar-row-active:linear-gradient(90deg,rgba(255,251,244,.96),rgba(246,237,248,.72) 72%,rgba(255,251,244,.22));
   color-scheme:light;
@@ -81,9 +77,6 @@ html.sgk-theme.electron-dark {
   --sgk-line-strong:rgba(84,218,207,.42);
   --sgk-line-gold:rgba(219,183,109,.45);
   --sgk-shadow:0 22px 58px rgba(0,0,0,.62);
-  --sgk-hero:var(--tessalume-asset-hero-dark);
-  --sgk-sidebar-art:var(--tessalume-asset-sidebar-dark);
-  --sgk-chat-art:var(--tessalume-asset-chat-dark);
   --sgk-memory-art:var(--tessalume-asset-memory-dark);
   --sgk-memory-position:center top;
   --sgk-memory-size:100% auto;
@@ -153,11 +146,6 @@ html.sgk-theme aside.app-shell-left-panel::after {
   z-index:0;
   inset:0;
   pointer-events:none;
-  background:var(--sgk-sidebar-art) 61% -148px/254% auto no-repeat;
-}
-
-html.sgk-theme.electron-dark aside.app-shell-left-panel::after {
-  background:var(--sgk-sidebar-art) 63% -166px/254% auto no-repeat;
 }
 
 html.sgk-theme.sgk-is-task main.sgk-main {
@@ -166,18 +154,6 @@ html.sgk-theme.sgk-is-task main.sgk-main {
 
 html.sgk-theme.electron-dark.sgk-is-task main.sgk-main {
   background:linear-gradient(145deg,#070812,#111020 58%,#090a17)!important;
-}
-
-html.sgk-theme.sgk-is-task main.sgk-main::before {
-  background:var(--sgk-chat-art) center center/cover no-repeat;
-}
-
-html.sgk-theme.sgk-is-task main.sgk-main::after {
-  background:var(--tessalume-v1-light-chat-mask);
-}
-
-html.sgk-theme.electron-dark.sgk-is-task main.sgk-main::after {
-  background:linear-gradient(90deg,rgba(6,7,17,.55),rgba(6,7,17,.24) 31%,rgba(6,7,17,.04) 47%,rgba(6,7,17,.03) 58%,rgba(6,7,17,.24) 78%,rgba(6,7,17,.46));
 }
 
 html.sgk-theme.sgk-is-settings .sgk-settings-surface {
@@ -335,21 +311,17 @@ html.sgk-theme.electron-dark aside [data-app-action-sidebar-thread-row] {
 
 .sgk-theme .sgk-home>div:first-child>div:first-child>div:first-child::before {
   content:"";
-  background:var(--sgk-hero) center/cover no-repeat!important;
-  transform:scale(1.008);
-  transform-origin:73% 50%;
-  animation:sgk-hero-breathe 18s ease-in-out infinite alternate;
 }
 
 .sgk-theme .sgk-home>div:first-child>div:first-child>div:first-child::after {
   content:"";
   border:1px solid color-mix(in srgb,var(--sgk-gold) 43%,transparent);
   border-radius:20px 2px 20px 2px;
-  background:linear-gradient(90deg,color-mix(in srgb,var(--sgk-solid) 82%,transparent),color-mix(in srgb,var(--sgk-solid) 32%,transparent) 39%,transparent 61%),linear-gradient(135deg,color-mix(in srgb,var(--sgk-orange) 52%,transparent) 0 1px,transparent 1px 97%,color-mix(in srgb,var(--sgk-aqua) 42%,transparent) 97% 98%,transparent 98%);
+  background:linear-gradient(135deg,color-mix(in srgb,var(--sgk-orange) 52%,transparent) 0 1px,transparent 1px 97%,color-mix(in srgb,var(--sgk-aqua) 42%,transparent) 97% 98%,transparent 98%);
 }
 
 .sgk-theme.electron-dark .sgk-home>div:first-child>div:first-child>div:first-child::after {
-  background:linear-gradient(90deg,rgba(7,8,20,.80),rgba(7,8,20,.30) 40%,transparent 62%),linear-gradient(135deg,rgba(240,154,66,.35) 0 1px,transparent 1px 97%,rgba(89,221,210,.32) 97% 98%,transparent 98%);
+  background:linear-gradient(135deg,rgba(240,154,66,.35) 0 1px,transparent 1px 97%,rgba(89,221,210,.32) 97% 98%,transparent 98%);
 }
 
 .sgk-home .group\/home-suggestions button {
@@ -1629,7 +1601,6 @@ html.sgk-theme .sgk-settings-surface :is(button,[role="button"]):hover {
 /* 12 Theme-only media behavior */
 /* 12 主题专属动效降级：仅暂停角色皮肤节奏，不改变模板自适应几何。 */
 @media (prefers-reduced-motion:reduce) {
-  .sgk-theme .sgk-home>div:first-child>div:first-child>div:first-child::before,
   .sgk-hero-kicker i,
   .sgk-script-pulse,
   .sgk-script-expect,
@@ -1662,11 +1633,6 @@ html.sgk-theme .sgk-settings-surface :is(button,[role="button"]):hover {
 
 /* 13 Character keyframes */
 /* 13 角色专属关键帧：译链、日灵、语义签、记忆页与臂铠符刃。 */
-@keyframes sgk-hero-breathe {
-  from { transform:scale(1.004) translate3d(0,0,0); }
-  to { transform:scale(1.012) translate3d(-3px,-2px,0); }
-}
-
 @keyframes sgk-kicker-pulse {
   0%,100% { opacity:.58; transform:scale(.88) rotate(-3deg); }
   50% { opacity:1; transform:scale(1.08) rotate(2deg); }

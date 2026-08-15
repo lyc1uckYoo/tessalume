@@ -18,9 +18,6 @@ html.mny-theme {
   --mny-line:rgba(71,83,129,.25);
   --mny-line-strong:rgba(98,82,191,.52);
   --mny-shadow:0 18px 48px rgba(39,49,91,.19);
-  --mny-hero:var(--tessalume-asset-hero-light);
-  --mny-sidebar-art:var(--tessalume-asset-sidebar-light);
-  --mny-chat-art:var(--tessalume-asset-chat-light);
   --mny-memory-art:var(--tessalume-asset-memory-light);
   --mny-display:"Microsoft YaHei UI","Segoe UI",sans-serif;
   --mny-serif:"STKaiti","KaiTi",serif;
@@ -29,8 +26,7 @@ html.mny-theme {
   --tessalume-v1-light-text-secondary:#354059;
   --tessalume-v1-light-sidebar-row:linear-gradient(96deg,rgba(255,255,255,.74),rgba(242,246,255,.34) 68%,transparent);
   --tessalume-v1-light-sidebar-row-active:linear-gradient(96deg,rgba(255,255,255,.92),rgba(221,218,250,.58) 72%,transparent);
-  --tessalume-v1-light-chat-mask:linear-gradient(90deg,rgba(249,251,255,.68),rgba(249,251,255,.43) 42%,rgba(249,251,255,.08) 69%,rgba(249,251,255,.2));
-  color-scheme:light;
+color-scheme:light;
 }
 
 html.mny-theme.electron-dark {
@@ -52,9 +48,6 @@ html.mny-theme.electron-dark {
   --mny-line:rgba(137,151,207,.29);
   --mny-line-strong:rgba(184,166,255,.58);
   --mny-shadow:0 20px 60px rgba(0,0,0,.62);
-  --mny-hero:var(--tessalume-asset-hero-dark);
-  --mny-sidebar-art:var(--tessalume-asset-sidebar-dark);
-  --mny-chat-art:var(--tessalume-asset-chat-dark);
   --mny-memory-art:var(--tessalume-asset-memory-dark);
   color-scheme:dark;
 }
@@ -125,12 +118,6 @@ html.mny-theme aside.app-shell-left-panel::after {
   z-index:0;
   inset:0;
   pointer-events:none;
-  background:var(--mny-sidebar-art) 58% -28px/206% auto no-repeat;
-}
-
-html.mny-theme.electron-dark aside.app-shell-left-panel::after {
-  background-position:66% -20px;
-  background-size:220% auto;
 }
 
 html.mny-theme.mny-is-task main.mny-main {
@@ -139,18 +126,6 @@ html.mny-theme.mny-is-task main.mny-main {
 
 html.mny-theme.electron-dark.mny-is-task main.mny-main {
   background:linear-gradient(145deg,#050814,#0c1328)!important;
-}
-
-html.mny-theme.mny-is-task main.mny-main::before {
-  background:var(--mny-chat-art) center center/cover no-repeat;
-}
-
-html.mny-theme.mny-is-task main.mny-main::after {
-  background:linear-gradient(90deg,rgba(249,251,255,.42),rgba(249,251,255,.27) 54%,rgba(249,251,255,.1) 78%,rgba(249,251,255,.03));
-}
-
-html.mny-theme.electron-dark.mny-is-task main.mny-main::after {
-  background:transparent;
 }
 
 html.mny-theme.mny-is-settings .mny-settings-surface {
@@ -459,29 +434,19 @@ html.mny-theme.electron-dark aside :is([class*="badge"],[data-sidebar-count]) {
 /* 04 Home skin */
 .mny-theme .mny-home>div:first-child>div:first-child>div:first-child::before {
   content:"";
-  background:var(--mny-hero) center 46%/cover no-repeat!important;
-  transform:scale(1.008) translate3d(0,0,0);
-  transform-origin:73% 50%;
-  animation:mny-observatory-drift 24s ease-in-out infinite alternate;
-}
-
-.mny-theme.electron-dark .mny-home>div:first-child>div:first-child>div:first-child::before {
-  background:var(--mny-hero) center 46%/cover no-repeat!important;
 }
 
 .mny-theme .mny-home>div:first-child>div:first-child>div:first-child::after {
   content:"";
   border:1px solid color-mix(in srgb,var(--mny-gold) 48%,transparent);
   border-radius:24px 3px 24px 3px;
-  background:linear-gradient(90deg,rgba(251,252,255,.74),rgba(248,250,255,.34) 38%,transparent 64%),
-    repeating-linear-gradient(135deg,transparent 0 52px,rgba(98,82,191,.055) 53px 54px);
+  background:repeating-linear-gradient(135deg,transparent 0 52px,rgba(98,82,191,.055) 53px 54px);
   box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--mny-lilac) 14%,transparent);
 }
 
 .mny-theme.electron-dark .mny-home>div:first-child>div:first-child>div:first-child::after {
   border-color:color-mix(in srgb,var(--mny-wool) 60%,transparent);
-  background:linear-gradient(90deg,rgba(8,11,24,.76),rgba(17,16,28,.35) 39%,transparent 66%),
-    repeating-linear-gradient(135deg,transparent 0 54px,rgba(239,199,126,.045) 55px 56px);
+  background:repeating-linear-gradient(135deg,transparent 0 54px,rgba(239,199,126,.045) 55px 56px);
   box-shadow:inset 0 0 0 1px rgba(239,199,126,.1);
 }
 
@@ -2234,10 +2199,9 @@ html.mny-theme.electron-dark .mny-card-instrument-snow {
 }
 
 @media (prefers-reduced-motion:reduce) {
-  .mny-theme .mny-home>div:first-child>div:first-child>div:first-child::before,
   #tessalume-theme-root[data-tessalume-template-version="1.0"] *,
-  #tessalume-theme-root[data-tessalume-template-version="1.0"] *::before,
-  #tessalume-theme-root[data-tessalume-template-version="1.0"] *::after {
+#tessalume-theme-root[data-tessalume-template-version="1.0"] *::before,
+#tessalume-theme-root[data-tessalume-template-version="1.0"] *::after {
     animation:none!important;
     transition-duration:.001ms!important;
   }
@@ -2288,16 +2252,6 @@ html.mny-theme.electron-dark .mny-card-instrument-snow {
 }
 
 /* 13 Character keyframes */
-@keyframes mny-observatory-drift {
-  from {
-    transform:scale(1.008) translate3d(0,0,0);
-  }
-
-  to {
-    transform:scale(1.012) translate3d(-1px,-.5px,0);
-  }
-}
-
 @keyframes mny-frame-calibration {
   0%,70%,100% {
     border-color:color-mix(in srgb,var(--mny-cyan) 44%,var(--mny-line));

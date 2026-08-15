@@ -83,10 +83,10 @@ Template 1.0 的几何和公共表面现在只存在于运行时共享的
 
 - `manifest.json` 中的主题名称、作者、文案和本地资源映射；
 - 亮色/暗色横幅、侧栏、聊天、记忆卡和三张角色图；
-- `skin.css` 固定章节中的颜色变量、图片裁切、边框、纹样和阴影；
-- 首页横幅、左栏图片和聊天背景只声明原图、裁切大小与位置；三者的亮度、
-  对比度、饱和度和不透明度由 Tessalume 高级图像调节统一接管，并按主题、
-  亮色和暗色分别持久化；
+- `skin.css` 固定章节中的颜色变量、角色边框、纹样和阴影；
+- `artwork-defaults.json` 中首页横幅、左栏图片和聊天背景的六槽原图引用、
+  最终构图、滤镜、透明度、混合模式、可读性遮罩与可选相对图片动效推荐值；
+  Tessalume 将主题推荐值与用户稀疏覆盖解析后一次性绘制，动效不得改写构图；
 - `hero-motion`、`memory-meter`、`sync-*` 和 `composer-accessory` 的内部
   元素外观及关键帧；
 - 卡片内部标题和角色状态文案。
@@ -98,10 +98,11 @@ Template 1.0 的几何和公共表面现在只存在于运行时共享的
 - `data-theme-role`、`data-theme-part`、主次优先级和节点归属；
 - 运行时共享几何和公共表面；
 - `mountCanonicalTheme`、`adaptiveLayout` 或两个公共定位函数；
-- 聊天背景的稳定 `main::before` 注入方式；
+- 运行时拥有的聊天背景稳定 `main::before` / 遮罩 `main::after` 注入方式；
 - 运行时观察器、路由判断和清理逻辑。
-- 在首页横幅 `::before`、左栏 `::after` 或聊天 `main::before` 上写死
-  `filter`/`opacity`；默认必须保持原图 100%。
+- 在首页横幅 `::before`、左栏 `::after` 或聊天 `main::before` 上写死图片、
+  `background-size`/`background-position`、静态 `transform`、图片层动画、
+  `filter`/`opacity` 或混合模式；也不得在聊天 `main::after` 藏可读性遮罩。
 
 ## 自适应显隐
 
@@ -123,7 +124,9 @@ Template 1.0 的几何和公共表面现在只存在于运行时共享的
    分别设计，但不要机械绑定角色形态。
 4. 按 [flagship-completeness.md](flagship-completeness.md) 完成首页、左栏、聊天、
    标题行、消息气泡、环境信息内部、输入区底栏、三张卡、记忆、同步组件和挂件。
-5. 只编辑 `skin.css` 的主题变量、角色皮肤与专属动效，保持 01-13 顺序和冻结几何。
+5. 在 `artwork-defaults.json` 完成六槽推荐构图和效果；只在 `skin.css` 编辑
+   角色皮肤与独立装饰动效。图片本身若需呼吸/漂移，只能在 defaults 中写相对
+   motion delta；保持 01-13 顺序和冻结几何。
 6. 运行 `sync_template_geometry.py --check` 与 `validate_theme_contract.py`，任何草稿
    遗留或视觉覆盖缺失都必须在构建前解决。
 7. 在应用源码仓库中执行根目录 `一键构建EXE.ps1`，不手工同步便携版；如果根目录

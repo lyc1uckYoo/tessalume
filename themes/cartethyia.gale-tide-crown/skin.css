@@ -21,9 +21,6 @@ html.cthy-theme {
   --cthy-control-strong:linear-gradient(135deg,rgba(69,130,216,.18),rgba(226,194,123,.2));
   --cthy-control-line:rgba(55,116,194,.4);
   --cthy-control-glow:rgba(41,111,200,.18);
-  --cthy-hero:var(--tessalume-asset-hero-light);
-  --cthy-sidebar-art:var(--tessalume-asset-sidebar-light);
-  --cthy-chat-art:var(--tessalume-asset-chat-light);
   --cthy-memory-art:var(--tessalume-asset-memory-light);
   --cthy-display:"Microsoft YaHei UI","Segoe UI",sans-serif;
   --cthy-serif:"STKaiti","KaiTi",serif;
@@ -52,9 +49,6 @@ html.cthy-theme.electron-dark {
   --cthy-control-strong:linear-gradient(135deg,rgba(48,93,181,.9),rgba(37,27,83,.94));
   --cthy-control-line:rgba(109,177,255,.46);
   --cthy-control-glow:rgba(73,150,255,.26);
-  --cthy-hero:var(--tessalume-asset-hero-dark);
-  --cthy-sidebar-art:var(--tessalume-asset-sidebar-dark);
-  --cthy-chat-art:var(--tessalume-asset-chat-dark);
   --cthy-memory-art:var(--tessalume-asset-memory-dark);
   color-scheme:dark;
 }
@@ -141,11 +135,6 @@ html.cthy-theme aside.app-shell-left-panel::after {
   z-index:0;
   inset:0;
   pointer-events:none;
-  background:var(--cthy-sidebar-art) 40% -148px/312% auto no-repeat;
-}
-
-html.cthy-theme.electron-dark aside.app-shell-left-panel::after {
-  background:var(--cthy-sidebar-art) 52% -200px/355% auto no-repeat;
 }
 
 html.cthy-theme.cthy-is-task main.cthy-main {
@@ -154,18 +143,6 @@ html.cthy-theme.cthy-is-task main.cthy-main {
 
 html.cthy-theme.electron-dark.cthy-is-task main.cthy-main {
   background:linear-gradient(145deg,#030817,#091830)!important;
-}
-
-html.cthy-theme.cthy-is-task main.cthy-main::before {
-  background:var(--cthy-chat-art) center center/cover no-repeat;
-}
-
-html.cthy-theme.cthy-is-task main.cthy-main::after {
-  background:linear-gradient(90deg,color-mix(in srgb,var(--cthy-solid) 28%,transparent),transparent 25%,transparent 75%,color-mix(in srgb,var(--cthy-solid) 23%,transparent)),linear-gradient(180deg,color-mix(in srgb,var(--cthy-bg) 12%,transparent),transparent 27%,transparent 72%,color-mix(in srgb,var(--cthy-bg) 22%,transparent));
-}
-
-html.cthy-theme.electron-dark.cthy-is-task main.cthy-main::after {
-  background:transparent;
 }
 html.cthy-theme.cthy-is-settings .cthy-settings-surface {
   background:transparent!important;
@@ -327,26 +304,19 @@ html.cthy-theme.electron-dark aside :is(button,a) {
 /* 04 首页皮肤：右侧角色横幅、风潮双冕、三剑轨迹和形态文案。 */
 .cthy-theme .cthy-home>div:first-child>div:first-child>div:first-child::before {
   content:"";
-  background:var(--cthy-hero) center/cover no-repeat!important;
-  transform:scale(1.006);
-  animation:cthy-hero-drift 19s ease-in-out infinite alternate;
-}
-
-.cthy-theme.electron-dark .cthy-home>div:first-child>div:first-child>div:first-child::before {
-  background:var(--cthy-hero) center/cover no-repeat!important;
 }
 
 .cthy-theme .cthy-home>div:first-child>div:first-child>div:first-child::after {
   content:"";
   border:1px solid color-mix(in srgb,var(--cthy-gold) 45%,var(--cthy-line));
   border-radius:22px 3px 22px 3px;
-  background:linear-gradient(90deg,color-mix(in srgb,var(--cthy-solid) 83%,transparent),color-mix(in srgb,var(--cthy-solid) 34%,transparent) 39%,transparent 61%),linear-gradient(135deg,transparent 0 48%,color-mix(in srgb,var(--cthy-cyan) 16%,transparent) 49% 50%,transparent 51%);
+  background:linear-gradient(135deg,transparent 0 48%,color-mix(in srgb,var(--cthy-cyan) 16%,transparent) 49% 50%,transparent 51%);
   box-shadow:inset 0 0 38px color-mix(in srgb,var(--cthy-blue) 8%,transparent);
   animation:cthy-banner-lattice 7.2s ease-in-out infinite;
 }
 
 .cthy-theme.electron-dark .cthy-home>div:first-child>div:first-child>div:first-child::after {
-  background:linear-gradient(90deg,rgba(4,9,23,.88),rgba(4,9,23,.37) 40%,transparent 62%),linear-gradient(135deg,transparent 0 48%,color-mix(in srgb,var(--cthy-cyan) 16%,transparent) 49% 50%,transparent 51%);
+  background:linear-gradient(135deg,transparent 0 48%,color-mix(in srgb,var(--cthy-cyan) 16%,transparent) 49% 50%,transparent 51%);
 }
 
 .cthy-home .group\/home-suggestions button {
@@ -1545,10 +1515,6 @@ html.cthy-theme.cthy-is-home .composer-surface-chrome[data-composer-utility-bar-
   .cthy-gale-crown,.cthy-task-card::before {
     opacity:.72;
   }
-
-  html.cthy-theme.cthy-is-task main.cthy-main::after {
-    background:linear-gradient(90deg,color-mix(in srgb,var(--cthy-solid) 25%,transparent),transparent 30%,transparent 70%,color-mix(in srgb,var(--cthy-solid) 22%,transparent));
-  }
 }
 
 @media (prefers-reduced-motion:reduce) {
@@ -1568,16 +1534,6 @@ html.cthy-theme.cthy-is-home .composer-surface-chrome[data-composer-utility-bar-
   50% {
     opacity:1;
     transform:scale(1.08);
-  }
-}
-
-@keyframes cthy-hero-drift {
-  from {
-    transform:scale(1.004) translate3d(0,0,0);
-  }
-
-  to {
-    transform:scale(1.012) translate3d(-4px,-2px,0);
   }
 }
 

@@ -1,0 +1,280 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tessalume.local/schemas/theme-artwork-defaults-v1.json",
+  "title": "Tessalume theme artwork defaults v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "themeId", "defaultsVersion", "slots"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "schemaVersion": { "const": 1 },
+    "themeId": { "type": "string", "pattern": "^[a-z0-9][a-z0-9.-]{2,63}$" },
+    "defaultsVersion": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+    "slots": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["hero", "sidebar", "chat"],
+      "properties": {
+        "hero": { "$ref": "#/$defs/modePair" },
+        "sidebar": { "$ref": "#/$defs/modePair" },
+        "chat": { "$ref": "#/$defs/modePair" }
+      }
+    }
+  },
+  "$defs": {
+    "cssLength": {
+      "type": "string",
+      "pattern": "^(?:auto|cover|contain|(?:[1-9][0-9]*(?:\\.[0-9]+)?|0\\.0*[1-9][0-9]*)(?:%|px))$"
+    },
+    "cssPosition": {
+      "type": "string",
+      "pattern": "^(?:left|center|right|top|bottom|-?(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?(?:%|px))$"
+    },
+    "motionDelta": {
+      "type": "string",
+      "pattern": "^-?(?:0(?:\\.[0-9]+)?|[1-9][0-9]{0,3}(?:\\.[0-9]+)?|10000(?:\\.0+)?)(?:%|px)$"
+    },
+    "color": {
+      "type": "string",
+      "pattern": "^#[0-9A-Fa-f]{6}$"
+    },
+    "modePair": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["light", "dark"],
+      "properties": {
+        "light": { "$ref": "#/$defs/slot" },
+        "dark": { "$ref": "#/$defs/slot" }
+      }
+    },
+    "slot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["asset", "placement", "effects"],
+      "properties": {
+        "asset": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$" },
+        "placement": { "$ref": "#/$defs/placement" },
+        "effects": { "$ref": "#/$defs/effects" },
+        "motion": { "$ref": "#/$defs/motion" },
+        "responsiveVariants": {
+          "type": "array",
+          "maxItems": 8,
+          "items": { "$ref": "#/$defs/responsiveVariant" }
+        }
+      }
+    },
+    "placement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["size", "position", "scale", "origin", "mirrorX", "mirrorY"],
+      "properties": {
+        "size": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["width", "height"],
+          "properties": {
+            "width": { "$ref": "#/$defs/cssLength" },
+            "height": { "$ref": "#/$defs/cssLength" }
+          }
+        },
+        "position": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["x", "y"],
+          "properties": {
+            "x": { "$ref": "#/$defs/cssPosition" },
+            "y": { "$ref": "#/$defs/cssPosition" }
+          }
+        },
+        "scale": { "type": "number", "minimum": 0.1, "maximum": 10 },
+        "origin": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["x", "y"],
+          "properties": {
+            "x": { "$ref": "#/$defs/cssPosition" },
+            "y": { "$ref": "#/$defs/cssPosition" }
+          }
+        },
+        "mirrorX": { "type": "boolean" },
+        "mirrorY": { "type": "boolean" }
+      }
+    },
+    "effects": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "brightness", "contrast", "saturation", "opacity", "grayscale", "hueRotate",
+        "blur", "blendMode", "overlay", "gradientVeil", "vignette", "readabilityVeil"
+      ],
+      "properties": {
+        "brightness": { "type": "number", "minimum": 20, "maximum": 180 },
+        "contrast": { "type": "number", "minimum": 20, "maximum": 180 },
+        "saturation": { "type": "number", "minimum": 0, "maximum": 200 },
+        "opacity": { "type": "number", "minimum": 0, "maximum": 100 },
+        "grayscale": { "type": "number", "minimum": 0, "maximum": 100 },
+        "hueRotate": { "type": "number", "minimum": -180, "maximum": 180 },
+        "blur": { "type": "number", "minimum": 0, "maximum": 20 },
+        "blendMode": {
+          "enum": [
+            "normal", "multiply", "screen", "overlay", "darken", "lighten",
+            "color-dodge", "color-burn", "hard-light", "soft-light", "difference",
+            "exclusion", "hue", "saturation", "color", "luminosity", "plus-lighter"
+          ]
+        },
+        "overlay": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["color", "opacity"],
+          "properties": {
+            "color": { "$ref": "#/$defs/color" },
+            "opacity": { "type": "number", "minimum": 0, "maximum": 100 }
+          }
+        },
+        "gradientVeil": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["enabled", "strength", "layers"],
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "strength": { "type": "number", "minimum": 0, "maximum": 100 },
+            "layers": {
+              "type": "array",
+              "maxItems": 4,
+              "items": { "$ref": "#/$defs/gradientLayer" }
+            }
+          }
+        },
+        "vignette": { "type": "number", "minimum": 0, "maximum": 100 },
+        "readabilityVeil": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["enabled", "color", "opacity", "directionDeg", "rangeStart", "rangeEnd"],
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "color": { "$ref": "#/$defs/color" },
+            "opacity": { "type": "number", "minimum": 0, "maximum": 100 },
+            "directionDeg": { "type": "number", "minimum": -360, "maximum": 360 },
+            "rangeStart": { "type": "number", "minimum": 0, "maximum": 100 },
+            "rangeEnd": { "type": "number", "minimum": 0, "maximum": 100 }
+          }
+        }
+      }
+    },
+    "gradientLayer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["directionDeg", "start", "end", "stops"],
+      "properties": {
+        "directionDeg": { "type": "number", "minimum": -360, "maximum": 360 },
+        "start": { "type": "number", "minimum": 0, "maximum": 100 },
+        "end": { "type": "number", "minimum": 0, "maximum": 100 },
+        "stops": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 8,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["position", "color", "opacity"],
+            "properties": {
+              "position": { "type": "number", "minimum": 0, "maximum": 100 },
+              "color": { "$ref": "#/$defs/color" },
+              "opacity": { "type": "number", "minimum": 0, "maximum": 100 }
+            }
+          }
+        }
+      }
+    },
+    "motion": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mode"],
+          "properties": {
+            "mode": { "const": "none" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mode", "durationMs", "easing", "direction", "keyframes"],
+          "properties": {
+            "mode": { "const": "loop" },
+            "durationMs": { "type": "integer", "minimum": 100, "maximum": 300000 },
+            "easing": { "enum": ["linear", "ease", "ease-in", "ease-out", "ease-in-out"] },
+            "direction": { "enum": ["normal", "reverse", "alternate", "alternate-reverse"] },
+            "keyframes": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 16,
+              "items": { "$ref": "#/$defs/motionKeyframe" }
+            }
+          }
+        }
+      ]
+    },
+    "motionKeyframe": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["at", "translateX", "translateY", "scaleDelta", "opacityDelta"],
+      "properties": {
+        "at": { "type": "number", "minimum": 0, "maximum": 100 },
+        "translateX": { "$ref": "#/$defs/motionDelta" },
+        "translateY": { "$ref": "#/$defs/motionDelta" },
+        "scaleDelta": { "type": "number", "minimum": -0.9, "maximum": 1 },
+        "opacityDelta": { "type": "number", "minimum": -100, "maximum": 100 }
+      }
+    },
+    "responsiveVariant": {
+      "type": "object",
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "anyOf": [
+            { "required": ["minWidth"] },
+            { "required": ["maxWidth"] }
+          ]
+        },
+        {
+          "anyOf": [
+            { "required": ["gradientVeil"] },
+            { "required": ["readabilityVeil"] }
+          ]
+        }
+      ],
+      "properties": {
+        "minWidth": { "type": "number", "minimum": 1, "maximum": 10000 },
+        "maxWidth": { "type": "number", "minimum": 1, "maximum": 10000 },
+        "gradientVeil": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["enabled", "strength", "layers"],
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "strength": { "type": "number", "minimum": 0, "maximum": 100 },
+            "layers": {
+              "type": "array",
+              "maxItems": 4,
+              "items": { "$ref": "#/$defs/gradientLayer" }
+            }
+          }
+        },
+        "readabilityVeil": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["enabled", "color", "opacity", "directionDeg", "rangeStart", "rangeEnd"],
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "color": { "$ref": "#/$defs/color" },
+            "opacity": { "type": "number", "minimum": 0, "maximum": 100 },
+            "directionDeg": { "type": "number", "minimum": -360, "maximum": 360 },
+            "rangeStart": { "type": "number", "minimum": 0, "maximum": 100 },
+            "rangeEnd": { "type": "number", "minimum": 0, "maximum": 100 }
+          }
+        }
+      }
+    }
+  }
+}

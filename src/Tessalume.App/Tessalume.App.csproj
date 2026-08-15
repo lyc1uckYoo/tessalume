@@ -62,6 +62,9 @@
     <EmbeddedResource Include="..\..\schemas\theme-manifest-v2.schema.json">
       <LogicalName>Tessalume.CreatorWorkspace/schemas/theme-manifest-v2.schema.json</LogicalName>
     </EmbeddedResource>
+    <EmbeddedResource Include="..\..\schemas\theme-artwork-defaults-v1.schema.json">
+      <LogicalName>Tessalume.CreatorWorkspace/schemas/theme-artwork-defaults-v1.schema.json</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">

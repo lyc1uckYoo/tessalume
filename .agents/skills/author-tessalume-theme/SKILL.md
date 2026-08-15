@@ -52,7 +52,9 @@ current task.
    pause. Do not generate any image until the user explicitly approves them.
 3. Create the package only with `scripts/scaffold_theme.py`. Never copy another
    published theme. Declare `templateVersion: "1.0"` and keep the canonical
-   roles, parts, priorities and frozen geometry unchanged.
+   roles, parts, priorities and frozen geometry unchanged. Complete all six
+   original-asset recommendations in `artwork-defaults.json`; if the image
+   itself needs ambient motion, encode only relative placement deltas there.
 4. Generate or prepare all eleven final assets at production quality. After
    every image, complete the fixed identity checklist in
    `flagship-completeness.md` and reject any failed item. Use the
@@ -71,14 +73,16 @@ current task.
 7. Call `context.mountCanonicalTheme(...)` exactly once with
    `templateVersion: "1.0"`, `preserveRoot: true` and `adaptiveLayout: true`.
    Use both canonical positioning helpers with the Template 1.0 dimensions.
-8. Paint chat artwork on the isolated themed `main`. Keep message fills
-   transparent while retaining visible directional frames. Judge dark artwork
-   from its actual result: retain its original brightness when already balanced,
-   and adjust artwork, veil or filters only when readability or composition
-   requires it.
-9. Keep `skin.css` in canonical 01-13 order. Modify only assets, copy, color,
-   texture, symbols and theme-owned animation. Never append a late override
-   dump or edit the frozen geometry block.
+8. Let the shared runtime paint chat artwork on the isolated themed `main` from
+   `artwork-defaults.json`. Keep message fills transparent while retaining
+   visible directional frames. Judge dark artwork from its actual result:
+   retain its original brightness when already balanced, and adjust the data
+   recommendation only when readability or composition requires it. The same
+   runtime owns optional image-layer motion and accessibility reduction.
+9. Keep `skin.css` in canonical 01-13 order. Modify only copy, color, texture,
+   symbols and theme-owned decoration animation. Never put the three adjustable
+   images, crop/effects or veils back into CSS, restore image-layer keyframes,
+   append a late override dump, or edit the frozen geometry block.
 10. Before building, run both blocking checks:
 
    ```powershell

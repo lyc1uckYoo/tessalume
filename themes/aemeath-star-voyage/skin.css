@@ -19,16 +19,12 @@
   --ae3-line:rgba(173,91,143,.25);
   --ae3-line-cyan:rgba(70,184,207,.42);
   --ae3-shadow:0 18px 48px rgba(83,53,86,.18);
-  --ae3-hero:var(--tessalume-asset-hero-light);
-  --ae3-sidebar-art:var(--tessalume-asset-sidebar-light);
-  --ae3-chat-art:var(--tessalume-asset-chat-light);
   --ae3-memory-art:var(--tessalume-asset-memory-light);
   --ae3-task-left-art:var(--tessalume-asset-task-left);
   --ae3-task-secondary-art:var(--tessalume-asset-task-right-secondary);
   --ae3-task-primary-art:var(--tessalume-asset-task-right-primary);
   --tessalume-v1-light-text-primary:#17212a;
   --tessalume-v1-light-text-secondary:#465762;
-  --tessalume-v1-light-chat-mask:linear-gradient(90deg,rgba(255,250,253,.82),rgba(255,250,253,.57) 46%,rgba(255,250,253,.24) 76%,rgba(255,250,253,.10));
   --tessalume-v1-light-sidebar-row:linear-gradient(90deg,rgba(255,252,255,.78),rgba(255,252,255,.40) 72%,transparent);
   --tessalume-v1-light-sidebar-row-active:linear-gradient(90deg,rgba(255,252,255,.92),rgba(255,252,255,.62) 72%,transparent);
   color-scheme:light;
@@ -51,9 +47,6 @@
   --ae3-line:rgba(127,110,188,.30);
   --ae3-line-cyan:rgba(91,215,235,.43);
   --ae3-shadow:0 22px 62px rgba(0,0,0,.68);
-  --ae3-hero:var(--tessalume-asset-hero-dark);
-  --ae3-sidebar-art:var(--tessalume-asset-sidebar-dark);
-  --ae3-chat-art:var(--tessalume-asset-chat-dark);
   --ae3-memory-art:var(--tessalume-asset-memory-dark);
   --ae3-task-left-art:var(--tessalume-asset-task-left-dark);
   --ae3-task-secondary-art:var(--tessalume-asset-task-right-secondary-dark);
@@ -144,11 +137,6 @@ html.ae3-theme aside.app-shell-left-panel::after {
   z-index:0;
   inset:0;
   pointer-events:none;
-  background:var(--ae3-sidebar-art) 62% -108px/228% auto no-repeat;
-}
-
-html.ae3-theme.electron-dark aside.app-shell-left-panel::after {
-  background:var(--ae3-sidebar-art) 82% -150px/225% auto no-repeat;
 }
 
 html.ae3-theme aside.app-shell-left-panel>* {
@@ -166,18 +154,6 @@ html.ae3-theme aside.app-shell-left-panel::before {
   color:color-mix(in srgb,var(--ae3-cyan) 76%,transparent);
   font:700 6px/1 "Cascadia Code",Consolas,monospace;
   letter-spacing:.22em;
-}
-
-html.ae3-theme.ae3-is-task main.ae3-main::before {
-  background:var(--ae3-chat-art) center center/cover no-repeat;
-}
-
-html.ae3-theme.ae3-is-task main.ae3-main::after {
-  background:linear-gradient(90deg,rgba(255,250,253,.42),rgba(255,250,253,.27) 54%,rgba(255,250,253,.10) 78%,rgba(255,250,253,.03));
-}
-
-html.ae3-theme.electron-dark.ae3-is-task main.ae3-main::after {
-  background:transparent;
 }
 
 /* 03 Sidebar skin */
@@ -340,22 +316,13 @@ html.ae3-theme aside [data-app-action-sidebar-thread-row][aria-current="page"],h
 
 .ae3-theme .ae3-home>div:first-child>div:first-child>div:first-child::before {
   content:"";
-  background:var(--ae3-hero) center 46%/cover no-repeat!important;
-  transform-origin:73% 50%;
-  animation:ae3-hero-breathe 17s ease-in-out infinite alternate;
-}
-
-.ae3-theme.electron-dark .ae3-home>div:first-child>div:first-child>div:first-child::before {
-  background:var(--ae3-hero) center 46%/cover no-repeat!important;
 }
 
 .ae3-theme .ae3-home>div:first-child>div:first-child>div:first-child::after {
-  background:linear-gradient(90deg,rgba(255,250,253,.58) 0%,rgba(255,250,253,.30) 0%,rgba(255,250,253,.08) 0%,transparent 100%)!important;
   box-shadow:none!important;
 }
 
 .ae3-theme.electron-dark .ae3-home>div:first-child>div:first-child>div:first-child::after {
-  background:linear-gradient(90deg,rgba(5,9,22,.72) 0%,rgba(5,9,22,.42) 0%,rgba(5,9,22,.12) 0%,transparent 0%)!important;
   box-shadow:none!important;
 }
 
@@ -1926,16 +1893,6 @@ html.ae3-theme.electron-dark .ae3-weapon-charm small.ae3-dark-only {
 
 /* 13 Character keyframes */
 /* 13 角色专属关键帧：主题动画时间轴。 */
-@keyframes ae3-hero-breathe {
-  from {
-    transform:scale(1.012) translate3d(0,0,0);
-  }
-
-  to {
-    transform:scale(1.043) translate3d(-8px,-3px,0);
-  }
-}
-
 @keyframes ae3-pulse {
   0%,100% {
     opacity:.45;

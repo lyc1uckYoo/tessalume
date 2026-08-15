@@ -19,13 +19,9 @@
   --sk3-line:rgba(78,144,183,.25);
   --sk3-line-cyan:rgba(57,184,216,.44);
   --sk3-shadow:0 18px 48px rgba(50,106,139,.18);
-  --sk3-hero:var(--tessalume-asset-hero-light);
-  --sk3-sidebar-art:var(--tessalume-asset-sidebar-light);
-  --sk3-chat-art:var(--tessalume-asset-chat-light);
   --sk3-memory-art:var(--tessalume-asset-memory-light);
   --tessalume-v1-light-text-primary:#172c38;
   --tessalume-v1-light-text-secondary:#49636d;
-  --tessalume-v1-light-chat-mask:linear-gradient(90deg,rgba(248,254,255,.84),rgba(248,254,255,.60) 46%,rgba(248,254,255,.28) 76%,rgba(248,254,255,.11));
   --tessalume-v1-light-sidebar-row:linear-gradient(90deg,rgba(248,254,255,.80),rgba(248,254,255,.43) 72%,transparent);
   --tessalume-v1-light-sidebar-row-active:linear-gradient(90deg,rgba(248,254,255,.94),rgba(248,254,255,.64) 72%,transparent);
   color-scheme:light;
@@ -48,9 +44,6 @@
   --sk3-line:rgba(87,166,207,.30);
   --sk3-line-cyan:rgba(88,219,240,.46);
   --sk3-shadow:0 22px 62px rgba(0,3,14,.62);
-  --sk3-hero:var(--tessalume-asset-hero-dark);
-  --sk3-sidebar-art:var(--tessalume-asset-sidebar-dark);
-  --sk3-chat-art:var(--tessalume-asset-chat-dark);
   --sk3-memory-art:var(--tessalume-asset-memory-dark);
   color-scheme:dark;
 }
@@ -116,18 +109,6 @@ html.sk3-theme.electron-dark.sk3-is-task main.sk3-main {
   background:linear-gradient(145deg,#050d1c,#091830 58%,#071226)!important;
 }
 
-html.sk3-theme.sk3-is-task main.sk3-main::before {
-  background:var(--sk3-chat-art) center center/cover no-repeat;
-}
-
-html.sk3-theme.sk3-is-task main.sk3-main::after {
-  background:linear-gradient(180deg,rgba(245,251,253,.12),rgba(245,251,253,.06) 62%,rgba(230,243,248,.14));
-}
-
-html.sk3-theme.electron-dark.sk3-is-task main.sk3-main::after {
-  background:transparent;
-}
-
 html.sk3-theme main.sk3-main>header.app-header-tint {
   background:color-mix(in srgb,var(--sk3-solid) 91%,transparent)!important;
   border-bottom:1px solid var(--sk3-line)!important;
@@ -157,11 +138,6 @@ html.sk3-theme aside.app-shell-left-panel::after {
   z-index:0;
   inset:0;
   pointer-events:none;
-  background:var(--sk3-sidebar-art) 86% -212px/282% auto no-repeat;
-}
-
-html.sk3-theme.electron-dark aside.app-shell-left-panel::after {
-  background:var(--sk3-sidebar-art) 75% -152px/282% auto no-repeat;
 }
 
 html.sk3-theme aside.app-shell-left-panel>* {
@@ -313,25 +289,17 @@ html.sk3-theme aside [data-app-action-sidebar-thread-row][aria-current="page"],h
 
 .sk3-theme .sk3-home>div:first-child>div:first-child>div:first-child::before {
   content:"";
-  background:var(--sk3-hero) center top/cover no-repeat!important;
-  transform:scale(1.003);
-  transform-origin:78% 28%;
-  animation:sk3-hero-breathe 17s ease-in-out infinite alternate;
-}
-
-.sk3-theme.electron-dark .sk3-home>div:first-child>div:first-child>div:first-child::before {
-  background:var(--sk3-hero) center top/cover no-repeat!important;
 }
 
 .sk3-theme .sk3-home>div:first-child>div:first-child>div:first-child::after {
   content:"";
   border:1px solid color-mix(in srgb,var(--sk3-cyan) 40%,transparent);
   border-radius:22px 4px 22px 4px;
-  background:linear-gradient(90deg,color-mix(in srgb,var(--sk3-solid) 77%,transparent),color-mix(in srgb,var(--sk3-solid) 25%,transparent) 38%,transparent 60%),repeating-linear-gradient(90deg,var(--sk3-pink) 0 8px,transparent 8px 18px) top/100% 1px no-repeat,repeating-linear-gradient(90deg,var(--sk3-cyan) 0 8px,transparent 8px 18px) bottom/100% 1px no-repeat;
+  background:repeating-linear-gradient(90deg,var(--sk3-pink) 0 8px,transparent 8px 18px) top/100% 1px no-repeat,repeating-linear-gradient(90deg,var(--sk3-cyan) 0 8px,transparent 8px 18px) bottom/100% 1px no-repeat;
 }
 
 .sk3-theme.electron-dark .sk3-home>div:first-child>div:first-child>div:first-child::after {
-  background:linear-gradient(90deg,rgba(5,12,27,.76),rgba(5,12,27,.26) 39%,transparent 61%),repeating-linear-gradient(90deg,var(--sk3-pink) 0 8px,transparent 8px 18px) top/100% 1px no-repeat,repeating-linear-gradient(90deg,var(--sk3-cyan) 0 8px,transparent 8px 18px) bottom/100% 1px no-repeat;
+  background:repeating-linear-gradient(90deg,var(--sk3-pink) 0 8px,transparent 8px 18px) top/100% 1px no-repeat,repeating-linear-gradient(90deg,var(--sk3-cyan) 0 8px,transparent 8px 18px) bottom/100% 1px no-repeat;
 }
 
 .sk3-home .group\/home-suggestions button {
@@ -1802,16 +1770,6 @@ html.sk3-theme.electron-dark .composer-surface-chrome {
 
 /* 13 Character keyframes */
 /* 13 角色专属关键帧：主题动画时间轴。 */
-@keyframes sk3-hero-breathe {
-  from {
-    transform:scale(1.003) translate3d(0,0,0);
-  }
-
-  to {
-    transform:scale(1.018) translate3d(-5px,-2px,0);
-  }
-}
-
 @keyframes sk3-pulse {
   0%,100% {
     opacity:.45;

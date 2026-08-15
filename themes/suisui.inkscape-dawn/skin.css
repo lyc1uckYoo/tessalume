@@ -39,16 +39,12 @@ html.sui-theme {
   --sui-line:rgba(38,111,104,.25);
   --sui-line-gold:rgba(189,140,55,.48);
   --sui-shadow:0 16px 42px rgba(36,71,65,.16);
-  --sui-hero:var(--tessalume-asset-hero-light);
-  --sui-sidebar-art:var(--tessalume-asset-sidebar-light);
-  --sui-chat-art:var(--tessalume-asset-chat-light);
   --sui-memory-art:var(--tessalume-asset-memory-light);
   --sui-display:"Microsoft YaHei UI","Segoe UI",sans-serif;
   --sui-serif:"STKaiti","KaiTi",serif;
   --sui-mono:"Cascadia Code",Consolas,monospace;
   --tessalume-v1-light-text-primary:#1a2a2d;
   --tessalume-v1-light-text-secondary:#506365;
-  --tessalume-v1-light-chat-mask:linear-gradient(90deg,rgba(255,254,248,.82),rgba(255,254,248,.57) 46%,rgba(255,254,248,.24) 76%,rgba(255,254,248,.10));
   --tessalume-v1-light-sidebar-row:linear-gradient(90deg,rgba(255,254,248,.80),rgba(255,254,248,.43) 72%,transparent);
   --tessalume-v1-light-sidebar-row-active:linear-gradient(90deg,rgba(255,254,248,.94),rgba(255,254,248,.64) 72%,transparent);
   color-scheme:light;
@@ -75,9 +71,6 @@ html.sui-theme.electron-dark {
   --sui-line:rgba(76,176,169,.24);
   --sui-line-gold:rgba(213,172,96,.45);
   --sui-shadow:0 20px 52px rgba(0,0,0,.52);
-  --sui-hero:var(--tessalume-asset-hero-dark);
-  --sui-sidebar-art:var(--tessalume-asset-sidebar-dark);
-  --sui-chat-art:var(--tessalume-asset-chat-dark);
   --sui-memory-art:var(--tessalume-asset-memory-dark);
   color-scheme:dark;
   --sui-composer-control:linear-gradient(145deg,rgba(20,49,57,.82),rgba(8,22,28,.94));
@@ -148,11 +141,6 @@ html.sui-theme aside.app-shell-left-panel::after {
   z-index:0;
   inset:0;
   pointer-events:none;
-  background:var(--sui-sidebar-art) 80% -168px/230% auto no-repeat;
-}
-
-html.sui-theme.electron-dark aside.app-shell-left-panel::after {
-  background:var(--sui-sidebar-art) 80% -188px/232% auto no-repeat;
 }
 
 html.sui-theme.sui-is-task main.sui-main {
@@ -161,18 +149,6 @@ html.sui-theme.sui-is-task main.sui-main {
 
 html.sui-theme.electron-dark.sui-is-task main.sui-main {
   background:linear-gradient(135deg,#05121a,#081e26 58%,#041018)!important;
-}
-
-html.sui-theme.sui-is-task main.sui-main::before {
-  background:var(--sui-chat-art) center center/cover no-repeat;
-}
-
-html.sui-theme.sui-is-task main.sui-main::after {
-  background:linear-gradient(90deg,rgba(255,253,245,.63) 0%,rgba(255,253,245,.24) 24%,rgba(255,253,245,.06) 42%,rgba(255,253,245,.06) 58%,rgba(255,253,245,.16) 79%,rgba(255,253,245,.28) 100%);
-}
-
-html.sui-theme.electron-dark.sui-is-task main.sui-main::after {
-  background:transparent;
 }
 
 /* 03 Sidebar skin */
@@ -292,26 +268,17 @@ html.sui-theme aside [data-app-action-sidebar-thread-row][aria-current="page"],h
 
 .sui-theme .sui-home>div:first-child>div:first-child>div:first-child::before {
   content:"";
-  background:var(--sui-hero) 58% 42%/cover no-repeat!important;
-  transform:scale(1.08);
-  transform-origin:58% 42%;
-  animation:none;
-}
-
-.sui-theme.electron-dark .sui-home>div:first-child>div:first-child>div:first-child::before {
-  background:var(--sui-hero) 58% 40%/cover no-repeat!important;
-  transform-origin:58% 40%;
 }
 
 .sui-theme .sui-home>div:first-child>div:first-child>div:first-child::after {
   content:"";
   border:1px solid color-mix(in srgb,var(--sui-gold) 42%,transparent);
   border-radius:2px 23px 2px 23px;
-  background:linear-gradient(90deg,color-mix(in srgb,var(--sui-solid) 76%,transparent),color-mix(in srgb,var(--sui-solid) 22%,transparent) 38%,transparent 58%),linear-gradient(90deg,var(--sui-gold),transparent) left top/76px 1px no-repeat,linear-gradient(180deg,var(--sui-jade),transparent) left top/1px 76px no-repeat,linear-gradient(270deg,var(--sui-jade),transparent) right bottom/76px 1px no-repeat,linear-gradient(0deg,var(--sui-gold),transparent) right bottom/1px 76px no-repeat;
+  background:linear-gradient(90deg,var(--sui-gold),transparent) left top/76px 1px no-repeat,linear-gradient(180deg,var(--sui-jade),transparent) left top/1px 76px no-repeat,linear-gradient(270deg,var(--sui-jade),transparent) right bottom/76px 1px no-repeat,linear-gradient(0deg,var(--sui-gold),transparent) right bottom/1px 76px no-repeat;
 }
 
 .sui-theme.electron-dark .sui-home>div:first-child>div:first-child>div:first-child::after {
-  background:linear-gradient(90deg,rgba(7,18,25,.74),rgba(7,18,25,.24) 39%,transparent 59%),linear-gradient(90deg,var(--sui-gold),transparent) left top/76px 1px no-repeat,linear-gradient(180deg,var(--sui-jade),transparent) left top/1px 76px no-repeat,linear-gradient(270deg,var(--sui-jade),transparent) right bottom/76px 1px no-repeat,linear-gradient(0deg,var(--sui-gold),transparent) right bottom/1px 76px no-repeat;
+  background:linear-gradient(90deg,var(--sui-gold),transparent) left top/76px 1px no-repeat,linear-gradient(180deg,var(--sui-jade),transparent) left top/1px 76px no-repeat,linear-gradient(270deg,var(--sui-jade),transparent) right bottom/76px 1px no-repeat,linear-gradient(0deg,var(--sui-gold),transparent) right bottom/1px 76px no-repeat;
 }
 
 .sui-home .group\/home-suggestions button {
@@ -1897,7 +1864,20 @@ html.sui-theme.electron-dark .composer-surface-chrome {
 }
 
 @media(prefers-reduced-motion:reduce) {
-  .sui-kicker i,.sui-identity>i,.sui-identity>span,.sui-river *,.sui-task-card,.sui-memory span i,.sui-seal,.sui-seal::before,.sui-seal::after,.sui-seal i,.sui-seal i::before,.sui-seal b,.sui-seal b::after,.sui-home>div:first-child>div:first-child>div:first-child::before,.composer-surface-chrome::after {
+  .sui-kicker i,
+  .sui-identity>i,
+  .sui-identity>span,
+  .sui-river *,
+  .sui-task-card,
+  .sui-memory span i,
+  .sui-seal,
+  .sui-seal::before,
+  .sui-seal::after,
+  .sui-seal i,
+  .sui-seal i::before,
+  .sui-seal b,
+  .sui-seal b::after,
+  .composer-surface-chrome::after {
     animation:none!important;
   }
 

@@ -59,8 +59,10 @@ form; it does not mean placing both characters into every image or animating
 between two people.
 
 For each row record: form, pose, crop, focal point, dominant color, negative
-space and intended mode. Reject identical poses, mirrored duplicates, simple
-recolors and artwork that relies on CSS to repair a wrong composition.
+space and intended mode. Encode the six adjustable hero/sidebar/chat
+recommendations in `artwork-defaults.json`. Reject identical poses, mirrored
+duplicates, simple recolors and artwork that relies on CSS to repair a wrong
+composition.
 
 ## 3. Per-image identity checklist
 
@@ -87,6 +89,9 @@ checklist in working notes, not in the publishable theme package.
 
 - Both light and dark banners select the correct asset and copy treatment.
 - Title, accent, kicker, subtitle and note remain readable in both modes.
+- If the banner image itself breathes or drifts, encode only relative motion
+  deltas in `artwork-defaults.json`; keep absolute crop and image keyframes out
+  of CSS, and verify full/reduced/off behavior.
 - Home motion has multiple character-specific layers and at least three visual
   rhythms (for example drift, pulse and orbit). A single scan line or a row of
   generic dots is incomplete.
@@ -104,11 +109,11 @@ checklist in working notes, not in the publishable theme package.
 
 ### Stable task canvas
 
-- Paint the character on the isolated themed `main::before`; keep the
-  readability veil on `main::after`.
+- Let the shared runtime paint the resolved character on isolated `main::before`
+  and the resolved readability veil on `main::after`.
 - Never position or transform `main > *` globally.
-- Center the subject for chat compositions. Adjust background size/position and
-  veil independently for light and dark mode.
+- Center the subject for chat compositions. Encode size/position and veil
+  independently for light and dark mode in `artwork-defaults.json`, not CSS.
 - Review dark artwork together with text, task controls and transparent
   bubbles. Keep its brightness unchanged when the result is already balanced;
   tune the image, veil or filter only when the actual composition needs it.
@@ -159,6 +164,8 @@ Before building, search for and remove:
 - message frames without padding;
 - dark chat art whose real contrast and readability have not been reviewed;
 - duplicated selectors or declarations appended outside sections 01-13.
+- missing or invalid artwork defaults, or any adjustable image crop/effect/veil
+  or image motion still hidden on the three CSS artwork layers.
 
 The contract validator catches objective remnants. Qualitative checks still
 require human judgment. Runtime screenshots are optional unless the user asks

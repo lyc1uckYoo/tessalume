@@ -19,7 +19,8 @@
   },
   "entryPoints": {
     "css": "skin.css",
-    "script": "theme.js"
+    "script": "theme.js",
+    "artworkDefaults": "artwork-defaults.json"
   },
   "previews": {
     "light": "assets/hero-light.png",

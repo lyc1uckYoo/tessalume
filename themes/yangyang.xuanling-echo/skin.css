@@ -39,16 +39,12 @@ html.xyl-theme {
   --xyl-line:rgba(47,125,167,.25);
   --xyl-line-gold:rgba(186,160,95,.48);
   --xyl-shadow:0 16px 44px rgba(40,76,99,.18);
-  --xyl-hero:var(--tessalume-asset-hero-light);
-  --xyl-chat-art:var(--tessalume-asset-chat-light);
-  --xyl-sidebar-art:var(--tessalume-asset-sidebar-light);
   --xyl-memory-art:var(--tessalume-asset-memory-light);
   --xyl-display:"Microsoft YaHei UI","Segoe UI",sans-serif;
   --xyl-serif:"STKaiti","KaiTi",serif;
   --xyl-mono:"Cascadia Code",Consolas,monospace;
   --tessalume-v1-light-text-primary:#142838;
   --tessalume-v1-light-text-secondary:#466172;
-  --tessalume-v1-light-chat-mask:linear-gradient(90deg,rgba(246,252,255,.84),rgba(246,252,255,.59) 46%,rgba(246,252,255,.27) 76%,rgba(246,252,255,.11));
   --tessalume-v1-light-sidebar-row:linear-gradient(90deg,rgba(246,252,255,.80),rgba(246,252,255,.43) 72%,transparent);
   --tessalume-v1-light-sidebar-row-active:linear-gradient(90deg,rgba(246,252,255,.94),rgba(246,252,255,.64) 72%,transparent);
   color-scheme:light;
@@ -75,9 +71,6 @@ html.xyl-theme.electron-dark {
   --xyl-line:rgba(70,154,211,.28);
   --xyl-line-gold:rgba(213,183,109,.46);
   --xyl-shadow:0 20px 56px rgba(0,0,0,.62);
-  --xyl-hero:var(--tessalume-asset-hero-dark);
-  --xyl-chat-art:var(--tessalume-asset-chat-dark);
-  --xyl-sidebar-art:var(--tessalume-asset-sidebar-dark);
   --xyl-memory-art:var(--tessalume-asset-memory-dark);
   color-scheme:dark;
   --xyl-composer-control:linear-gradient(145deg,rgba(24,48,83,.78),rgba(10,22,44,.92));
@@ -142,7 +135,6 @@ html.xyl-theme.electron-dark aside.app-shell-left-panel::after {
   z-index:0;
   inset:0;
   pointer-events:none;
-  background:var(--xyl-sidebar-art) 84% -124px/220% auto no-repeat;
 }
 
 html.xyl-theme:not(.electron-dark) aside.app-shell-left-panel::after {
@@ -151,7 +143,6 @@ html.xyl-theme:not(.electron-dark) aside.app-shell-left-panel::after {
   z-index:0;
   inset:0;
   pointer-events:none;
-  background:var(--xyl-sidebar-art) 80% -72px/212% auto no-repeat;
 }
 
 html.xyl-theme:not(.electron-dark) aside.app-shell-left-panel :is(button,[role="button"]) {
@@ -180,19 +171,6 @@ html.xyl-theme.xyl-is-task main.xyl-main {
 html.xyl-theme.electron-dark.xyl-is-task main.xyl-main {
   background:radial-gradient(circle at 50% 42%,rgba(77,143,230,.12),transparent 40%),
     linear-gradient(145deg,#030713,#071225)!important;
-}
-
-html.xyl-theme.xyl-is-task main.xyl-main::before {
-  background:var(--xyl-chat-art) center center/contain no-repeat;
-}
-
-html.xyl-theme.xyl-is-task main.xyl-main::after {
-  background:linear-gradient(180deg,rgba(244,250,252,.19),transparent 22%,transparent 78%,rgba(232,243,247,.16)),
-    linear-gradient(90deg,rgba(241,247,249,.22),rgba(241,247,249,.05) 39%,rgba(241,247,249,.03) 62%,rgba(241,247,249,.17));
-}
-
-html.xyl-theme.electron-dark.xyl-is-task main.xyl-main::after {
-  background:transparent;
 }
 
 /* 03 Sidebar skin */
@@ -348,25 +326,17 @@ html.xyl-theme aside [data-app-action-sidebar-thread-row][aria-current="page"],h
 
 .xyl-theme .xyl-home>div:first-child>div:first-child>div:first-child::before {
   content:"";
-  background:var(--xyl-hero) center/cover no-repeat!important;
-  transform:scale(1.012);
-  transform-origin:73% 50%;
-  animation:xyl-orbit-breathe 18s ease-in-out infinite alternate;
-}
-
-.xyl-theme.electron-dark .xyl-home>div:first-child>div:first-child>div:first-child::before {
-  background:var(--xyl-hero) center/cover no-repeat!important;
 }
 
 .xyl-theme .xyl-home>div:first-child>div:first-child>div:first-child::after {
   content:"";
   border:1px solid color-mix(in srgb,var(--xyl-gold) 42%,transparent);
   border-radius:20px 2px 20px 2px;
-  background:linear-gradient(90deg,color-mix(in srgb,var(--xyl-solid) 77%,transparent),color-mix(in srgb,var(--xyl-solid) 25%,transparent) 38%,transparent 59%),radial-gradient(circle at 18px 18px,transparent 0 8px,var(--xyl-gold) 9px 10px,transparent 11px),radial-gradient(circle at calc(100% - 18px) calc(100% - 18px),transparent 0 8px,var(--xyl-cyan) 9px 10px,transparent 11px);
+  background:radial-gradient(circle at 18px 18px,transparent 0 8px,var(--xyl-gold) 9px 10px,transparent 11px),radial-gradient(circle at calc(100% - 18px) calc(100% - 18px),transparent 0 8px,var(--xyl-cyan) 9px 10px,transparent 11px);
 }
 
 .xyl-theme.electron-dark .xyl-home>div:first-child>div:first-child>div:first-child::after {
-  background:linear-gradient(90deg,rgba(6,11,27,.76),rgba(6,11,27,.26) 39%,transparent 60%),radial-gradient(circle at 18px 18px,transparent 0 8px,var(--xyl-gold) 9px 10px,transparent 11px),radial-gradient(circle at calc(100% - 18px) calc(100% - 18px),transparent 0 8px,var(--xyl-cyan) 9px 10px,transparent 11px);
+  background:radial-gradient(circle at 18px 18px,transparent 0 8px,var(--xyl-gold) 9px 10px,transparent 11px),radial-gradient(circle at calc(100% - 18px) calc(100% - 18px),transparent 0 8px,var(--xyl-cyan) 9px 10px,transparent 11px);
 }
 
 .xyl-home .group\/home-suggestions button {
@@ -472,14 +442,8 @@ html.xyl-theme aside [data-app-action-sidebar-thread-row][aria-current="page"],h
   color:transparent;
 }
 
-html.xyl-theme:not(.electron-dark) .xyl-home>div:first-child>div:first-child>div:first-child::before {
-  background:var(--xyl-hero) center 20%/cover no-repeat!important;
-  transform:scale(1.012);
-  transform-origin:73% 42%;
-}
-
 html.xyl-theme:not(.electron-dark) .xyl-home>div:first-child>div:first-child>div:first-child::after {
-  background:linear-gradient(90deg,rgba(251,254,255,.82) 0%,rgba(251,254,255,.45) 34%,rgba(251,254,255,.06) 58%,transparent 73%),radial-gradient(circle at 18px 18px,transparent 0 8px,var(--xyl-gold) 9px 10px,transparent 11px),radial-gradient(circle at calc(100% - 18px) calc(100% - 18px),transparent 0 8px,var(--xyl-cyan) 9px 10px,transparent 11px);
+  background:radial-gradient(circle at 18px 18px,transparent 0 8px,var(--xyl-gold) 9px 10px,transparent 11px),radial-gradient(circle at calc(100% - 18px) calc(100% - 18px),transparent 0 8px,var(--xyl-cyan) 9px 10px,transparent 11px);
 }
 
 .xyl-phases {
@@ -1719,7 +1683,14 @@ html.xyl-theme.electron-dark .xyl-plume-resonance {
 }
 
 @media(prefers-reduced-motion:reduce) {
-  .xyl-kicker i,.xyl-identity>i,.xyl-identity>span,.xyl-phases b,.xyl-task-card,.xyl-memory span i,.xyl-domain,.xyl-home>div:first-child>div:first-child>div:first-child::before,.composer-surface-chrome::after {
+  .xyl-kicker i,
+  .xyl-identity>i,
+  .xyl-identity>span,
+  .xyl-phases b,
+  .xyl-task-card,
+  .xyl-memory span i,
+  .xyl-domain,
+  .composer-surface-chrome::after {
     animation:none!important;
   }
 
@@ -1751,16 +1722,6 @@ html.xyl-theme.electron-dark .xyl-plume-resonance {
   50% {
     opacity:1;
     transform:scale(1.14);
-  }
-}
-
-@keyframes xyl-orbit-breathe {
-  from {
-    transform:scale(1.012) translate3d(0,0,0);
-  }
-
-  to {
-    transform:scale(1.038) translate3d(-7px,-3px,0);
   }
 }
 

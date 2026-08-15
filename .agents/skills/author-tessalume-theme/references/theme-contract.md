@@ -8,14 +8,20 @@ The Studio runtime owns:
 - the persistent main, sidebar, home, window-bar, chat, message, output, and task-header bindings;
 - mutation observation, resize handling, debounce timing, periodic repair, data cleanup, and unmount cleanup;
 - stage geometry, composer-accessory placement, and optional panel-above-cards placement.
-- persisted per-theme light/dark artwork correction for the home hero, sidebar
-  artwork and stable chat background.
+- resolution of original assets, versioned theme recommendations and sparse
+  per-user light/dark artwork overrides for the home hero, sidebar artwork and
+  stable chat background;
+- the single final background size/position, effects and veil applied to those
+  three artwork layers;
+- optional image-layer motion composed only from relative translation, scale
+  and opacity deltas after the final static placement is resolved.
 
 The theme package owns:
 
 - manifest metadata and declared local assets;
 - light/dark color variables and artwork selection;
-- the original hero/sidebar/chat assets and their crop, size and position only;
+- the original hero/sidebar/chat assets and a versioned `artwork-defaults.json`
+  recommendation for all three regions in light and dark mode;
 - markup inside `#tessalume-theme-root`;
 - character-specific home effects, sidebar art, cards, message frames, memory
   display, sync instrument, composer accessory, internal SVG, copy, symbols,
@@ -25,11 +31,30 @@ The theme package owns:
 Do not move runtime-owned work back into a theme.
 Do not move character-owned visual identity into a generic template skin.
 
-The three user-adjustable artwork layers must not declare `filter` or `opacity`
-in theme CSS. Their default is the uncorrected original image. Tessalume applies
-brightness, contrast, saturation and opacity through shared light/dark runtime
-variables. Readability veils and decorative borders belong on separate layers
-so user correction never changes text, controls or card surfaces.
+The three user-adjustable artwork layers must not declare their image,
+background size/position, static transform, animation, filter, opacity, blend
+mode or readability veil in theme CSS. `artwork-defaults.json` references the
+six original manifest assets and owns the complete recommended placement and
+effects plus any optional relative motion. Tessalume resolves that recommendation
+with sparse user overrides and paints one final result. Decorative borders,
+symbols and character animation belong on separate identity layers so user
+correction never changes text, controls or card surfaces.
+
+## Artwork motion invariant
+
+Image motion is slot-level optional data. Use `motion.mode: "none"` when the
+recommended image is static. A looping recommendation declares duration,
+easing, direction and ordered keyframes from `at: 0` through `at: 100`.
+Keyframes may contain only `translateX`/`translateY` px or percentage deltas,
+unitless `scaleDelta` and percentage-point `opacityDelta`. `scaleDelta` is a
+relative multiplier increment: the motion layer uses `1 + scaleDelta` after
+the final static placement has been resolved. It never changes persisted crop,
+size, position or the user's custom composition.
+
+Do not encode absolute background size/position in motion, and do not restore
+image keyframes to `skin.css`. The shared runtime owns full/reduced/off motion;
+operating-system reduced-motion disables image motion. Theme-owned DOM/SVG
+decoration may still use character-specific CSS keyframes on its own layers.
 
 Flagship Template 1.0 additionally freezes shared DOM parts, sizes, positions,
 alignment and adaptive priorities. Read
@@ -97,39 +122,14 @@ geometry and stable `data-theme-part` names live in
 
 ## Route and background invariant
 
-The route class changes immediately in the canonical host. The task background must therefore be paintable without waiting for task message DOM. If artwork needs horizontal mirroring, mirror only the stable `main::before` artwork layer; keep the readability gradient in an untransformed `main::after` layer:
+The route class changes immediately in the canonical host, so the shared runtime
+paints the resolved chat asset on the stable isolated `main::before` layer without
+waiting for task-message DOM. It paints the resolved gradient/readability veil on
+`main::after`. Placement, mirroring, filter, opacity and both veils come only from
+`artwork-defaults.json` plus user overrides; theme CSS must not redeclare them.
 
-```css
-html.NS-theme.NS-is-task main.NS-main {
-  position: relative;
-  isolation: isolate;
-  background: var(--NS-task-fallback) !important;
-}
-
-html.NS-theme.NS-is-task main.NS-main::before {
-  content: "";
-  position: absolute;
-  z-index: -2;
-  inset: 0;
-  background: var(--NS-chat-art) right center / auto 110% no-repeat;
-  transform: scaleX(-1);
-}
-
-html.NS-theme.NS-is-task main.NS-main::after {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  inset: 0;
-  background: linear-gradient(...);
-}
-
-.NS-chat-paper::before {
-  content: none !important;
-}
-```
-
-The negative artwork layers stay inside the isolated `main` stacking context and
-therefore sit behind native content without changing its geometry. Never apply
+The shared negative artwork layers stay inside the isolated `main` stacking context
+and therefore sit behind native content without changing its geometry. Never apply
 `position: relative` (or any other positioning override) to `main > *`: Codex
 uses fixed and absolute direct children for its title bar and work panels, and a
 blanket override will stretch or displace those native surfaces.
@@ -149,6 +149,10 @@ also be transparent, but their state text and boundaries remain legible.
 - version for this repository: `"1.0"`
 - author for official themes: the repository owner's GitHub name
 - every asset and preview must be relative, declared, present, and inside the package
+- `entryPoints.artworkDefaults` must be `artwork-defaults.json`; it must validate
+  against `theme-artwork-defaults-v1.schema.json`, match the manifest theme id,
+  and define all six hero/sidebar/chat light/dark slots using their original
+  manifest asset keys
 - every `var(--tessalume-asset-<name>)` reference in CSS must map to a manifest asset
   key `<name>`; when preserving legacy CSS, keep its old asset keys as aliases
   or deliberately rename every CSS reference

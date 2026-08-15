@@ -39,16 +39,12 @@ html.xmf-theme {
   --xmf-line:rgba(157,54,61,.24);
   --xmf-line-gold:rgba(189,139,63,.50);
   --xmf-shadow:0 16px 44px rgba(94,47,46,.18);
-  --xmf-hero:var(--tessalume-asset-hero-light);
-  --xmf-sidebar-art:var(--tessalume-asset-sidebar-light);
-  --xmf-chat-art:var(--tessalume-asset-chat-light);
   --xmf-memory-art:var(--tessalume-asset-memory-light);
   --xmf-display:"Microsoft YaHei UI","Segoe UI",sans-serif;
   --xmf-serif:"STKaiti","KaiTi",serif;
   --xmf-mono:"Cascadia Code",Consolas,monospace;
   --tessalume-v1-light-text-primary:#1b1013;
   --tessalume-v1-light-text-secondary:#463034;
-  --tessalume-v1-light-chat-mask:linear-gradient(90deg,rgba(255,250,243,.84),rgba(255,250,243,.59) 46%,rgba(255,250,243,.27) 76%,rgba(255,250,243,.11));
   --tessalume-v1-light-sidebar-row:linear-gradient(90deg,rgba(255,250,243,.80),rgba(255,250,243,.43) 72%,transparent);
   --tessalume-v1-light-sidebar-row-active:linear-gradient(90deg,rgba(255,250,243,.94),rgba(255,250,243,.64) 72%,transparent);
   color-scheme:light;
@@ -75,9 +71,6 @@ html.xmf-theme.electron-dark {
   --xmf-line:rgba(224,61,72,.28);
   --xmf-line-gold:rgba(215,170,94,.47);
   --xmf-shadow:0 20px 56px rgba(0,0,0,.64);
-  --xmf-hero:var(--tessalume-asset-hero-dark);
-  --xmf-sidebar-art:var(--tessalume-asset-sidebar-dark);
-  --xmf-chat-art:var(--tessalume-asset-chat-dark);
   --xmf-memory-art:var(--tessalume-asset-memory-dark);
   color-scheme:dark;
   --xmf-composer-control:linear-gradient(145deg,rgba(73,25,34,.74),rgba(27,15,20,.90));
@@ -138,11 +131,6 @@ html.xmf-theme aside.app-shell-left-panel::after {
   z-index:0;
   inset:0;
   pointer-events:none;
-  background:var(--xmf-sidebar-art) 86% -78px/214% auto no-repeat;
-}
-
-html.xmf-theme.electron-dark aside.app-shell-left-panel::after {
-  background:var(--xmf-sidebar-art) 92% -150px/225% auto no-repeat;
 }
 
 html.xmf-theme aside.app-shell-left-panel::before {
@@ -163,18 +151,6 @@ html.xmf-theme.xmf-is-task main.xmf-main {
 
 html.xmf-theme.electron-dark.xmf-is-task main.xmf-main {
   background:linear-gradient(145deg,#070607,#12090d 58%,#0a0709)!important;
-}
-
-html.xmf-theme.xmf-is-task main.xmf-main::before {
-  background:var(--xmf-chat-art) center center/cover no-repeat;
-}
-
-html.xmf-theme.xmf-is-task main.xmf-main::after {
-  background:linear-gradient(90deg,rgba(255,250,243,.42),rgba(255,250,243,.27) 54%,rgba(255,250,243,.10) 78%,rgba(255,250,243,.03));
-}
-
-html.xmf-theme.electron-dark.xmf-is-task main.xmf-main::after {
-  background:transparent;
 }
 
 html.xmf-theme.xmf-is-settings .xmf-settings-surface {
@@ -431,25 +407,17 @@ html.xmf-theme:not(.electron-dark) [data-tessalume-surface="sidebar"] .xmf-secti
 
 .xmf-theme .xmf-home>div:first-child>div:first-child>div:first-child::before {
   content:"";
-  background:var(--xmf-hero) center/cover no-repeat!important;
-  transform:scale(1.012);
-  transform-origin:73% 50%;
-  animation:xmf-orbit-breathe 18s ease-in-out infinite alternate;
-}
-
-.xmf-theme.electron-dark .xmf-home>div:first-child>div:first-child>div:first-child::before {
-  background:var(--xmf-hero) center/cover no-repeat!important;
 }
 
 .xmf-theme .xmf-home>div:first-child>div:first-child>div:first-child::after {
   content:"";
   border:1px solid color-mix(in srgb,var(--xmf-gold) 42%,transparent);
   border-radius:20px 2px 20px 2px;
-  background:linear-gradient(90deg,color-mix(in srgb,var(--xmf-solid) 77%,transparent),color-mix(in srgb,var(--xmf-solid) 25%,transparent) 38%,transparent 59%),radial-gradient(circle at 18px 18px,transparent 0 8px,var(--xmf-gold) 9px 10px,transparent 11px),radial-gradient(circle at calc(100% - 18px) calc(100% - 18px),transparent 0 8px,var(--xmf-cyan) 9px 10px,transparent 11px);
+  background:radial-gradient(circle at 18px 18px,transparent 0 8px,var(--xmf-gold) 9px 10px,transparent 11px),radial-gradient(circle at calc(100% - 18px) calc(100% - 18px),transparent 0 8px,var(--xmf-cyan) 9px 10px,transparent 11px);
 }
 
 .xmf-theme.electron-dark .xmf-home>div:first-child>div:first-child>div:first-child::after {
-  background:linear-gradient(90deg,rgba(6,11,27,.76),rgba(6,11,27,.26) 39%,transparent 60%),radial-gradient(circle at 18px 18px,transparent 0 8px,var(--xmf-gold) 9px 10px,transparent 11px),radial-gradient(circle at calc(100% - 18px) calc(100% - 18px),transparent 0 8px,var(--xmf-cyan) 9px 10px,transparent 11px);
+  background:radial-gradient(circle at 18px 18px,transparent 0 8px,var(--xmf-gold) 9px 10px,transparent 11px),radial-gradient(circle at calc(100% - 18px) calc(100% - 18px),transparent 0 8px,var(--xmf-cyan) 9px 10px,transparent 11px);
 }
 
 .xmf-home .group\/home-suggestions button {
@@ -1849,7 +1817,13 @@ html.xmf-theme.electron-dark .composer-surface-chrome {
 }
 
 @media(prefers-reduced-motion:reduce) {
-  .xmf-kicker i,.xmf-identity>i,.xmf-identity>span,.xmf-phases b,.xmf-task-card,.xmf-memory span i,.xmf-home>div:first-child>div:first-child>div:first-child::before,.composer-surface-chrome::after {
+  .xmf-kicker i,
+  .xmf-identity>i,
+  .xmf-identity>span,
+  .xmf-phases b,
+  .xmf-task-card,
+  .xmf-memory span i,
+  .composer-surface-chrome::after {
     animation:none!important;
   }
 
@@ -2190,15 +2164,5 @@ html.xmf-theme.electron-dark .composer-surface-chrome {
   74% {
     transform:translateY(0) scale(.98);
     filter:brightness(1);
-  }
-}
-
-@keyframes xmf-orbit-breathe {
-  from {
-    transform:scale(1) translate3d(0,0,0);
-  }
-
-  to {
-    transform:scale(1.008) translate3d(-3px,-2px,0);
   }
 }

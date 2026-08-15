@@ -21,13 +21,9 @@
   --hy3-line:rgba(82,105,138,.23);
   --hy3-line-cyan:rgba(98,204,227,.46);
   --hy3-shadow:0 18px 48px rgba(41,61,88,.17);
-  --hy3-hero:var(--tessalume-asset-hero-light);
-  --hy3-sidebar-art:var(--tessalume-asset-sidebar-light);
-  --hy3-chat-art:var(--tessalume-asset-chat-light);
   --hy3-memory-art:var(--tessalume-asset-memory-light);
   --tessalume-v1-light-text-primary:#172a3d;
   --tessalume-v1-light-text-secondary:#4b6274;
-  --tessalume-v1-light-chat-mask:linear-gradient(90deg,rgba(255,253,254,.86),rgba(255,253,254,.62) 46%,rgba(255,253,254,.30) 76%,rgba(255,253,254,.12));
   --tessalume-v1-light-sidebar-row:linear-gradient(90deg,rgba(255,255,255,.82),rgba(255,255,255,.46) 72%,transparent);
   --tessalume-v1-light-sidebar-row-active:linear-gradient(90deg,rgba(255,255,255,.95),rgba(255,255,255,.68) 72%,transparent);
   color-scheme:light;
@@ -52,9 +48,6 @@
   --hy3-line:rgba(126,160,199,.29);
   --hy3-line-cyan:rgba(109,230,255,.48);
   --hy3-shadow:0 22px 62px rgba(1,4,12,.76);
-  --hy3-hero:var(--tessalume-asset-hero-dark);
-  --hy3-sidebar-art:var(--tessalume-asset-sidebar-dark);
-  --hy3-chat-art:var(--tessalume-asset-chat-dark);
   --hy3-memory-art:var(--tessalume-asset-memory-dark);
   color-scheme:dark;
 }
@@ -150,11 +143,6 @@ html.hy3-theme aside.app-shell-left-panel::after {
   z-index:0;
   inset:0;
   pointer-events:none;
-  background:var(--hy3-sidebar-art) 52% -28px/258% auto no-repeat;
-}
-
-html.hy3-theme.electron-dark aside.app-shell-left-panel::after {
-  background:var(--hy3-sidebar-art) 44% -10px/258% auto no-repeat;
 }
 
 html.hy3-theme:not(.electron-dark) aside.app-shell-left-panel :is(button,[role="button"]) {
@@ -173,18 +161,6 @@ html.hy3-theme.hy3-is-task main.hy3-main {
 
 html.hy3-theme.electron-dark.hy3-is-task main.hy3-main {
   background:linear-gradient(90deg,#050710,#080e1a 52%,#09111f)!important;
-}
-
-html.hy3-theme.hy3-is-task main.hy3-main::before {
-  background:var(--hy3-chat-art) center center/cover no-repeat!important;
-}
-
-html.hy3-theme.hy3-is-task main.hy3-main::after {
-  background:linear-gradient(90deg,rgba(247,250,252,.68) 0%,rgba(247,250,252,.28) 24%,rgba(247,250,252,.07) 42%,rgba(247,250,252,.07) 58%,rgba(247,250,252,.18) 78%,rgba(247,250,252,.30) 100%);
-}
-
-html.hy3-theme.electron-dark.hy3-is-task main.hy3-main::after {
-  background:transparent;
 }
 
 /* 03 Sidebar skin */
@@ -336,25 +312,17 @@ html.hy3-theme aside [data-app-action-sidebar-thread-row][aria-current="page"],h
 
 .hy3-theme .hy3-home>div:first-child>div:first-child>div:first-child::before {
   content:"";
-  background:var(--hy3-hero) center/cover no-repeat!important;
-  transform:scale(1.012);
-  transform-origin:73% 50%;
-  animation:hy3-hero-breathe 17s ease-in-out infinite alternate;
-}
-
-.hy3-theme.electron-dark .hy3-home>div:first-child>div:first-child>div:first-child::before {
-  background:var(--hy3-hero) center/cover no-repeat!important;
 }
 
 .hy3-theme .hy3-home>div:first-child>div:first-child>div:first-child::after {
   content:"";
   border:1px solid color-mix(in srgb,var(--hy3-cyan) 40%,transparent);
   border-radius:22px 4px 22px 4px;
-  background:linear-gradient(90deg,rgba(249,252,254,.94),rgba(249,252,254,.56) 39%,rgba(249,252,254,.08) 62%,transparent 76%),repeating-linear-gradient(90deg,var(--hy3-pink) 0 8px,transparent 8px 18px) top/100% 1px no-repeat,repeating-linear-gradient(90deg,var(--hy3-cyan) 0 8px,transparent 8px 18px) bottom/100% 1px no-repeat;
+  background:repeating-linear-gradient(90deg,var(--hy3-pink) 0 8px,transparent 8px 18px) top/100% 1px no-repeat,repeating-linear-gradient(90deg,var(--hy3-cyan) 0 8px,transparent 8px 18px) bottom/100% 1px no-repeat;
 }
 
 .hy3-theme.electron-dark .hy3-home>div:first-child>div:first-child>div:first-child::after {
-  background:linear-gradient(90deg,rgba(5,8,17,.93),rgba(5,8,17,.58) 40%,rgba(5,8,17,.10) 64%,transparent 78%),repeating-linear-gradient(90deg,var(--hy3-pink) 0 8px,transparent 8px 18px) top/100% 1px no-repeat,repeating-linear-gradient(90deg,var(--hy3-cyan) 0 8px,transparent 8px 18px) bottom/100% 1px no-repeat;
+  background:repeating-linear-gradient(90deg,var(--hy3-pink) 0 8px,transparent 8px 18px) top/100% 1px no-repeat,repeating-linear-gradient(90deg,var(--hy3-cyan) 0 8px,transparent 8px 18px) bottom/100% 1px no-repeat;
 }
 
 .hy3-home .group\/home-suggestions button {
@@ -1756,16 +1724,6 @@ html.hy3-theme.electron-dark .composer-surface-chrome {
 
 /* 13 Character keyframes */
 /* 13 角色专属关键帧：主题动画时间轴。 */
-@keyframes hy3-hero-breathe {
-  from {
-    transform:scale(1.012) translate3d(0,0,0);
-  }
-
-  to {
-    transform:scale(1.043) translate3d(-8px,-3px,0);
-  }
-}
-
 @keyframes hy3-pulse {
   0%,100% {
     opacity:.45;

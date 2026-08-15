@@ -39,16 +39,12 @@ html.qxo-theme {
   --qxo-line:rgba(71,119,129,.25);
   --qxo-line-red:rgba(45,149,169,.46);
   --qxo-shadow:0 16px 42px rgba(39,80,88,.15);
-  --qxo-hero:var(--tessalume-asset-hero-light);
-  --qxo-sidebar-art:var(--tessalume-asset-sidebar-light);
   --qxo-hecate-art:var(--tessalume-asset-task-right-primary);
-  --qxo-chat-art:var(--tessalume-asset-chat-light);
   --qxo-display:"Microsoft YaHei UI","Segoe UI",sans-serif;
   --qxo-serif:"STKaiti","KaiTi",serif;
   --qxo-mono:"Cascadia Code",Consolas,monospace;
   --tessalume-v1-light-text-primary:#172631;
   --tessalume-v1-light-text-secondary:#48616b;
-  --tessalume-v1-light-chat-mask:linear-gradient(90deg,rgba(248,253,255,.84),rgba(248,253,255,.60) 46%,rgba(248,253,255,.27) 76%,rgba(248,253,255,.11));
   --tessalume-v1-light-sidebar-row:linear-gradient(90deg,rgba(248,253,255,.80),rgba(248,253,255,.43) 72%,transparent);
   --tessalume-v1-light-sidebar-row-active:linear-gradient(90deg,rgba(248,253,255,.94),rgba(248,253,255,.65) 72%,transparent);
   color-scheme:light;
@@ -76,11 +72,8 @@ html.qxo-theme.electron-dark {
   --qxo-line:rgba(107,169,180,.22);
   --qxo-line-red:rgba(70,196,217,.48);
   --qxo-shadow:0 20px 54px rgba(0,0,0,.55);
-  --qxo-hero:var(--tessalume-asset-hero-dark);
-  --qxo-sidebar-art:var(--tessalume-asset-sidebar-dark);
   --qxo-hecate-art:var(--tessalume-asset-task-right-primary);
-  --qxo-chat-art:var(--tessalume-asset-chat-dark);
-  color-scheme:dark;
+color-scheme:dark;
   --qxo-memory-art:var(--tessalume-asset-memory-dark);
   --qxo-composer-control:linear-gradient(145deg,rgba(28,46,47,.82),rgba(10,17,18,.94));
   --qxo-composer-control-strong:linear-gradient(135deg,rgba(199,42,67,.78),rgba(67,30,37,.94));
@@ -150,11 +143,6 @@ html.qxo-theme aside.app-shell-left-panel::after {
   z-index:0;
   inset:0;
   pointer-events:none;
-  background:var(--qxo-sidebar-art) 45% -186px/258% auto no-repeat;
-}
-
-html.qxo-theme.electron-dark aside.app-shell-left-panel::after {
-  background:var(--qxo-sidebar-art) 40% -68px/188% auto no-repeat;
 }
 
 html.qxo-theme.qxo-is-task main.qxo-main {
@@ -163,18 +151,6 @@ html.qxo-theme.qxo-is-task main.qxo-main {
 
 html.qxo-theme.electron-dark.qxo-is-task main.qxo-main {
   background:linear-gradient(135deg,#06101c,#071827 58%,#030b14)!important;
-}
-
-html.qxo-theme.qxo-is-task main.qxo-main::before {
-  background:var(--qxo-chat-art) center center/cover no-repeat;
-}
-
-html.qxo-theme.qxo-is-task main.qxo-main::after {
-  background:linear-gradient(90deg,rgba(247,252,252,.68) 0%,rgba(247,252,252,.28) 24%,rgba(247,252,252,.07) 42%,rgba(247,252,252,.07) 58%,rgba(247,252,252,.18) 78%,rgba(247,252,252,.30) 100%);
-}
-
-html.qxo-theme.electron-dark.qxo-is-task main.qxo-main::after {
-  background:transparent;
 }
 
 /* 03 Sidebar skin */
@@ -299,10 +275,6 @@ html.qxo-theme aside [data-app-action-sidebar-thread-row][aria-current="page"],h
 
 .qxo-theme .qxo-home>div:first-child>div:first-child>div:first-child::before {
   content:"";
-  background:var(--qxo-hero) center/cover no-repeat!important;
-  transform:scale(1.012);
-  transform-origin:72% 50%;
-  animation:qxo-breathe 18s ease-in-out infinite alternate;
 }
 
 .qxo-home .group\/home-suggestions button:hover {
@@ -378,14 +350,14 @@ html.qxo-theme aside [data-app-action-sidebar-thread-row][aria-current="page"],h
   border:1px solid color-mix(in srgb,var(--qxo-gold) 38%,transparent);
   border-radius:3px 23px 3px 23px;
   box-shadow:inset 0 0 42px color-mix(in srgb,var(--qxo-solid) 9%,transparent);
-  background:linear-gradient(90deg,rgba(242,249,248,.82) 0%,rgba(238,247,247,.43) 31%,rgba(236,246,248,.08) 49%,transparent 64%),linear-gradient(90deg,var(--qxo-gold),transparent) left top/72px 1px no-repeat,
+  background:linear-gradient(90deg,var(--qxo-gold),transparent) left top/72px 1px no-repeat,
     linear-gradient(180deg,var(--qxo-red),transparent) left top/1px 72px no-repeat,
     linear-gradient(270deg,var(--qxo-red),transparent) right bottom/72px 1px no-repeat,
     linear-gradient(0deg,var(--qxo-gold),transparent) right bottom/1px 72px no-repeat;
 }
 
 .qxo-theme.electron-dark .qxo-home>div:first-child>div:first-child>div:first-child::after {
-  background:linear-gradient(90deg,rgba(4,13,22,.78) 0%,rgba(5,17,29,.39) 32%,rgba(5,17,29,.07) 50%,transparent 65%),linear-gradient(90deg,var(--qxo-gold),transparent) left top/72px 1px no-repeat,linear-gradient(180deg,var(--qxo-red),transparent) left top/1px 72px no-repeat,linear-gradient(270deg,var(--qxo-red),transparent) right bottom/72px 1px no-repeat,linear-gradient(0deg,var(--qxo-gold),transparent) right bottom/1px 72px no-repeat;
+  background:linear-gradient(90deg,var(--qxo-gold),transparent) left top/72px 1px no-repeat,linear-gradient(180deg,var(--qxo-red),transparent) left top/1px 72px no-repeat,linear-gradient(270deg,var(--qxo-red),transparent) right bottom/72px 1px no-repeat,linear-gradient(0deg,var(--qxo-gold),transparent) right bottom/1px 72px no-repeat;
 }
 
 .qxo-home .group\/home-suggestions button>div::after {
@@ -622,20 +594,6 @@ html.qxo-theme.electron-dark .qxo-score-form-dark {
   color:var(--qxo-text-3);
   font:700 7px/1 var(--qxo-mono);
   letter-spacing:.13em;
-}
-
-.qxo-theme:not(.electron-dark) .qxo-home>div:first-child>div:first-child>div:first-child::before {
-  background:var(--qxo-hero) 58% 42%/cover no-repeat!important;
-  transform:scale(1.08)!important;
-  transform-origin:58% 42%!important;
-  animation:none!important;
-}
-
-.qxo-theme.electron-dark .qxo-home>div:first-child>div:first-child>div:first-child::before {
-  background:var(--qxo-hero) 58% 40%/cover no-repeat!important;
-  transform:scale(1.08)!important;
-  transform-origin:58% 40%!important;
-  animation:none!important;
 }
 
 .qxo-cue {
@@ -2244,7 +2202,14 @@ html.qxo-theme.electron-dark .composer-surface-chrome :is(textarea,input)::place
 }
 
 @media(prefers-reduced-motion:reduce) {
-  .qxo-kicker i,.qxo-identity>i,.qxo-score *,.qxo-hecate,.qxo-hecate>span,.qxo-memory i,.qxo-tempo i,.qxo-home>div:first-child>div:first-child>div:first-child::before,.composer-surface-chrome::after {
+  .qxo-kicker i,
+  .qxo-identity>i,
+  .qxo-score *,
+  .qxo-hecate,
+  .qxo-hecate>span,
+  .qxo-memory i,
+  .qxo-tempo i,
+  .composer-surface-chrome::after {
     animation:none!important;
   }
 
@@ -2288,16 +2253,6 @@ html.qxo-theme.electron-dark .composer-surface-chrome :is(textarea,input)::place
   50% {
     opacity:1;
     transform:scale(1.14);
-  }
-}
-
-@keyframes qxo-breathe {
-  from {
-    transform:scale(1.012) translate3d(0,0,0);
-  }
-
-  to {
-    transform:scale(1.035) translate3d(-6px,-2px,0);
   }
 }
 

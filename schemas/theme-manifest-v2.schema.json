@@ -39,7 +39,8 @@
       "additionalProperties": false,
       "properties": {
         "css": { "type": "string", "minLength": 1 },
-        "script": { "type": "string", "minLength": 1 }
+        "script": { "type": "string", "minLength": 1 },
+        "artworkDefaults": { "type": "string", "minLength": 1 }
       }
     },
     "previews": {
@@ -68,6 +69,6 @@
     }
   },
   "allOf": [
-    { "properties": { "entryPoints": { "required": ["script"] } } }
+    { "properties": { "entryPoints": { "required": ["script", "artworkDefaults"] } } }
   ]
 }
