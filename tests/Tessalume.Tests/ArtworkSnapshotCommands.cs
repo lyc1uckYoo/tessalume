@@ -79,9 +79,17 @@ internal static partial class TestSuite
                         compositionSnapshotPath,
                         inspector =>
                         {
-                            inspector.ZoomSlider.Value = 112;
-                            inspector.OffsetXSlider.Value = 24;
-                            inspector.OffsetYSlider.Value = -18;
+                            inspector.SizeWidthValue.Text = "220%";
+                            inspector.SizeHeightValue.Text = "auto";
+                            inspector.PositionXValue.Text = "46%";
+                            inspector.PositionYValue.Text = "-118px";
+                            var commit = inspector.GetType().GetMethod(
+                                "CommitPlacementEditors",
+                                BindingFlags.Instance | BindingFlags.NonPublic)
+                                ?? throw new MissingMethodException(
+                                    inspector.GetType().Name,
+                                    "CommitPlacementEditors");
+                            commit.Invoke(inspector, null);
                         });
                     if (!string.IsNullOrWhiteSpace(sidebarDarkSnapshotPath))
                     {

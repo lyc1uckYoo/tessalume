@@ -47,24 +47,32 @@ internal static partial class TestSuite
     {
         var package = (await new ThemePackageLoader().LoadAsync(packagePath)).Package
             ?? throw new InvalidOperationException("The requested theme package could not be loaded.");
-        ThemeVisualSettings originalSettings;
+        ThemeVisualSettingsOverride? originalOverrides;
         using (var preferences = new UiPreferencesStore(dataDirectory))
         {
             var loaded = preferences.Load();
-            originalSettings = loaded.ThemeVisualSettings.TryGetValue(package.Manifest.Id, out var settings)
-                ? settings.Normalize()
-                : new ThemeVisualSettings();
+            loaded.ThemeVisualOverrides.TryGetValue(package.Manifest.Id, out originalOverrides);
         }
+        var defaults = await new ArtworkThemeDefaultsStore().LoadAsync(package);
+        var originalSettings = ThemeArtworkSettingsResolver.Resolve(
+            defaults.Defaults,
+            originalOverrides).Settings;
 
         var testAdjustment = new ThemeArtworkAdjustment
         {
+            CompositionMode = ThemeArtworkCompositionMode.Custom,
+            Placement = new ThemeArtworkPlacementSpec
+            {
+                SizeMode = ThemeArtworkSizeMode.Explicit,
+                Width = ThemeArtworkLength.Percent(217d),
+                Height = ThemeArtworkLength.Auto,
+                PositionX = ThemeArtworkPositionValue.Percent(61d),
+                PositionY = ThemeArtworkPositionValue.Pixels(-37d),
+            },
             Brightness = 91,
             Contrast = 112,
             Saturation = 77,
             Opacity = 83,
-            Zoom = 117,
-            OffsetX = 23,
-            OffsetY = -11,
             Grayscale = 14,
             HueRotation = 27,
             Blur = 1.5,
@@ -105,8 +113,10 @@ internal static partial class TestSuite
                         opacity: read('--tessalume-visual-sidebar-dark-opacity'),
                         translate: read('--tessalume-visual-chat-light-translate'),
                         scale: read('--tessalume-visual-chat-dark-scale'),
-                        supportsTranslate: CSS.supports('translate', '23px -11px'),
-                        supportsScale: CSS.supports('scale', '1.17')
+                        size: read('--tessalume-visual-chat-light-background-size'),
+                        position: read('--tessalume-visual-chat-dark-background-position'),
+                        supportsSize: CSS.supports('background-size', '217% auto'),
+                        supportsPosition: CSS.supports('background-position', '61% -37px')
                       };
                     })()
                     """);
@@ -134,10 +144,12 @@ internal static partial class TestSuite
             !value.GetProperty("filter").GetString()!.Contains("hue-rotate(27deg)", StringComparison.Ordinal) ||
             !value.GetProperty("filter").GetString()!.Contains("blur(1.5px)", StringComparison.Ordinal) ||
             value.GetProperty("opacity").GetString() != "0.83" ||
-            value.GetProperty("translate").GetString() != "23px -11px" ||
-            value.GetProperty("scale").GetString() != "1.17" ||
-            !value.GetProperty("supportsTranslate").GetBoolean() ||
-            !value.GetProperty("supportsScale").GetBoolean())
+            value.GetProperty("translate").GetString() != "0px 0px" ||
+            value.GetProperty("scale").GetString() != "1" ||
+            value.GetProperty("size").GetString() != "217% auto" ||
+            value.GetProperty("position").GetString() != "61% -37px" ||
+            !value.GetProperty("supportsSize").GetBoolean() ||
+            !value.GetProperty("supportsPosition").GetBoolean())
         {
             Console.Error.WriteLine(probe?.GetRawText() ?? "No themed Codex target returned visual settings.");
             return 3;
