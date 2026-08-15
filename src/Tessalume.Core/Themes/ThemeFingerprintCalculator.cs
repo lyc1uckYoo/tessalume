@@ -14,6 +14,10 @@ public static class ThemeFingerprintCalculator
         };
         if (package.CssPath is not null) files["css"] = package.CssPath;
         if (package.ScriptPath is not null) files["script"] = package.ScriptPath;
+        if (package.ArtworkDefaultsPath is not null)
+        {
+            files["artwork.defaults"] = package.ArtworkDefaultsPath;
+        }
         if (package.PreviewLightPath is not null) files["preview.light"] = package.PreviewLightPath;
         if (package.PreviewDarkPath is not null) files["preview.dark"] = package.PreviewDarkPath;
         foreach (var (name, path) in package.AssetPaths) files[$"asset.{name}"] = path;

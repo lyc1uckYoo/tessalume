@@ -126,29 +126,19 @@ public static class ThemeArtworkPresetExchange
 
     private static void ValidateAdjustment(ThemeArtworkAdjustment? adjustment, string region)
     {
-        if (adjustment is null ||
-            !string.IsNullOrWhiteSpace(adjustment.CustomImagePath) ||
-            !AllFinite(adjustment) ||
-            adjustment != adjustment.Normalize())
+        if (adjustment is null || !string.IsNullOrWhiteSpace(adjustment.CustomImagePath))
         {
             throw new InvalidDataException($"{region}包含超出支持范围的图像参数。");
         }
+        try
+        {
+            ThemeArtworkDefaultsValidator.ValidateAdjustment(adjustment);
+        }
+        catch (InvalidDataException exception)
+        {
+            throw new InvalidDataException($"{region}包含超出支持范围的图像参数。", exception);
+        }
     }
-
-    private static bool AllFinite(ThemeArtworkAdjustment adjustment) =>
-        double.IsFinite(adjustment.Brightness) &&
-        double.IsFinite(adjustment.Contrast) &&
-        double.IsFinite(adjustment.Saturation) &&
-        double.IsFinite(adjustment.Opacity) &&
-        double.IsFinite(adjustment.Zoom) &&
-        double.IsFinite(adjustment.OffsetX) &&
-        double.IsFinite(adjustment.OffsetY) &&
-        double.IsFinite(adjustment.Grayscale) &&
-        double.IsFinite(adjustment.HueRotation) &&
-        double.IsFinite(adjustment.Blur) &&
-        double.IsFinite(adjustment.OverlayOpacity) &&
-        double.IsFinite(adjustment.GradientStrength) &&
-        double.IsFinite(adjustment.Vignette);
 
     private sealed record ArtworkPresetDocument
     {

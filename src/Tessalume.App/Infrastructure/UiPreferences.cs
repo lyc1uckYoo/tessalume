@@ -4,9 +4,19 @@ using Tessalume.Core.Runtime;
 
 namespace Tessalume.App.Infrastructure;
 
+internal sealed class UnsupportedUiPreferencesSchemaException(
+    int sourceVersion,
+    int supportedVersion) : JsonException(
+        $"UI preferences schema {sourceVersion} is newer than supported schema {supportedVersion}.")
+{
+    public int SourceVersion { get; } = sourceVersion;
+
+    public int SupportedVersion { get; } = supportedVersion;
+}
+
 internal sealed record UiPreferences
 {
-    public const int CurrentSchemaVersion = 5;
+    public const int CurrentSchemaVersion = 6;
 
     public int SchemaVersion { get; init; } = CurrentSchemaVersion;
 
@@ -20,7 +30,11 @@ internal sealed record UiPreferences
 
     public List<string> FavoriteThemeIds { get; init; } = [];
 
+    [System.Text.Json.Serialization.JsonIgnore]
     public Dictionary<string, ThemeVisualSettings> ThemeVisualSettings { get; init; } =
+        new(StringComparer.OrdinalIgnoreCase);
+
+    public Dictionary<string, ThemeVisualSettingsOverride> ThemeVisualOverrides { get; init; } =
         new(StringComparer.OrdinalIgnoreCase);
 
     public List<ThemeArtworkPreset> ArtworkPresets { get; init; } = [];
@@ -55,9 +69,9 @@ internal static class UiPreferencesMigration
         var sourceVersion = ReadSchemaVersion(document.RootElement);
         if (sourceVersion > UiPreferences.CurrentSchemaVersion)
         {
-            throw new JsonException(
-                $"UI preferences schema {sourceVersion} is newer than supported schema " +
-                $"{UiPreferences.CurrentSchemaVersion}.");
+            throw new UnsupportedUiPreferencesSchemaException(
+                sourceVersion,
+                UiPreferences.CurrentSchemaVersion);
         }
 
         var preferences = sourceVersion switch
@@ -67,9 +81,18 @@ internal static class UiPreferencesMigration
             2 => DeserializeVersionTwo(json, options),
             3 => DeserializeVersionThree(json, options),
             4 => DeserializeVersionFour(json, options),
+            5 => DeserializeVersionFive(json, options),
             UiPreferences.CurrentSchemaVersion => DeserializeCurrent(json, options),
             _ => throw new JsonException($"Unsupported UI preferences schema {sourceVersion}."),
         };
+
+        if (sourceVersion < UiPreferences.CurrentSchemaVersion)
+        {
+            preferences = preferences with
+            {
+                ThemeVisualSettings = ReadLegacyVisualSettings(document.RootElement, options),
+            };
+        }
 
         migrated = sourceVersion != UiPreferences.CurrentSchemaVersion;
         return Normalize(preferences);
@@ -93,6 +116,21 @@ internal static class UiPreferencesMigration
         return version;
     }
 
+    private static Dictionary<string, ThemeVisualSettings> ReadLegacyVisualSettings(
+        JsonElement root,
+        JsonSerializerOptions options)
+    {
+        if (!root.TryGetProperty(nameof(UiPreferences.ThemeVisualSettings), out var value) &&
+            !root.TryGetProperty("themeVisualSettings", out value))
+        {
+            return new Dictionary<string, ThemeVisualSettings>(StringComparer.OrdinalIgnoreCase);
+        }
+        return JsonSerializer.Deserialize<Dictionary<string, ThemeVisualSettings>>(
+                   value.GetRawText(),
+                   options) ??
+               new Dictionary<string, ThemeVisualSettings>(StringComparer.OrdinalIgnoreCase);
+    }
+
     private static UiPreferences DeserializeVersionZero(string json, JsonSerializerOptions options) =>
         JsonSerializer.Deserialize<UiPreferences>(json, options)
         ?? throw new JsonException("UI preferences could not be read.");
@@ -113,28 +151,65 @@ internal static class UiPreferencesMigration
         JsonSerializer.Deserialize<UiPreferences>(json, options)
         ?? throw new JsonException("UI preferences could not be read.");
 
+    private static UiPreferences DeserializeVersionFive(string json, JsonSerializerOptions options) =>
+        JsonSerializer.Deserialize<UiPreferences>(json, options)
+        ?? throw new JsonException("UI preferences could not be read.");
+
     private static UiPreferences DeserializeCurrent(string json, JsonSerializerOptions options) =>
         JsonSerializer.Deserialize<UiPreferences>(json, options)
         ?? throw new JsonException("UI preferences could not be read.");
 
-    private static UiPreferences Normalize(UiPreferences preferences) => preferences with
+    private static UiPreferences Normalize(UiPreferences preferences)
     {
-        SchemaVersion = UiPreferences.CurrentSchemaVersion,
-        FavoriteThemeIds = preferences.FavoriteThemeIds ?? [],
-        ThemeVisualSettings = preferences.ThemeVisualSettings ??
-            new Dictionary<string, ThemeVisualSettings>(StringComparer.OrdinalIgnoreCase),
-        ArtworkPresets = NormalizeArtworkPresets(preferences.ArtworkPresets),
-        ExperiencePresets = NormalizeExperiencePresets(preferences.ExperiencePresets),
-        ThemeLibrarySort = ThemeLibraryState.NormalizeSort(preferences.ThemeLibrarySort),
-        RecentThemeUsage = ThemeLibraryState.NormalizeUsage(preferences.RecentThemeUsage),
-        CreatorPromptDrafts = CreatorPromptDraftStore.Normalize(
-            preferences.CreatorPromptDrafts,
-            preferences.CreatorPromptDraft),
-        CreatorPromptDraft = new CreatorPromptDraft(),
-        RecentCreatorWorkspaces = CreatorWorkspaceStore
-            .Normalize(preferences.RecentCreatorWorkspaces)
-            .ToList(),
-    };
+        var overrides = NormalizeVisualOverrides(preferences.ThemeVisualOverrides);
+        foreach (var (themeId, legacySettings) in preferences.ThemeVisualSettings ??
+                     new Dictionary<string, ThemeVisualSettings>(StringComparer.OrdinalIgnoreCase))
+        {
+            if (string.IsNullOrWhiteSpace(themeId) || overrides.ContainsKey(themeId)) continue;
+            var migratedOverride = ThemeArtworkSettingsResolver.MigrateSchemaFive(
+                legacySettings ?? new ThemeVisualSettings());
+            if (!migratedOverride.IsEmpty) overrides[themeId] = migratedOverride;
+        }
+
+        return preferences with
+        {
+            SchemaVersion = UiPreferences.CurrentSchemaVersion,
+            FavoriteThemeIds = preferences.FavoriteThemeIds ?? [],
+            // Schema six persists only sparse overrides. This property remains as a
+            // deserialization bridge for schema five and earlier files.
+            ThemeVisualSettings = new Dictionary<string, ThemeVisualSettings>(
+                StringComparer.OrdinalIgnoreCase),
+            ThemeVisualOverrides = overrides,
+            ArtworkPresets = NormalizeArtworkPresets(preferences.ArtworkPresets),
+            ExperiencePresets = NormalizeExperiencePresets(preferences.ExperiencePresets),
+            ThemeLibrarySort = ThemeLibraryState.NormalizeSort(preferences.ThemeLibrarySort),
+            RecentThemeUsage = ThemeLibraryState.NormalizeUsage(preferences.RecentThemeUsage),
+            CreatorPromptDrafts = CreatorPromptDraftStore.Normalize(
+                preferences.CreatorPromptDrafts,
+                preferences.CreatorPromptDraft),
+            CreatorPromptDraft = new CreatorPromptDraft(),
+            RecentCreatorWorkspaces = CreatorWorkspaceStore
+                .Normalize(preferences.RecentCreatorWorkspaces)
+                .ToList(),
+        };
+    }
+
+    private static Dictionary<string, ThemeVisualSettingsOverride> NormalizeVisualOverrides(
+        IReadOnlyDictionary<string, ThemeVisualSettingsOverride>? source)
+    {
+        var result = new Dictionary<string, ThemeVisualSettingsOverride>(
+            StringComparer.OrdinalIgnoreCase);
+        foreach (var (themeId, value) in source ??
+                     new Dictionary<string, ThemeVisualSettingsOverride>(
+                         StringComparer.OrdinalIgnoreCase))
+        {
+            var key = (themeId ?? string.Empty).Trim();
+            if (key.Length == 0 || key.Length > 256 || value is null) continue;
+            var normalized = value.Normalize();
+            if (!normalized.IsEmpty) result[key] = normalized;
+        }
+        return result;
+    }
 
     private static List<ThemeArtworkPreset> NormalizeArtworkPresets(
         IEnumerable<ThemeArtworkPreset>? presets)

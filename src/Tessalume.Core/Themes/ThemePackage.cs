@@ -8,7 +8,8 @@ public sealed record ThemePackage(
     string? ScriptPath,
     IReadOnlyDictionary<string, string> AssetPaths,
     string? PreviewLightPath,
-    string? PreviewDarkPath)
+    string? PreviewDarkPath,
+    string? ArtworkDefaultsPath = null)
 {
     public bool IsAdvanced => ScriptPath is not null;
 }

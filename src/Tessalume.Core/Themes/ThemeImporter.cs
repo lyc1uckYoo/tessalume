@@ -46,6 +46,10 @@ public sealed class ThemeImporter(ThemePackageLoader loader)
             {
                 CopyPackageFile(package.RootDirectory, package.ScriptPath, staging);
             }
+            if (package.ArtworkDefaultsPath is not null)
+            {
+                CopyPackageFile(package.RootDirectory, package.ArtworkDefaultsPath, staging);
+            }
             foreach (var path in package.AssetPaths.Values)
             {
                 CopyPackageFile(package.RootDirectory, path, staging);

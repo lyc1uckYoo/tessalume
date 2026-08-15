@@ -12,6 +12,7 @@ public sealed partial class ThemePackageLoader
     private const long MaximumManifestBytes = 256 * 1024;
     private const long MaximumCssBytes = 2 * 1024 * 1024;
     private const long MaximumScriptBytes = 2 * 1024 * 1024;
+    private const long MaximumArtworkDefaultsBytes = 512 * 1024;
     private const long MaximumAssetBytes = 25 * 1024 * 1024;
     private const long MaximumPackageAssetBytes = 100 * 1024 * 1024;
 
@@ -112,6 +113,33 @@ public sealed partial class ThemePackageLoader
             validation.AddError("entry.script.missing", "Themes require entryPoints.script.");
         }
 
+        string? artworkDefaultsPath = null;
+        if (!string.IsNullOrWhiteSpace(manifest.EntryPoints.ArtworkDefaults))
+        {
+            artworkDefaultsPath = ResolveContainedFile(
+                root,
+                manifest.EntryPoints.ArtworkDefaults,
+                "entryPoints.artworkDefaults",
+                ".json",
+                validation);
+            if (artworkDefaultsPath is not null)
+            {
+                await ValidateTextFileAsync(
+                    artworkDefaultsPath,
+                    MaximumArtworkDefaultsBytes,
+                    "artwork-defaults.too-large",
+                    "Theme artwork defaults exceed 512 KiB.",
+                    validation,
+                    cancellationToken);
+            }
+        }
+        else
+        {
+            validation.AddWarning(
+                "entry.artwork-defaults.missing",
+                "Template 1.0 themes should declare entryPoints.artworkDefaults; the workbench will use a standard fallback.");
+        }
+
         var assets = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         long totalAssetBytes = 0;
         foreach (var (name, relativePath) in manifest.Assets)
@@ -174,7 +202,8 @@ public sealed partial class ThemePackageLoader
                 scriptPath,
                 assets,
                 previewLightPath,
-                previewDarkPath),
+                previewDarkPath,
+                artworkDefaultsPath),
             validation);
     }
 

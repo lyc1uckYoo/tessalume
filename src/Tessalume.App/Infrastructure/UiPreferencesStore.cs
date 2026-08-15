@@ -8,11 +8,17 @@ internal sealed class UiPreferencesStore(string dataDirectory) : IDisposable
     private readonly string _path = Path.Combine(dataDirectory, "ui-settings.json");
     private readonly JsonSerializerOptions _options = new() { WriteIndented = true };
     private readonly SemaphoreSlim _saveGate = new(1, 1);
+    private string? _writeProtectionReason;
 
     public bool Exists => File.Exists(_path);
 
+    public bool IsWriteProtected => _writeProtectionReason is not null;
+
+    public string? WriteProtectionReason => _writeProtectionReason;
+
     public UiPreferences Load()
     {
+        _writeProtectionReason = null;
         try
         {
             if (!File.Exists(_path)) return new UiPreferences();
@@ -26,6 +32,13 @@ internal sealed class UiPreferencesStore(string dataDirectory) : IDisposable
                 }
             }
             return preferences;
+        }
+        catch (UnsupportedUiPreferencesSchemaException exception)
+        {
+            _writeProtectionReason =
+                $"检测到较新版本的个性化配置（schema {exception.SourceVersion}）；" +
+                $"当前版本仅支持 schema {exception.SupportedVersion}，已进入只读保护以避免覆盖原文件。";
+            return new UiPreferences();
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or JsonException)
         {
@@ -72,6 +85,10 @@ internal sealed class UiPreferencesStore(string dataDirectory) : IDisposable
 
     public async Task SaveAsync(UiPreferences preferences)
     {
+        if (_writeProtectionReason is { } reason)
+        {
+            throw new InvalidOperationException(reason);
+        }
         preferences = UiPreferencesMigration.PrepareForSave(preferences);
         await _saveGate.WaitAsync();
         var temporaryPath = _path + ".tmp";

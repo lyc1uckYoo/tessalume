@@ -40,6 +40,7 @@ public sealed partial class ThemeProjectScanner
                  {
                      manifest.EntryPoints.Css,
                      manifest.EntryPoints.Script,
+                     manifest.EntryPoints.ArtworkDefaults,
                      manifest.Previews.Light,
                      manifest.Previews.Dark,
                  }.Concat(manifest.Assets.Values))
@@ -209,6 +210,7 @@ public sealed partial class ThemeProjectScanner
         yield return package.ManifestPath;
         if (package.CssPath is not null) yield return package.CssPath;
         if (package.ScriptPath is not null) yield return package.ScriptPath;
+        if (package.ArtworkDefaultsPath is not null) yield return package.ArtworkDefaultsPath;
         if (package.PreviewLightPath is not null) yield return package.PreviewLightPath;
         if (package.PreviewDarkPath is not null) yield return package.PreviewDarkPath;
         foreach (var path in package.AssetPaths.Values) yield return path;

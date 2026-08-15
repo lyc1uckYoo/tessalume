@@ -1,10 +1,18 @@
 using System.Text.Json;
+using Tessalume.Core.Runtime;
 using Tessalume.Core.Themes;
 
 namespace Tessalume.Core.Creator;
 
 public sealed partial class ThemeProjectScanner
 {
+    private static readonly JsonSerializerOptions ArtworkDefaultsJsonOptions =
+        new(JsonSerializerDefaults.Web)
+        {
+            PropertyNameCaseInsensitive = false,
+            UnmappedMemberHandling = System.Text.Json.Serialization.JsonUnmappedMemberHandling.Disallow,
+        };
+
     private static async Task AddCreatorContractChecksAsync(
         string root,
         ThemeManifest manifest,
@@ -93,6 +101,13 @@ public sealed partial class ThemeProjectScanner
                     Path.Combine(root, ThemePackageLoader.ManifestFileName),
                     "在 entryPoints.css 中声明 skin.css。"));
             }
+
+            await AddArtworkDefaultsContractChecksAsync(
+                root,
+                manifest,
+                package,
+                checks,
+                cancellationToken);
         }
 
         if (package?.ScriptPath is { } scriptPath)
@@ -201,6 +216,158 @@ public sealed partial class ThemeProjectScanner
             ThemeProjectHealthGroup.Manifest,
             checks);
     }
+
+    private static async Task AddArtworkDefaultsContractChecksAsync(
+        string root,
+        ThemeManifest manifest,
+        ThemePackage? package,
+        List<ThemeProjectHealthCheck> checks,
+        CancellationToken cancellationToken)
+    {
+        var declaredPath = manifest.EntryPoints.ArtworkDefaults;
+        if (string.IsNullOrWhiteSpace(declaredPath))
+        {
+            AddArtworkDefaultsError(
+                checks,
+                "creator.artwork-defaults.required",
+                "缺少六槽图像推荐值",
+                "Template 1.0 创作项目必须声明 entryPoints.artworkDefaults。",
+                Path.Combine(root, ThemePackageLoader.ManifestFileName),
+                "从模板创建 artwork-defaults.json，并完整填写首页横幅、左栏图片、聊天背景的亮暗六个槽位。");
+            return;
+        }
+
+        var path = package?.ArtworkDefaultsPath ?? TryResolveArtworkDefaultsPath(root, declaredPath);
+        if (path is null || !File.Exists(path))
+        {
+            AddArtworkDefaultsError(
+                checks,
+                "creator.artwork-defaults.invalid",
+                "图像推荐值入口无效",
+                "entryPoints.artworkDefaults 必须指向主题目录内存在的 JSON 文件。",
+                Path.Combine(root, ThemePackageLoader.ManifestFileName),
+                "修正 artwork-defaults.json 的相对路径后重新体检。");
+            return;
+        }
+
+        try
+        {
+            var json = await File.ReadAllTextAsync(path, cancellationToken);
+            using var syntax = JsonDocument.Parse(json);
+            if (!HasSixArtworkSlots(syntax.RootElement))
+            {
+                throw new InvalidDataException(
+                    "slots 必须完整包含 hero/sidebar/chat 的 light/dark 六个槽位，且每槽声明 asset、placement、effects。");
+            }
+
+            var document = JsonSerializer.Deserialize<ThemeArtworkDefaultsDocument>(
+                json,
+                ArtworkDefaultsJsonOptions)
+                ?? throw new InvalidDataException("artwork-defaults.json 为空。");
+            if (document.SchemaVersion != 1 ||
+                !string.Equals(document.ThemeId, manifest.Id, StringComparison.Ordinal) ||
+                !Version.TryParse(document.DefaultsVersion, out _))
+            {
+                throw new InvalidDataException(
+                    "schemaVersion、themeId 或 defaultsVersion 与主题契约不一致。");
+            }
+            ThemeArtworkDefaultsValidator.Validate(document);
+
+            var expectedSlots = new (string Asset, ThemeArtworkDefaultSlot Slot)[]
+            {
+                ("hero-light", document.Slots.Hero.Light),
+                ("hero-dark", document.Slots.Hero.Dark),
+                ("sidebar-light", document.Slots.Sidebar.Light),
+                ("sidebar-dark", document.Slots.Sidebar.Dark),
+                ("chat-light", document.Slots.Chat.Light),
+                ("chat-dark", document.Slots.Chat.Dark),
+            };
+            foreach (var (asset, slot) in expectedSlots)
+            {
+                if (!string.Equals(slot.Asset, asset, StringComparison.OrdinalIgnoreCase) ||
+                    !manifest.Assets.ContainsKey(slot.Asset))
+                {
+                    throw new InvalidDataException(
+                        $"槽位 {asset} 必须引用 manifest 中同名的原始素材键。");
+                }
+            }
+        }
+        catch (Exception exception) when (exception is
+            JsonException or InvalidDataException or FormatException or IOException or UnauthorizedAccessException)
+        {
+            AddArtworkDefaultsError(
+                checks,
+                "creator.artwork-defaults.invalid",
+                "六槽图像推荐值无效",
+                exception.Message,
+                path,
+                "按 theme-artwork-defaults-v1 schema 修正六槽资源、最终构图和效果字段。");
+        }
+    }
+
+    private static bool HasSixArtworkSlots(JsonElement root)
+    {
+        if (root.ValueKind != JsonValueKind.Object ||
+            !root.TryGetProperty("slots", out var slots) ||
+            slots.ValueKind != JsonValueKind.Object)
+        {
+            return false;
+        }
+
+        foreach (var region in new[] { "hero", "sidebar", "chat" })
+        {
+            if (!slots.TryGetProperty(region, out var modes) || modes.ValueKind != JsonValueKind.Object)
+            {
+                return false;
+            }
+            foreach (var mode in new[] { "light", "dark" })
+            {
+                if (!modes.TryGetProperty(mode, out var slot) ||
+                    slot.ValueKind != JsonValueKind.Object ||
+                    !slot.TryGetProperty("asset", out _) ||
+                    !slot.TryGetProperty("placement", out _) ||
+                    !slot.TryGetProperty("effects", out _))
+                {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private static string? TryResolveArtworkDefaultsPath(string root, string declaredPath)
+    {
+        try
+        {
+            if (Path.IsPathRooted(declaredPath)) return null;
+            var candidate = Path.GetFullPath(Path.Combine(root, declaredPath));
+            var relative = Path.GetRelativePath(root, candidate);
+            return relative == ".." ||
+                   relative.StartsWith($"..{Path.DirectorySeparatorChar}", StringComparison.Ordinal) ||
+                   Path.IsPathRooted(relative)
+                ? null
+                : candidate;
+        }
+        catch (Exception exception) when (exception is ArgumentException or NotSupportedException)
+        {
+            return null;
+        }
+    }
+
+    private static void AddArtworkDefaultsError(
+        List<ThemeProjectHealthCheck> checks,
+        string code,
+        string title,
+        string message,
+        string filePath,
+        string suggestedAction) => checks.Add(new ThemeProjectHealthCheck(
+        ThemeProjectHealthGroup.EntryPoints,
+        code,
+        title,
+        message,
+        ThemeProjectHealthSeverity.Error,
+        filePath,
+        suggestedAction));
 
     private static void AddRequiredPreviewCheck(
         string root,

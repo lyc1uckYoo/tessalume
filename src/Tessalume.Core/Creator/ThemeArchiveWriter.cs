@@ -110,6 +110,10 @@ public sealed class ThemeArchiveWriter
         AddPackageFile(files, package, package.ManifestPath);
         if (package.CssPath is not null) AddPackageFile(files, package, package.CssPath);
         if (package.ScriptPath is not null) AddPackageFile(files, package, package.ScriptPath);
+        if (package.ArtworkDefaultsPath is not null)
+        {
+            AddPackageFile(files, package, package.ArtworkDefaultsPath);
+        }
         if (package.PreviewLightPath is not null) AddPackageFile(files, package, package.PreviewLightPath);
         if (package.PreviewDarkPath is not null) AddPackageFile(files, package, package.PreviewDarkPath);
         foreach (var path in package.AssetPaths.Values)

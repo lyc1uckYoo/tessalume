@@ -11,12 +11,32 @@ public sealed record ThemeArtworkAdjustment
             "multiply",
             "screen",
             "overlay",
+            "darken",
+            "lighten",
+            "color-dodge",
+            "color-burn",
+            "hard-light",
             "soft-light",
+            "difference",
+            "exclusion",
+            "hue",
+            "saturation",
+            "color",
             "luminosity",
+            "plus-lighter",
         };
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? CustomImagePath { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? ThemeAssetKey { get; init; }
+
+    public ThemeArtworkCompositionMode CompositionMode { get; init; } =
+        ThemeArtworkCompositionMode.Theme;
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public ThemeArtworkPlacementSpec? Placement { get; init; } = new();
 
     public double Brightness { get; init; } = 100d;
 
@@ -50,29 +70,80 @@ public sealed record ThemeArtworkAdjustment
 
     public bool ReadabilityProtection { get; init; }
 
-    public ThemeArtworkAdjustment Normalize() => this with
+    public ThemeArtworkGradientVeil GradientVeil { get; init; } = new();
+
+    public ThemeArtworkReadabilityVeil ReadabilityVeil { get; init; } = new();
+
+    public IReadOnlyList<ThemeArtworkResponsiveVariant> ResponsiveVariants { get; init; } = [];
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public ThemeArtworkMotion? Motion { get; init; }
+
+    public ThemeArtworkAdjustment Normalize()
     {
-        Brightness = NormalizeValue(Brightness, 100d, 20d, 180d),
-        Contrast = NormalizeValue(Contrast, 100d, 20d, 180d),
-        Saturation = NormalizeValue(Saturation, 100d, 0d, 200d),
-        Opacity = NormalizeValue(Opacity, 100d, 0d, 100d),
-        Zoom = NormalizeValue(Zoom, 100d, 70d, 200d),
-        OffsetX = NormalizeValue(OffsetX, 0d, -200d, 200d),
-        OffsetY = NormalizeValue(OffsetY, 0d, -200d, 200d),
-        Grayscale = NormalizeValue(Grayscale, 0d, 0d, 100d),
-        HueRotation = NormalizeValue(HueRotation, 0d, -180d, 180d),
-        Blur = NormalizeValue(Blur, 0d, 0d, 20d),
-        CustomImagePath = NormalizePath(CustomImagePath),
-        OverlayColor = NormalizeColor(OverlayColor),
-        OverlayOpacity = NormalizeValue(OverlayOpacity, 0d, 0d, 100d),
-        GradientStrength = NormalizeValue(GradientStrength, 0d, 0d, 100d),
-        Vignette = NormalizeValue(Vignette, 0d, 0d, 100d),
-        BlendMode = SupportedBlendModes.Contains(BlendMode ?? string.Empty)
-            ? (BlendMode ?? "normal").ToLowerInvariant()
-            : "normal",
+        var zoom = NormalizeValue(Zoom, 100d, 70d, 200d);
+        var offsetX = NormalizeValue(OffsetX, 0d, -200d, 200d);
+        var offsetY = NormalizeValue(OffsetY, 0d, -200d, 200d);
+        var compositionMode = CompositionMode;
+        // Old callers and schema-five JSON have no CompositionMode. Preserve their
+        // non-default transform exactly instead of silently reinterpreting it.
+        if (compositionMode == ThemeArtworkCompositionMode.Theme &&
+            (Math.Abs(zoom - 100d) > .000001d ||
+             Math.Abs(offsetX) > .000001d ||
+             Math.Abs(offsetY) > .000001d))
+        {
+            compositionMode = ThemeArtworkCompositionMode.Legacy;
+        }
+
+        if (compositionMode != ThemeArtworkCompositionMode.Legacy)
+        {
+            zoom = 100d;
+            offsetX = 0d;
+            offsetY = 0d;
+        }
+
+        return this with
+        {
+            CompositionMode = compositionMode,
+            Placement = (Placement ?? new ThemeArtworkPlacementSpec()).Normalize(),
+            Brightness = NormalizeValue(Brightness, 100d, 20d, 180d),
+            Contrast = NormalizeValue(Contrast, 100d, 20d, 180d),
+            Saturation = NormalizeValue(Saturation, 100d, 0d, 200d),
+            Opacity = NormalizeValue(Opacity, 100d, 0d, 100d),
+            Zoom = zoom,
+            OffsetX = offsetX,
+            OffsetY = offsetY,
+            Grayscale = NormalizeValue(Grayscale, 0d, 0d, 100d),
+            HueRotation = NormalizeValue(HueRotation, 0d, -180d, 180d),
+            Blur = NormalizeValue(Blur, 0d, 0d, 20d),
+            CustomImagePath = NormalizePath(CustomImagePath),
+            ThemeAssetKey = NormalizeAssetKey(ThemeAssetKey),
+            OverlayColor = NormalizeColor(OverlayColor),
+            OverlayOpacity = NormalizeValue(OverlayOpacity, 0d, 0d, 100d),
+            GradientStrength = NormalizeValue(GradientStrength, 0d, 0d, 100d),
+            GradientVeil = (GradientVeil ?? new ThemeArtworkGradientVeil()).Normalize(),
+            Vignette = NormalizeValue(Vignette, 0d, 0d, 100d),
+            ReadabilityVeil = (ReadabilityVeil ?? new ThemeArtworkReadabilityVeil()).Normalize(),
+            ResponsiveVariants = (ResponsiveVariants ?? [])
+                .Where(variant => variant is not null)
+                .Take(16)
+                .Select(variant => variant.Normalize())
+                .ToArray(),
+            Motion = Motion?.Normalize(),
+            BlendMode = SupportedBlendModes.Contains(BlendMode ?? string.Empty)
+                ? (BlendMode ?? "normal").ToLowerInvariant()
+                : "normal",
+        };
+    }
+
+    public ThemeArtworkAdjustment WithoutCustomImage() => this with
+    {
+        CustomImagePath = null,
+        ThemeAssetKey = null,
     };
 
-    public ThemeArtworkAdjustment WithoutCustomImage() => this with { CustomImagePath = null };
+    public static bool IsSupportedBlendMode(string? blendMode) =>
+        SupportedBlendModes.Contains(blendMode ?? string.Empty);
 
     private static double NormalizeValue(double value, double fallback, double minimum, double maximum) =>
         double.IsFinite(value) ? Math.Clamp(value, minimum, maximum) : fallback;
@@ -86,6 +157,17 @@ public sealed record ThemeArtworkAdjustment
             > 512 => value[..512],
             _ => value,
         };
+    }
+
+    private static string? NormalizeAssetKey(string? assetKey)
+    {
+        var value = (assetKey ?? string.Empty).Trim();
+        if (value.Length is 0 or > 128 ||
+            value.Any(character => !char.IsLetterOrDigit(character) && character is not '-' and not '_'))
+        {
+            return null;
+        }
+        return value;
     }
 
     private static string NormalizeColor(string? color)
@@ -189,9 +271,9 @@ public sealed record ThemeArtworkPreset
     private static ThemeVisualModeSettings StripCustomImages(ThemeVisualModeSettings settings) =>
         settings with
         {
-            Hero = settings.Hero.WithoutCustomImage(),
-            Sidebar = settings.Sidebar.WithoutCustomImage(),
-            Chat = settings.Chat.WithoutCustomImage(),
+            Hero = settings.Hero.WithoutCustomImage() with { Motion = null },
+            Sidebar = settings.Sidebar.WithoutCustomImage() with { Motion = null },
+            Chat = settings.Chat.WithoutCustomImage() with { Motion = null },
         };
 }
 
@@ -205,6 +287,9 @@ public sealed record ThemeExperiencePreset
 
     public ThemeVisualSettings Settings { get; init; } = new();
 
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public ThemeVisualSettingsOverride? VisualOverrides { get; init; }
+
     public ThemeExperiencePreset Normalize()
     {
         var name = (Name ?? string.Empty).Trim();
@@ -216,6 +301,12 @@ public sealed record ThemeExperiencePreset
             Name = name,
             ThemeId = themeId,
             Settings = (Settings ?? new ThemeVisualSettings()).Normalize(),
+            // Published schema-five profiles contained a fully resolved neutral model.
+            // Convert it to an intent-preserving sparse delta once, so later theme
+            // recommendation updates are not overwritten by old 100/0 defaults.
+            VisualOverrides = (VisualOverrides ??
+                ThemeArtworkSettingsResolver.MigrateSchemaFive(
+                    Settings ?? new ThemeVisualSettings())).Normalize(),
         };
     }
 

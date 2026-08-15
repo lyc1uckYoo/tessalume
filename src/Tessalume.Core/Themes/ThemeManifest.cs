@@ -92,6 +92,9 @@ public sealed record ThemeEntryPoints
 
     [JsonPropertyName("script")]
     public string? Script { get; init; }
+
+    [JsonPropertyName("artworkDefaults")]
+    public string? ArtworkDefaults { get; init; }
 }
 
 public sealed record ThemePreviews
