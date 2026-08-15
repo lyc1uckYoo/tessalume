@@ -95,9 +95,11 @@ internal static partial class TestSuite
             "Runtime",
             "ThemeRuntime.cs"));
         var adapterSource = await File.ReadAllTextAsync(runtimeAdapterPath);
-        Ensure(ThemeRuntime.ContractVersion == 3 &&
-               adapterSource.Contains("TESSALUME_THEME_SCRIPT:", StringComparison.Ordinal),
-            "The compatibility contract and theme-script failure marker must be explicit.");
+        Ensure(ThemeRuntime.ContractVersion == 4 &&
+               adapterSource.Contains("TESSALUME_THEME_SCRIPT:", StringComparison.Ordinal) &&
+               adapterSource.Contains("__TESSALUME_PAYLOAD_SCRIPT_BODY__", StringComparison.Ordinal) &&
+               !adapterSource.Contains("eval(scriptText)", StringComparison.Ordinal),
+            "The compatibility contract must inline theme lifecycle code without requiring CSP-blocked unsafe-eval, while retaining classified failures.");
         Ensure(runtimeSource.Contains("await CleanupTargetsAsync(targets);", StringComparison.Ordinal) &&
                runtimeSource.Contains("ThemeRuntimeFailureStage.ThemeScriptFailed", StringComparison.Ordinal),
             "Any partial multi-page application must roll every target back with a classified failure.");

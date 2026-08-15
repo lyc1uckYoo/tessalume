@@ -203,13 +203,14 @@ internal static partial class TestSuite
                         ?? throw new InvalidOperationException("Cold theme scan did not return a task."));
                     InvokeMainWindowMethod(window, "EnsureMainUiInitialized");
 
-                    Ensure(window.VisualAdjustmentEditor.IsEnabled &&
-                           window.HeroAdjustmentEditor.IsEnabled &&
-                           window.SidebarAdjustmentEditor.IsEnabled &&
-                           window.ChatAdjustmentEditor.IsEnabled &&
+                    Ensure(window.ArtworkWorkbench.IsEnabled &&
+                           window.ArtworkWorkbench.HeroRegionButton.IsEnabled &&
+                           window.ArtworkWorkbench.SidebarRegionButton.IsEnabled &&
+                           window.ArtworkWorkbench.ChatRegionButton.IsEnabled &&
+                           window.ArtworkWorkbench.InspectorScroller.IsEnabled &&
                            window.SettingsPreviousThemeButton.IsEnabled &&
                            window.SettingsNextThemeButton.IsEnabled,
-                        "The first validated theme must enable Settings before preview hydration starts.");
+                        "The first validated theme must enable Workbench 3.0 before preview hydration starts.");
 
                     var selected = typeof(MainWindow).GetField("_selectedTheme", flags)?.GetValue(window);
                     Ensure(selected is ThemeCardModel { ThemeId: "sample.theme" },

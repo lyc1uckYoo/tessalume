@@ -157,6 +157,64 @@ internal sealed class CreatorThemeFixture : IDisposable
             });
             """);
 
+        var neutralEffects = new
+        {
+            brightness = 100,
+            contrast = 100,
+            saturation = 100,
+            opacity = 100,
+            grayscale = 0,
+            hueRotate = 0,
+            blur = 0,
+            blendMode = "normal",
+            overlay = new { color = "#000000", opacity = 0 },
+            gradientVeil = new
+            {
+                enabled = false,
+                strength = 0,
+                layers = Array.Empty<object>(),
+            },
+            vignette = 0,
+            readabilityVeil = new
+            {
+                enabled = false,
+                color = "#000000",
+                opacity = 0,
+                directionDeg = 90,
+                rangeStart = 0,
+                rangeEnd = 100,
+            },
+        };
+        object Slot(string asset) => new
+        {
+            asset,
+            placement = new
+            {
+                size = new { width = "cover", height = "auto" },
+                position = new { x = "center", y = "center" },
+                scale = 1,
+                origin = new { x = "center", y = "center" },
+                mirrorX = false,
+                mirrorY = false,
+            },
+            effects = neutralEffects,
+        };
+        var artworkDefaults = new
+        {
+            schemaVersion = 1,
+            themeId = "fixture.creator-theme",
+            defaultsVersion = "1.0.0",
+            slots = new
+            {
+                hero = new { light = Slot("hero-light"), dark = Slot("hero-dark") },
+                sidebar = new { light = Slot("sidebar-light"), dark = Slot("sidebar-dark") },
+                chat = new { light = Slot("chat-light"), dark = Slot("chat-dark") },
+            },
+        };
+        await File.WriteAllTextAsync(
+            Path.Combine(root, "artwork-defaults.json"),
+            JsonSerializer.Serialize(artworkDefaults));
+
         var manifest = new
         {
             schemaVersion = 2,
@@ -168,7 +226,12 @@ internal sealed class CreatorThemeFixture : IDisposable
             type = "advanced",
             template = new { id = "flagship", version = "1.0", style = "shared" },
             capabilities = new { light = true, dark = true },
-            entryPoints = new { css = "skin.css", script = "theme.js" },
+            entryPoints = new
+            {
+                css = "skin.css",
+                script = "theme.js",
+                artworkDefaults = "artwork-defaults.json",
+            },
             previews = new { light = "assets/hero-light.png", dark = "assets/hero-dark.png" },
             assets,
             config = new { character = "Fixture Character", title = "Fixture Theme" },

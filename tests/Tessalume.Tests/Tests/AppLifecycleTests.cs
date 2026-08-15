@@ -23,6 +23,7 @@ internal static partial class TestSuite
             "The UI preferences migration must preserve explicit opt-out values.");
         Ensure(migratedPreferences.FavoriteThemeIds.Count == 0 &&
                migratedPreferences.ThemeVisualSettings.Count == 0 &&
+               migratedPreferences.ThemeVisualOverrides.Count == 0 &&
                migratedPreferences.ArtworkPresets.Count == 0 &&
                migratedPreferences.ExperiencePresets.Count == 0 &&
                migratedPreferences.ThemeLibrarySort == ThemeLibraryState.DefaultSort &&
@@ -63,14 +64,11 @@ internal static partial class TestSuite
         Ensure(versionOnePreferences.FavoriteThemeIds.SequenceEqual(["sample.theme"]) &&
                !versionOnePreferences.AutomaticUpdateChecks &&
                versionOnePreferences.LastUpdateCheckAt is not null &&
-               versionOnePreferences.ThemeVisualSettings["sample.theme"].Light.Hero.Brightness == 91 &&
-               versionOnePreferences.ThemeVisualSettings["sample.theme"].Light.Hero.Zoom == 100 &&
-               versionOnePreferences.ThemeVisualSettings["sample.theme"].Light.Hero.OffsetX == 0 &&
-               versionOnePreferences.ThemeVisualSettings["sample.theme"].Light.Hero.Grayscale == 0 &&
-               versionOnePreferences.ThemeVisualSettings["sample.theme"].Light.Hero.Blur == 0 &&
-               versionOnePreferences.ThemeVisualSettings["sample.theme"].Dark.Chat.Opacity == 87 &&
+               versionOnePreferences.ThemeVisualOverrides["sample.theme"].Light?.Hero is
+               { Brightness: 91, CompositionMode: null, LegacyZoom: null } &&
+               versionOnePreferences.ThemeVisualOverrides["sample.theme"].Dark?.Chat?.Opacity == 87 &&
                versionOnePreferences.RecentCreatorWorkspaces.Count == 0,
-            "The 1.2 schema migration must preserve favorites, updates, and image adjustments while initializing workspace history.");
+            "The schema-one migration must preserve favorites and convert only changed image fields into sparse overrides.");
 
         const string versionTwoJson = """
             {
@@ -102,23 +100,30 @@ internal static partial class TestSuite
             out var versionTwoMigrated);
         Ensure(versionTwoMigrated &&
                versionTwoPreferences.SchemaVersion == UiPreferences.CurrentSchemaVersion &&
-               versionTwoPreferences.ThemeVisualSettings["advanced.theme"].Dark.Sidebar.Zoom == 128 &&
+               versionTwoPreferences.ThemeVisualOverrides["advanced.theme"].Dark?.Sidebar is
+               {
+                   CompositionMode: ThemeArtworkCompositionMode.Legacy,
+                   LegacyZoom: 128,
+                   LegacyOffsetX: -36,
+                   LegacyOffsetY: 18,
+               } &&
                versionTwoPreferences.ArtworkPresets.Count == 0,
-            "Schema-two preferences must migrate to the current schema without losing advanced image adjustments.");
+            "Schema-two preferences must migrate non-default Zoom/Offset into an explicit legacy override.");
 
         var currentJson = JsonSerializer.Serialize(migratedPreferences with
         {
-            ThemeVisualSettings = new Dictionary<string, ThemeVisualSettings>
+            ThemeVisualOverrides = new Dictionary<string, ThemeVisualSettingsOverride>
             {
-                ["advanced.theme"] = new ThemeVisualSettings
+                ["advanced.theme"] = new ThemeVisualSettingsOverride
                 {
-                    Dark = new ThemeVisualModeSettings
+                    Dark = new ThemeVisualModeSettingsOverride
                     {
-                        Sidebar = new ThemeArtworkAdjustment
+                        Sidebar = new ThemeArtworkOverride
                         {
-                            Zoom = 128,
-                            OffsetX = -36,
-                            OffsetY = 18,
+                            CompositionMode = ThemeArtworkCompositionMode.Legacy,
+                            LegacyZoom = 128,
+                            LegacyOffsetX = -36,
+                            LegacyOffsetY = 18,
                             Grayscale = 24,
                             HueRotation = -42,
                             Blur = 3.5,
@@ -184,12 +189,13 @@ internal static partial class TestSuite
             },
         }, options);
         var currentPreferences = UiPreferencesMigration.Deserialize(currentJson, options, out var currentMigrated);
-        var advancedAdjustment = currentPreferences.ThemeVisualSettings["advanced.theme"].Dark.Sidebar;
+        var advancedAdjustment = currentPreferences.ThemeVisualOverrides["advanced.theme"].Dark?.Sidebar
+            ?? throw new InvalidOperationException("The schema-six sidebar override did not round-trip.");
         Ensure(!currentMigrated &&
                currentPreferences.SchemaVersion == UiPreferences.CurrentSchemaVersion &&
-               advancedAdjustment.Zoom == 128 &&
-               advancedAdjustment.OffsetX == -36 &&
-               advancedAdjustment.OffsetY == 18 &&
+               advancedAdjustment.LegacyZoom == 128 &&
+               advancedAdjustment.LegacyOffsetX == -36 &&
+               advancedAdjustment.LegacyOffsetY == 18 &&
                advancedAdjustment.Grayscale == 24 &&
                advancedAdjustment.HueRotation == -42 &&
                advancedAdjustment.Blur == 3.5 &&
@@ -203,7 +209,7 @@ internal static partial class TestSuite
                currentPreferences.RecentThemeUsage is [{ ThemeId: "advanced.theme", UseCount: 7 }] &&
                currentPreferences.CreatorPromptDrafts[CreatorPromptDraftStore.NewThemeKey] is
                { WorkName: "原神", CharacterName: "芙宁娜", UsesReferenceImages: true },
-            "Schema-five preferences must round-trip personalization, creator drafts, and theme library state without another migration.");
+            "Schema-six preferences must round-trip sparse personalization, creator drafts, and theme library state without another migration.");
 
         const string versionFourDemoJson = """
             {
@@ -296,6 +302,28 @@ internal static partial class TestSuite
             }
             Ensure(!File.Exists(snapshotPath),
                 "Current-schema preferences must not overwrite the migration recovery snapshot.");
+
+            File.WriteAllText(preferencesPath, futureJson);
+            using (var store = new UiPreferencesStore(storeRoot))
+            {
+                _ = store.Load();
+                Ensure(store.IsWriteProtected &&
+                       store.WriteProtectionReason?.Contains("只读保护", StringComparison.Ordinal) == true,
+                    "A future-schema preferences file must put the store into explicit read-only protection.");
+                try
+                {
+                    store.SaveAsync(new UiPreferences { DarkMode = true })
+                        .GetAwaiter()
+                        .GetResult();
+                    throw new InvalidOperationException("A future-schema preferences file was overwritten.");
+                }
+                catch (InvalidOperationException exception) when (
+                    exception.Message.Contains("只读保护", StringComparison.Ordinal))
+                {
+                }
+            }
+            Ensure(File.ReadAllText(preferencesPath) == futureJson,
+                "Future-schema preferences must remain byte-for-byte unchanged after a blocked save.");
         }
         finally
         {
@@ -407,7 +435,8 @@ internal static partial class TestSuite
                preferences.Contains("LastUpdateCheckAt", StringComparison.Ordinal) &&
                preferences.Contains("SemaphoreSlim _saveGate", StringComparison.Ordinal) &&
                preferences.Contains("preferences.FavoriteThemeIds ?? []", StringComparison.Ordinal) &&
-               preferences.Contains("preferences.ThemeVisualSettings ??", StringComparison.Ordinal),
+               preferences.Contains("preferences.ThemeVisualOverrides", StringComparison.Ordinal) &&
+               preferences.Contains("MigrateSchemaFive", StringComparison.Ordinal),
             "Preferences must retain update state, normalize older data, and serialize concurrent writes.");
         Ensure(mainSource.Contains("ScheduleAutomaticUpdateCheck", StringComparison.Ordinal) &&
                mainSource.Contains("_automaticUpdateCheckScheduled", StringComparison.Ordinal) &&

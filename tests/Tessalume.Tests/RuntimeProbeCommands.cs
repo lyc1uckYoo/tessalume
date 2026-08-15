@@ -1,3 +1,5 @@
+using Tessalume.App.Features.Personalization.ArtworkWorkbench.Infrastructure;
+
 internal static partial class TestSuite
 {
     static async Task<int> CheckLiveUpdateAsync(Version currentVersion)
@@ -324,6 +326,24 @@ internal static partial class TestSuite
         await runtime.StartAsync(port, package);
         await runtime.StopAsync();
         Console.WriteLine($"Theme applied: {package.Manifest.Id}");
+        return 0;
+    }
+
+    static async Task<int> ApplyPackageDefaultsRuntimeAsync(int port, string packagePath)
+    {
+        var repositoryRoot = FindRepositoryRoot();
+        var package = (await new ThemePackageLoader().LoadAsync(packagePath)).Package
+            ?? throw new InvalidOperationException("The requested theme package could not be loaded.");
+        var defaults = await new ArtworkThemeDefaultsStore().LoadAsync(package);
+        var settings = ThemeArtworkSettingsResolver.Resolve(defaults.Defaults, null).Settings;
+        await using var runtime = new ThemeRuntime(
+            new LoopbackCdpDiscovery(),
+            new ThemePayloadBuilder(new Dictionary<string, string>
+            {
+                [ThemePayloadBuilder.OpenRuntimeAdapterKey] = GetSourceRuntimeAssets(repositoryRoot).RuntimePath,
+            }));
+        await runtime.StartAsync(port, package, settings);
+        Console.WriteLine($"Theme defaults applied: {package.Manifest.Id}");
         return 0;
     }
 

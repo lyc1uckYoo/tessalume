@@ -1,3 +1,5 @@
+using Tessalume.App.Features.Personalization.ArtworkWorkbench.Infrastructure;
+
 internal static partial class TestSuite
 {
     static async Task PublishedThemesUseCanonicalInjectionContractAsync()
@@ -32,6 +34,11 @@ internal static partial class TestSuite
         foreach (var (directory, themeNamespace) in themes)
         {
             var themeRoot = Path.Combine(repositoryRoot, "themes", directory);
+            var loaded = await new ThemePackageLoader().LoadAsync(themeRoot);
+            Ensure(loaded.Validation.IsValid, FormatIssues(loaded.Validation));
+            var package = loaded.Package
+                ?? throw new InvalidOperationException($"{directory} did not load.");
+            var defaults = await new ArtworkThemeDefaultsStore().LoadAsync(package);
             var script = await File.ReadAllTextAsync(Path.Combine(themeRoot, "theme.js"));
             var css = await File.ReadAllTextAsync(Path.Combine(themeRoot, "skin.css"));
             Ensure(script.Contains("context.mountCanonicalTheme(", StringComparison.Ordinal),
@@ -47,9 +54,11 @@ internal static partial class TestSuite
             Ensure(!css.Contains("TESSALUME_TEMPLATE_V1_", StringComparison.Ordinal) &&
                    !css.Contains("[data-theme-role=", StringComparison.Ordinal),
                 $"{directory} skin must not duplicate shared surfaces or geometry.");
-            Ensure(css.Contains("-is-task main.", StringComparison.Ordinal) &&
-                   css.Contains("-chat-art)", StringComparison.Ordinal),
-                $"{directory} must paint chat art on the stable task main.");
+            Ensure(package.ArtworkDefaultsPath is not null &&
+                   defaults is { IsExact: true, Diagnostic: null } &&
+                   defaults.Defaults.Slots.Chat.Light.Asset == "chat-light" &&
+                   defaults.Defaults.Slots.Chat.Dark.Asset == "chat-dark",
+                $"{directory} must declare exact light/dark chat artwork defaults instead of painting an adjustable crop in skin.css.");
             Ensure(!css.Contains($"main.{themeNamespace}-main>*{{position:relative", StringComparison.Ordinal),
                 $"{directory} must not override every direct main child; doing so breaks Codex fixed headers.");
             Ensure(!css.Contains($"main.{themeNamespace}-main::before {{\n  content:\"\";\n  position:", StringComparison.Ordinal) &&

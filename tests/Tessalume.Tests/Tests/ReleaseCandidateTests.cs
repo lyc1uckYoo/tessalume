@@ -99,7 +99,7 @@ internal static partial class TestSuite
                    restoredPreferences.DarkMode &&
                    !restoredPreferences.AutomaticUpdateChecks &&
                    restoredPreferences.FavoriteThemeIds.Contains("fixture.creator-theme") &&
-                   restoredPreferences.ThemeVisualSettings["fixture.creator-theme"].Dark.Chat.Brightness == 84 &&
+                   restoredPreferences.ThemeVisualOverrides["fixture.creator-theme"].Dark?.Chat?.Brightness == 84 &&
                    restoredPreferences.RecentCreatorWorkspaces.Count == 1 &&
                    restoredTheme.Validation.IsValid,
                 "The 1.2 → 1.3 → export → import → backup → restore flow must preserve every user setting and a valid theme.");

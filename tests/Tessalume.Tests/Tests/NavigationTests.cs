@@ -81,12 +81,16 @@ internal static partial class TestSuite
                         BindingFlags.Instance | BindingFlags.NonPublic)?.Invoke(window, null);
 
                     window.SettingsButton.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
-                    Ensure(window.SettingsInfoPanel.Visibility == Visibility.Visible &&
+                    Ensure(window.PersonalizationInfoPanel.Visibility == Visibility.Visible &&
+                           window.PersonalizationPageTitleText.Text == "图像工作台" &&
+                           window.SettingsInfoPanel.Visibility == Visibility.Visible &&
                            window.ExperienceInfoPanel.Visibility == Visibility.Collapsed,
                         "Image adjustments must open in their own workspace route.");
 
                     window.ExperienceButton.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
-                    Ensure(window.SettingsInfoPanel.Visibility == Visibility.Collapsed &&
+                    Ensure(window.PersonalizationInfoPanel.Visibility == Visibility.Visible &&
+                           window.PersonalizationPageTitleText.Text == "显示与方案" &&
+                           window.SettingsInfoPanel.Visibility == Visibility.Collapsed &&
                            window.ExperienceInfoPanel.Visibility == Visibility.Visible &&
                            Equals(window.ExperienceButton.Tag, "active"),
                         "Display preferences and experience profiles must open on a separate active route.");

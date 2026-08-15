@@ -1,20 +1,25 @@
+using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Windows.Controls;
 using System.Windows.Threading;
+using Tessalume.App.Features.Navigation;
+using Tessalume.App.Features.Personalization.ArtworkWorkbench.Domain;
+using Tessalume.App.Models;
 
 internal static partial class TestSuite
 {
     static Task<int> RenderArtworkSnapshotsAsync(
         string basicSnapshotPath,
         string compositionSnapshotPath,
-        string effectsSnapshotPath)
+        string effectsSnapshotPath,
+        string? sidebarDarkSnapshotPath = null)
     {
-        var portableRoot = Path.Combine(
-            Path.GetTempPath(),
-            $"tessalume-artwork-snapshot-{Guid.NewGuid():N}");
-        var themes = Path.Combine(portableRoot, "themes");
-        var data = Path.Combine(portableRoot, "data");
-        Directory.CreateDirectory(themes);
+        var repositoryRoot = FindRepositoryRoot();
+        var data = Path.Combine(
+            repositoryRoot,
+            "artifacts",
+            "qa",
+            $".artwork-snapshot-data-{Guid.NewGuid():N}");
         Directory.CreateDirectory(data);
         Exception? failure = null;
 
@@ -37,18 +42,75 @@ internal static partial class TestSuite
             {
                 try
                 {
-                    window = new MainWindow(new PortableLayout(portableRoot, themes, data));
+                    window = new MainWindow(new PortableLayout(
+                        repositoryRoot,
+                        Path.Combine(repositoryRoot, "themes"),
+                        data));
                     InvokeMainWindowMethod(window, "EnsureMainUiInitialized");
-                    window.ThemeLibraryPage.Visibility = Visibility.Collapsed;
-                    window.InfoPage.Visibility = Visibility.Visible;
-                    ShowOnlyInfoPanel(window, window.SettingsInfoPanel);
-                    window.VisualAdjustmentEditor.IsEnabled = true;
-                    window.VisualThemeNameText.Text = "示例主题 · 当前修改会立即显示在 Codex 中";
-                    window.VisualPresetNameBox.Text = "柔和背景";
+                    await AttachArtworkSnapshotThemeAsync(window, repositoryRoot);
+                    await InvokeMainWindowTaskAsync(
+                        window,
+                        "ResolveThemeArtworkDefaultsAsync",
+                        CancellationToken.None);
+                    InvokeMainWindowMethod(window, "NavigateTo", AppRoute.ArtworkStudio);
+                    InvokeMainWindowMethod(window, "SetArtworkConnectionMonitoring", false);
+                    window.ArtworkWorkbench.SetConnectionState(false);
+                    InvokeMainWindowMethod(window, "UpdateArtworkWorkbenchContext");
 
-                    RenderGroup(window, window.VisualBasicGroupButton, basicSnapshotPath, darkMode: false);
-                    RenderGroup(window, window.VisualCompositionGroupButton, compositionSnapshotPath, darkMode: false);
-                    RenderGroup(window, window.VisualEffectsGroupButton, effectsSnapshotPath, darkMode: true);
+                    await RenderArtworkTargetAsync(
+                        window,
+                        ArtworkRegion.Hero,
+                        darkMode: false,
+                        window.ArtworkWorkbench.Inspector.BasicGroupButton,
+                        basicSnapshotPath,
+                        inspector =>
+                        {
+                            inspector.BrightnessSlider.Value = 108;
+                            inspector.OpacitySlider.Value = 96;
+                            inspector.BasicAdvancedExpander.IsExpanded = true;
+                            inspector.ContrastSlider.Value = 106;
+                            inspector.SaturationSlider.Value = 112;
+                        });
+                    await RenderArtworkTargetAsync(
+                        window,
+                        ArtworkRegion.Sidebar,
+                        darkMode: false,
+                        window.ArtworkWorkbench.Inspector.CompositionGroupButton,
+                        compositionSnapshotPath,
+                        inspector =>
+                        {
+                            inspector.ZoomSlider.Value = 112;
+                            inspector.OffsetXSlider.Value = 24;
+                            inspector.OffsetYSlider.Value = -18;
+                        });
+                    if (!string.IsNullOrWhiteSpace(sidebarDarkSnapshotPath))
+                    {
+                        await RenderArtworkTargetAsync(
+                            window,
+                            ArtworkRegion.Sidebar,
+                            darkMode: true,
+                            window.ArtworkWorkbench.Inspector.CompositionGroupButton,
+                            sidebarDarkSnapshotPath,
+                            _ => { });
+                    }
+                    await RenderArtworkTargetAsync(
+                        window,
+                        ArtworkRegion.Chat,
+                        darkMode: true,
+                        window.ArtworkWorkbench.Inspector.EffectsGroupButton,
+                        effectsSnapshotPath,
+                        inspector =>
+                        {
+                            inspector.OverlayOpacitySlider.Value = 22;
+                            inspector.ReadabilityCheckBox.IsChecked = true;
+                            inspector.EffectsAdvancedExpander.IsExpanded = true;
+                            inspector.GrayscaleSlider.Value = 5;
+                            inspector.HueRotationSlider.Value = 8;
+                            inspector.BlurSlider.Value = 0.5;
+                            inspector.GradientStrengthSlider.Value = 36;
+                            inspector.VignetteSlider.Value = 24;
+                            inspector.BlendModeComboBox.SelectedIndex = 4;
+                        });
                 }
                 catch (Exception exception)
                 {
@@ -58,10 +120,7 @@ internal static partial class TestSuite
                 }
                 finally
                 {
-                    if (window is not null)
-                    {
-                        await window.DisposeAsync();
-                    }
+                    if (window is not null) await window.DisposeAsync();
                     application.Shutdown();
                     dispatcher.BeginInvokeShutdown(DispatcherPriority.Background);
                 }
@@ -80,63 +139,132 @@ internal static partial class TestSuite
                 Console.Error.WriteLine(failure);
                 return Task.FromResult(1);
             }
-            Console.WriteLine($"Artwork basic snapshot: {Path.GetFullPath(basicSnapshotPath)}");
-            Console.WriteLine($"Artwork composition snapshot: {Path.GetFullPath(compositionSnapshotPath)}");
-            Console.WriteLine($"Artwork effects snapshot: {Path.GetFullPath(effectsSnapshotPath)}");
+            Console.WriteLine($"Artwork hero/light snapshot: {Path.GetFullPath(basicSnapshotPath)}");
+            Console.WriteLine(
+                $"Artwork sidebar/light snapshot: {Path.GetFullPath(compositionSnapshotPath)}");
+            if (!string.IsNullOrWhiteSpace(sidebarDarkSnapshotPath))
+            {
+                Console.WriteLine(
+                    $"Artwork sidebar/dark snapshot: {Path.GetFullPath(sidebarDarkSnapshotPath)}");
+            }
+            Console.WriteLine($"Artwork chat/dark snapshot: {Path.GetFullPath(effectsSnapshotPath)}");
             return Task.FromResult(0);
         }
         finally
         {
-            if (Directory.Exists(portableRoot)) Directory.Delete(portableRoot, recursive: true);
+            if (Directory.Exists(data)) Directory.Delete(data, recursive: true);
         }
     }
 
-    private static void RenderGroup(
+    private static async Task AttachArtworkSnapshotThemeAsync(
         MainWindow window,
+        string repositoryRoot)
+    {
+        var themeRoot = Path.Combine(repositoryRoot, "themes", "cartethyia.gale-tide-crown");
+        var loaded = await new ThemePackageLoader().LoadAsync(themeRoot);
+        Ensure(loaded.Validation.IsValid, FormatIssues(loaded.Validation));
+        var package = loaded.Package
+            ?? throw new InvalidOperationException("The flagship theme package did not load.");
+        var model = new ThemeCardModel(
+            new ThemeCatalogItem(themeRoot, package, loaded.Validation),
+            loadPreview: false)
+        {
+            // Screenshot fixtures exercise the fully editable local-preview path
+            // with the critical 355% Cartethyia sidebar recommendation.
+            // Keeping the theme selected but unapplied makes the result independent
+            // of any Codex instance that happens to be running on the developer PC.
+            IsApplied = false,
+            IsSelected = true,
+        };
+        var flags = BindingFlags.Instance | BindingFlags.NonPublic;
+        var themes = (ObservableCollection<ThemeCardModel>)(
+            typeof(MainWindow).GetField("_themes", flags)?.GetValue(window)
+            ?? throw new MissingFieldException(nameof(MainWindow), "_themes"));
+        themes.Add(model);
+        typeof(MainWindow).GetField("_selectedTheme", flags)?.SetValue(window, model);
+    }
+
+    private static async Task InvokeMainWindowTaskAsync(
+        MainWindow window,
+        string name,
+        params object[] arguments)
+    {
+        var method = typeof(MainWindow).GetMethod(
+            name,
+            BindingFlags.Instance | BindingFlags.NonPublic)
+            ?? throw new MissingMethodException(nameof(MainWindow), name);
+        var task = method.Invoke(window, arguments) as Task
+            ?? throw new InvalidOperationException($"MainWindow.{name} did not return a Task.");
+        await task;
+    }
+
+    private static async Task RenderArtworkTargetAsync(
+        MainWindow window,
+        ArtworkRegion region,
+        bool darkMode,
         Button groupButton,
         string snapshotPath,
-        bool darkMode)
+        Action<Tessalume.App.Features.Personalization.ArtworkWorkbench.Presentation.ArtworkInspectorView>
+            configure)
     {
         InvokeMainWindowMethod(window, "ApplyStudioTheme", darkMode);
-        window.VisualUndoButton.IsEnabled = true;
-        window.VisualRedoButton.IsEnabled = true;
-        window.VisualOriginalPreviewButton.IsEnabled = true;
-        window.CopyVisualModeButton.IsEnabled = true;
-        window.SaveVisualPresetButton.IsEnabled = true;
-        groupButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-        if (groupButton == window.VisualEffectsGroupButton)
+        var workbench = window.ArtworkWorkbench;
+        var modeButton = darkMode ? workbench.DarkModeButton : workbench.LightModeButton;
+        modeButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        var regionButton = region switch
         {
-            window.HeroAdjustmentEditor.SetAdjustment(new ThemeArtworkAdjustment
-            {
-                CustomImagePath = "personalization/images/night-scene.webp",
-                Grayscale = 6,
-                HueRotation = 12,
-                Blur = 1.5,
-                OverlayColor = "#31265F",
-                OverlayOpacity = 18,
-                GradientStrength = 42,
-                Vignette = 24,
-                BlendMode = "soft-light",
-                ReadabilityProtection = true,
-            });
-        }
-        window.HeroAdjustmentEditor.InvalidateMeasure();
-        window.VisualAdjustmentEditor.InvalidateMeasure();
-        window.InfoScroll.InvalidateMeasure();
-        ArrangeMainSurface(window, new Size(1080, 820));
-        window.InfoScroll.ScrollToVerticalOffset(126);
-        ArrangeMainSurface(window, new Size(1080, 820));
-        foreach (var (action, minimumHeight) in new (Button Action, double MinimumHeight)[]
+            ArtworkRegion.Sidebar => workbench.SidebarRegionButton,
+            ArtworkRegion.Chat => workbench.ChatRegionButton,
+            _ => workbench.HeroRegionButton,
+        };
+        regionButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        groupButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        configure(workbench.Inspector);
+
+        ArrangeMainSurface(window, new Size(1600, 900));
+        window.InfoScroll.ScrollToTop();
+        ArrangeMainSurface(window, new Size(1600, 900));
+        await WaitForArtworkPreviewAsync(window);
+        ArrangeMainSurface(window, new Size(1600, 900));
+        Ensure(workbench.PreviewCanvas.ArtworkImage.Source is not null,
+            $"The real {region}/{(darkMode ? "dark" : "light")} theme image did not load.");
+        Ensure(workbench.PreviewCanvas.LoadingOverlay.Visibility != Visibility.Visible,
+            "The screenshot must not capture a pending preview load.");
+        foreach (var action in new[]
                  {
-                     (window.HeroAdjustmentEditor.ChooseImageButton, 36),
-                     (window.HeroAdjustmentEditor.ClearImageButton, 36),
-                     (window.HeroAdjustmentEditor.CopyButton, 32),
-                     (window.HeroAdjustmentEditor.PasteButton, 32),
-                     (window.HeroAdjustmentEditor.ResetButton, 32),
+                     workbench.CompareButton,
+                     workbench.Inspector.ResetParameterButton,
+                     workbench.Inspector.ResetGroupButton,
+                     workbench.Inspector.ResetRegionButton,
+                     workbench.Inspector.ChooseImageButton,
+                     workbench.Inspector.ClearImageButton,
                  })
         {
-            EnsureButtonContentFits(action, minimumHeight, "Artwork");
+            EnsureButtonContentFits(action, 30, "Artwork Workbench 3.0");
         }
         SaveWindowContent(window, snapshotPath);
+    }
+
+    private static async Task WaitForArtworkPreviewAsync(MainWindow window)
+    {
+        var deadline = DateTime.UtcNow.AddSeconds(30);
+        while (DateTime.UtcNow < deadline)
+        {
+            await Dispatcher.Yield(DispatcherPriority.Background);
+            if (window.ArtworkWorkbench.PreviewCanvas.ArtworkImage.Source is not null &&
+                window.ArtworkWorkbench.PreviewCanvas.LoadingOverlay.Visibility != Visibility.Visible)
+            {
+                // Let the latest pixel-effect revision and layout debounce settle.
+                await Task.Delay(320);
+                await Dispatcher.Yield(DispatcherPriority.Background);
+                var status = window.ArtworkWorkbench.SyncStatusText.Text;
+                if (status is not ("正在加载" or "正在保存" or "等待应用" or "正在应用"))
+                {
+                    return;
+                }
+            }
+            await Task.Delay(50);
+        }
+        throw new TimeoutException("The Artwork Workbench preview did not become ready in 30 seconds.");
     }
 }

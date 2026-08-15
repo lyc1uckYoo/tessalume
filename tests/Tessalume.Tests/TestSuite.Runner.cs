@@ -61,6 +61,12 @@ internal static partial class TestSuite
             return await ApplyPackageRuntimeAsync(packagePort, packagePath);
         }
 
+        if (args is ["--apply-package-defaults", var defaultsPortText, var defaultsPackagePath] &&
+            int.TryParse(defaultsPortText, out var defaultsPort))
+        {
+            return await ApplyPackageDefaultsRuntimeAsync(defaultsPort, defaultsPackagePath);
+        }
+
         if (args is ["--check-live-update", var currentVersionText] &&
             Version.TryParse(currentVersionText, out var currentVersion))
         {
@@ -227,6 +233,20 @@ internal static partial class TestSuite
 
         if (args is [
                 "--artwork-snapshots",
+                var heroLightArtworkSnapshotPath,
+                var sidebarLightArtworkSnapshotPath,
+                var sidebarDarkArtworkSnapshotPath,
+                var chatDarkArtworkSnapshotPath])
+        {
+            return await RenderArtworkSnapshotsAsync(
+                heroLightArtworkSnapshotPath,
+                sidebarLightArtworkSnapshotPath,
+                chatDarkArtworkSnapshotPath,
+                sidebarDarkArtworkSnapshotPath);
+        }
+
+        if (args is [
+                "--artwork-snapshots",
                 var basicArtworkSnapshotPath,
                 var compositionArtworkSnapshotPath,
                 var effectsArtworkSnapshotPath])
@@ -292,6 +312,8 @@ internal static partial class TestSuite
             ("published theme library loads and builds", PublishedThemeLibraryLoadsAndBuildsAsync),
             ("theme assets use disposable blob URLs", ThemeAssetsUseBlobUrlsAsync),
             ("runtime payload stages large assets separately", RuntimePayloadStagesLargeAssetsSeparatelyAsync),
+            ("runtime local image data URL cache is bounded and invalidates", RuntimeImageDataUrlCacheIsBoundedAndInvalidatesAsync),
+            ("runtime artwork images use fingerprint deltas", RuntimeArtworkImagesUseFingerprintDeltasAsync),
             ("runtime disposes compatible predecessor injection", RuntimeDisposesCompatiblePredecessorInjectionAsync),
             ("runtime preflights assets before replacing the active theme", RuntimePreflightsAssetsBeforeReplacementAsync),
             ("runtime failures are classified and partial pages roll back", RuntimeFailuresAreClassifiedAndRolledBackAsync),
@@ -304,8 +326,20 @@ internal static partial class TestSuite
             ("published themes use canonical injection contract", PublishedThemesUseCanonicalInjectionContractAsync),
             ("flagship template v1 freezes shared structure", FlagshipTemplateV1FreezesSharedStructureAsync),
             ("artwork adjustments are runtime-owned", ArtworkAdjustmentsAreRuntimeOwnedAsync),
-            ("artwork editor supports precise input and region transfer", ArtworkEditorSupportsPreciseInputAndTransferAsync),
-            ("artwork editor history and presets work", ArtworkEditorHistoryAndPresetsWorkAsync),
+            ("artwork workbench supports precise input and safe parameter transfer", ArtworkWorkbenchSupportsPreciseInputAndTransferAsync),
+            ("artwork workbench history and presets work", ArtworkWorkbenchHistoryAndPresetsWorkAsync),
+            ("artwork workbench keeps six targets isolated", ArtworkWorkbenchKeepsSixTargetsIsolatedAsync),
+            ("artwork workbench reset scopes are strict", ArtworkWorkbenchResetScopesAreStrictAsync),
+            ("artwork workbench transfers keep target images", ArtworkWorkbenchTransfersKeepTargetImagesAsync),
+            ("artwork workbench history coalesces and stays bounded", ArtworkWorkbenchHistoryCoalescesAndStaysBoundedAsync),
+            ("artwork workbench canvas mapping and offline session work", ArtworkWorkbenchCanvasMappingAndOfflineSessionWorkAsync),
+            ("artwork workbench preview infrastructure caches and resolves", ArtworkWorkbenchPreviewInfrastructureCachesAndResolvesAsync),
+            ("artwork workbench WPF view loads and adapts", ArtworkWorkbenchViewLoadsAndAdaptsAsync),
+            ("artwork defaults project published final placements", ArtworkThemeDefaultsProjectPublishedPlacementsAsync),
+            ("artwork defaults mirror all published themes", ArtworkThemeDefaultsMatchPublishedThemesAsync),
+            ("artwork absolute composition and schema six migration work", ArtworkAbsoluteCompositionAndSchemaSixMigrationWorkAsync),
+            ("artwork undo preserves external display preferences", ArtworkWorkbenchUndoPreservesExternalDisplayAsync),
+            ("artwork studio route stays reachable across layouts", ArtworkStudioRouteLayoutsStayReachableAsync),
             ("personal images are stored and resolved safely", PersonalImagesAreStoredSafelyAsync),
             ("artwork preset files round-trip safely", ArtworkPresetFilesRoundTripSafelyAsync),
             ("theme library state is normalized and version aware", ThemeLibraryStateIsNormalizedAndVersionAwareAsync),

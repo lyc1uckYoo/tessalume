@@ -271,10 +271,6 @@ internal static partial class TestSuite
             .EnumerateFiles(Path.Combine(appRoot, "Creator"), "*.xaml", SearchOption.AllDirectories)
             .Order(StringComparer.OrdinalIgnoreCase)
             .Select(path => File.ReadAllTextAsync(path)));
-        var artworkAdjustmentEditor = await File.ReadAllTextAsync(Path.Combine(
-            appRoot,
-            "Controls",
-            "ArtworkAdjustmentEditor.xaml"));
         var featureViews = Directory.Exists(Path.Combine(appRoot, "Features"))
             ? await Task.WhenAll(Directory
                 .EnumerateFiles(Path.Combine(appRoot, "Features"), "*.xaml", SearchOption.AllDirectories)
@@ -283,7 +279,7 @@ internal static partial class TestSuite
             : [];
         return string.Join(
             "\n",
-            new[] { mainWindow, resources, artworkAdjustmentEditor }
+            new[] { mainWindow, resources }
                 .Concat(creatorViews)
                 .Concat(featureViews));
     }

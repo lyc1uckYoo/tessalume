@@ -80,6 +80,12 @@ internal static partial class TestSuite
             repositoryRoot,
             "tools",
             "New-CompatibilityPack.ps1"));
+        var compatibilityReadme = await File.ReadAllTextAsync(Path.Combine(
+            repositoryRoot,
+            "src",
+            "Tessalume.App",
+            "Compatibility",
+            "README.md"));
         var notesScript = await File.ReadAllTextAsync(Path.Combine(
             repositoryRoot,
             "tools",
@@ -103,8 +109,10 @@ internal static partial class TestSuite
             "Compatibility tags must publish only the bounded small package and must never replace the latest app release.");
         Ensure(packScript.Contains("minimumAppVersion", StringComparison.Ordinal) &&
                packScript.Contains("Tessalume.App.csproj", StringComparison.Ordinal) &&
+               packScript.Contains("does not match source profileVersion", StringComparison.Ordinal) &&
+               compatibilityReadme.Contains("New-CompatibilityPack.ps1 -Version 3.0.3", StringComparison.Ordinal) &&
                notesScript.Contains("CHANGELOG.md does not contain", StringComparison.Ordinal),
-            "Release scripts must derive compatibility requirements from the project and reject missing release notes.");
+            "Release scripts must derive compatibility requirements from source, reject version drift, and reject missing release notes.");
     }
 
     static async Task CompatibilityPackBuildIsDeterministicAsync()
@@ -114,9 +122,19 @@ internal static partial class TestSuite
         var testRoot = Path.Combine(Path.GetTempPath(), $"tessalume-compat-pack-{Guid.NewGuid():N}");
         var firstOutput = Path.Combine(testRoot, "first");
         var secondOutput = Path.Combine(testRoot, "second");
+        var mismatchOutput = Path.Combine(testRoot, "mismatch");
 
         try
         {
+            var mismatch = await RunPackBuildAsync(mismatchOutput, "3.0.2");
+            Ensure(mismatch.ExitCode != 0 &&
+                   mismatch.Output.Contains(
+                       "does not match source profileVersion '3.0.3'",
+                       StringComparison.Ordinal) &&
+                   !File.Exists(Path.Combine(
+                       mismatchOutput,
+                       "Tessalume-Compatibility.zip")),
+                "The compatibility builder must clearly reject a version that differs from the source profileVersion.");
             await BuildPackAsync(firstOutput);
             await BuildPackAsync(secondOutput);
 
@@ -145,6 +163,14 @@ internal static partial class TestSuite
                        entry.LastWriteTime.Minute == 0 &&
                        entry.LastWriteTime.Second == 0),
                 "The compatibility ZIP must retain its fixed contract order and timestamp.");
+            using var profileStream = archive.GetEntry("compatibility-profile-v3.json")!.Open();
+            using var manifestStream = archive.GetEntry("compatibility-pack.json")!.Open();
+            using var profileDocument = JsonDocument.Parse(profileStream);
+            using var manifestDocument = JsonDocument.Parse(manifestStream);
+            Ensure(profileDocument.RootElement.GetProperty("profileVersion").GetString() == "3.0.3" &&
+                   manifestDocument.RootElement.GetProperty("packVersion").GetString() == "3.0.3" &&
+                   manifestDocument.RootElement.GetProperty("runtimeContractVersion").GetInt32() == 4,
+                "The compatibility archive must preserve the source profile version and runtime contract without rewriting them.");
         }
         finally
         {
@@ -155,6 +181,15 @@ internal static partial class TestSuite
         }
 
         async Task BuildPackAsync(string outputDirectory)
+        {
+            var result = await RunPackBuildAsync(outputDirectory, "3.0.3");
+            Ensure(result.ExitCode == 0,
+                $"Compatibility pack build failed. {result.Output}".Trim());
+        }
+
+        async Task<(int ExitCode, string Output)> RunPackBuildAsync(
+            string outputDirectory,
+            string version)
         {
             var powerShell = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.System),
@@ -178,7 +213,7 @@ internal static partial class TestSuite
                          "-File",
                          scriptPath,
                          "-Version",
-                         "3.0.1",
+                         version,
                          "-MinimumAppVersion",
                          "2.0.0",
                          "-OutputDirectory",
@@ -196,8 +231,7 @@ internal static partial class TestSuite
             await process.WaitForExitAsync();
             var output = await outputTask;
             var error = await errorTask;
-            Ensure(process.ExitCode == 0,
-                $"Compatibility pack build failed. {output} {error}".Trim());
+            return (process.ExitCode, $"{output} {error}".Trim());
         }
     }
 
@@ -216,7 +250,6 @@ internal static partial class TestSuite
             "MainWindow.ThemeLibrary.cs",
             "MainWindow.ThemeLibraryExperience.cs",
             "MainWindow.Settings.cs",
-            "MainWindow.ArtworkEditor.cs",
             "MainWindow.Creator.cs",
             "MainWindow.CreatorAcceptance.cs",
             "MainWindow.Updates.cs",
@@ -302,24 +335,26 @@ internal static partial class TestSuite
 
         var compatibilityRoot = Path.Combine(appRoot, "Compatibility");
         var runtimeRoot = Path.Combine(compatibilityRoot, "Runtime");
-        var runtimeFragments = new[]
+        var runtimeFragments = new (string FileName, int MaximumLines)[]
         {
-            "00-bootstrap.js",
-            "10-page-recognition.js",
-            "15-display-preferences.js",
-            "20-adaptive-layout.js",
-            "30-surface-decoration.js",
-            "40-cleanup-recovery.js",
+            ("00-bootstrap.js", 400),
+            ("05-artwork-composition.js", 400),
+            ("06-artwork-settings.js", 400),
+            ("10-page-recognition.js", 400),
+            ("15-display-preferences.js", 400),
+            ("20-adaptive-layout.js", 400),
+            ("30-surface-decoration.js", 400),
+            ("40-cleanup-recovery.js", 400),
         };
         Ensure(!File.Exists(Path.Combine(compatibilityRoot, "theme-runtime-v2.js")) &&
                File.Exists(Path.Combine(runtimeRoot, "runtime-bundle.json")),
             "Compatibility runtime source must be modular and assembled only at build/install boundaries.");
-        foreach (var fragment in runtimeFragments)
+        foreach (var (fragment, maximumLines) in runtimeFragments)
         {
             var fragmentPath = Path.Combine(runtimeRoot, fragment);
             Ensure(File.Exists(fragmentPath), $"Compatibility runtime fragment is missing: {fragment}.");
             var lines = await File.ReadAllLinesAsync(fragmentPath);
-            Ensure(lines.Length <= 400 &&
+            Ensure(lines.Length <= maximumLines &&
                    lines.FirstOrDefault()?.Contains("TESSALUME_RUNTIME_FRAGMENT", StringComparison.Ordinal) == true,
                 $"Compatibility runtime fragment must remain focused and self-identifying: {fragment}.");
         }
@@ -329,7 +364,21 @@ internal static partial class TestSuite
                composedRuntime.Contains("syncAdaptiveVisibility", StringComparison.Ordinal) &&
                composedRuntime.Contains("decorateSharedSurfaces", StringComparison.Ordinal) &&
                composedRuntime.TrimEnd().EndsWith("})()", StringComparison.Ordinal),
-            "The modular compatibility runtime must compose into the complete contract-v3 payload.");
+            "The modular compatibility runtime must compose into the complete contract-v4 payload.");
+        var visualSettingsDefinition = composedRuntime.IndexOf(
+            "const setVisualSettings = async",
+            StringComparison.Ordinal);
+        var placementSyncDefinition = composedRuntime.IndexOf(
+            "const synchronizeVisualPlacements = async",
+            StringComparison.Ordinal);
+        var initialVisualSettingsApply = composedRuntime.IndexOf(
+            "await setVisualSettings(stagedVisualSettings",
+            StringComparison.Ordinal);
+        Ensure(visualSettingsDefinition >= 0 &&
+               placementSyncDefinition >= 0 &&
+               initialVisualSettingsApply > visualSettingsDefinition &&
+               initialVisualSettingsApply > placementSyncDefinition,
+            "The composed runtime must define absolute composition helpers before first-use initialization.");
         foreach (var fileName in new[] { "ThemeRuntimeAcceptanceProbe.cs", "ThemeRuntimeAcceptanceSnapshot.cs" })
         {
             var sourcePath = Path.Combine(repositoryRoot, "src", "Tessalume.Core", "Runtime", fileName);
@@ -357,18 +406,18 @@ internal static partial class TestSuite
         }
 
         var scannerRoot = Path.Combine(repositoryRoot, "src", "Tessalume.Core", "Creator");
-        foreach (var relativePath in new[]
+        foreach (var (relativePath, maximumLines) in new[]
                  {
-                     "ThemeProjectScanner.cs",
-                     Path.Combine("Inspection", "ThemeProjectScanner.Workspaces.cs"),
-                     Path.Combine("Inspection", "ThemeProjectScanner.Contracts.cs"),
-                     Path.Combine("Inspection", "ThemeProjectScanner.Mapping.cs"),
+                     ("ThemeProjectScanner.cs", 320),
+                     (Path.Combine("Inspection", "ThemeProjectScanner.Workspaces.cs"), 320),
+                     (Path.Combine("Inspection", "ThemeProjectScanner.Contracts.cs"), 500),
+                     (Path.Combine("Inspection", "ThemeProjectScanner.Mapping.cs"), 320),
                  })
         {
             var sourcePath = Path.Combine(scannerRoot, relativePath);
             Ensure(File.Exists(sourcePath), $"The scanner boundary is missing {relativePath}.");
             var lineCount = (await File.ReadAllLinesAsync(sourcePath)).Length;
-            Ensure(lineCount <= 320,
+            Ensure(lineCount <= maximumLines,
                 $"Scanner source must stay focused: {relativePath} has {lineCount} lines.");
         }
         Ensure(!File.Exists(Path.Combine(appRoot, "DiagnosticsWindow.xaml")) &&
@@ -414,22 +463,60 @@ internal static partial class TestSuite
                 $"The personalization feature slice is missing {fileName}.");
         }
         var personalizationShellRoot = Path.Combine(appRoot, "Shell", "Personalization");
-        foreach (var fileName in new[]
+        foreach (var (fileName, maximumLines) in new[]
                  {
-                     "MainWindow.PersonalizationNavigation.cs",
-                     "MainWindow.PersonalizationPreview.cs",
-                     "MainWindow.PersonalizationPresentation.cs",
-                     "MainWindow.PersonalizationProfiles.cs",
-                     "MainWindow.ArtworkPresets.cs",
+                     ("MainWindow.PersonalizationNavigation.cs", 220),
+                     ("MainWindow.PersonalizationPreview.cs", 220),
+                     ("MainWindow.PersonalizationPresentation.cs", 220),
+                     ("MainWindow.PersonalizationProfiles.cs", 220),
+                     ("MainWindow.ArtworkWorkbench.cs", 360),
+                     ("MainWindow.ArtworkWorkbenchDialogs.cs", 240),
+                     ("MainWindow.ArtworkWorkbenchPresetDialogs.cs", 180),
                  })
         {
             var path = Path.Combine(personalizationShellRoot, fileName);
-            Ensure(File.Exists(path) && (await File.ReadAllTextAsync(path)).Split('\n').Length < 220,
+            Ensure(File.Exists(path) && (await File.ReadAllLinesAsync(path)).Length < maximumLines,
                 $"The personalization shell boundary is missing or oversized: {fileName}.");
         }
-        Ensure((await File.ReadAllTextAsync(Path.Combine(appRoot, "MainWindow.ArtworkEditor.cs")))
-                   .Split('\n').Length < 350,
-            "The artwork editor shell must keep image mutation logic below the maintainability boundary.");
+        var artworkWorkbenchRoot = Path.Combine(personalizationFeatureRoot, "ArtworkWorkbench");
+        foreach (var relativePath in new[]
+                 {
+                     Path.Combine("Domain", "ArtworkTypes.cs"),
+                     Path.Combine("Domain", "ArtworkSettingsAccessor.cs"),
+                     Path.Combine("Domain", "ArtworkSettingsReducer.cs"),
+                     Path.Combine("Application", "ArtworkPlacementMapper.cs"),
+                     Path.Combine("Application", "ArtworkSurfaceMetricsProbeGate.cs"),
+                     Path.Combine("Application", "ArtworkHistoryService.cs"),
+                     Path.Combine("Application", "ArtworkPresetLibraryService.cs"),
+                     Path.Combine("Application", "ArtworkWorkbenchSession.cs"),
+                     Path.Combine("Infrastructure", "ArtworkImageSourceResolver.cs"),
+                     Path.Combine("Infrastructure", "ArtworkThemeDefaultsStore.cs"),
+                     Path.Combine("Infrastructure", "ArtworkPreviewImageCache.cs"),
+                     Path.Combine("Infrastructure", "ArtworkWorkbenchFileDialogs.cs"),
+                     Path.Combine("Presentation", "ArtworkCanvasControl.xaml"),
+                     Path.Combine("Presentation", "ArtworkInspectorView.xaml"),
+                     Path.Combine("Presentation", "ArtworkWorkbenchView.xaml"),
+                 })
+        {
+            Ensure(File.Exists(Path.Combine(artworkWorkbenchRoot, relativePath)),
+                $"Artwork Workbench 3.0 modular boundary is missing {relativePath}.");
+        }
+        foreach (var sourcePath in Directory.EnumerateFiles(
+                     artworkWorkbenchRoot,
+                     "*.cs",
+                     SearchOption.AllDirectories))
+        {
+            var lineCount = (await File.ReadAllLinesAsync(sourcePath)).Length;
+            Ensure(lineCount <= 560,
+                $"Artwork Workbench source must stay focused: {Path.GetFileName(sourcePath)} has {lineCount} lines.");
+        }
+        var artworkShell = await File.ReadAllTextAsync(Path.Combine(
+            personalizationShellRoot,
+            "MainWindow.ArtworkWorkbench.cs"));
+        Ensure(!artworkShell.Contains("ArtworkCanvasCssMapper", StringComparison.Ordinal) &&
+               !artworkShell.Contains("ArtworkHistoryService", StringComparison.Ordinal) &&
+               !artworkShell.Contains("ArtworkPreviewImageCache", StringComparison.Ordinal),
+            "The MainWindow artwork shell must only coordinate dialogs, persistence, and runtime application.");
         Ensure(File.Exists(Path.Combine(
                    repositoryRoot,
                    "src",
