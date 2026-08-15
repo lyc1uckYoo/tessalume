@@ -63,39 +63,41 @@ internal static partial class TestSuite
     {
         var repositoryRoot = FindRepositoryRoot();
         var runtime = await ReadCompatibilityRuntimeSourceAsync(repositoryRoot);
-        var preloadIndex = runtime.IndexOf(
-            "pendingAssetDecodes.push(preloadAssetObjectUrl(dataUrl, objectUrl));",
+        var scratchIndex = runtime.IndexOf(
+            "let visualSettingsTarget = document.createElement(\"div\");",
             StringComparison.Ordinal);
-        var decodeIndex = preloadIndex < 0
+        var prepareIndex = scratchIndex < 0
             ? -1
             : runtime.IndexOf(
-                "await Promise.all(pendingAssetDecodes);",
-                preloadIndex,
+                "await setVisualSettings(stagedVisualSettings || {}, stagedVisualImages || Object.create(null));",
+                scratchIndex,
                 StringComparison.Ordinal);
-        var attachIndex = decodeIndex < 0
+        var replacementIndex = prepareIndex < 0
+            ? -1
+            : runtime.IndexOf(
+                "if (!(await disposeCompatibleRuntime())",
+                prepareIndex,
+                StringComparison.Ordinal);
+        var attachIndex = replacementIndex < 0
             ? -1
             : runtime.IndexOf(
                 "appendChild(style);",
-                decodeIndex,
-                StringComparison.Ordinal);
-        var replacementIndex = attachIndex < 0
-            ? -1
-            : runtime.IndexOf(
-                "if (!(await disposeCompatibleRuntime(true))",
-                attachIndex,
-                StringComparison.Ordinal);
-        var reassertIndex = replacementIndex < 0
-            ? -1
-            : runtime.IndexOf(
-                "document.documentElement.classList.add(\"tessalume-theme-active\"",
                 replacementIndex,
                 StringComparison.Ordinal);
-        Ensure(preloadIndex >= 0 &&
-               decodeIndex > preloadIndex &&
-               attachIndex > decodeIndex &&
-               replacementIndex > attachIndex &&
-               reassertIndex > replacementIndex,
-            "The successor theme must decode and attach before predecessor disposal, then reassert shared appearance atomically.");
+        var commitIndex = attachIndex < 0
+            ? -1
+            : runtime.IndexOf(
+                "appearanceCommitted = true;",
+                attachIndex,
+                StringComparison.Ordinal);
+        Ensure(scratchIndex >= 0 &&
+               prepareIndex > scratchIndex &&
+               replacementIndex > prepareIndex &&
+               attachIndex > replacementIndex &&
+               commitIndex > attachIndex,
+            "The successor theme must prepare on a detached target before replacing and atomically committing its visible shell.");
+        Ensure(!runtime.Contains("preloadAssetObjectUrl", StringComparison.Ordinal),
+            "Theme switching must not synchronously decode every package asset before committing the visible shell.");
         Ensure(runtime.Contains(
                 "for (const objectUrl of assetObjectUrls) URL.revokeObjectURL(objectUrl);",
                 StringComparison.Ordinal),

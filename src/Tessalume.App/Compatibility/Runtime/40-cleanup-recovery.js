@@ -71,11 +71,6 @@
     return cleanup;
   };
 
-  // Every referenced helper is defined by the preceding runtime fragments at
-  // this point. Keeping initialization here avoids executing a later `const`
-  // from its temporal dead zone in the composed bundle.
-  await setVisualSettings(stagedVisualSettings || {}, stagedVisualImages || Object.create(null));
-
   let visualPlacementFrame = 0;
   const scheduleVisualPlacementSync = () => {
     if (visualPlacementFrame || disposed) return;
@@ -183,19 +178,39 @@
   };
 
   try {
-    if (!(await disposeCompatibleRuntime(true)) && window.__CODEX_DREAM_SKIN_STATE__?.cleanup) {
+    // Resolve every artwork layer and absolute placement against a detached
+    // style target first. The visible page remains entirely owned by the
+    // predecessor until this preparation succeeds.
+    await setVisualSettings(stagedVisualSettings || {}, stagedVisualImages || Object.create(null));
+    if (!(await disposeCompatibleRuntime()) && window.__CODEX_DREAM_SKIN_STATE__?.cleanup) {
       window.__CODEX_DREAM_SKIN_STATE__.cleanup();
     }
-    // Older compatible runtimes do not understand the handoff option and may
-    // clear shared variables while disposing. Reassert the fully decoded new
-    // shell before the browser can present another frame.
+
+    (document.head || document.documentElement).appendChild(style);
+    (document.head || document.documentElement).appendChild(visualMotionStyle);
+    addCleanup(() => visualMotionStyle.remove());
+    document.body?.appendChild(root);
     for (const [variable, objectUrl] of assetAssignments) {
       document.documentElement.style.setProperty(variable, `url("${objectUrl}")`);
+      assetVariables.push(variable);
     }
+    const preparedTarget = visualSettingsTarget;
+    for (const variable of Array.from(preparedTarget.style)) {
+      document.documentElement.style.setProperty(
+        variable,
+        preparedTarget.style.getPropertyValue(variable),
+        preparedTarget.style.getPropertyPriority(variable),
+      );
+    }
+    for (const [name, value] of Object.entries(preparedTarget.dataset)) {
+      document.documentElement.dataset[name] = value;
+    }
+    visualSettingsTarget = document.documentElement;
+    appearanceCommitted = true;
     document.documentElement.classList.add("tessalume-theme-active", `tessalume-theme-${safeThemeId}`);
-    await setVisualSettings(stagedVisualSettings || {}, stagedVisualImages || Object.create(null));
+    syncDisplayPreferences();
   } catch (error) {
-    await dispose();
+    await dispose({ preserveSharedAppearance: true });
     throw error;
   }
 
@@ -203,7 +218,7 @@
     themeId,
     fingerprint,
     compatibilityProfileVersion: compatibilityProfile.profileVersion,
-    appearanceHandoffVersion: 1,
+    appearanceHandoffVersion: 2,
     artworkCompositionProtocolVersion: 1,
     visualImageProtocolVersion: 1,
     dispose,

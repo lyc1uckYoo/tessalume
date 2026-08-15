@@ -397,6 +397,10 @@ internal static partial class TestSuite
                       active: html.classList.contains('tessalume-theme-active'),
                       styleCount: document.querySelectorAll('#tessalume-theme-style').length,
                       rootCount: document.querySelectorAll('#tessalume-theme-root').length,
+                      styleThemes: Array.from(document.querySelectorAll('#tessalume-theme-style'))
+                        .map(node => node.dataset.themeId || null),
+                      rootThemes: Array.from(document.querySelectorAll('#tessalume-theme-root'))
+                        .map(node => node.dataset.themeId || null),
                       artworkAsset: Array.from(html.style).some(name =>
                         name.startsWith('--tessalume-asset-') &&
                         html.style.getPropertyValue(name).trim().startsWith('url(')),
@@ -421,7 +425,9 @@ internal static partial class TestSuite
         }
 
         await Task.Delay(80);
+        var switchTimer = System.Diagnostics.Stopwatch.StartNew();
         await runtime.StartAsync(port, toPackage, toSettings);
+        switchTimer.Stop();
         await Task.Delay(250);
 
         var passed = true;
@@ -437,24 +443,34 @@ internal static partial class TestSuite
                   const samples = monitor?.samples || [];
                   const blankFrames = samples.filter(sample =>
                     !sample.active || sample.styleCount < 1 || sample.rootCount < 1 || !sample.artworkAsset);
+                  const mixedFrames = samples.filter(sample => {
+                    const visible = [...sample.styleThemes, ...sample.rootThemes].filter(Boolean);
+                    return new Set(visible).size > 1 ||
+                      (sample.themeId && visible.some(themeId => themeId !== sample.themeId));
+                  });
                   return {
                     frameCount: samples.length,
                     blankFrameCount: blankFrames.length,
+                    mixedFrameCount: mixedFrames.length,
                     firstThemeId: samples[0]?.themeId || null,
                     lastThemeId: samples.at(-1)?.themeId || null,
                     appearanceHandoffVersion: window.__TESSALUME_RUNTIME__?.appearanceHandoffVersion || 0,
                     blankFrames: blankFrames.slice(0, 8),
+                    mixedFrames: mixedFrames.slice(0, 8),
                   };
                 })()
                 """);
             Console.WriteLine(result.GetRawText());
             passed &= result.GetProperty("frameCount").GetInt32() > 0 &&
                       result.GetProperty("blankFrameCount").GetInt32() == 0 &&
+                      result.GetProperty("mixedFrameCount").GetInt32() == 0 &&
                       result.GetProperty("lastThemeId").GetString() == toPackage.Manifest.Id &&
-                      result.GetProperty("appearanceHandoffVersion").GetInt32() == 1;
+                      result.GetProperty("appearanceHandoffVersion").GetInt32() == 2;
         }
 
-        Console.WriteLine($"Theme handoff: {fromPackage.Manifest.Id} -> {toPackage.Manifest.Id}");
+        Console.WriteLine(
+            $"Theme handoff: {fromPackage.Manifest.Id} -> {toPackage.Manifest.Id} " +
+            $"({switchTimer.ElapsedMilliseconds} ms)");
         return passed ? 0 : 3;
     }
 

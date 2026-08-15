@@ -144,11 +144,11 @@
     }
     layers.push(`url("${state.imageUrl}")`);
     state.overlayCount = layers.length - 1;
-    document.documentElement.style.setProperty(state.assetVariable, layers.join(","));
+    visualSettingsTarget.style.setProperty(state.assetVariable, layers.join(","));
     visualSettingVariables.add(state.assetVariable);
   };
   const setPlacementVariables = (state, size, position) => {
-    const html = document.documentElement;
+    const html = visualSettingsTarget;
     const prefix = `--tessalume-visual-${state.region}-${state.mode}`;
     const sizeVariable = `${prefix}-background-size`;
     const positionVariable = `${prefix}-background-position`;

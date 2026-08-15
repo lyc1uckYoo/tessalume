@@ -3,7 +3,7 @@
 (async () => {
 // TESSALUME_STANDALONE_ENVELOPE_END
   const setVisualSettings = async (settings = {}, imageDataUrls = Object.create(null)) => {
-    const html = document.documentElement;
+    const html = visualSettingsTarget;
     const readPercent = (value, fallback, minimum, maximum) => {
       const number = Number(value);
       return Number.isFinite(number) ? Math.min(maximum, Math.max(minimum, number)) : fallback;
@@ -228,7 +228,7 @@
       ["compact", "comfortable", "spacious"],
     );
     rebuildVisualMotionStyle();
-    syncDisplayPreferences();
+    if (appearanceCommitted) syncDisplayPreferences();
     for (const [key, objectUrl] of preparedImageUrls) customImageObjectUrls.set(key, objectUrl);
     customSlotImageKeys.clear();
     for (const [slot, key] of nextSlotImageKeys) customSlotImageKeys.set(slot, key);

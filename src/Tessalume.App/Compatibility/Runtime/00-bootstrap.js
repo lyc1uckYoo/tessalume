@@ -114,6 +114,8 @@
   const visualSettingVariables = new Set();
   const visualSlotStates = new Map();
   const visualImageDimensions = new Map();
+  let visualSettingsTarget = document.createElement("div");
+  let appearanceCommitted = false;
   let visualPlacementRevision = 0;
   let visualSurfaceResizeObserver = null;
   let definition = null;
@@ -154,38 +156,16 @@
     return objectUrl;
   };
 
-  const preloadAssetObjectUrl = async (dataUrl, objectUrl) => {
-    if (!dataUrl.startsWith("data:image/")) return;
-    const image = new Image();
-    image.decoding = "async";
-    image.src = objectUrl;
-    await image.decode();
-  };
-
   try {
-    const pendingAssetDecodes = [];
     for (const [name, dataUrl] of Object.entries(assetDataUrls)) {
       const variable = `--tessalume-asset-${name.replace(/[^a-z0-9_-]/gi, "-")}`;
       const objectUrl = createAssetObjectUrl(dataUrl);
       assetAssignments.push([variable, objectUrl]);
-      pendingAssetDecodes.push(preloadAssetObjectUrl(dataUrl, objectUrl));
     }
-    await Promise.all(pendingAssetDecodes);
   } catch (error) {
     for (const objectUrl of assetObjectUrls) URL.revokeObjectURL(objectUrl);
     throw error;
   }
-
-  (document.head || document.documentElement).appendChild(style);
-  (document.head || document.documentElement).appendChild(visualMotionStyle);
-  addCleanup(() => visualMotionStyle.remove());
-  document.body?.appendChild(root);
-  for (const [variable, objectUrl] of assetAssignments) {
-    document.documentElement.style.setProperty(variable, `url("${objectUrl}")`);
-    assetVariables.push(variable);
-  }
-
-  document.documentElement.classList.add("tessalume-theme-active", `tessalume-theme-${safeThemeId}`);
 
   const renderTemplateV1 = (spec) => {
     if (!spec || typeof spec !== "object") {
