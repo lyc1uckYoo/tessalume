@@ -85,9 +85,7 @@ public partial class MainWindow
             return settings.Normalize();
         }
 
-        settings = new ThemeVisualSettings();
-        _themeVisualSettings[themeId] = settings;
-        return settings;
+        return ResolveVisualSettings(themeId).Settings;
     }
 
     private ThemeCardModel? GetVisualAdjustmentTheme()
@@ -118,11 +116,13 @@ public partial class MainWindow
             : Array.FindIndex(candidates, theme =>
                 string.Equals(theme.ThemeId, positionTheme.ThemeId, StringComparison.OrdinalIgnoreCase));
 
-        SettingsCurrentThemeNameText.Text = activeTheme?.Name ?? "Codex 默认外观";
+        SettingsCurrentThemeNameText.Text = activeTheme?.Name
+            ?? adjustmentTheme?.Name
+            ?? "Codex 默认外观";
         SettingsThemeStateText.Text = activeTheme is not null
-            ? "已应用 · 下方调节实时生效"
+            ? "已应用到 Codex"
             : adjustmentTheme is not null
-                ? $"默认外观 · 待应用 {adjustmentTheme.Name}"
+                ? "本地编辑 · 尚未应用到 Codex"
                 : "还没有可用主题";
         SettingsThemePositionText.Text = position >= 0
             ? $"{position + 1:00} / {candidates.Length:00}"
@@ -161,21 +161,5 @@ public partial class MainWindow
             SettingsColorModeButton.ToolTip = "连接 Codex 后读取并切换亮暗模式";
         }
 
-        var experienceThemeState = activeTheme is not null
-            ? "当前显示偏好将跟随这个主题保存"
-            : adjustmentTheme is not null
-                ? $"待应用主题 · {adjustmentTheme.Name}"
-                : "请先从主题画廊选择主题";
-        var experienceMode = _codexDarkMode switch
-        {
-            true => "当前暗色",
-            false => "当前亮色",
-            _ => "检测模式",
-        };
-        ExperienceInfoPanel.RenderContext(
-            SettingsCurrentThemeNameText.Text,
-            experienceThemeState,
-            experienceMode,
-            candidates.Length > 0);
     }
 }

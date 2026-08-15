@@ -37,6 +37,7 @@ internal sealed record ArtworkThemeDefaultsLoadResult(
         Placement = new ThemeArtworkCssPlacement
         {
             Size = new ThemeArtworkCssSize { Width = "contain", Height = "auto" },
+            Position = new ThemeArtworkCssPosition { X = "center", Y = "center" },
         },
     };
 }

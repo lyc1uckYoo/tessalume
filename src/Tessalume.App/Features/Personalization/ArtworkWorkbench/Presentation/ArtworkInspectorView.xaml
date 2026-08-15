@@ -1,0 +1,301 @@
+<UserControl x:Class="Tessalume.App.Features.Personalization.ArtworkWorkbench.Presentation.ArtworkInspectorView"
+             x:Name="Root"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             MinWidth="286"
+             UseLayoutRounding="True"
+             TextOptions.TextFormattingMode="Display"
+             TextOptions.TextRenderingMode="ClearType">
+    <UserControl.Resources>
+        <Style x:Key="InspectorLabel" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource MutedText}" />
+            <Setter Property="FontSize" Value="10.5" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style x:Key="InspectorValue" TargetType="TextBox">
+            <Setter Property="Height" Value="30" />
+            <Setter Property="Padding" Value="5,3" />
+            <Setter Property="Margin" Value="7,0,0,0" />
+            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryText}" />
+            <Setter Property="Background" Value="{DynamicResource SettingsControlSurface}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource SettingsControlBorder}" />
+            <Setter Property="CaretBrush" Value="{DynamicResource Accent}" />
+            <Setter Property="FontSize" Value="10" />
+            <Setter Property="ToolTip" Value="输入精确值；Enter 提交，Esc 取消" />
+            <EventSetter Event="GotKeyboardFocus" Handler="ValueEditor_GotKeyboardFocus" />
+            <EventSetter Event="LostKeyboardFocus" Handler="ValueEditor_LostKeyboardFocus" />
+            <EventSetter Event="PreviewKeyDown" Handler="ValueEditor_PreviewKeyDown" />
+        </Style>
+        <Style x:Key="InspectorSlider" TargetType="Slider">
+            <Setter Property="Height" Value="22" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="FocusVisualStyle" Value="{DynamicResource KeyboardFocusVisual}" />
+            <Setter Property="AutoToolTipPlacement" Value="TopLeft" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Slider">
+                        <Grid Height="22" VerticalAlignment="Center">
+                            <Border Height="5"
+                                    Background="{DynamicResource SettingsTrack}"
+                                    CornerRadius="2.5"
+                                    VerticalAlignment="Center" />
+                            <Track x:Name="PART_Track"
+                                   Height="22"
+                                   IsDirectionReversed="{TemplateBinding IsDirectionReversed}">
+                                <Track.DecreaseRepeatButton>
+                                    <RepeatButton Command="{x:Static Slider.DecreaseLarge}" IsTabStop="False">
+                                        <RepeatButton.Template>
+                                            <ControlTemplate TargetType="RepeatButton">
+                                                <Border Height="5"
+                                                        Background="{DynamicResource Accent}"
+                                                        CornerRadius="2.5"
+                                                        VerticalAlignment="Center" />
+                                            </ControlTemplate>
+                                        </RepeatButton.Template>
+                                    </RepeatButton>
+                                </Track.DecreaseRepeatButton>
+                                <Track.Thumb>
+                                    <Thumb Width="16" Height="16">
+                                        <Thumb.Template>
+                                            <ControlTemplate TargetType="Thumb">
+                                                <Grid>
+                                                    <Ellipse Fill="{DynamicResource Surface}"
+                                                             Stroke="{DynamicResource Accent}"
+                                                             StrokeThickness="2" />
+                                                    <Ellipse Width="5" Height="5" Fill="{DynamicResource Accent}" />
+                                                </Grid>
+                                            </ControlTemplate>
+                                        </Thumb.Template>
+                                    </Thumb>
+                                </Track.Thumb>
+                                <Track.IncreaseRepeatButton>
+                                    <RepeatButton Command="{x:Static Slider.IncreaseLarge}"
+                                                  IsTabStop="False"
+                                                  Background="Transparent"
+                                                  BorderThickness="0" />
+                                </Track.IncreaseRepeatButton>
+                            </Track>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <EventSetter Event="ValueChanged" Handler="Slider_ValueChanged" />
+            <EventSetter Event="PreviewMouseLeftButtonDown" Handler="Slider_PreviewMouseLeftButtonDown" />
+            <EventSetter Event="PreviewMouseLeftButtonUp" Handler="Slider_PreviewMouseLeftButtonUp" />
+            <EventSetter Event="LostMouseCapture" Handler="Slider_LostMouseCapture" />
+            <EventSetter Event="GotKeyboardFocus" Handler="Slider_GotKeyboardFocus" />
+            <EventSetter Event="LostKeyboardFocus" Handler="Slider_LostKeyboardFocus" />
+        </Style>
+    </UserControl.Resources>
+
+    <Border Background="{DynamicResource SurfaceElevated}"
+            BorderBrush="{DynamicResource SettingsControlBorder}"
+            BorderThickness="1"
+            CornerRadius="16"
+            Padding="13">
+        <StackPanel>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel>
+                    <TextBlock Text="参数控制" Foreground="{DynamicResource PrimaryText}" FontSize="13" FontWeight="SemiBold" />
+                    <TextBlock x:Name="SelectedParameterText" Text="当前任务：构图" Foreground="{DynamicResource MutedText}" FontSize="9.5" Margin="0,3,0,0" />
+                    <TextBlock x:Name="ParameterOriginText" Text="当前值来自主题推荐" Foreground="{DynamicResource SubtleText}" FontSize="9" Margin="0,2,0,0" />
+                </StackPanel>
+                <Border Grid.Column="1" Background="{DynamicResource AccentSoft}" CornerRadius="8" Padding="8,4" VerticalAlignment="Center">
+                    <TextBlock x:Name="SourceBadgeText" Text="主题原图" Foreground="{DynamicResource Accent}" FontSize="9.5" FontWeight="SemiBold" MaxWidth="92" TextTrimming="CharacterEllipsis" />
+                </Border>
+            </Grid>
+
+            <Border Height="1" Background="{DynamicResource SettingsControlBorder}" Margin="0,11" />
+
+            <UniformGrid Columns="3" Margin="0,0,0,11">
+                <Button x:Name="CompositionGroupButton" Style="{DynamicResource ModeToggleButton}" Height="34" Tag="active" CommandParameter="composition" Click="Group_Click" AutomationProperties.Name="显示构图参数">
+                    <TextBlock Text="构图" FontSize="10" FontWeight="SemiBold" />
+                </Button>
+                <Button x:Name="BasicGroupButton" Style="{DynamicResource ModeToggleButton}" Height="34" Tag="inactive" CommandParameter="basic" Click="Group_Click" Margin="5,0" AutomationProperties.Name="显示明暗参数">
+                    <TextBlock Text="明暗" FontSize="10" FontWeight="SemiBold" />
+                </Button>
+                <Button x:Name="EffectsGroupButton" Style="{DynamicResource ModeToggleButton}" Height="34" Tag="inactive" CommandParameter="effects" Click="Group_Click" AutomationProperties.Name="显示效果参数">
+                    <TextBlock Text="可读性" FontSize="10" FontWeight="SemiBold" />
+                </Button>
+            </UniformGrid>
+
+            <StackPanel x:Name="BasicPanel" Visibility="Collapsed">
+                <TextBlock Text="常用" Foreground="{DynamicResource SubtleText}" FontSize="9.5" FontWeight="SemiBold" Margin="2,0,0,5" />
+                <Grid Margin="0,3">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="48" /><ColumnDefinition Width="*" /><ColumnDefinition Width="60" /></Grid.ColumnDefinitions>
+                    <TextBlock Text="亮度" Style="{StaticResource InspectorLabel}" />
+                    <Slider x:Name="BrightnessSlider" Grid.Column="1" Style="{StaticResource InspectorSlider}" Tag="brightness" Minimum="20" Maximum="180" Value="100" AutomationProperties.Name="图像亮度" />
+                    <TextBox x:Name="BrightnessValue" Grid.Column="2" Style="{StaticResource InspectorValue}" Tag="brightness" Text="100%" AutomationProperties.Name="亮度精确值" />
+                </Grid>
+                <Grid Margin="0,3">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="48" /><ColumnDefinition Width="*" /><ColumnDefinition Width="60" /></Grid.ColumnDefinitions>
+                    <TextBlock Text="透明" Style="{StaticResource InspectorLabel}" />
+                    <Slider x:Name="OpacitySlider" Grid.Column="1" Style="{StaticResource InspectorSlider}" Tag="opacity" Minimum="0" Maximum="100" Value="100" AutomationProperties.Name="图像不透明度" />
+                    <TextBox x:Name="OpacityValue" Grid.Column="2" Style="{StaticResource InspectorValue}" Tag="opacity" Text="100%" AutomationProperties.Name="透明度精确值" />
+                </Grid>
+                <Expander x:Name="BasicAdvancedExpander" Header="高级参数" Margin="0,8,0,0" Foreground="{DynamicResource MutedText}" AutomationProperties.Name="展开基础高级参数">
+                    <StackPanel Margin="0,7,0,0">
+                        <Grid Margin="0,3">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="48" /><ColumnDefinition Width="*" /><ColumnDefinition Width="60" /></Grid.ColumnDefinitions>
+                            <TextBlock Text="对比" Style="{StaticResource InspectorLabel}" />
+                            <Slider x:Name="ContrastSlider" Grid.Column="1" Style="{StaticResource InspectorSlider}" Tag="contrast" Minimum="20" Maximum="180" Value="100" AutomationProperties.Name="图像对比度" />
+                            <TextBox x:Name="ContrastValue" Grid.Column="2" Style="{StaticResource InspectorValue}" Tag="contrast" Text="100%" AutomationProperties.Name="对比度精确值" />
+                        </Grid>
+                        <Grid Margin="0,3">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="48" /><ColumnDefinition Width="*" /><ColumnDefinition Width="60" /></Grid.ColumnDefinitions>
+                            <TextBlock Text="饱和" Style="{StaticResource InspectorLabel}" />
+                            <Slider x:Name="SaturationSlider" Grid.Column="1" Style="{StaticResource InspectorSlider}" Tag="saturation" Minimum="0" Maximum="200" Value="100" AutomationProperties.Name="图像饱和度" />
+                            <TextBox x:Name="SaturationValue" Grid.Column="2" Style="{StaticResource InspectorValue}" Tag="saturation" Text="100%" AutomationProperties.Name="饱和度精确值" />
+                        </Grid>
+                    </StackPanel>
+                </Expander>
+            </StackPanel>
+
+            <StackPanel x:Name="CompositionPanel">
+                <Grid Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                    <TextBlock Text="在全图上移动取景框，直接编辑最终 CSS 构图。" Foreground="{DynamicResource MutedText}" FontSize="9.5" TextWrapping="Wrap" VerticalAlignment="Center" />
+                    <Border Grid.Column="1" Background="{DynamicResource AccentSoft}" CornerRadius="7" Padding="7,3" Margin="7,0,0,0" VerticalAlignment="Center">
+                        <TextBlock x:Name="PlacementKindText" Text="主题推荐" Foreground="{DynamicResource Accent}" FontSize="9" FontWeight="SemiBold" />
+                    </Border>
+                </Grid>
+
+                <Border Background="{DynamicResource SettingsControlSurface}" BorderBrush="{DynamicResource SettingsControlBorder}" BorderThickness="1" CornerRadius="10" Padding="9">
+                    <StackPanel>
+                        <TextBlock Text="精确构图" Foreground="{DynamicResource PrimaryText}" FontSize="10" FontWeight="SemiBold" />
+                        <TextBlock Text="支持 cover / contain / auto / 百分比 / px；输入会规范化但保持单位语义。" Foreground="{DynamicResource SubtleText}" FontSize="8.8" TextWrapping="Wrap" Margin="0,3,0,7" />
+                        <Grid Margin="0,2">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /><ColumnDefinition Width="5" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                            <TextBlock Text="大小" Style="{StaticResource InspectorLabel}" />
+                            <TextBox x:Name="SizeWidthValue" Grid.Column="1" Height="30" Text="cover" Tag="sizeWidth" Padding="7,4" VerticalContentAlignment="Center" Background="{DynamicResource Surface}" Foreground="{DynamicResource PrimaryText}" BorderBrush="{DynamicResource SettingsControlBorder}" CaretBrush="{DynamicResource Accent}" GotKeyboardFocus="PlacementValue_GotKeyboardFocus" LostKeyboardFocus="PlacementValue_LostKeyboardFocus" PreviewKeyDown="PlacementValue_PreviewKeyDown" AutomationProperties.Name="背景宽度精确值" />
+                            <TextBox x:Name="SizeHeightValue" Grid.Column="3" Height="30" Text="auto" Tag="sizeHeight" Padding="7,4" VerticalContentAlignment="Center" Background="{DynamicResource Surface}" Foreground="{DynamicResource PrimaryText}" BorderBrush="{DynamicResource SettingsControlBorder}" CaretBrush="{DynamicResource Accent}" GotKeyboardFocus="PlacementValue_GotKeyboardFocus" LostKeyboardFocus="PlacementValue_LostKeyboardFocus" PreviewKeyDown="PlacementValue_PreviewKeyDown" AutomationProperties.Name="背景高度精确值" />
+                        </Grid>
+                        <Grid Margin="0,4,0,2">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /><ColumnDefinition Width="5" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                            <TextBlock Text="位置" Style="{StaticResource InspectorLabel}" />
+                            <TextBox x:Name="PositionXValue" Grid.Column="1" Height="30" Text="center" Tag="positionX" Padding="7,4" VerticalContentAlignment="Center" Background="{DynamicResource Surface}" Foreground="{DynamicResource PrimaryText}" BorderBrush="{DynamicResource SettingsControlBorder}" CaretBrush="{DynamicResource Accent}" GotKeyboardFocus="PlacementValue_GotKeyboardFocus" LostKeyboardFocus="PlacementValue_LostKeyboardFocus" PreviewKeyDown="PlacementValue_PreviewKeyDown" AutomationProperties.Name="背景水平位置精确值" />
+                            <TextBox x:Name="PositionYValue" Grid.Column="3" Height="30" Text="center" Tag="positionY" Padding="7,4" VerticalContentAlignment="Center" Background="{DynamicResource Surface}" Foreground="{DynamicResource PrimaryText}" BorderBrush="{DynamicResource SettingsControlBorder}" CaretBrush="{DynamicResource Accent}" GotKeyboardFocus="PlacementValue_GotKeyboardFocus" LostKeyboardFocus="PlacementValue_LostKeyboardFocus" PreviewKeyDown="PlacementValue_PreviewKeyDown" AutomationProperties.Name="背景垂直位置精确值" />
+                        </Grid>
+                        <TextBlock x:Name="PlacementErrorText" Visibility="Collapsed" Foreground="{DynamicResource Danger}" FontSize="8.8" TextWrapping="Wrap" Margin="44,4,0,0" AutomationProperties.LiveSetting="Assertive" />
+                    </StackPanel>
+                </Border>
+
+                <Border x:Name="LegacyCompositionPanel" Visibility="Collapsed" Background="{DynamicResource AmberSoft}" BorderBrush="{DynamicResource Amber}" BorderThickness="1" CornerRadius="9" Padding="9" Margin="0,8,0,0">
+                    <StackPanel>
+                        <TextBlock Text="旧版兼容构图" Foreground="{DynamicResource Amber}" FontSize="9.5" FontWeight="SemiBold" />
+                        <TextBlock x:Name="LegacyCompositionText" Text="保留旧版缩放与位移；首次移动取景框时会等价转换为最终构图。" Foreground="{DynamicResource MutedText}" FontSize="9" TextWrapping="Wrap" Margin="0,3,0,0" />
+                    </StackPanel>
+                </Border>
+
+                <StackPanel Visibility="Collapsed">
+                    <Slider x:Name="ZoomSlider" Tag="zoom" Minimum="70" Maximum="200" Value="100" />
+                    <TextBox x:Name="ZoomValue" Tag="zoom" Text="100%" />
+                    <Slider x:Name="OffsetXSlider" Tag="offsetX" Minimum="-200" Maximum="200" Value="0" />
+                    <TextBox x:Name="OffsetXValue" Tag="offsetX" Text="0 px" />
+                    <Slider x:Name="OffsetYSlider" Tag="offsetY" Minimum="-200" Maximum="200" Value="0" />
+                    <TextBox x:Name="OffsetYValue" Tag="offsetY" Text="0 px" />
+                </StackPanel>
+            </StackPanel>
+
+            <StackPanel x:Name="EffectsPanel" Visibility="Collapsed">
+                <TextBlock Text="常用" Foreground="{DynamicResource SubtleText}" FontSize="9.5" FontWeight="SemiBold" Margin="2,0,0,5" />
+                <Grid Margin="0,3">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="48" /><ColumnDefinition Width="*" /><ColumnDefinition Width="60" /></Grid.ColumnDefinitions>
+                    <TextBlock Text="叠色" Style="{StaticResource InspectorLabel}" />
+                    <Slider x:Name="OverlayOpacitySlider" Grid.Column="1" Style="{StaticResource InspectorSlider}" Tag="overlayOpacity" Minimum="0" Maximum="100" Value="0" AutomationProperties.Name="背景叠色强度" />
+                    <TextBox x:Name="OverlayOpacityValue" Grid.Column="2" Style="{StaticResource InspectorValue}" Tag="overlayOpacity" Text="0%" AutomationProperties.Name="背景叠色强度精确值" />
+                </Grid>
+                <CheckBox x:Name="ReadabilityCheckBox" Content="增强文字可读性" Foreground="{DynamicResource PrimaryText}" FontSize="10.5" Margin="1,7,0,0" Checked="ReadabilityCheckBox_Changed" Unchecked="ReadabilityCheckBox_Changed" ToolTip="在实际 Codex 页面为文字增加区域保护，不改变图片文件" AutomationProperties.Name="增强文字可读性" />
+                <Expander x:Name="EffectsAdvancedExpander" Header="高级效果" Margin="0,8,0,0" Foreground="{DynamicResource MutedText}" AutomationProperties.Name="展开高级图像效果">
+                    <StackPanel Margin="0,7,0,0">
+                        <Grid Margin="0,3">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="48" /><ColumnDefinition Width="*" /><ColumnDefinition Width="60" /></Grid.ColumnDefinitions>
+                            <TextBlock Text="灰度" Style="{StaticResource InspectorLabel}" />
+                            <Slider x:Name="GrayscaleSlider" Grid.Column="1" Style="{StaticResource InspectorSlider}" Tag="grayscale" Minimum="0" Maximum="100" Value="0" AutomationProperties.Name="图像灰度" />
+                            <TextBox x:Name="GrayscaleValue" Grid.Column="2" Style="{StaticResource InspectorValue}" Tag="grayscale" Text="0%" AutomationProperties.Name="灰度精确值" />
+                        </Grid>
+                        <Grid Margin="0,3">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="48" /><ColumnDefinition Width="*" /><ColumnDefinition Width="60" /></Grid.ColumnDefinitions>
+                            <TextBlock Text="色相" Style="{StaticResource InspectorLabel}" />
+                            <Slider x:Name="HueRotationSlider" Grid.Column="1" Style="{StaticResource InspectorSlider}" Tag="hueRotation" Minimum="-180" Maximum="180" Value="0" AutomationProperties.Name="图像色相旋转" />
+                            <TextBox x:Name="HueRotationValue" Grid.Column="2" Style="{StaticResource InspectorValue}" Tag="hueRotation" Text="0°" AutomationProperties.Name="色相旋转精确值" />
+                        </Grid>
+                        <Grid Margin="0,3">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="48" /><ColumnDefinition Width="*" /><ColumnDefinition Width="60" /></Grid.ColumnDefinitions>
+                            <TextBlock Text="柔化" Style="{StaticResource InspectorLabel}" />
+                            <Slider x:Name="BlurSlider" Grid.Column="1" Style="{StaticResource InspectorSlider}" Tag="blur" Minimum="0" Maximum="20" TickFrequency="0.5" Value="0" AutomationProperties.Name="图像柔化" />
+                            <TextBox x:Name="BlurValue" Grid.Column="2" Style="{StaticResource InspectorValue}" Tag="blur" Text="0 px" AutomationProperties.Name="柔化精确值" />
+                        </Grid>
+                        <Grid Margin="0,3">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="48" /><ColumnDefinition Width="*" /><ColumnDefinition Width="60" /></Grid.ColumnDefinitions>
+                            <TextBlock Text="渐变" Style="{StaticResource InspectorLabel}" />
+                            <Slider x:Name="GradientStrengthSlider" Grid.Column="1" Style="{StaticResource InspectorSlider}" Tag="gradientStrength" Minimum="0" Maximum="100" Value="0" AutomationProperties.Name="图像渐变强度" />
+                            <TextBox x:Name="GradientStrengthValue" Grid.Column="2" Style="{StaticResource InspectorValue}" Tag="gradientStrength" Text="0%" AutomationProperties.Name="渐变强度精确值" />
+                        </Grid>
+                        <Grid Margin="0,3">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="48" /><ColumnDefinition Width="*" /><ColumnDefinition Width="60" /></Grid.ColumnDefinitions>
+                            <TextBlock Text="暗角" Style="{StaticResource InspectorLabel}" />
+                            <Slider x:Name="VignetteSlider" Grid.Column="1" Style="{StaticResource InspectorSlider}" Tag="vignette" Minimum="0" Maximum="100" Value="0" AutomationProperties.Name="图像暗角" />
+                            <TextBox x:Name="VignetteValue" Grid.Column="2" Style="{StaticResource InspectorValue}" Tag="vignette" Text="0%" AutomationProperties.Name="暗角精确值" />
+                        </Grid>
+                        <Grid Margin="0,5,0,0">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="48" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                            <TextBlock Text="混合" Style="{StaticResource InspectorLabel}" />
+                            <ComboBox x:Name="BlendModeComboBox" Grid.Column="1" Height="30" Style="{DynamicResource SettingsComboBox}" SelectionChanged="BlendModeComboBox_SelectionChanged" AutomationProperties.Name="图片混合模式">
+                                <ComboBoxItem Content="正常" Tag="normal" />
+                                <ComboBoxItem Content="正片叠底" Tag="multiply" />
+                                <ComboBoxItem Content="滤色" Tag="screen" />
+                                <ComboBoxItem Content="叠加" Tag="overlay" />
+                                <ComboBoxItem Content="柔光" Tag="soft-light" />
+                                <ComboBoxItem Content="明度" Tag="luminosity" />
+                            </ComboBox>
+                        </Grid>
+                        <Grid Margin="0,7,0,0">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="48" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                            <TextBlock Text="叠色" Style="{StaticResource InspectorLabel}" />
+                            <TextBox x:Name="OverlayColorValue" Grid.Column="1" Height="30" Text="#000000" MaxLength="7" Padding="8,4" VerticalContentAlignment="Center" Background="{DynamicResource SettingsControlSurface}" Foreground="{DynamicResource PrimaryText}" BorderBrush="{DynamicResource SettingsControlBorder}" CaretBrush="{DynamicResource Accent}" LostKeyboardFocus="OverlayColorValue_LostKeyboardFocus" PreviewKeyDown="OverlayColorValue_PreviewKeyDown" AutomationProperties.Name="叠色十六进制颜色" />
+                        </Grid>
+                    </StackPanel>
+                </Expander>
+            </StackPanel>
+
+            <Border Height="1" Background="{DynamicResource SettingsControlBorder}" Margin="0,12,0,10" />
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="6" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="6" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Button x:Name="ResetParameterButton" Style="{DynamicResource HomeCrispButton}" Height="34" Content="恢复此参数" Click="ResetParameter_Click" ToolTip="删除当前字段的个人覆盖，重新跟随主题推荐；可撤销" AutomationProperties.Name="恢复此参数到主题推荐" />
+                <Button x:Name="ResetGroupButton" Grid.Column="2" Style="{DynamicResource HomeCrispButton}" Height="34" Content="恢复此参数组" Click="ResetGroup_Click" ToolTip="删除当前组的个人覆盖，重新跟随主题推荐；可撤销" AutomationProperties.Name="恢复此参数组到主题推荐" />
+                <Button x:Name="ResetRegionButton" Grid.Row="2" Grid.ColumnSpan="3" Style="{DynamicResource HomeCrispButton}" Height="34" Content="恢复当前槽位到主题推荐值" Click="ResetRegion_Click" ToolTip="删除当前区域与亮暗模式的个人参数覆盖；保留图片来源；可撤销" AutomationProperties.Name="恢复当前槽位到主题推荐值" />
+            </Grid>
+
+            <Button x:Name="RestoreOriginalBaselineButton" Style="{DynamicResource QuietActionButton}" Height="34" Content="恢复当前槽位到原图基线" Click="RestoreOriginalBaseline_Click" Margin="0,6,0,0" ToolTip="切回主题原始资产，写入 contain 居中与中性效果作为个人修改；可撤销" AutomationProperties.Name="恢复当前槽位到原图基线" />
+
+            <Grid Margin="0,9,0,0">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="6" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                <Button x:Name="ChooseImageButton" Style="{DynamicResource HomeCrispButton}" Height="34" Content="更换本地图片" Click="ChooseImage_Click" ToolTip="只替换当前区域与当前亮暗模式的图片" AutomationProperties.Name="选择本地替换图片" />
+                <Button x:Name="ClearImageButton" Grid.Column="2" Style="{DynamicResource HomeCrispButton}" Height="34" Content="使用主题原图" Click="ClearImage_Click" ToolTip="撤下当前图片引用，保留全部参数" AutomationProperties.Name="使用主题原图" />
+            </Grid>
+            <Grid Margin="0,6,0,0">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="6" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                <Button x:Name="CopyButton" Style="{DynamicResource QuietActionButton}" Height="32" Content="复制参数" Click="Copy_Click" ToolTip="复制当前区域参数，不包含图片来源" AutomationProperties.Name="复制当前区域参数" />
+                <Button x:Name="PasteButton" Grid.Column="2" Style="{DynamicResource QuietActionButton}" Height="32" Content="粘贴参数" Click="Paste_Click" ToolTip="粘贴参数并保留目标区域图片来源" AutomationProperties.Name="粘贴当前区域参数" />
+            </Grid>
+        </StackPanel>
+    </Border>
+</UserControl>

@@ -4,71 +4,27 @@
              xmlns:personalization="clr-namespace:Tessalume.App.Features.Personalization"
              VerticalAlignment="Top">
     <StackPanel Margin="0,0,0,4">
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <StackPanel>
-                <TextBlock Text="显示与体验方案" Foreground="{DynamicResource PrimaryText}" FontSize="27" FontWeight="Bold" />
-                <TextBlock Text="把显示偏好和完整主题体验分开管理，保存后即可跨主题快速切换。" Foreground="{DynamicResource MutedText}" FontSize="12" Margin="1,6,0,0" />
-            </StackPanel>
-            <Border Grid.Column="1" Background="{DynamicResource TealSoft}" BorderBrush="{DynamicResource Teal}" BorderThickness="1" CornerRadius="12" Padding="11,6" VerticalAlignment="Center">
-                <TextBlock Text="PERSONALIZATION 2.0" Foreground="{DynamicResource Teal}" FontSize="9.5" FontWeight="SemiBold" />
-            </Border>
-        </Grid>
-
-        <Border Style="{DynamicResource ProductCard}" Margin="0,20,0,0" Padding="16">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="42" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="6" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="14" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <Border Width="32" Height="32" CornerRadius="10" Background="{DynamicResource AccentSoft}">
-                    <Path Width="15" Height="15" Data="M 5,4 L 19,4 L 19,20 L 5,20 Z M 8,8 L 16,8 M 8,12 L 16,12 M 8,16 L 13,16" Stroke="{DynamicResource Accent}" StrokeThickness="1.7" StrokeLineJoin="Round" Fill="Transparent" Stretch="Uniform" />
-                </Border>
-                <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                    <TextBlock x:Name="CurrentThemeNameText" Text="Codex 默认外观" Foreground="{DynamicResource PrimaryText}" FontSize="13" FontWeight="SemiBold" />
-                    <TextBlock x:Name="ThemeStateText" Text="请先从主题画廊选择主题" Foreground="{DynamicResource MutedText}" FontSize="10" Margin="0,3,12,0" />
-                </StackPanel>
-                <Button x:Name="PreviousThemeButton" Grid.Column="2" Style="{DynamicResource SettingsMiniButton}" Width="34" Height="34" Content="‹" FontSize="19" Click="PreviousTheme_Click" ToolTip="应用上一个主题" AutomationProperties.Name="应用上一个主题" />
-                <Button x:Name="NextThemeButton" Grid.Column="4" Style="{DynamicResource SettingsMiniButton}" Width="34" Height="34" Content="›" FontSize="19" Click="NextTheme_Click" ToolTip="应用下一个主题" AutomationProperties.Name="应用下一个主题" />
-                <Button Grid.Column="6" Style="{DynamicResource SecondaryActionButton}" Height="34" Padding="14,0" Click="ColorMode_Click" ToolTip="切换 Codex 亮暗模式">
-                    <StackPanel Orientation="Horizontal">
-                        <Ellipse Width="6" Height="6" Fill="{DynamicResource Accent}" Margin="0,0,7,0" />
-                        <TextBlock x:Name="ModeText" Text="检测模式" FontSize="10.5" FontWeight="SemiBold" />
-                    </StackPanel>
-                </Button>
-            </Grid>
-        </Border>
-
-        <TextBlock Text="显示偏好" Style="{DynamicResource SectionEyebrowText}" Margin="2,20,0,0" />
-        <personalization:DisplayPreferencesView x:Name="DisplayPreferencesControl" Margin="0,10,0,0" PreferencesChanged="DisplayPreferences_Changed" />
+        <personalization:DisplayPreferencesView x:Name="DisplayPreferencesControl" PreferencesChanged="DisplayPreferences_Changed" />
         <personalization:ExperienceProfilesView x:Name="ExperienceProfilesControl" Margin="0,12,0,0"
                                                   SaveRequested="ExperienceProfiles_SaveRequested"
                                                   ApplyRequested="ExperienceProfiles_ApplyRequested"
                                                   DeleteRequested="ExperienceProfiles_DeleteRequested" />
 
-        <Border Background="{DynamicResource InfoSurface}" BorderBrush="{DynamicResource InfoBorder}" BorderThickness="1" CornerRadius="16" Padding="17" Margin="0,18,0,0">
+        <Border Style="{DynamicResource InsetCard}" Padding="14" Margin="0,12,0,0">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="38" />
+                    <ColumnDefinition Width="34" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <Border Width="32" Height="32" CornerRadius="10" Background="{DynamicResource Surface}">
-                    <Path Width="16" Height="16" Data="M 12,2 L 20,6 L 20,12 C 20,17 16.8,20.3 12,22 C 7.2,20.3 4,17 4,12 L 4,6 Z M 9,12 L 11,14 L 15.5,9.5" Stroke="{DynamicResource Positive}" StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Fill="Transparent" Stretch="Uniform" />
+                <Border Width="28" Height="28" CornerRadius="9" Background="{DynamicResource TealSoft}">
+                    <Path Width="13" Height="13" Data="M 12,2 L 20,6 L 20,12 C 20,17 16.8,20.3 12,22 C 7.2,20.3 4,17 4,12 L 4,6 Z M 9,12 L 11,14 L 15.5,9.5" Stroke="{DynamicResource Teal}" StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Fill="Transparent" Stretch="Uniform" />
                 </Border>
                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                    <TextBlock Text="本地保存 · 自动生效" Foreground="{DynamicResource PrimaryText}" FontWeight="SemiBold" FontSize="12.5" />
-                    <TextBlock Text="显示偏好跟随当前主题；体验方案会额外保存主题、亮暗模式与两套图片参数。" TextWrapping="Wrap" Foreground="{DynamicResource MutedText}" FontSize="10" Margin="0,3,0,0" />
+                    <TextBlock Text="设置保存在本机" Foreground="{DynamicResource PrimaryText}" FontWeight="SemiBold" FontSize="11.5" />
+                    <TextBlock Text="显示偏好和体验方案不会修改主题包；需要调整图像时可进入工作台。" TextWrapping="Wrap" Foreground="{DynamicResource MutedText}" FontSize="9.5" Margin="0,2,10,0" />
                 </StackPanel>
-                <Button Grid.Column="2" Style="{DynamicResource QuietActionButton}" Content="进入图像工作台" Click="ArtworkStudio_Click" />
+                <Button Grid.Column="2" Style="{DynamicResource QuietActionButton}" Content="调整主题图像" Click="ArtworkStudio_Click" />
             </Grid>
         </Border>
     </StackPanel>

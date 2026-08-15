@@ -7,6 +7,7 @@
         xmlns:about="clr-namespace:Tessalume.App.Features.About"
         xmlns:diagnostics="clr-namespace:Tessalume.App.Features.Diagnostics"
         xmlns:personalization="clr-namespace:Tessalume.App.Features.Personalization"
+        xmlns:artwork="clr-namespace:Tessalume.App.Features.Personalization.ArtworkWorkbench.Presentation"
         Title="{x:Static local:BrandInfo.WindowTitle}"
         Icon="{x:Static local:BrandInfo.AppIcon}"
         Width="1280" Height="820" MinWidth="760" MinHeight="420"
@@ -27,10 +28,10 @@
     </Window.Resources>
 
     <Grid x:Name="AdaptiveViewport" Background="{DynamicResource WindowBackground}" ClipToBounds="True" SizeChanged="AdaptiveViewport_SizeChanged">
-      <Grid x:Name="AdaptiveRoot" MinWidth="1080" MinHeight="720" Background="{DynamicResource WindowBackground}">
+      <Grid x:Name="AdaptiveRoot" MinWidth="640" Background="{DynamicResource WindowBackground}">
         <Grid.LayoutTransform><ScaleTransform x:Name="AdaptiveScale" ScaleX="1" ScaleY="1" /></Grid.LayoutTransform>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="226" />
+            <ColumnDefinition x:Name="ShellSidebarColumn" Width="226" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
@@ -616,7 +617,11 @@
 
         <Grid x:Name="InfoPage" Grid.Column="1" Margin="32,25,32,22" Visibility="Collapsed">
             <ScrollViewer x:Name="InfoScroll" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" FocusVisualStyle="{x:Null}">
-                <Grid Width="{Binding ViewportWidth, ElementName=InfoScroll}" MinHeight="{Binding ViewportHeight, ElementName=InfoScroll}" MaxWidth="940" HorizontalAlignment="Center">
+                <Grid x:Name="InfoContentHost"
+                      Width="{Binding ViewportWidth, ElementName=InfoScroll}"
+                      MinHeight="{Binding ViewportHeight, ElementName=InfoScroll}"
+                      MaxWidth="940"
+                      HorizontalAlignment="Center">
                     <StackPanel x:Name="ImportInfoPanel" VerticalAlignment="Top" Margin="0,0,0,4">
                         <Grid>
                             <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
@@ -672,243 +677,133 @@
 
                     <creator:CreatorCenterView x:Name="CreatorCenter" Visibility="Collapsed" VerticalAlignment="Top" />
 
-                    <StackPanel x:Name="SettingsInfoPanel" Visibility="Collapsed" VerticalAlignment="Top" Margin="0,0,0,4">
+                    <StackPanel x:Name="PersonalizationInfoPanel" Visibility="Collapsed" VerticalAlignment="Top" Margin="0,0,0,4">
                         <Grid>
-                            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
                             <StackPanel>
-                                <TextBlock Text="图像工作台" Foreground="{DynamicResource PrimaryText}" FontSize="27" FontWeight="Bold" />
-                                <TextBlock Text="专注处理首页横幅、左栏图片与聊天背景，不再混入其他显示设置。" Foreground="{DynamicResource MutedText}" FontSize="12" Margin="1,6,0,0" />
+                                <TextBlock Text="个性化" Style="{StaticResource SectionEyebrowText}" Margin="1,0,0,6" />
+                                <TextBlock x:Name="PersonalizationPageTitleText" Text="图像工作台" Style="{StaticResource PageTitleText}" />
+                                <TextBlock x:Name="PersonalizationPageDescriptionText"
+                                           Text="在原图上完成最终取景，再检查页面中的真实效果。"
+                                           Style="{StaticResource PageDescriptionText}"
+                                           TextWrapping="Wrap" />
                             </StackPanel>
-                            <Border Grid.Column="1" Background="{DynamicResource AccentSoft}" BorderBrush="{DynamicResource InfoBorder}" BorderThickness="1" CornerRadius="12" Padding="11,6" VerticalAlignment="Center">
+                            <Border Grid.Column="1"
+                                    Background="{DynamicResource AccentSoft}"
+                                    BorderBrush="{DynamicResource InfoBorder}"
+                                    BorderThickness="1"
+                                    CornerRadius="10"
+                                    Padding="10,5"
+                                    VerticalAlignment="Center">
                                 <StackPanel Orientation="Horizontal">
                                     <Ellipse Width="6" Height="6" Fill="{DynamicResource Positive}" Margin="0,0,7,0" />
-                                    <TextBlock Text="实时预览已开启" Foreground="{DynamicResource Accent}" FontSize="10" FontWeight="SemiBold" />
+                                    <TextBlock x:Name="PersonalizationPageStatusText" Text="离线也可编辑" Foreground="{DynamicResource Accent}" FontSize="9.5" FontWeight="SemiBold" />
                                 </StackPanel>
                             </Border>
                         </Grid>
 
-                        <Border x:Name="SettingsThemeControlBar" Height="92" Margin="0,20,0,0" Background="{DynamicResource SettingsControlBar}"
-                                BorderBrush="{DynamicResource SettingsBarBorder}" BorderThickness="1" CornerRadius="21" Effect="{StaticResource SettingsBarShadow}" SnapsToDevicePixels="True">
-                            <Grid x:Name="SettingsThemeSwitchPanel" Margin="16,0">
+                        <Border x:Name="SettingsThemeControlBar"
+                                Margin="0,15,0,0"
+                                MinHeight="66"
+                                Background="{DynamicResource SurfaceElevated}"
+                                BorderBrush="{DynamicResource HomeToolbarBorder}"
+                                BorderThickness="1"
+                                CornerRadius="16"
+                                Padding="12,9"
+                                SnapsToDevicePixels="True">
+                            <Grid x:Name="SettingsThemeSwitchPanel">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="40" /><ColumnDefinition Width="10" /><ColumnDefinition Width="*" /><ColumnDefinition Width="10" />
-                                    <ColumnDefinition Width="40" /><ColumnDefinition Width="18" /><ColumnDefinition Width="1" /><ColumnDefinition Width="18" /><ColumnDefinition Width="166" />
+                                    <ColumnDefinition Width="34" />
+                                    <ColumnDefinition Width="10" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="12" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="9" />
+                                    <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
-                                <Button x:Name="SettingsPreviousThemeButton" Style="{StaticResource SettingsIconButton}" Click="SettingsPreviousTheme_Click" ToolTip="应用上一个可切换主题" AutomationProperties.Name="应用上一个可切换主题">
-                                    <Viewbox Width="18" Height="18"><Canvas Width="24" Height="24"><Rectangle Canvas.Left="4" Canvas.Top="6" Width="2.4" Height="12" RadiusX="1.2" Fill="{DynamicResource SettingsBarPrimaryText}" /><Path Data="M 19,6 L 9,12 L 19,18 Z" Fill="{DynamicResource SettingsBarPrimaryText}" /></Canvas></Viewbox>
-                                </Button>
-                                <Border Grid.Column="2" Height="60" Background="{DynamicResource SettingsCurrentThemeGradient}" BorderBrush="{DynamicResource SettingsControlBorder}" BorderThickness="1" CornerRadius="16" Padding="14,0" VerticalAlignment="Center">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions><ColumnDefinition Width="34" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                                        <Grid Width="26" Height="26" VerticalAlignment="Center">
-                                            <Ellipse x:Name="SettingsOrbPulse" Width="26" Height="26" Fill="#66E05DA4" Opacity="0.5"><Ellipse.Effect><BlurEffect Radius="5" /></Ellipse.Effect></Ellipse>
-                                            <Border Width="21" Height="21" CornerRadius="10.5" Background="{DynamicResource PrimaryGradient}" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                                <Path Width="10" Height="10" Data="M 5,0 L 6.2,3.8 L 10,5 L 6.2,6.2 L 5,10 L 3.8,6.2 L 0,5 L 3.8,3.8 Z" Stretch="Uniform" Fill="White" />
-                                            </Border>
-                                        </Grid>
-                                        <StackPanel Grid.Column="1" Margin="8,0,0,0" VerticalAlignment="Center">
-                                            <TextBlock Text="当前主题" Foreground="{DynamicResource SettingsBarMutedText}" FontSize="10" FontWeight="SemiBold" />
-                                            <TextBlock x:Name="SettingsCurrentThemeNameText" Text="Codex 默认外观" Foreground="{DynamicResource SettingsBarPrimaryText}" FontSize="14" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
-                                            <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
-                                                <Ellipse x:Name="SettingsLiveDot" Width="5" Height="5" Fill="{DynamicResource Positive}" Margin="0,0,5,0" />
-                                                <TextBlock x:Name="SettingsThemeStateText" Text="正在读取状态…" Foreground="{DynamicResource SettingsBarMutedText}" FontSize="10" />
-                                            </StackPanel>
-                                        </StackPanel>
-                                        <Border Grid.Column="2" Background="{DynamicResource SettingsControlSurface}" BorderBrush="{DynamicResource SettingsControlBorder}" BorderThickness="1" CornerRadius="8" Padding="8,4" VerticalAlignment="Center" Margin="12,0,0,0">
-                                            <TextBlock x:Name="SettingsThemePositionText" Text="— / —" Foreground="{DynamicResource SettingsBarMutedText}" FontSize="10" FontWeight="SemiBold" />
-                                        </Border>
-                                    </Grid>
+                                <Border Width="34" Height="34" CornerRadius="11" Background="{DynamicResource AccentSoft}" VerticalAlignment="Center">
+                                    <Path Width="16" Height="16" Data="M 8,1 L 9.7,6.3 L 15,8 L 9.7,9.7 L 8,15 L 6.3,9.7 L 1,8 L 6.3,6.3 Z"
+                                          Stretch="Uniform" Fill="{DynamicResource Accent}" />
                                 </Border>
-                                <Button x:Name="SettingsNextThemeButton" Grid.Column="4" Style="{StaticResource SettingsIconButton}" Click="SettingsNextTheme_Click" ToolTip="应用下一个可切换主题" AutomationProperties.Name="应用下一个可切换主题">
-                                    <Viewbox Width="18" Height="18"><Canvas Width="24" Height="24"><Path Data="M 5,6 L 15,12 L 5,18 Z" Fill="{DynamicResource SettingsBarPrimaryText}" /><Rectangle Canvas.Left="17.6" Canvas.Top="6" Width="2.4" Height="12" RadiusX="1.2" Fill="{DynamicResource SettingsBarPrimaryText}" /></Canvas></Viewbox>
-                                </Button>
-                                <Border Grid.Column="6" Width="1" Height="42" Background="{DynamicResource SettingsControlBorder}" VerticalAlignment="Center" />
-                                <Button x:Name="SettingsColorModeButton" Grid.Column="8" Width="166" Style="{StaticResource SettingsWideControlButton}" Click="SettingsColorMode_Click" ToolTip="切换 Codex 亮暗模式">
-                                    <Grid Width="140">
-                                        <Grid.ColumnDefinitions><ColumnDefinition Width="30" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                                        <Grid Width="24" Height="24" VerticalAlignment="Center">
-                                            <Path x:Name="SettingsModeMoonIcon" Visibility="Collapsed" Data="M 15,3 C 9,4 7,9 8.5,13.5 C 10,18 14.5,19.5 19,17 C 17,20.5 12.5,22 8.5,20 C 4,17.8 2,12.5 4,8 C 6,3.8 11,1.7 15,3 Z" Fill="{DynamicResource SettingsBarPrimaryText}" Stretch="Uniform" Width="18" Height="18" />
+                                <StackPanel Grid.Column="2" VerticalAlignment="Center" MinWidth="80">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock x:Name="SettingsCurrentThemeNameText"
+                                                   Text="Codex 默认外观"
+                                                   Foreground="{DynamicResource PrimaryText}"
+                                                   FontSize="12.5"
+                                                   FontWeight="SemiBold"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   MaxWidth="360" />
+                                        <Border Background="{DynamicResource SurfaceAlt}" CornerRadius="7" Padding="6,2" Margin="7,0,0,0" VerticalAlignment="Center">
+                                            <TextBlock x:Name="SettingsThemePositionText" Text="— / —" Foreground="{DynamicResource SubtleText}" FontSize="9" FontWeight="SemiBold" />
+                                        </Border>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
+                                        <Ellipse x:Name="SettingsLiveDot" Width="5" Height="5" Fill="{DynamicResource Positive}" Margin="0,0,5,0" VerticalAlignment="Center" />
+                                        <TextBlock x:Name="SettingsThemeStateText" Text="正在读取状态…" Foreground="{DynamicResource MutedText}" FontSize="9.5" TextTrimming="CharacterEllipsis" />
+                                    </StackPanel>
+                                </StackPanel>
+                                <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Button x:Name="SettingsPreviousThemeButton"
+                                            Style="{StaticResource SettingsIconButton}"
+                                            Width="34" Height="34"
+                                            Click="SettingsPreviousTheme_Click"
+                                            ToolTip="应用上一个可切换主题"
+                                            AutomationProperties.Name="应用上一个可切换主题">
+                                        <Path Width="11" Height="11" Data="M 15,4 L 7,12 L 15,20" Stroke="{DynamicResource PrimaryText}" StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform" />
+                                    </Button>
+                                    <Button x:Name="SettingsNextThemeButton"
+                                            Style="{StaticResource SettingsIconButton}"
+                                            Width="34" Height="34"
+                                            Margin="5,0,0,0"
+                                            Click="SettingsNextTheme_Click"
+                                            ToolTip="应用下一个可切换主题"
+                                            AutomationProperties.Name="应用下一个可切换主题">
+                                        <Path Width="11" Height="11" Data="M 9,4 L 17,12 L 9,20" Stroke="{DynamicResource PrimaryText}" StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform" />
+                                    </Button>
+                                </StackPanel>
+                                <Button x:Name="SettingsColorModeButton"
+                                        Grid.Column="6"
+                                        Width="132"
+                                        Height="40"
+                                        Style="{StaticResource SettingsWideControlButton}"
+                                        Click="SettingsColorMode_Click"
+                                        ToolTip="切换 Codex 亮暗模式">
+                                    <Grid Width="108">
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="24" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                        <Grid Width="20" Height="20" VerticalAlignment="Center">
+                                            <Path x:Name="SettingsModeMoonIcon" Visibility="Collapsed" Data="M 15,3 C 9,4 7,9 8.5,13.5 C 10,18 14.5,19.5 19,17 C 17,20.5 12.5,22 8.5,20 C 4,17.8 2,12.5 4,8 C 6,3.8 11,1.7 15,3 Z" Fill="{DynamicResource PrimaryText}" Stretch="Uniform" Width="16" Height="16" />
                                             <Grid x:Name="SettingsModeSunIcon" Visibility="Collapsed">
-                                                <Ellipse Width="8" Height="8" Stroke="{DynamicResource SettingsBarPrimaryText}" StrokeThickness="2" />
-                                                <Path Data="M 12,1 L 12,4 M 12,20 L 12,23 M 1,12 L 4,12 M 20,12 L 23,12 M 4.2,4.2 L 6.2,6.2 M 17.8,17.8 L 19.8,19.8 M 19.8,4.2 L 17.8,6.2 M 6.2,17.8 L 4.2,19.8" Stroke="{DynamicResource SettingsBarPrimaryText}" StrokeThickness="1.8" StrokeStartLineCap="Round" Stretch="Uniform" />
+                                                <Ellipse Width="7" Height="7" Stroke="{DynamicResource PrimaryText}" StrokeThickness="1.8" />
+                                                <Path Data="M 12,1 L 12,4 M 12,20 L 12,23 M 1,12 L 4,12 M 20,12 L 23,12 M 4.2,4.2 L 6.2,6.2 M 17.8,17.8 L 19.8,19.8 M 19.8,4.2 L 17.8,6.2 M 6.2,17.8 L 4.2,19.8" Stroke="{DynamicResource PrimaryText}" StrokeThickness="1.7" StrokeStartLineCap="Round" Stretch="Uniform" />
                                             </Grid>
-                                            <TextBlock x:Name="SettingsModeUnknownText" Text="?" Foreground="{DynamicResource SettingsBarPrimaryText}" FontWeight="Bold" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            <TextBlock x:Name="SettingsModeUnknownText" Text="?" Foreground="{DynamicResource PrimaryText}" FontWeight="Bold" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                         </Grid>
-                                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="7,0,0,0">
-                                            <TextBlock x:Name="SettingsColorModeText" Text="检测显示模式" Foreground="{DynamicResource SettingsBarPrimaryText}" FontSize="11" FontWeight="SemiBold" />
-                                            <TextBlock x:Name="SettingsColorModeHintText" Text="点击读取并切换" Foreground="{DynamicResource SettingsBarMutedText}" FontSize="10" Margin="0,2,0,0" />
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="6,0,0,0">
+                                            <TextBlock x:Name="SettingsColorModeText" Text="检测模式" Foreground="{DynamicResource PrimaryText}" FontSize="10" FontWeight="SemiBold" />
+                                            <TextBlock x:Name="SettingsColorModeHintText" Text="点击连接并切换" Foreground="{DynamicResource MutedText}" FontSize="8.5" Margin="0,1,0,0" />
                                         </StackPanel>
                                     </Grid>
                                 </Button>
                             </Grid>
                         </Border>
 
-                        <Border x:Name="VisualAdjustmentEditor" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="20" Padding="20" Margin="0,18,0,0" Effect="{StaticResource CardShadow}">
-                            <StackPanel>
-                                <Grid>
-                                    <Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="10" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                                    <Border Width="38" Height="38" CornerRadius="12" Background="{DynamicResource PrimaryGradient}" VerticalAlignment="Center">
-                                        <Path Width="18" Height="18" Data="M 3,18 L 8.5,12.5 L 12.5,16.5 L 15.5,13.5 L 21,19 M 5,4 L 19,4 C 20.1,4 21,4.9 21,6 L 21,19 C 21,20.1 20.1,21 19,21 L 5,21 C 3.9,21 3,20.1 3,19 L 3,6 C 3,4.9 3.9,4 5,4 Z M 15.5,7 A 2,2 0 1 1 15.4,7" Stroke="White" StrokeThickness="1.7" StrokeLineJoin="Round" Fill="Transparent" Stretch="Uniform" />
-                                    </Border>
-                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                        <TextBlock Text="高级图像调节" Foreground="{DynamicResource PrimaryText}" FontWeight="SemiBold" FontSize="16" />
-                                        <TextBlock x:Name="VisualThemeNameText" Text="调节对象：—" Foreground="{DynamicResource MutedText}" FontSize="10.5" Margin="0,4,0,0" />
-                                    </StackPanel>
-                                    <Border x:Name="VisualEditingModeBadge" Grid.Column="2" Background="{DynamicResource AccentSoft}" BorderBrush="{DynamicResource Accent}" BorderThickness="1" CornerRadius="10" Padding="10,6" VerticalAlignment="Center">
-                                        <StackPanel Orientation="Horizontal">
-                                            <Ellipse Width="6" Height="6" Fill="{DynamicResource Accent}" Margin="0,0,6,0" />
-                                            <TextBlock x:Name="VisualEditingModeText" Text="亮色参数" Foreground="{DynamicResource Accent}" FontSize="10" FontWeight="SemiBold" />
-                                        </StackPanel>
-                                    </Border>
-                                    <Button Grid.Column="4" Style="{StaticResource RoundButton}" Click="ResetAllVisualSettings_Click" Padding="11,7" ToolTip="重置当前主题亮暗模式下三个图像区域的全部图像参数">
-                                        <StackPanel Orientation="Horizontal"><Path Width="13" Height="13" Data="M 7,8 L 3,8 L 3,4 M 3.5,8 C 5.8,3.5 11,2 15.5,4.2 C 20,6.5 21.5,12 19,16.5 C 16.5,21 10.8,22 6.7,19.2" Stroke="{DynamicResource MutedText}" StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Fill="Transparent" Stretch="Uniform" Margin="0,0,7,0" /><TextBlock Text="重置全部图像" FontSize="10" FontWeight="SemiBold" /></StackPanel>
-                                    </Button>
-                                </Grid>
-                                <Grid Margin="0,14,0,12">
-                                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="14" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                                    <StackPanel>
-                                        <TextBlock Text="图像区域" Foreground="{DynamicResource MutedText}" FontSize="10" FontWeight="SemiBold" Margin="2,0,0,7" />
-                                        <UniformGrid Columns="3">
-                                            <Button x:Name="VisualHeroRegionButton" Style="{StaticResource HomeUtilityButton}" Height="40" Tag="active" CommandParameter="hero" Content="首页横幅" Click="VisualAdjustmentRegion_Click" Margin="0,0,7,0" AutomationProperties.Name="调整首页横幅" />
-                                            <Button x:Name="VisualSidebarRegionButton" Style="{StaticResource HomeUtilityButton}" Height="40" CommandParameter="sidebar" Content="左栏图片" Click="VisualAdjustmentRegion_Click" Margin="0,0,7,0" AutomationProperties.Name="调整左栏图片" />
-                                            <Button x:Name="VisualChatRegionButton" Style="{StaticResource HomeUtilityButton}" Height="40" CommandParameter="chat" Content="聊天背景" Click="VisualAdjustmentRegion_Click" AutomationProperties.Name="调整聊天背景" />
-                                        </UniformGrid>
-                                    </StackPanel>
-                                    <StackPanel Grid.Column="2">
-                                        <TextBlock Text="参数组" Foreground="{DynamicResource MutedText}" FontSize="10" FontWeight="SemiBold" Margin="2,0,0,7" />
-                                        <Border Height="40" Background="{DynamicResource SettingsControlSurface}" BorderBrush="{DynamicResource SettingsControlBorder}" BorderThickness="1" CornerRadius="11" Padding="4">
-                                            <StackPanel Orientation="Horizontal">
-                                                <Button x:Name="VisualBasicGroupButton" Style="{StaticResource ModeToggleButton}" Tag="basic" Click="VisualAdjustmentGroup_Click" AutomationProperties.Name="显示基础图像调节"><TextBlock Text="基础" FontSize="10" FontWeight="SemiBold" /></Button>
-                                                <Button x:Name="VisualCompositionGroupButton" Style="{StaticResource ModeToggleButton}" Tag="composition" Click="VisualAdjustmentGroup_Click" AutomationProperties.Name="显示构图调节"><TextBlock Text="构图" FontSize="10" FontWeight="SemiBold" /></Button>
-                                                <Button x:Name="VisualEffectsGroupButton" Style="{StaticResource ModeToggleButton}" Tag="effects" Click="VisualAdjustmentGroup_Click" AutomationProperties.Name="显示图像效果"><TextBlock Text="效果" FontSize="10" FontWeight="SemiBold" /></Button>
-                                            </StackPanel>
-                                        </Border>
-                                    </StackPanel>
-                                </Grid>
-                                <Grid>
-                                    <controls:ArtworkAdjustmentEditor x:Name="HeroAdjustmentEditor"
-                                                                       RegionKey="hero" Title="首页横幅" Subtitle="首页主视觉原图"
-                                                                       HeaderAccent="{DynamicResource Sky}" HeaderAccentSoft="{DynamicResource SkySoft}"
-                                                                       IconData="M 3,16 L 8,11 L 12,15 L 15,12 L 21,18 M 5,4 L 19,4 C 20,4 21,5 21,6 L 21,19 C 21,20 20,21 19,21 L 5,21 C 4,21 3,20 3,19 L 3,6 C 3,5 4,4 5,4 Z"
-                                                                       AdjustmentChanged="ArtworkAdjustmentEditor_AdjustmentChanged" ResetRequested="ArtworkAdjustmentEditor_ResetRequested"
-                                                                       OptionChanged="ArtworkAdjustmentEditor_OptionChanged" ChooseImageRequested="ArtworkAdjustmentEditor_ChooseImageRequested" ClearImageRequested="ArtworkAdjustmentEditor_ClearImageRequested"
-                                                                       CopyRequested="ArtworkAdjustmentEditor_CopyRequested" PasteRequested="ArtworkAdjustmentEditor_PasteRequested" />
-                                    <controls:ArtworkAdjustmentEditor x:Name="SidebarAdjustmentEditor" Visibility="Collapsed"
-                                                                       RegionKey="sidebar" Title="左栏图片" Subtitle="导航区域人物原图"
-                                                                       HeaderAccent="{DynamicResource Accent}" HeaderAccentSoft="{DynamicResource AccentSoft}"
-                                                                       IconData="M 4,3 L 10,3 L 10,21 L 4,21 Z M 12,6 L 20,6 L 20,21 L 12,21 Z M 6.8,12 L 7.2,12"
-                                                                       AdjustmentChanged="ArtworkAdjustmentEditor_AdjustmentChanged" ResetRequested="ArtworkAdjustmentEditor_ResetRequested"
-                                                                       OptionChanged="ArtworkAdjustmentEditor_OptionChanged" ChooseImageRequested="ArtworkAdjustmentEditor_ChooseImageRequested" ClearImageRequested="ArtworkAdjustmentEditor_ClearImageRequested"
-                                                                       CopyRequested="ArtworkAdjustmentEditor_CopyRequested" PasteRequested="ArtworkAdjustmentEditor_PasteRequested" />
-                                    <controls:ArtworkAdjustmentEditor x:Name="ChatAdjustmentEditor" Visibility="Collapsed"
-                                                                       RegionKey="chat" Title="聊天背景" Subtitle="对话主区域背景原图"
-                                                                       HeaderAccent="{DynamicResource Amber}" HeaderAccentSoft="{DynamicResource AmberSoft}"
-                                                                       IconData="M 4,5 C 4,3.9 4.9,3 6,3 L 18,3 C 19.1,3 20,3.9 20,5 L 20,15 C 20,16.1 19.1,17 18,17 L 10,17 L 6,21 L 6,17 C 4.9,17 4,16.1 4,15 Z M 8,8 L 16,8 M 8,12 L 13,12"
-                                                                       AdjustmentChanged="ArtworkAdjustmentEditor_AdjustmentChanged" ResetRequested="ArtworkAdjustmentEditor_ResetRequested"
-                                                                       OptionChanged="ArtworkAdjustmentEditor_OptionChanged" ChooseImageRequested="ArtworkAdjustmentEditor_ChooseImageRequested" ClearImageRequested="ArtworkAdjustmentEditor_ClearImageRequested"
-                                                                       CopyRequested="ArtworkAdjustmentEditor_CopyRequested" PasteRequested="ArtworkAdjustmentEditor_PasteRequested" />
-                                </Grid>
+                        <StackPanel x:Name="SettingsInfoPanel" Visibility="Collapsed">
+                            <artwork:ArtworkWorkbenchView x:Name="ArtworkWorkbench" Margin="0,13,0,0" />
+                        </StackPanel>
 
-                                <Grid Margin="0,14,0,0">
-                                    <Grid.ColumnDefinitions><ColumnDefinition Width="0.9*" /><ColumnDefinition Width="12" /><ColumnDefinition Width="1.1*" /></Grid.ColumnDefinitions>
-                                    <Border Style="{StaticResource InsetCard}" Background="{DynamicResource Surface}" Padding="0">
-                                        <StackPanel>
-                                            <Border Background="{DynamicResource AccentSoft}" BorderBrush="{DynamicResource InfoBorder}" BorderThickness="0,0,0,1" CornerRadius="13,13,0,0" Padding="14,11">
-                                                <Grid>
-                                                    <Grid.ColumnDefinitions><ColumnDefinition Width="34" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                                                    <Border Width="28" Height="28" CornerRadius="9" Background="{DynamicResource Accent}">
-                                                        <Path Width="14" Height="14" Data="M 4,6 L 20,6 M 4,12 L 20,12 M 4,18 L 14,18 M 17,16 L 20,19 L 17,22" Stroke="White" StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Fill="Transparent" Stretch="Uniform" />
-                                                    </Border>
-                                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                                        <TextBlock Text="快捷编辑" Foreground="{DynamicResource PrimaryText}" FontSize="11.5" FontWeight="SemiBold" />
-                                                        <TextBlock Text="回退、对照与模式同步" Foreground="{DynamicResource MutedText}" FontSize="10" Margin="0,2,0,0" />
-                                                    </StackPanel>
-                                                    <Border Grid.Column="2" Background="{DynamicResource Surface}" CornerRadius="8" Padding="8,4" VerticalAlignment="Center">
-                                                        <TextBlock Text="实时工具" Foreground="{DynamicResource Accent}" FontSize="9.5" FontWeight="SemiBold" />
-                                                    </Border>
-                                                </Grid>
-                                            </Border>
-                                            <Grid Margin="12">
-                                                <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="8" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                                                <Grid.RowDefinitions><RowDefinition Height="46" /><RowDefinition Height="8" /><RowDefinition Height="46" /></Grid.RowDefinitions>
-                                                <Button x:Name="VisualUndoButton" Style="{StaticResource HomeCrispButton}" Height="46" Padding="10,0" Click="VisualUndo_Click" ToolTip="撤销上一次图像修改（Ctrl+Z）" AutomationProperties.Name="撤销上一次图像修改">
-                                                    <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="26" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions><Border Width="22" Height="22" CornerRadius="7" Background="{DynamicResource SkySoft}"><Path Width="11" Height="11" Data="M 8,5 L 3,9 L 8,13 M 4,9 L 12,9 C 16,9 18,11 18,15" Stroke="{DynamicResource Sky}" StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Fill="Transparent" Stretch="Uniform" /></Border><TextBlock Grid.Column="1" Text="撤销" VerticalAlignment="Center" FontSize="10.5" FontWeight="SemiBold" /></Grid>
-                                                </Button>
-                                                <Button x:Name="VisualRedoButton" Grid.Column="2" Style="{StaticResource HomeCrispButton}" Height="46" Padding="10,0" Click="VisualRedo_Click" ToolTip="重做图像修改（Ctrl+Y）" AutomationProperties.Name="重做图像修改">
-                                                    <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="26" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions><Border Width="22" Height="22" CornerRadius="7" Background="{DynamicResource TealSoft}"><Path Width="11" Height="11" Data="M 16,5 L 21,9 L 16,13 M 20,9 L 12,9 C 8,9 6,11 6,15" Stroke="{DynamicResource Teal}" StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Fill="Transparent" Stretch="Uniform" /></Border><TextBlock Grid.Column="1" Text="重做" VerticalAlignment="Center" FontSize="10.5" FontWeight="SemiBold" /></Grid>
-                                                </Button>
-                                                <Button x:Name="VisualOriginalPreviewButton" Grid.Row="2" Style="{StaticResource HomeCrispButton}" Height="46" Padding="10,0"
-                                                        PreviewMouseLeftButtonDown="VisualOriginalPreview_PreviewMouseLeftButtonDown" PreviewMouseLeftButtonUp="VisualOriginalPreview_PreviewMouseLeftButtonUp" LostMouseCapture="VisualOriginalPreview_LostMouseCapture"
-                                                        ToolTip="按住临时查看当前亮暗模式的主题原图，松开恢复参数" AutomationProperties.Name="按住查看主题原图">
-                                                    <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="26" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions><Border Width="22" Height="22" CornerRadius="7" Background="{DynamicResource AmberSoft}"><Path Width="12" Height="12" Data="M 2,12 C 5,7 9,5 12,5 C 15,5 19,7 22,12 C 19,17 15,19 12,19 C 9,19 5,17 2,12 Z M 12,9 A 3,3 0 1 1 11.9,9" Stroke="{DynamicResource Amber}" StrokeThickness="1.7" Fill="Transparent" Stretch="Uniform" /></Border><TextBlock Grid.Column="1" Text="按住看原图" VerticalAlignment="Center" FontSize="10.5" FontWeight="SemiBold" /></Grid>
-                                                </Button>
-                                                <Button x:Name="CopyVisualModeButton" Grid.Row="2" Grid.Column="2" Style="{StaticResource HomeCrispButton}" Height="46" Padding="10,0" Click="CopyVisualMode_Click" ToolTip="把当前亮暗模式的三个区域参数复制到另一模式">
-                                                    <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="26" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions><Border Width="22" Height="22" CornerRadius="7" Background="{DynamicResource AccentSoft}"><Path Width="11" Height="11" Data="M 5,4 L 16,4 L 16,15 L 5,15 Z M 9,8 L 20,8 L 20,19 L 9,19" Stroke="{DynamicResource Accent}" StrokeThickness="1.6" Fill="Transparent" Stretch="Uniform" /></Border><TextBlock x:Name="CopyVisualModeText" Grid.Column="1" Text="复制到暗色" VerticalAlignment="Center" FontSize="10.5" FontWeight="SemiBold" /></Grid>
-                                                </Button>
-                                            </Grid>
-                                        </StackPanel>
-                                    </Border>
-                                    <Border Grid.Column="2" Style="{StaticResource InsetCard}" Background="{DynamicResource Surface}" Padding="0">
-                                        <StackPanel>
-                                            <Border Background="{DynamicResource TealSoft}" BorderBrush="{DynamicResource InfoBorder}" BorderThickness="0,0,0,1" CornerRadius="13,13,0,0" Padding="14,11">
-                                                <Grid>
-                                                    <Grid.ColumnDefinitions><ColumnDefinition Width="34" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                                                    <Border Width="28" Height="28" CornerRadius="9" Background="{DynamicResource Teal}">
-                                                        <Path Width="14" Height="14" Data="M 5,4 L 19,4 L 19,20 L 5,20 Z M 8,4 L 8,10 L 16,10 L 16,4 M 8,15 L 16,15" Stroke="White" StrokeThickness="1.7" StrokeLineJoin="Round" Fill="Transparent" Stretch="Uniform" />
-                                                    </Border>
-                                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                                        <TextBlock Text="个人图像方案" Foreground="{DynamicResource PrimaryText}" FontSize="11.5" FontWeight="SemiBold" />
-                                                        <TextBlock Text="保存并复用整套图像参数" Foreground="{DynamicResource MutedText}" FontSize="10" Margin="0,2,0,0" />
-                                                    </StackPanel>
-                                                    <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                                                    <Button x:Name="ImportVisualPresetButton" Style="{StaticResource SettingsMiniButton}" Click="ImportVisualPreset_Click" ToolTip="从文件导入图像方案" AutomationProperties.Name="导入图像方案">
-                                                        <Path Width="13" Height="13" Data="M 12,3 L 12,15 M 7.5,10.5 L 12,15 L 16.5,10.5 M 4,17 L 4,20 L 20,20 L 20,17" Stroke="{DynamicResource Teal}" StrokeThickness="1.7" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Fill="Transparent" Stretch="Uniform" />
-                                                    </Button>
-                                                    <Button x:Name="ExportVisualPresetButton" Style="{StaticResource SettingsMiniButton}" Margin="6,0,0,0" Click="ExportVisualPreset_Click" ToolTip="把所选方案导出为分享文件" AutomationProperties.Name="导出所选图像方案">
-                                                        <Path Width="13" Height="13" Data="M 12,16 L 12,4 M 7.5,8.5 L 12,4 L 16.5,8.5 M 4,17 L 4,20 L 20,20 L 20,17" Stroke="{DynamicResource Teal}" StrokeThickness="1.7" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Fill="Transparent" Stretch="Uniform" />
-                                                    </Button>
-                                                    <Button x:Name="DeleteVisualPresetButton" Style="{StaticResource SettingsMiniButton}" Margin="6,0,0,0" Click="DeleteVisualPreset_Click" ToolTip="删除所选图像方案" AutomationProperties.Name="删除所选图像方案">
-                                                        <Path Width="12" Height="13" Data="M 5,7 L 19,7 M 9,7 L 9,19 M 15,7 L 15,19 M 7,7 L 8,21 L 16,21 L 17,7 M 9,4 L 15,4 L 16,7 L 8,7 Z" Stroke="{DynamicResource MutedText}" StrokeThickness="1.6" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Fill="Transparent" Stretch="Uniform" />
-                                                    </Button>
-                                                    </StackPanel>
-                                                </Grid>
-                                            </Border>
-                                            <StackPanel Margin="14,11,14,13">
-                                                <TextBlock Text="使用已有方案" Foreground="{DynamicResource MutedText}" FontSize="9.5" FontWeight="SemiBold" Margin="1,0,0,5" />
-                                                <Grid>
-                                                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="8" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                                                    <ComboBox x:Name="VisualPresetComboBox" Height="32" Style="{StaticResource SettingsComboBox}" DisplayMemberPath="Name" IsTextSearchEnabled="True"
-                                                          SelectionChanged="VisualPresetComboBox_SelectionChanged" ToolTip="选择已有个人图像方案" AutomationProperties.Name="已有个人图像方案" />
-                                                    <Button x:Name="ApplyVisualPresetButton" Grid.Column="2" Style="{StaticResource HomeCrispButton}" Height="32" Padding="13,0" Content="应用" Click="ApplyVisualPreset_Click" />
-                                                </Grid>
-                                                <TextBlock Text="创建或覆盖方案" Foreground="{DynamicResource MutedText}" FontSize="9.5" FontWeight="SemiBold" Margin="1,9,0,5" />
-                                                <Grid>
-                                                    <Grid.ColumnDefinitions><ColumnDefinition Width="72" /><ColumnDefinition Width="*" /><ColumnDefinition Width="8" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                                                    <Border Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="9,0,0,9" Padding="10,0">
-                                                        <TextBlock Text="方案名称" Foreground="{DynamicResource SubtleText}" FontSize="9.5" VerticalAlignment="Center" />
-                                                    </Border>
-                                                    <TextBox x:Name="VisualPresetNameBox" Grid.Column="1" Height="32" Padding="8,4" VerticalContentAlignment="Center" Background="{DynamicResource Surface}" Foreground="{DynamicResource PrimaryText}" BorderBrush="{DynamicResource Border}" CaretBrush="{DynamicResource Accent}" ToolTip="输入新方案名称；选择现有方案并留空可覆盖保存" AutomationProperties.Name="新个人图像方案名称" />
-                                                    <Button x:Name="SaveVisualPresetButton" Grid.Column="3" Style="{StaticResource HomeCrispButton}" Background="{DynamicResource TealSoft}" BorderBrush="{DynamicResource Teal}" Foreground="{DynamicResource Teal}" Height="32" Padding="13,0" Content="保存参数" Click="SaveVisualPreset_Click" />
-                                                </Grid>
-                                            </StackPanel>
-                                        </StackPanel>
-                                    </Border>
-                                </Grid>
-                            </StackPanel>
-                        </Border>
-
+                        <personalization:ExperienceHubView x:Name="ExperienceInfoPanel"
+                                                           Visibility="Collapsed"
+                                                           Margin="0,13,0,0"
+                                                           PreferencesChanged="DisplayPreferencesPage_PreferencesChanged"
+                                                           SaveProfileRequested="ExperienceProfilesPage_SaveRequested"
+                                                           ApplyProfileRequested="ExperienceProfilesPage_ApplyRequested"
+                                                           DeleteProfileRequested="ExperienceProfilesPage_DeleteRequested"
+                                                           ArtworkStudioRequested="Settings_Click" />
                     </StackPanel>
-
-                    <personalization:ExperienceHubView x:Name="ExperienceInfoPanel"
-                                                       Visibility="Collapsed"
-                                                       PreferencesChanged="DisplayPreferencesPage_PreferencesChanged"
-                                                       SaveProfileRequested="ExperienceProfilesPage_SaveRequested"
-                                                       ApplyProfileRequested="ExperienceProfilesPage_ApplyRequested"
-                                                       DeleteProfileRequested="ExperienceProfilesPage_DeleteRequested"
-                                                       PreviousThemeRequested="SettingsPreviousTheme_Click"
-                                                       NextThemeRequested="SettingsNextTheme_Click"
-                                                       ColorModeRequested="SettingsColorMode_Click"
-                                                       ArtworkStudioRequested="Settings_Click" />
 
                     <about:AboutView x:Name="AboutPage" Visibility="Collapsed" />
 

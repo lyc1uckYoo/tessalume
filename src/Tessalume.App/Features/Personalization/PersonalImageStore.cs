@@ -1,5 +1,8 @@
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
+using System.Windows;
+using System.Windows.Media.Imaging;
 using Tessalume.Core.Runtime;
 
 namespace Tessalume.App.Features.Personalization;
@@ -7,6 +10,10 @@ namespace Tessalume.App.Features.Personalization;
 internal sealed class PersonalImageStore
 {
     public const long MaximumImageBytes = 32L * 1024 * 1024;
+
+    internal const long MaximumImagePixels = 64_000_000;
+
+    internal const int MaximumImageDimension = 32_768;
 
     private static readonly HashSet<string> SupportedExtensions =
         new(StringComparer.OrdinalIgnoreCase)
@@ -50,6 +57,7 @@ internal sealed class PersonalImageStore
             throw new InvalidDataException("个人图片必须大于 0 B 且不超过 32 MiB。");
         }
         await EnsureSupportedImageSignatureAsync(source, extension, cancellationToken);
+        await ValidateDecodableImageAsync(source, cancellationToken);
 
         var hash = await ComputeHashAsync(source, cancellationToken);
         var fileName = $"{hash[..24].ToLowerInvariant()}{extension}";
@@ -178,5 +186,72 @@ internal sealed class PersonalImageStore
         {
             throw new InvalidDataException("图片内容与文件扩展名不匹配，或文件已经损坏。");
         }
+    }
+
+    private static async Task ValidateDecodableImageAsync(
+        string path,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await Task.Run(
+                () => ValidateDecodableImage(path, cancellationToken),
+                cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception exception) when (exception is
+            FileFormatException or
+            InvalidOperationException or
+            NotSupportedException or
+            COMException or
+            OutOfMemoryException)
+        {
+            throw new InvalidDataException(
+                "图片无法安全解码，请换用有效且尺寸合理的 PNG、JPG、WebP、GIF 或 BMP 图片。",
+                exception);
+        }
+    }
+
+    private static void ValidateDecodableImage(
+        string path,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        using var stream = new FileStream(
+            path,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.Read,
+            4096,
+            FileOptions.SequentialScan);
+        var decoder = BitmapDecoder.Create(
+            stream,
+            BitmapCreateOptions.PreservePixelFormat | BitmapCreateOptions.DelayCreation,
+            BitmapCacheOption.OnDemand);
+        if (decoder.Frames.Count == 0)
+        {
+            throw new InvalidDataException("图片不包含可解码的画面。");
+        }
+
+        var frame = decoder.Frames[0];
+        var width = frame.PixelWidth;
+        var height = frame.PixelHeight;
+        if (width <= 0 || height <= 0 ||
+            width > MaximumImageDimension || height > MaximumImageDimension ||
+            (long)width * height > MaximumImagePixels)
+        {
+            throw new InvalidDataException(
+                $"图片像素尺寸过大；单边不得超过 {MaximumImageDimension:N0} px，" +
+                $"总像素不得超过 {MaximumImagePixels:N0}。"
+            );
+        }
+
+        var bytesPerPixel = Math.Max(1, (frame.Format.BitsPerPixel + 7) / 8);
+        var probe = new byte[bytesPerPixel];
+        frame.CopyPixels(new Int32Rect(0, 0, 1, 1), probe, bytesPerPixel, 0);
+        cancellationToken.ThrowIfCancellationRequested();
     }
 }

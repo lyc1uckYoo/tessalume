@@ -1,4 +1,5 @@
 using Tessalume.App.Features.Personalization;
+using Tessalume.App.Features.Personalization.ArtworkWorkbench.Presentation;
 using Tessalume.Core.Runtime;
 
 namespace Tessalume.App;
@@ -13,10 +14,13 @@ public partial class MainWindow
         if (theme?.ThemeId is not { Length: > 0 } themeId) return;
         var settings = GetVisualSettings(themeId);
         var replacement = (settings with { Display = e.Preferences }).Normalize();
-        if (replacement == settings.Normalize()) return;
-        RecordVisualUndo(themeId, settings, "display-preferences");
-        _themeVisualSettings[themeId] = replacement;
-        ScheduleVisualSettingsUpdate();
+        if (ThemeVisualSettingsSemanticComparer.Instance.Equals(replacement, settings)) return;
+        SetResolvedVisualSettings(themeId, replacement);
+        UpdateArtworkWorkbenchContext();
+        MarkVisualSettingsDirtyAndSchedule();
+        ArtworkWorkbench.SetApplyState(
+            ArtworkApplyState.Pending,
+            "等待写入本机配置");
     }
 
     private async void ExperienceProfilesPage_SaveRequested(object? sender, EventArgs e)
@@ -28,12 +32,17 @@ public partial class MainWindow
             ? $"体验方案 {_experiencePresets.Count + 1}"
             : requestedName;
         if (name.Length > 32) name = name[..32];
+        var currentSettings = GetVisualSettings(themeId);
+        _themeArtworkDefaults.TryGetValue(themeId, out var currentDefaults);
         var preset = new ThemeExperiencePreset
         {
             Name = name,
             ThemeId = themeId,
             DarkMode = _editingVisualDarkMode,
-            Settings = GetVisualSettings(themeId),
+            Settings = currentSettings,
+            VisualOverrides = ThemeArtworkSettingsResolver.CreateSparseOverride(
+                currentDefaults ?? CreateStandardArtworkDefaults(themeId),
+                currentSettings),
         }.Normalize();
         var existing = _experiencePresets
             .Select((item, index) => (item, index))
@@ -81,11 +90,14 @@ public partial class MainWindow
             return;
         }
 
+        _themeArtworkDefaults.TryGetValue(preset.ThemeId, out var presetDefaults);
+        var presetSettings = ThemeArtworkSettingsResolver.Resolve(
+            presetDefaults ?? CreateStandardArtworkDefaults(preset.ThemeId),
+            preset.Normalize().VisualOverrides).Settings;
         var current = GetVisualSettings(preset.ThemeId);
-        if (current.Normalize() != preset.Settings.Normalize())
+        if (!ThemeVisualSettingsSemanticComparer.Instance.Equals(current, presetSettings))
         {
-            RecordVisualUndo(preset.ThemeId, current);
-            _themeVisualSettings[preset.ThemeId] = preset.Settings.Normalize();
+            SetResolvedVisualSettings(preset.ThemeId, presetSettings);
         }
         SelectTheme(theme);
         if (!await ApplyThemeAsync(theme)) return;

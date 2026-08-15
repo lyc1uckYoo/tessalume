@@ -112,10 +112,6 @@ public partial class MainWindow
             ShadowDepth = dark ? 8 : 7,
             Opacity = dark ? 0.4 : 0.18,
         };
-        if (SettingsThemeControlBar is not null)
-        {
-            SettingsThemeControlBar.Effect = (System.Windows.Media.Effects.Effect)Resources["SettingsBarShadow"];
-        }
         foreach (var theme in _themes)
         {
             theme.SetDarkMode(dark);
@@ -128,7 +124,6 @@ public partial class MainWindow
         UpdateStartupButton();
         UpdateQuickSwitchButton();
         UpdateCodexModeButton();
-        UpdateVisualAdjustmentGroup();
         if (_uiInitialized && AllThemesFilterButton is not null)
         {
             UpdateThemeFilterUi(_showFavorites

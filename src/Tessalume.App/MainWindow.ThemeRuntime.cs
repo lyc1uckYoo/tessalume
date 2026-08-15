@@ -135,6 +135,7 @@ public partial class MainWindow
                 LastFailureAt = null,
             }, cancellationToken);
             _activePort = port.Value;
+            _artworkCodexConnectionVerified = true;
             _activeThemeId = package.Manifest.Id;
             _lastThemeId = _activeThemeId;
             UpdateAppliedThemeState();

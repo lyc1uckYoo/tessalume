@@ -62,6 +62,8 @@ public partial class MainWindow
             _themes.Add(theme);
         }
 
+        await ResolveThemeArtworkDefaultsAsync();
+
         if (!_uiInitialized)
         {
             RefreshQuickSwitchWindow();

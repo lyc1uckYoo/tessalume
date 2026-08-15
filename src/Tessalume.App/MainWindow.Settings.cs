@@ -84,7 +84,7 @@ public partial class MainWindow
         FavoriteThemeIds = _favoriteThemeIds.Order(StringComparer.OrdinalIgnoreCase).ToList(),
         ThemeLibrarySort = ThemeLibraryState.NormalizeSort(_themeLibrarySort),
         RecentThemeUsage = ThemeLibraryState.NormalizeUsage(_themeUsage.Values),
-        ThemeVisualSettings = _themeVisualSettings.ToDictionary(
+        ThemeVisualOverrides = SnapshotVisualOverrides().ToDictionary(
             pair => pair.Key,
             pair => pair.Value.Normalize(),
             StringComparer.OrdinalIgnoreCase),

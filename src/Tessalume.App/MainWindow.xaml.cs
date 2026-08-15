@@ -14,6 +14,7 @@ using Tessalume.App.Features.About;
 using Tessalume.App.Features.Diagnostics;
 using Tessalume.App.Features.Navigation;
 using Tessalume.App.Features.Personalization;
+using Tessalume.App.Features.Personalization.ArtworkWorkbench.Infrastructure;
 using Tessalume.App.Infrastructure;
 using Tessalume.App.Models;
 using Tessalume.Core.Backup;
@@ -49,6 +50,7 @@ public partial class MainWindow : Window, IAsyncDisposable
     private readonly DiagnosticsInspectionService _diagnosticsService;
     private readonly AboutUpdateService _aboutUpdateService;
     private readonly PersonalImageStore _personalImageStore;
+    private readonly ArtworkThemeDefaultsStore _artworkDefaultsStore = new();
     private readonly CancellationTokenSource _updateCancellation = new();
     private readonly CancellationTokenSource _backupCancellation = new();
     private readonly CancellationTokenSource _personalizationCancellation = new();
@@ -56,6 +58,14 @@ public partial class MainWindow : Window, IAsyncDisposable
     private readonly Dictionary<string, ThemeUsageRecord> _themeUsage =
         new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, ThemeVisualSettings> _themeVisualSettings =
+        new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, ThemeVisualSettingsOverride> _themeVisualOverrides =
+        new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, ThemeArtworkDefaultsDocument> _themeArtworkDefaults =
+        new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, ArtworkThemeDefaultsLoadResult> _themeArtworkDefaultLoads =
+        new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, ThemeVisualSettingsResolution> _themeVisualResolutions =
         new(StringComparer.OrdinalIgnoreCase);
     private readonly ObservableCollection<ThemeArtworkPreset> _artworkPresets = [];
     private readonly ObservableCollection<ThemeExperiencePreset> _experiencePresets = [];
@@ -143,11 +153,12 @@ public partial class MainWindow : Window, IAsyncDisposable
         {
             _themeUsage[usage.ThemeId] = usage;
         }
-        foreach (var (themeId, settings) in preferences.ThemeVisualSettings)
+        foreach (var (themeId, settings) in preferences.ThemeVisualOverrides)
         {
             if (!string.IsNullOrWhiteSpace(themeId))
             {
-                _themeVisualSettings[themeId] = (settings ?? new ThemeVisualSettings()).Normalize();
+                _themeVisualOverrides[themeId] =
+                    (settings ?? new ThemeVisualSettingsOverride()).Normalize();
             }
         }
         foreach (var preset in preferences.ArtworkPresets)
@@ -167,6 +178,7 @@ public partial class MainWindow : Window, IAsyncDisposable
         if (_uiInitialized) return;
 
         InitializeComponent();
+        InitializeArtworkWorkbench();
         DiagnosticsPage.RefreshRequested += DiagnosticsPage_RefreshRequested;
         DiagnosticsPage.OpenLogDirectoryRequested += DiagnosticsPage_OpenLogDirectoryRequested;
         DiagnosticsPage.RestoreBuiltInThemesRequested += DiagnosticsPage_RestoreBuiltInThemesRequested;
@@ -200,7 +212,6 @@ public partial class MainWindow : Window, IAsyncDisposable
         FitWindowToWorkArea();
         SourceInitialized += (_, _) => NativeTitleBar.Apply(this, _darkMode);
         ThemeItems.ItemsSource = _visibleThemes;
-        VisualPresetComboBox.ItemsSource = _artworkPresets;
         ExperienceProfilesPage.Bind(_experiencePresets);
         _visualSettingsDebounce = new DispatcherTimer(DispatcherPriority.Background)
         {
@@ -226,8 +237,8 @@ public partial class MainWindow : Window, IAsyncDisposable
     {
         const double outerMargin = 24;
         var workArea = SystemParameters.WorkArea;
-        var availableWidth = Math.Max(640, workArea.Width - outerMargin);
-        var availableHeight = Math.Max(360, workArea.Height - outerMargin);
+        var availableWidth = Math.Max(1, workArea.Width - outerMargin);
+        var availableHeight = Math.Max(1, workArea.Height - outerMargin);
         MinWidth = Math.Min(MinWidth, availableWidth);
         MinHeight = Math.Min(MinHeight, availableHeight);
         Width = Math.Min(Width, availableWidth);
@@ -236,14 +247,20 @@ public partial class MainWindow : Window, IAsyncDisposable
 
     private void AdaptiveViewport_SizeChanged(object sender, SizeChangedEventArgs e)
     {
-        const double designWidth = 1080;
-        const double designHeight = 720;
         if (e.NewSize.Width <= 0 || e.NewSize.Height <= 0) return;
-
-        var scale = Math.Min(1, Math.Min(e.NewSize.Width / designWidth, e.NewSize.Height / designHeight));
-        if (Math.Abs(AdaptiveScale.ScaleX - scale) < 0.001) return;
-        AdaptiveScale.ScaleX = scale;
-        AdaptiveScale.ScaleY = scale;
+        // Keep text at the native WPF/DPI scale. The previous whole-window
+        // LayoutTransform made ClearType text soft at 125–200% DPI and hid
+        // layout problems instead of allowing each page to reflow and scroll.
+        AdaptiveScale.ScaleX = 1;
+        AdaptiveScale.ScaleY = 1;
+        var compact = e.NewSize.Width < 900;
+        ShellSidebarColumn.Width = new GridLength(compact ? 184 : 226);
+        if (InfoPage is not null)
+        {
+            InfoPage.Margin = compact
+                ? new Thickness(16, 16, 16, 14)
+                : new Thickness(32, 25, 32, 22);
+        }
     }
 
     private void MainWindow_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -258,14 +275,14 @@ public partial class MainWindow : Window, IAsyncDisposable
         {
             if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.Z)
             {
-                UndoVisualSettings();
+                ArtworkWorkbench.Undo();
                 e.Handled = true;
                 return;
             }
             if ((Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.Y) ||
                 (Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift) && e.Key == Key.Z))
             {
-                RedoVisualSettings();
+                ArtworkWorkbench.Redo();
                 e.Handled = true;
                 return;
             }
@@ -364,7 +381,8 @@ public partial class MainWindow : Window, IAsyncDisposable
         _quickSwitchWindow?.Close();
         _quickSwitchWindow = null;
         _runtime.StatusChanged -= Runtime_StatusChanged;
-        var visualSettingsPending = _visualSettingsDebounce?.IsEnabled == true;
+        var visualSettingsPending =
+            _preferencesDirty || _visualSettingsDebounce?.IsEnabled == true;
         if (_visualSettingsDebounce is not null)
         {
             _visualSettingsDebounce.Stop();
@@ -381,6 +399,9 @@ public partial class MainWindow : Window, IAsyncDisposable
         _updateCancellation.Dispose();
         _backupCancellation.Cancel();
         _backupCancellation.Dispose();
+        _visualApplyCancellation?.Cancel();
+        _visualApplyCancellation?.Dispose();
+        _visualApplyCancellation = null;
         _personalizationCancellation.Cancel();
         _personalizationCancellation.Dispose();
         _aboutUpdateService.Dispose();
@@ -389,6 +410,7 @@ public partial class MainWindow : Window, IAsyncDisposable
             await CreatorCenter.FlushPendingPromptDraftAsync();
             CreatorCenter.Dispose();
         }
+        DisposeArtworkWorkbench();
         if (visualSettingsPending && !_userDataRestoreCompleted)
         {
             await SavePreferencesAsync();
