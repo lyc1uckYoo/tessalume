@@ -75,11 +75,11 @@ public partial class ArtworkWorkbenchView
         CompositionSourceText.Text = standardFallback
             ? "标准预览 · 需要在线校准"
             : adjustment.CompositionMode switch
-        {
-            ThemeArtworkCompositionMode.Legacy => "旧版兼容构图",
-            ThemeArtworkCompositionMode.Custom => "用户自定义构图",
-            _ => "主题推荐构图",
-        };
+            {
+                ThemeArtworkCompositionMode.Legacy => "旧版兼容构图",
+                ThemeArtworkCompositionMode.Custom => "用户自定义构图",
+                _ => "主题推荐构图",
+            };
         CompositionSourceBadge.Background = FindBrush(
             standardFallback || adjustment.CompositionMode == ThemeArtworkCompositionMode.Legacy
                 ? "AmberSoft"

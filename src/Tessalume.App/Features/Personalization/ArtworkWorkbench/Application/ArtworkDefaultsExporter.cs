@@ -57,10 +57,10 @@ internal static class ArtworkDefaultsExporter
         ThemeArtworkAdjustment light,
         ThemeArtworkAdjustment dark,
         string region) => new()
-    {
-        Light = CreateSlot(light, $"{region}-light"),
-        Dark = CreateSlot(dark, $"{region}-dark"),
-    };
+        {
+            Light = CreateSlot(light, $"{region}-light"),
+            Dark = CreateSlot(dark, $"{region}-dark"),
+        };
 
     private static ThemeArtworkDefaultSlot CreateSlot(
         ThemeArtworkAdjustment source,

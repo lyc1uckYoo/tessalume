@@ -729,11 +729,11 @@ public static class ThemeArtworkSettingsResolver
     private static ThemeVisualModeSettingsOverride CreateModeOverride(
         ThemeVisualModeSettings baseline,
         ThemeVisualModeSettings resolved) => new()
-    {
-        Hero = CreateSlotOverride(baseline.Hero, resolved.Hero),
-        Sidebar = CreateSlotOverride(baseline.Sidebar, resolved.Sidebar),
-        Chat = CreateSlotOverride(baseline.Chat, resolved.Chat),
-    };
+        {
+            Hero = CreateSlotOverride(baseline.Hero, resolved.Hero),
+            Sidebar = CreateSlotOverride(baseline.Sidebar, resolved.Sidebar),
+            Chat = CreateSlotOverride(baseline.Chat, resolved.Chat),
+        };
 
     private static ThemeArtworkOverride CreateSlotOverride(
         ThemeArtworkAdjustment baseline,

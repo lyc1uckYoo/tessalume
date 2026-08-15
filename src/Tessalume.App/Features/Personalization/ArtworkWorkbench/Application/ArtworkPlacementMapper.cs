@@ -297,14 +297,14 @@ internal static class ArtworkPlacementMapper
         double alignmentY = .5d,
         bool mirrorX = false,
         bool mirrorY = false) => new()
-    {
-        SizeMode = ThemeArtworkSizeMode.Contain,
-        PositionX = ThemeArtworkPositionValue.Percent(
+        {
+            SizeMode = ThemeArtworkSizeMode.Contain,
+            PositionX = ThemeArtworkPositionValue.Percent(
             double.IsFinite(alignmentX) ? Math.Clamp(alignmentX, 0d, 1d) * 100d : 50d),
-        PositionY = ThemeArtworkPositionValue.Percent(
+            PositionY = ThemeArtworkPositionValue.Percent(
             double.IsFinite(alignmentY) ? Math.Clamp(alignmentY, 0d, 1d) * 100d : 50d),
-        Geometry = new ThemeArtworkGeometry { MirrorX = mirrorX, MirrorY = mirrorY },
-    };
+            Geometry = new ThemeArtworkGeometry { MirrorX = mirrorX, MirrorY = mirrorY },
+        };
 
     public static ThemeArtworkPlacementSpec Fill(
         ArtworkSize imageSize,
@@ -428,26 +428,26 @@ internal static class ArtworkPlacementMapper
         ThemeArtworkPositionValue position,
         double targetLength,
         double renderedLength) => position.Normalize() switch
-    {
-        { Kind: ThemeArtworkPositionKind.Start } => 0d,
-        { Kind: ThemeArtworkPositionKind.End } => targetLength - renderedLength,
-        { Kind: ThemeArtworkPositionKind.Percent, Value: var value } =>
-            (targetLength - renderedLength) * value / 100d,
-        { Kind: ThemeArtworkPositionKind.Pixels, Value: var value } => value,
-        _ => (targetLength - renderedLength) / 2d,
-    };
+        {
+            { Kind: ThemeArtworkPositionKind.Start } => 0d,
+            { Kind: ThemeArtworkPositionKind.End } => targetLength - renderedLength,
+            { Kind: ThemeArtworkPositionKind.Percent, Value: var value } =>
+                (targetLength - renderedLength) * value / 100d,
+            { Kind: ThemeArtworkPositionKind.Pixels, Value: var value } => value,
+            _ => (targetLength - renderedLength) / 2d,
+        };
 
     private static double ResolvePositionValue(
         ThemeArtworkPositionValue position,
         double targetLength) => position.Normalize() switch
-    {
-        { Kind: ThemeArtworkPositionKind.Start } => 0d,
-        { Kind: ThemeArtworkPositionKind.End } => targetLength,
-        { Kind: ThemeArtworkPositionKind.Percent, Value: var value } =>
-            targetLength * value / 100d,
-        { Kind: ThemeArtworkPositionKind.Pixels, Value: var value } => value,
-        _ => targetLength / 2d,
-    };
+        {
+            { Kind: ThemeArtworkPositionKind.Start } => 0d,
+            { Kind: ThemeArtworkPositionKind.End } => targetLength,
+            { Kind: ThemeArtworkPositionKind.Percent, Value: var value } =>
+                targetLength * value / 100d,
+            { Kind: ThemeArtworkPositionKind.Pixels, Value: var value } => value,
+            _ => targetLength / 2d,
+        };
 
     private static ThemeArtworkPositionValue ToBackgroundPosition(double start, double length) =>
         1d - length <= Epsilon
