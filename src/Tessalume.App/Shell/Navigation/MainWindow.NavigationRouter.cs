@@ -22,12 +22,12 @@ public partial class MainWindow
         ThemeDropOverlay.Visibility = Visibility.Collapsed;
         _currentRoute = route;
         // The canvas-led artwork route needs enough width to preserve the real
-        // banner/sidebar/chat proportions. Other information routes retain the
-        // compact reading measure used by Tessalume 2.0.
+        // banner/sidebar/chat proportions. The pet center is a stage-led
+        // workspace and uses the full viewport; reading routes stay compact.
         InfoContentHost.MaxWidth = route switch
         {
             AppRoute.ArtworkStudio => 1440,
-            AppRoute.Pets => 1040,
+            AppRoute.Pets => double.PositiveInfinity,
             _ => 940,
         };
         SetArtworkConnectionMonitoring(route == AppRoute.ArtworkStudio);

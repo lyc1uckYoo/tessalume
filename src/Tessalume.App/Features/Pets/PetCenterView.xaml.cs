@@ -1,5 +1,7 @@
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 
 namespace Tessalume.App.Features.Pets;
@@ -8,12 +10,15 @@ public partial class PetCenterView : UserControl, IDisposable
 {
     private readonly PetPreviewPlayer _previewPlayer;
     private PetCenterPresentationState _state = new();
+    private bool _pageActive;
     private bool _disposed;
 
     public PetCenterView()
     {
         InitializeComponent();
         _previewPlayer = new PetPreviewPlayer(PetPreviewImage, PreviewStateText);
+        _previewPlayer.PlaybackStateChanged += PreviewPlayer_PlaybackStateChanged;
+        _previewPlayer.SelectionChanged += PreviewPlayer_SelectionChanged;
     }
 
     internal event EventHandler? RefreshRequested;
@@ -34,35 +39,43 @@ public partial class PetCenterView : UserControl, IDisposable
 
     internal event EventHandler? RestoreBackupRequested;
 
+    internal PetPreviewPlayer PreviewPlayer => _previewPlayer;
+
     internal void Render(PetCenterPresentationState state)
     {
         _state = state;
-        HeaderStatusText.Text = state.StatusTitle;
         InstallationStatusTitle.Text = state.StatusTitle;
         InstallationStatusDetail.Text = state.StatusDetail;
         ProductVersionText.Text = state.ProductVersion;
         ProtocolText.Text = state.ProtocolSummary;
         AuthorLicenseText.Text = $"{state.Author} · {state.LicenseSummary}";
-        InstallLocationText.Text = state.InstallLocation;
+        InstallLocationText.Text = $"仅管理 {state.InstallLocation}";
         InstallLocationText.ToolTip = state.InstallLocation;
         PrimaryActionButton.Content = state.PrimaryActionText;
         PrimaryActionButton.IsEnabled = state.PrimaryActionEnabled && !state.IsBusy;
-        UninstallButton.Visibility = state.CanUninstall ? Visibility.Visible : Visibility.Collapsed;
+        CopyCommandButton.IsEnabled = !state.IsBusy;
+        RefreshButton.IsEnabled = !state.IsBusy;
+        UninstallButton.IsEnabled = state.CanUninstall && !state.IsBusy;
+        RestoreBackupButton.IsEnabled = state.CanRestoreBackup && !state.IsBusy;
         AcknowledgeSelectionButton.Visibility = state.CanAcknowledgeSelection
             ? Visibility.Visible
             : Visibility.Collapsed;
-        RestoreBackupButton.Visibility = state.CanRestoreBackup
+        AcknowledgeSelectionButton.IsEnabled = !state.IsBusy;
+        ActivationGuidePanel.Visibility = state.Status == PetCenterStatus.AwaitingCodexSelection
             ? Visibility.Visible
             : Visibility.Collapsed;
-        RestoreBackupButton.ToolTip = state.LatestBackupLabel;
+        RestoreBackupButton.ToolTip = state.LatestBackupLabel ?? "当前没有可恢复备份";
         _previewPlayer.Configure(state.PreviewFrames);
-        PreviewFallbackText.Visibility = state.PreviewFrames.Count == 0
-            ? Visibility.Visible
-            : Visibility.Collapsed;
+        UpdatePreviewButtons();
+        UpdatePlaybackPresentation();
         RenderStatusPalette(state.Status);
     }
 
-    internal void SetPageActive(bool active) => _previewPlayer.SetActive(active && IsVisible);
+    internal void SetPageActive(bool active)
+    {
+        _pageActive = active;
+        _previewPlayer.SetActive(active && IsVisible);
+    }
 
     private void RenderStatusPalette(PetCenterStatus status)
     {
@@ -78,11 +91,45 @@ public partial class PetCenterView : UserControl, IDisposable
             _ => "Accent",
         };
         var brush = (Brush)FindResource(resourceKey);
-        HeaderStatusDot.Fill = brush;
-        HeaderStatusText.Foreground = brush;
         InstallationStatusDot.Fill = brush;
         InstallationStatusHalo.Fill = brush;
     }
+
+    private void UpdatePlaybackPresentation()
+    {
+        PlaybackStatusText.Text = _previewPlayer.PlaybackDescription;
+        PreviewFallbackText.Visibility = PetPreviewImage.Source is null
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+        AutomationProperties.SetHelpText(
+            PetPreviewImage,
+            $"{PreviewStateText.Text}；{_previewPlayer.PlaybackDescription}");
+    }
+
+    private void UpdatePreviewButtons()
+    {
+        var availableKeys = _state.PreviewFrames
+            .Select(preview => preview.Key)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        foreach (var button in GetPreviewButtons())
+        {
+            var key = button.Tag as string;
+            button.IsEnabled = key is not null && availableKeys.Contains(key);
+            button.IsChecked = key is not null &&
+                string.Equals(key, _previewPlayer.CurrentKey, StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
+    private IEnumerable<ToggleButton> GetPreviewButtons() =>
+        DailyActionsPanel.Children.OfType<ToggleButton>()
+            .Concat(TaskActionsPanel.Children.OfType<ToggleButton>())
+            .Concat(ViewActionsPanel.Children.OfType<ToggleButton>());
+
+    private void PreviewPlayer_PlaybackStateChanged(object? sender, EventArgs e) =>
+        UpdatePlaybackPresentation();
+
+    private void PreviewPlayer_SelectionChanged(object? sender, EventArgs e) =>
+        UpdatePreviewButtons();
 
     private void PrimaryAction_Click(object sender, RoutedEventArgs e) =>
         PrimaryActionRequested?.Invoke(this, _state.PrimaryAction);
@@ -113,59 +160,71 @@ public partial class PetCenterView : UserControl, IDisposable
 
     private void PreviewState_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is Button { Tag: string key })
+        if (sender is ToggleButton { Tag: string key })
         {
             _previewPlayer.Select(key);
+            UpdatePreviewButtons();
         }
     }
 
     private void PetCenterView_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e) =>
-        _previewPlayer.SetActive(IsVisible);
+        _previewPlayer.SetActive(_pageActive && IsVisible);
 
     private void PetCenterView_Unloaded(object sender, RoutedEventArgs e) =>
         _previewPlayer.SetActive(false);
 
     private void PetCenterView_SizeChanged(object sender, SizeChangedEventArgs e)
     {
-        var compact = e.NewSize.Width > 0 && e.NewSize.Width < 720;
-        PreviewColumn.Width = compact ? new GridLength(1, GridUnitType.Star) : new GridLength(324);
-        HeroGapColumn.Width = compact ? new GridLength(0) : new GridLength(22);
-        DetailsColumn.Width = compact ? new GridLength(0) : new GridLength(1, GridUnitType.Star);
-        CompactGapRow.Height = compact ? new GridLength(16) : new GridLength(0);
-        Grid.SetColumn(PreviewCard, 0);
-        Grid.SetRow(PreviewCard, compact ? 2 : 0);
-        Grid.SetColumn(DetailsPanel, compact ? 0 : 2);
-        Grid.SetRow(DetailsPanel, 0);
-        Grid.SetColumn(MetadataPanel, compact ? 0 : 2);
-        Grid.SetRow(MetadataPanel, compact ? 3 : 2);
-        MetadataPanel.Margin = compact ? new Thickness(0, 13, 0, 0) : new Thickness(0, 13, 0, 0);
-        PreviewCard.MinHeight = compact ? 322 : 346;
-
-        var lowerCompact = e.NewSize.Width > 0 && e.NewSize.Width < 760;
-        if (lowerCompact)
+        var compact = e.NewSize.Width > 0 && e.NewSize.Width < 900;
+        if (compact)
         {
-            Grid.SetColumn(InstallGuideCard, 0);
-            Grid.SetRow(InstallGuideCard, 0);
-            Grid.SetColumnSpan(InstallGuideCard, 3);
-            Grid.SetColumn(CompanionThemeCard, 0);
-            Grid.SetRow(CompanionThemeCard, 1);
-            Grid.SetColumnSpan(CompanionThemeCard, 3);
-            CompanionThemeCard.Margin = new Thickness(0, 12, 0, 0);
-            if (LowerLayout.RowDefinitions.Count == 0)
-            {
-                LowerLayout.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-                LowerLayout.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            }
+            WorkspaceLeftColumn.Width = new GridLength(1, GridUnitType.Star);
+            WorkspaceGapColumn.Width = new GridLength(0);
+            WorkspaceRightColumn.Width = new GridLength(0);
+            Grid.SetColumn(PreviewStage, 0);
+            Grid.SetRow(PreviewStage, 0);
+            Grid.SetColumn(ActionSelector, 0);
+            Grid.SetRow(ActionSelector, 2);
+            Grid.SetColumn(ControlPanelHost, 0);
+            Grid.SetRow(ControlPanelHost, 1);
+            Grid.SetRowSpan(ControlPanelHost, 1);
+            ControlPanelHost.Margin = new Thickness(0, 20, 0, 0);
+            ControlPanelHost.Padding = new Thickness(0, 20, 0, 0);
+            ControlPanelHost.BorderThickness = new Thickness(0, 1, 0, 0);
+            ControlPanelHost.MinHeight = 0;
+            ActionSelector.Margin = new Thickness(0, 20, 0, 0);
+            WorkspaceSurface.MinHeight = 0;
+            WorkspaceSurface.Padding = new Thickness(17);
+            PreviewStage.MinHeight = 332;
+            PreviewImageHost.Height = 274;
+            PetPreviewImage.MaxWidth = 390;
+            PetPreviewImage.MaxHeight = 262;
+            _previewPlayer.SetDisplayBounds(Math.Max(260, e.NewSize.Width - 90), 262);
         }
         else
         {
-            Grid.SetColumn(InstallGuideCard, 0);
-            Grid.SetRow(InstallGuideCard, 0);
-            Grid.SetColumnSpan(InstallGuideCard, 1);
-            Grid.SetColumn(CompanionThemeCard, 2);
-            Grid.SetRow(CompanionThemeCard, 0);
-            Grid.SetColumnSpan(CompanionThemeCard, 1);
-            CompanionThemeCard.Margin = new Thickness(0);
+            WorkspaceLeftColumn.Width = new GridLength(3, GridUnitType.Star);
+            WorkspaceGapColumn.Width = new GridLength(24);
+            WorkspaceRightColumn.Width = new GridLength(2, GridUnitType.Star);
+            Grid.SetColumn(PreviewStage, 0);
+            Grid.SetRow(PreviewStage, 0);
+            Grid.SetColumn(ActionSelector, 0);
+            Grid.SetRow(ActionSelector, 1);
+            Grid.SetColumn(ControlPanelHost, 2);
+            Grid.SetRow(ControlPanelHost, 0);
+            Grid.SetRowSpan(ControlPanelHost, 2);
+            ControlPanelHost.Margin = new Thickness(0);
+            ControlPanelHost.Padding = new Thickness(22, 0, 0, 0);
+            ControlPanelHost.BorderThickness = new Thickness(1, 0, 0, 0);
+            ControlPanelHost.MinHeight = 640;
+            ActionSelector.Margin = new Thickness(0, 18, 0, 0);
+            WorkspaceSurface.MinHeight = 680;
+            WorkspaceSurface.Padding = new Thickness(22);
+            PreviewStage.MinHeight = 488;
+            PreviewImageHost.Height = 424;
+            PetPreviewImage.MaxWidth = 620;
+            PetPreviewImage.MaxHeight = 410;
+            _previewPlayer.SetDisplayBounds(Math.Max(420, e.NewSize.Width * 0.58 - 80), 410);
         }
     }
 
@@ -177,6 +236,8 @@ public partial class PetCenterView : UserControl, IDisposable
         }
 
         _disposed = true;
+        _previewPlayer.PlaybackStateChanged -= PreviewPlayer_PlaybackStateChanged;
+        _previewPlayer.SelectionChanged -= PreviewPlayer_SelectionChanged;
         _previewPlayer.Dispose();
         GC.SuppressFinalize(this);
     }
