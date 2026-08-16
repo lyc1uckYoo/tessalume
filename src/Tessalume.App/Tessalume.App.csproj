@@ -15,6 +15,7 @@
     <Authors>$(AssemblyName) Contributors</Authors>
     <Version>2.0.2</Version>
     <BuiltInThemesRoot Condition="'$(BuiltInThemesRoot)' == ''">..\..\themes</BuiltInThemesRoot>
+    <BuiltInPetsRoot Condition="'$(BuiltInPetsRoot)' == ''">..\..\pets</BuiltInPetsRoot>
   </PropertyGroup>
 
   <ItemGroup>
@@ -48,6 +49,12 @@
     <EmbeddedResource Include="$(BuiltInThemesRoot)\*\**\*"
                       Exclude="$(BuiltInThemesRoot)\**\.legacy\**;$(BuiltInThemesRoot)\**\.references\**;$(BuiltInThemesRoot)\**\.sources\**;$(BuiltInThemesRoot)\.optimizer-cache.json">
       <LogicalName>Tessalume.BuiltInThemes/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="$(BuiltInPetsRoot)\flying-snowfluff\catalog.json;$(BuiltInPetsRoot)\flying-snowfluff\pet.json;$(BuiltInPetsRoot)\flying-snowfluff\spritesheet.webp">
+      <LogicalName>Tessalume.BuiltInPets/flying-snowfluff/%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="$(BuiltInPetsRoot)\flying-snowfluff\previews\*.png">
+      <LogicalName>Tessalume.BuiltInPets/flying-snowfluff/previews/%(Filename)%(Extension)</LogicalName>
     </EmbeddedResource>
     <EmbeddedResource Include="..\..\examples\**\*">
       <LogicalName>Tessalume.Templates/theme-template-v1/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>

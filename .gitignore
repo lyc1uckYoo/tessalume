@@ -19,6 +19,8 @@ optimized-themes/
 tmp/
 artifacts/
 previews/
+!pets/**/previews/
+!pets/**/previews/*.png
 backups/
 /Prompt.md
 AGENTS.md

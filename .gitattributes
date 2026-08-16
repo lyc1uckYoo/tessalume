@@ -1,5 +1,8 @@
 * text=auto eol=lf
 
+# Pet catalogs verify the published Codex manifest byte-for-byte.
+pets/**/pet.json -text
+
 *.png binary
 *.jpg binary
 *.jpeg binary

@@ -1,5 +1,6 @@
 using System.IO;
 using System.Reflection;
+using System.Security.Cryptography;
 using System.Text.Json;
 
 namespace Tessalume.App.Infrastructure;
@@ -11,6 +12,7 @@ internal sealed record CreatorWorkspaceUpgradeResult(
 internal static class BuiltInAssetInstaller
 {
     private const string ThemePrefix = "Tessalume.BuiltInThemes/";
+    private const string PetPrefix = "Tessalume.BuiltInPets/";
     private const string CompatibilityPrefix = "Tessalume.Compatibility/";
     private const string TemplatePrefix = "Tessalume.Templates/";
     private const string CreatorWorkspacePrefix = "Tessalume.CreatorWorkspace/";
@@ -63,6 +65,10 @@ internal static class BuiltInAssetInstaller
                     TemplatePrefix,
                     Path.Combine(layout.RootDirectory, "Templates"));
             }
+            else if (resourceName.StartsWith(PetPrefix, StringComparison.Ordinal))
+            {
+                ExtractPetResource(assembly, resourceName, layout);
+            }
         }
         CompatibilityRuntimeComposer.EnsureComposed(Path.Combine(layout.RootDirectory, "Compatibility"));
     }
@@ -81,6 +87,16 @@ internal static class BuiltInAssetInstaller
                 destination);
         }
         CompatibilityRuntimeComposer.EnsureComposed(destination);
+    }
+
+    public static void EnsurePetsInstalled(PortableLayout layout)
+    {
+        var assembly = typeof(BuiltInAssetInstaller).Assembly;
+        foreach (var resourceName in assembly.GetManifestResourceNames()
+                     .Where(name => name.StartsWith(PetPrefix, StringComparison.Ordinal)))
+        {
+            ExtractPetResource(assembly, resourceName, layout);
+        }
     }
 
     public static void MarkDeleted(PortableLayout layout, string themeId)
@@ -333,6 +349,159 @@ internal static class BuiltInAssetInstaller
     {
         var segments = relativeName.Split('/', StringSplitOptions.RemoveEmptyEntries);
         return segments[0];
+    }
+
+    private static void ExtractPetResource(
+        Assembly assembly,
+        string resourceName,
+        PortableLayout layout)
+    {
+        var portableRoot = Path.GetFullPath(layout.RootDirectory);
+        var destinationRoot = Path.GetFullPath(layout.PetsDirectory);
+        EnsureContained(portableRoot, destinationRoot);
+        EnsurePetDirectoryTree(portableRoot, destinationRoot);
+
+        var relativePath = resourceName[PetPrefix.Length..]
+            .Replace('/', Path.DirectorySeparatorChar);
+        var destinationPath = Path.GetFullPath(Path.Combine(destinationRoot, relativePath));
+        EnsureContained(destinationRoot, destinationPath);
+        var destinationDirectory = Path.GetDirectoryName(destinationPath)
+            ?? throw new InvalidDataException("Embedded pet asset has no destination directory.");
+        EnsurePetDirectoryTree(portableRoot, destinationDirectory);
+        EnsurePetPathHasNoReparsePoints(portableRoot, destinationPath);
+        EnsurePetTemporaryEntriesAreSafe(portableRoot, destinationDirectory, Path.GetFileName(destinationPath));
+
+        using var resource = assembly.GetManifestResourceStream(resourceName)
+            ?? throw new InvalidDataException($"Missing embedded pet resource: {resourceName}");
+        if (FileMatches(destinationPath, resource))
+        {
+            return;
+        }
+
+        resource.Position = 0;
+        string? temporaryPath = null;
+        try
+        {
+            for (var attempt = 0; attempt < 10; attempt++)
+            {
+                var candidate = Path.Combine(
+                    destinationDirectory,
+                    $".{Path.GetFileName(destinationPath)}.{RandomNumberGenerator.GetHexString(16)}.tmp");
+                EnsureContained(destinationRoot, candidate);
+                EnsurePetPathHasNoReparsePoints(portableRoot, candidate);
+                FileStream output;
+                try
+                {
+                    output = new FileStream(
+                        candidate,
+                        FileMode.CreateNew,
+                        FileAccess.Write,
+                        FileShare.None,
+                        64 * 1024,
+                        FileOptions.WriteThrough);
+                }
+                catch (IOException) when (File.Exists(candidate) || Directory.Exists(candidate))
+                {
+                    EnsurePetPathHasNoReparsePoints(portableRoot, candidate);
+                    continue;
+                }
+
+                temporaryPath = candidate;
+                using (output)
+                {
+                    resource.CopyTo(output);
+                    output.Flush(flushToDisk: true);
+                }
+                break;
+            }
+
+            if (temporaryPath is null)
+            {
+                throw new IOException("Unable to create a safe temporary pet asset file.");
+            }
+
+            EnsurePetPathHasNoReparsePoints(portableRoot, destinationDirectory);
+            EnsurePetPathHasNoReparsePoints(portableRoot, destinationPath);
+            EnsurePetPathHasNoReparsePoints(portableRoot, temporaryPath);
+            File.Move(temporaryPath, destinationPath, overwrite: true);
+            temporaryPath = null;
+        }
+        finally
+        {
+            if (temporaryPath is not null && File.Exists(temporaryPath))
+            {
+                var attributes = File.GetAttributes(temporaryPath);
+                if ((attributes & FileAttributes.ReparsePoint) == 0)
+                {
+                    File.Delete(temporaryPath);
+                }
+            }
+        }
+    }
+
+    private static void EnsurePetDirectoryTree(string portableRoot, string directory)
+    {
+        portableRoot = Path.GetFullPath(portableRoot);
+        directory = Path.GetFullPath(directory);
+        EnsureContained(portableRoot, directory);
+        if (File.Exists(portableRoot) && !Directory.Exists(portableRoot))
+        {
+            throw new InvalidDataException("Portable application root is not a directory.");
+        }
+
+        Directory.CreateDirectory(portableRoot);
+        EnsurePetPathHasNoReparsePoints(portableRoot, directory);
+        Directory.CreateDirectory(directory);
+        EnsurePetPathHasNoReparsePoints(portableRoot, directory);
+    }
+
+    private static void EnsurePetTemporaryEntriesAreSafe(
+        string portableRoot,
+        string directory,
+        string destinationFileName)
+    {
+        var randomPrefix = $".{destinationFileName}.";
+        var legacyName = destinationFileName + ".tmp";
+        foreach (var entry in Directory.EnumerateFileSystemEntries(directory))
+        {
+            var name = Path.GetFileName(entry);
+            if (string.Equals(name, legacyName, StringComparison.OrdinalIgnoreCase) ||
+                name.StartsWith(randomPrefix, StringComparison.OrdinalIgnoreCase) &&
+                name.EndsWith(".tmp", StringComparison.OrdinalIgnoreCase))
+            {
+                EnsurePetPathHasNoReparsePoints(portableRoot, entry);
+            }
+        }
+    }
+
+    private static void EnsurePetPathHasNoReparsePoints(string root, string path)
+    {
+        root = Path.GetFullPath(root);
+        path = Path.GetFullPath(path);
+        EnsureContained(root, path);
+        CheckPetPath(root);
+
+        var relative = Path.GetRelativePath(root, path);
+        if (relative == ".") return;
+
+        var current = root;
+        foreach (var segment in relative.Split(
+                     [Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar],
+                     StringSplitOptions.RemoveEmptyEntries))
+        {
+            current = Path.Combine(current, segment);
+            if (!Directory.Exists(current) && !File.Exists(current)) break;
+            CheckPetPath(current);
+        }
+
+        static void CheckPetPath(string candidate)
+        {
+            if ((File.GetAttributes(candidate) & FileAttributes.ReparsePoint) != 0)
+            {
+                throw new InvalidDataException(
+                    $"内置宠物资源不能写入符号链接、目录联接或其他重解析点：{candidate}");
+            }
+        }
     }
 
     private static void ExtractResource(

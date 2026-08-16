@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "id": "flying-snowfluff",
+  "displayName": "飞行雪绒",
+  "description": "爱弥斯的电子幽灵形态：栖居在屏幕边缘、会工作也会撒娇的飞行雪绒。",
+  "productVersion": "1.0.0",
+  "protocol": {
+    "spriteVersionNumber": 2,
+    "atlasWidth": 1536,
+    "atlasHeight": 2288,
+    "columns": 8,
+    "rows": 11,
+    "cellWidth": 192,
+    "cellHeight": 208,
+    "usedFrameCount": 74,
+    "states": [
+      { "key": "idle", "row": 0, "frames": 7 },
+      { "key": "move-right", "row": 1, "frames": 8 },
+      { "key": "move-left", "row": 2, "frames": 8 },
+      { "key": "wave-touch", "row": 3, "frames": 4 },
+      { "key": "jump", "row": 4, "frames": 5 },
+      { "key": "blocked", "row": 5, "frames": 8 },
+      { "key": "needs-input", "row": 6, "frames": 6 },
+      { "key": "running", "row": 7, "frames": 6 },
+      { "key": "ready", "row": 8, "frames": 6 },
+      { "key": "gaze-upper", "row": 9, "frames": 8 },
+      { "key": "gaze-lower", "row": 10, "frames": 8 }
+    ]
+  },
+  "author": {
+    "name": "Tessalume Contributors"
+  },
+  "license": {
+    "kind": "all-rights-reserved",
+    "spdx": "LicenseRef-All-Rights-Reserved",
+    "name": "All rights reserved"
+  },
+  "rights": {
+    "kind": "fan-work",
+    "notice": "非官方同人宠物；原角色、作品名称与相关商标权利归其各自权利人所有。"
+  },
+  "files": [
+    {
+      "path": "pet.json",
+      "sha256": "1aac899486c61aff3ff25d7e08c12a2ef5b46237d9950ecb06a87aceac01dddd",
+      "size": 257,
+      "role": "codex-manifest"
+    },
+    {
+      "path": "spritesheet.webp",
+      "sha256": "aa4a7f8d5b517c37349f75889594baab324aae3b65a1f1bddbdd08a1fef2b50d",
+      "size": 2043200,
+      "role": "codex-spritesheet"
+    },
+    {
+      "path": "previews/idle.png",
+      "sha256": "8405c958ad410307de0e293adc077e75806d22eedd05dc3a2fbbc447d160b860",
+      "size": 39449,
+      "role": "preview"
+    },
+    {
+      "path": "previews/running.png",
+      "sha256": "219964a976a172a16c746b0e9442619be2a3c34a6fdfdb77370834e470a09612",
+      "size": 39937,
+      "role": "preview"
+    },
+    {
+      "path": "previews/needs-input.png",
+      "sha256": "d7eb2c4da658b1a2b8446fe910e5aae0aa164eda9ce1579a6edcecd5dcebec11",
+      "size": 39087,
+      "role": "preview"
+    },
+    {
+      "path": "previews/ready.png",
+      "sha256": "f5bbccae0b02042c8cc9dc8fffe888b97675581286234ea717256d7a1eaa184a",
+      "size": 38240,
+      "role": "preview"
+    },
+    {
+      "path": "previews/blocked.png",
+      "sha256": "e03c0354415570d73031ecd93d3ffb32b8a1b500e4c5760df38398b500c6dd13",
+      "size": 33235,
+      "role": "preview"
+    },
+    {
+      "path": "previews/showcase-grid.png",
+      "sha256": "911330e4b8c81fc5fb9b3e8b325bca0aa9bd8207c4c7036015c54258a99c1fb2",
+      "size": 913920,
+      "role": "preview"
+    }
+  ],
+  "previews": [
+    { "path": "previews/idle.png", "kind": "primary", "label": "待机", "stateKey": "idle" },
+    { "path": "previews/running.png", "kind": "state", "label": "正在工作", "stateKey": "running" },
+    { "path": "previews/needs-input.png", "kind": "state", "label": "等待输入", "stateKey": "needs-input" },
+    { "path": "previews/ready.png", "kind": "state", "label": "完成待看", "stateKey": "ready" },
+    { "path": "previews/blocked.png", "kind": "state", "label": "遇到阻塞", "stateKey": "blocked" },
+    { "path": "previews/showcase-grid.png", "kind": "showcase", "label": "动作九宫格", "stateKey": "showcase" }
+  ],
+  "recommendedThemeIds": [
+    "aemeath.star-voyage"
+  ]
+}

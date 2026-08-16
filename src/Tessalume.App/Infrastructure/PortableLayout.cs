@@ -9,12 +9,15 @@ internal sealed record PortableLayout(
 {
     private const string LegacyAdvancedThemesFolderName = "advanced";
 
+    public string PetsDirectory => Path.Combine(RootDirectory, "pets");
+
     public static PortableLayout Create()
     {
         var root = Path.GetFullPath(AppContext.BaseDirectory);
         var themes = Path.Combine(root, "themes");
         var data = Path.Combine(root, "data");
         Directory.CreateDirectory(themes);
+        Directory.CreateDirectory(Path.Combine(root, "pets"));
         Directory.CreateDirectory(data);
         MigrateLegacyThemeLayout(themes);
         return new PortableLayout(root, themes, data);
