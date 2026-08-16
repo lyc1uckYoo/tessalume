@@ -318,20 +318,20 @@ internal sealed class PetApplicationService : IDisposable
             ? (PetCenterAction.RecoverState, "归档并重建管理状态")
             : snapshot.Status switch
             {
-            PetInstallationStatus.NotInstalled =>
-                (PetCenterAction.Install, "安装飞行雪绒"),
-            PetInstallationStatus.Installed =>
-                (PetCenterAction.OpenCodex, "打开 Codex"),
-            PetInstallationStatus.InstalledAwaitingCodexSelection =>
-                (PetCenterAction.OpenCodex, "打开 Codex 完成选择"),
-            PetInstallationStatus.UpdateAvailable =>
-                (PetCenterAction.Update, "安全更新"),
-            PetInstallationStatus.UnknownModification =>
-                (PetCenterAction.ReplaceModified, "处理修改并修复"),
-            PetInstallationStatus.Damaged =>
-                (PetCenterAction.Repair, "修复安装"),
-            PetInstallationStatus.DuplicateIdConflict =>
-                (PetCenterAction.ExplainConflict, "处理同 ID 冲突"),
+                PetInstallationStatus.NotInstalled =>
+                    (PetCenterAction.Install, "安装飞行雪绒"),
+                PetInstallationStatus.Installed =>
+                    (PetCenterAction.OpenCodex, "打开 Codex"),
+                PetInstallationStatus.InstalledAwaitingCodexSelection =>
+                    (PetCenterAction.OpenCodex, "打开 Codex 完成选择"),
+                PetInstallationStatus.UpdateAvailable =>
+                    (PetCenterAction.Update, "安全更新"),
+                PetInstallationStatus.UnknownModification =>
+                    (PetCenterAction.ReplaceModified, "处理修改并修复"),
+                PetInstallationStatus.Damaged =>
+                    (PetCenterAction.Repair, "修复安装"),
+                PetInstallationStatus.DuplicateIdConflict =>
+                    (PetCenterAction.ExplainConflict, "处理同 ID 冲突"),
                 _ => (PetCenterAction.Refresh, "重新检查"),
             };
 
@@ -353,13 +353,13 @@ internal sealed class PetApplicationService : IDisposable
             ? "管理状态损坏"
             : snapshot.Status switch
             {
-        PetInstallationStatus.NotInstalled => "未安装",
-        PetInstallationStatus.Installed => "已安装",
-        PetInstallationStatus.InstalledAwaitingCodexSelection => "等待 Codex 中选择",
-        PetInstallationStatus.UpdateAvailable => "有更新",
-        PetInstallationStatus.UnknownModification => "文件被修改",
-        PetInstallationStatus.Damaged => "安装损坏",
-        PetInstallationStatus.DuplicateIdConflict => "同 ID 冲突",
+                PetInstallationStatus.NotInstalled => "未安装",
+                PetInstallationStatus.Installed => "已安装",
+                PetInstallationStatus.InstalledAwaitingCodexSelection => "等待 Codex 中选择",
+                PetInstallationStatus.UpdateAvailable => "有更新",
+                PetInstallationStatus.UnknownModification => "文件被修改",
+                PetInstallationStatus.Damaged => "安装损坏",
+                PetInstallationStatus.DuplicateIdConflict => "同 ID 冲突",
                 _ => "状态未知",
             };
 

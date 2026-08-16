@@ -20,7 +20,7 @@ internal static partial class TestSuite
                builtInPackage.Catalog.Protocol.States.Sum(state => state.Frames) == 74,
             "The validator must preserve the source atlas's truthful 11-row / 74-cell layout.");
         Ensure(builtInPackage.SpritesheetInfo is
-            { Width: 1536, Height: 2288, HasAlpha: true, Encoding: "VP8L" },
+        { Width: 1536, Height: 2288, HasAlpha: true, Encoding: "VP8L" },
             "The bundled lossless WebP header must declare the fixed dimensions and alpha channel.");
 
         using var fixture = await PetCoreFixture.CreateAsync();
