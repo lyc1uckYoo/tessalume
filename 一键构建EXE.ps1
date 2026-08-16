@@ -9,7 +9,9 @@ param(
     [ValidateRange(1, 100)]
     [int]$ThemeImageQuality = 90,
 
-    [switch]$NoLaunch
+    [switch]$NoLaunch,
+
+    [switch]$FullValidation
 )
 
 $ErrorActionPreference = 'Stop'
@@ -150,10 +152,12 @@ Write-Host '1/5 Restoring source dependencies...' -ForegroundColor Cyan
 & $dotnet restore $solution --ignore-failed-sources
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-Write-Host '2/5 Building and running all checks...' -ForegroundColor Cyan
+$testProfile = if ($FullValidation) { '--full' } else { '--build' }
+$testProfileLabel = if ($FullValidation) { 'full release validation' } else { 'core build' }
+Write-Host "2/5 Building and running $testProfileLabel checks..." -ForegroundColor Cyan
 & $dotnet build $solution --configuration $Configuration --no-restore
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-& $dotnet run --project $tests --configuration $Configuration --no-build
+& $dotnet run --project $tests --configuration $Configuration --no-build -- $testProfile
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 Write-Host '3/5 Updating the incremental optimized theme cache...' -ForegroundColor Cyan

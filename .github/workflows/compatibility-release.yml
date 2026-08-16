@@ -33,7 +33,7 @@ jobs:
           dotnet restore Tessalume.sln
           dotnet format Tessalume.sln --verify-no-changes --no-restore --verbosity minimal
           dotnet build Tessalume.sln --configuration Release --no-restore
-          dotnet run --project tests/Tessalume.Tests/Tessalume.Tests.csproj --configuration Release --no-build
+          dotnet run --project tests/Tessalume.Tests/Tessalume.Tests.csproj --configuration Release --no-build -- --full
           .\tools\Build-CompatibilityRuntime.ps1 -Destination artifacts/compatibility-validation/theme-runtime-v2.js
           node --check artifacts/compatibility-validation/theme-runtime-v2.js
 

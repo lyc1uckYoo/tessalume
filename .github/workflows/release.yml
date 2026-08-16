@@ -55,7 +55,7 @@ jobs:
         run: |
           dotnet restore Tessalume.sln
           dotnet format Tessalume.sln --verify-no-changes --no-restore --verbosity minimal
-          .\一键构建EXE.ps1 -Configuration Release -Runtime win-x64 -NoLaunch
+          .\一键构建EXE.ps1 -Configuration Release -Runtime win-x64 -NoLaunch -FullValidation
 
       - name: Publish GitHub Release
         shell: pwsh

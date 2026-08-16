@@ -30,11 +30,11 @@ try {
     if ($SkipPublish) {
         dotnet build $solutionPath --configuration Release --no-restore --nologo
         if ($LASTEXITCODE -ne 0) { throw 'Release build failed.' }
-        dotnet run --project tests\Tessalume.Tests\Tessalume.Tests.csproj --configuration Release --no-build
+        dotnet run --project tests\Tessalume.Tests\Tessalume.Tests.csproj --configuration Release --no-build -- --full
         if ($LASTEXITCODE -ne 0) { throw 'Regression suite failed.' }
     }
     else {
-        & $buildScript -Configuration Release -Runtime win-x64 -NoLaunch
+        & $buildScript -Configuration Release -Runtime win-x64 -NoLaunch -FullValidation
         if ($LASTEXITCODE -ne 0) { throw 'Complete release build failed.' }
     }
 
