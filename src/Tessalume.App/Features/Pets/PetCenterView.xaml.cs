@@ -48,7 +48,7 @@ public partial class PetCenterView : UserControl, IDisposable
         InstallationStatusDetail.Text = state.StatusDetail;
         ProductVersionText.Text = state.ProductVersion;
         ProtocolText.Text = state.ProtocolSummary;
-        AuthorLicenseText.Text = $"{state.Author} · {state.LicenseSummary}";
+        AuthorLicenseText.Text = $"{state.Author} · {FormatLicenseSummary(state.LicenseSummary)}";
         InstallLocationText.Text = $"仅管理 {state.InstallLocation}";
         InstallLocationText.ToolTip = state.InstallLocation;
         PrimaryActionButton.Content = state.PrimaryActionText;
@@ -70,6 +70,16 @@ public partial class PetCenterView : UserControl, IDisposable
         UpdatePlaybackPresentation();
         RenderStatusPalette(state.Status);
     }
+
+    private static string FormatLicenseSummary(string licenseSummary) =>
+        licenseSummary.Trim() switch
+        {
+            var value when value.Equals("All rights reserved", StringComparison.OrdinalIgnoreCase) =>
+                "保留所有权利",
+            var value when value.Equals("LicenseRef-All-Rights-Reserved", StringComparison.OrdinalIgnoreCase) =>
+                "保留所有权利",
+            var value => value,
+        };
 
     internal void SetPageActive(bool active)
     {
@@ -183,23 +193,24 @@ public partial class PetCenterView : UserControl, IDisposable
             WorkspaceRightColumn.Width = new GridLength(0);
             Grid.SetColumn(PreviewStage, 0);
             Grid.SetRow(PreviewStage, 0);
-            Grid.SetColumn(ActionSelector, 0);
-            Grid.SetRow(ActionSelector, 2);
             Grid.SetColumn(ControlPanelHost, 0);
             Grid.SetRow(ControlPanelHost, 1);
             Grid.SetRowSpan(ControlPanelHost, 1);
-            ControlPanelHost.Margin = new Thickness(0, 20, 0, 0);
-            ControlPanelHost.Padding = new Thickness(0, 20, 0, 0);
+            ControlPanelHost.Margin = new Thickness(0, 12, 0, 0);
+            ControlPanelHost.Padding = new Thickness(0, 12, 0, 0);
             ControlPanelHost.BorderThickness = new Thickness(0, 1, 0, 0);
             ControlPanelHost.MinHeight = 0;
-            ActionSelector.Margin = new Thickness(0, 20, 0, 0);
+            ActionSelector.Margin = new Thickness(20, 15, 0, 0);
             WorkspaceSurface.MinHeight = 0;
-            WorkspaceSurface.Padding = new Thickness(17);
-            PreviewStage.MinHeight = 332;
-            PreviewImageHost.Height = 274;
-            PetPreviewImage.MaxWidth = 390;
-            PetPreviewImage.MaxHeight = 262;
-            _previewPlayer.SetDisplayBounds(Math.Max(260, e.NewSize.Width - 90), 262);
+            WorkspaceSurface.Margin = new Thickness(0, 12, 0, 0);
+            WorkspaceSurface.Padding = new Thickness(12);
+            PreviewStage.MinHeight = 300;
+            PreviewStage.Padding = new Thickness(14);
+            PreviewImageHost.MinHeight = 0;
+            PreviewImageHost.Height = 232;
+            PetPreviewImage.MaxWidth = 360;
+            PetPreviewImage.MaxHeight = 220;
+            _previewPlayer.SetDisplayBounds(Math.Max(240, e.NewSize.Width - 72), 220);
         }
         else
         {
@@ -208,23 +219,24 @@ public partial class PetCenterView : UserControl, IDisposable
             WorkspaceRightColumn.Width = new GridLength(2, GridUnitType.Star);
             Grid.SetColumn(PreviewStage, 0);
             Grid.SetRow(PreviewStage, 0);
-            Grid.SetColumn(ActionSelector, 0);
-            Grid.SetRow(ActionSelector, 1);
             Grid.SetColumn(ControlPanelHost, 2);
             Grid.SetRow(ControlPanelHost, 0);
-            Grid.SetRowSpan(ControlPanelHost, 2);
+            Grid.SetRowSpan(ControlPanelHost, 1);
             ControlPanelHost.Margin = new Thickness(0);
             ControlPanelHost.Padding = new Thickness(22, 0, 0, 0);
             ControlPanelHost.BorderThickness = new Thickness(1, 0, 0, 0);
-            ControlPanelHost.MinHeight = 640;
-            ActionSelector.Margin = new Thickness(0, 18, 0, 0);
+            ControlPanelHost.MinHeight = 0;
+            ActionSelector.Margin = new Thickness(20, 17, 0, 0);
             WorkspaceSurface.MinHeight = 680;
+            WorkspaceSurface.Margin = new Thickness(0, 18, 0, 0);
             WorkspaceSurface.Padding = new Thickness(22);
-            PreviewStage.MinHeight = 488;
-            PreviewImageHost.Height = 424;
+            PreviewStage.MinHeight = 650;
+            PreviewStage.Padding = new Thickness(18);
+            PreviewImageHost.MinHeight = 520;
+            PreviewImageHost.Height = double.NaN;
             PetPreviewImage.MaxWidth = 620;
-            PetPreviewImage.MaxHeight = 410;
-            _previewPlayer.SetDisplayBounds(Math.Max(420, e.NewSize.Width * 0.58 - 80), 410);
+            PetPreviewImage.MaxHeight = 560;
+            _previewPlayer.SetDisplayBounds(Math.Max(420, e.NewSize.Width * 0.58 - 80), 560);
         }
     }
 

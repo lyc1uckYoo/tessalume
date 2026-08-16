@@ -126,7 +126,6 @@ internal static partial class TestSuite
                      "Style=\"{DynamicResource PageTitleText}\"",
                      "Style=\"{DynamicResource PageDescriptionText}\"",
                      "Style=\"{DynamicResource PrimaryActionButton}\"",
-                     "Style=\"{DynamicResource QuietActionButton}\"",
                  })
         {
             Ensure(petXaml.Contains(sharedStyle, StringComparison.Ordinal),
@@ -149,6 +148,18 @@ internal static partial class TestSuite
                !petViewSource.Contains("Clipboard.", StringComparison.Ordinal) &&
                !petViewSource.Contains("Process.Start", StringComparison.Ordinal),
             "The reusable view must expose copy/open intents without touching the clipboard or launching Codex itself.");
+        Ensure(petXaml.Contains("x:Key=\"PetToolButton\"", StringComparison.Ordinal) &&
+               petXaml.Contains("x:Key=\"PetSecondaryButton\"", StringComparison.Ordinal) &&
+               petXaml.Contains("x:Key=\"PetAccentToolButton\"", StringComparison.Ordinal) &&
+               petXaml.Contains("x:Key=\"PetDangerToolButton\"", StringComparison.Ordinal) &&
+               petXaml.Contains("<Setter Property=\"Height\" Value=\"34\"", StringComparison.Ordinal) &&
+               petXaml.Contains("<Setter TargetName=\"ToolSurface\" Property=\"Opacity\" Value=\"0.58\"", StringComparison.Ordinal) &&
+               petXaml.Contains("Text=\"预览动作\"", StringComparison.Ordinal) &&
+               !petXaml.Contains("只解码当前选择", StringComparison.Ordinal) &&
+               !petXaml.Contains("TextTrimming=\"CharacterEllipsis\"", StringComparison.Ordinal) &&
+               petViewSource.Contains("FormatLicenseSummary", StringComparison.Ordinal) &&
+               petViewSource.Contains("保留所有权利", StringComparison.Ordinal),
+            "Pet controls must share one clear button system and metadata must remain fully readable in Chinese.");
         Ensure(decoderSource.Contains("GifBitmapDecoder", StringComparison.Ordinal) &&
                decoderSource.Contains("MaximumRetainedDecodedBytes = 24L * 1024 * 1024", StringComparison.Ordinal) &&
                decoderSource.Contains("CalculateTargetSize", StringComparison.Ordinal) &&
@@ -537,11 +548,10 @@ internal static partial class TestSuite
                     .Transform(new Point());
                 Ensure(Grid.GetColumn(view.PreviewStage) == 0 &&
                        Grid.GetRow(view.PreviewStage) == 0 &&
-                       Grid.GetColumn(view.ActionSelector) == 0 &&
-                       Grid.GetRow(view.ActionSelector) == 1 &&
                        Grid.GetColumn(view.ControlPanelHost) == 2 &&
                        Grid.GetRow(view.ControlPanelHost) == 0 &&
-                       Grid.GetRowSpan(view.ControlPanelHost) == 2 &&
+                       Grid.GetRowSpan(view.ControlPanelHost) == 1 &&
+                       Grid.GetRow(view.ActionSelector) == 4 &&
                        previewWideOrigin.X >= 0 &&
                        view.PreviewStage.ActualWidth >= view.WorkspaceGrid.ActualWidth * 0.54 &&
                        host.ScrollableWidth <= 0.5,
@@ -552,8 +562,7 @@ internal static partial class TestSuite
                        Grid.GetRow(view.PreviewStage) == 0 &&
                        Grid.GetColumn(view.ControlPanelHost) == 0 &&
                        Grid.GetRow(view.ControlPanelHost) == 1 &&
-                       Grid.GetColumn(view.ActionSelector) == 0 &&
-                       Grid.GetRow(view.ActionSelector) == 2 &&
+                       Grid.GetRow(view.ActionSelector) == 4 &&
                        host.ScrollableWidth <= 0.5 &&
                        view.ActualWidth <= host.ViewportWidth + 0.5,
                     "The compact workspace must show the live stage first, then status/actions, and wrap every selector without horizontal overflow.");
