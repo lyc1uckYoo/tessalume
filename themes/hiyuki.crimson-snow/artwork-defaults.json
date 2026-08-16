@@ -14,12 +14,12 @@
           },
           "position": {
             "x": "center",
-            "y": "center"
+            "y": "51.11316558%"
           },
-          "scale": 1.012,
+          "scale": 1,
           "origin": {
-            "x": "73%",
-            "y": "50%"
+            "x": "center",
+            "y": "51.11316558%"
           },
           "mirrorX": false,
           "mirrorY": false
@@ -84,12 +84,12 @@
           },
           "position": {
             "x": "center",
-            "y": "center"
+            "y": "50.45279734%"
           },
-          "scale": 1.012,
+          "scale": 1,
           "origin": {
-            "x": "73%",
-            "y": "50%"
+            "x": "center",
+            "y": "50.45279734%"
           },
           "mirrorX": false,
           "mirrorY": false
@@ -151,17 +151,17 @@
         "asset": "sidebar-light",
         "placement": {
           "size": {
-            "width": "258%",
+            "width": "204.24488908%",
             "height": "auto"
           },
           "position": {
-            "x": "52%",
-            "y": "-28px"
+            "x": "46.05607186%",
+            "y": "0px"
           },
           "scale": 1,
           "origin": {
-            "x": "50%",
-            "y": "50%"
+            "x": "center",
+            "y": "center"
           },
           "mirrorX": false,
           "mirrorY": false
@@ -199,17 +199,17 @@
         "asset": "sidebar-dark",
         "placement": {
           "size": {
-            "width": "258%",
+            "width": "220.58448021%",
             "height": "auto"
           },
           "position": {
-            "x": "44%",
-            "y": "-10px"
+            "x": "46.74393864%",
+            "y": "-2.36492891px"
           },
           "scale": 1,
           "origin": {
-            "x": "50%",
-            "y": "50%"
+            "x": "center",
+            "y": "center"
           },
           "mirrorX": false,
           "mirrorY": false
@@ -253,13 +253,13 @@
             "height": "auto"
           },
           "position": {
-            "x": "center",
+            "x": "50%",
             "y": "center"
           },
           "scale": 1,
           "origin": {
             "x": "50%",
-            "y": "50%"
+            "y": "center"
           },
           "mirrorX": false,
           "mirrorY": false
@@ -279,7 +279,7 @@
           },
           "gradientVeil": {
             "enabled": true,
-            "strength": 100,
+            "strength": 49.25380710659903,
             "layers": [
               {
                 "directionDeg": 90,
@@ -329,13 +329,13 @@
             "height": "auto"
           },
           "position": {
-            "x": "center",
+            "x": "50%",
             "y": "center"
           },
           "scale": 1,
           "origin": {
             "x": "50%",
-            "y": "50%"
+            "y": "center"
           },
           "mirrorX": false,
           "mirrorY": false
@@ -354,8 +354,8 @@
             "opacity": 0
           },
           "gradientVeil": {
-            "enabled": true,
-            "strength": 100,
+            "enabled": false,
+            "strength": 0,
             "layers": [
               {
                 "directionDeg": 90,

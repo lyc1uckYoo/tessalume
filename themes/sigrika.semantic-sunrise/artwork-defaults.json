@@ -14,12 +14,12 @@
           },
           "position": {
             "x": "center",
-            "y": "center"
+            "y": "17.50056256%"
           },
-          "scale": 1.004,
+          "scale": 1,
           "origin": {
-            "x": "73%",
-            "y": "50%"
+            "x": "center",
+            "y": "17.50056256%"
           },
           "mirrorX": false,
           "mirrorY": false
@@ -84,12 +84,12 @@
           },
           "position": {
             "x": "center",
-            "y": "center"
+            "y": "68.69909378%"
           },
-          "scale": 1.004,
+          "scale": 1,
           "origin": {
-            "x": "73%",
-            "y": "50%"
+            "x": "center",
+            "y": "68.69909378%"
           },
           "mirrorX": false,
           "mirrorY": false
@@ -160,8 +160,8 @@
           },
           "scale": 1,
           "origin": {
-            "x": "50%",
-            "y": "50%"
+            "x": "center",
+            "y": "center"
           },
           "mirrorX": false,
           "mirrorY": false
@@ -203,13 +203,13 @@
             "height": "auto"
           },
           "position": {
-            "x": "63%",
-            "y": "-166px"
+            "x": "60.51552795%",
+            "y": "-171.3407675px"
           },
           "scale": 1,
           "origin": {
-            "x": "50%",
-            "y": "50%"
+            "x": "center",
+            "y": "center"
           },
           "mirrorX": false,
           "mirrorY": false
@@ -278,8 +278,8 @@
             "opacity": 0
           },
           "gradientVeil": {
-            "enabled": true,
-            "strength": 100,
+            "enabled": false,
+            "strength": 0,
             "layers": [
               {
                 "directionDeg": 90,
@@ -364,8 +364,8 @@
             "opacity": 0
           },
           "gradientVeil": {
-            "enabled": true,
-            "strength": 100,
+            "enabled": false,
+            "strength": 0,
             "layers": [
               {
                 "directionDeg": 90,

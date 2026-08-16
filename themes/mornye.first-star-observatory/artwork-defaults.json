@@ -14,12 +14,12 @@
           },
           "position": {
             "x": "center",
-            "y": "46%"
+            "y": "46.71728261%"
           },
-          "scale": 1.008,
+          "scale": 1,
           "origin": {
-            "x": "73%",
-            "y": "50%"
+            "x": "center",
+            "y": "46.71728261%"
           },
           "mirrorX": false,
           "mirrorY": false
@@ -84,12 +84,12 @@
           },
           "position": {
             "x": "center",
-            "y": "46%"
+            "y": "46.94176244%"
           },
-          "scale": 1.008,
+          "scale": 1,
           "origin": {
-            "x": "73%",
-            "y": "50%"
+            "x": "center",
+            "y": "46.94176244%"
           },
           "mirrorX": false,
           "mirrorY": false
@@ -151,17 +151,17 @@
         "asset": "sidebar-light",
         "placement": {
           "size": {
-            "width": "206%",
+            "width": "181.45454545%",
             "height": "auto"
           },
           "position": {
-            "x": "58%",
-            "y": "-28px"
+            "x": "57.016783%",
+            "y": "0px"
           },
           "scale": 1,
           "origin": {
-            "x": "50%",
-            "y": "50%"
+            "x": "center",
+            "y": "center"
           },
           "mirrorX": false,
           "mirrorY": false
@@ -199,17 +199,17 @@
         "asset": "sidebar-dark",
         "placement": {
           "size": {
-            "width": "220%",
+            "width": "219.82803594%",
             "height": "auto"
           },
           "position": {
-            "x": "66%",
-            "y": "-20px"
+            "x": "69.60847826%",
+            "y": "0px"
           },
           "scale": 1,
           "origin": {
-            "x": "50%",
-            "y": "50%"
+            "x": "center",
+            "y": "center"
           },
           "mirrorX": false,
           "mirrorY": false
@@ -278,8 +278,8 @@
             "opacity": 0
           },
           "gradientVeil": {
-            "enabled": true,
-            "strength": 100,
+            "enabled": false,
+            "strength": 0,
             "layers": [
               {
                 "directionDeg": 90,
@@ -355,7 +355,7 @@
           },
           "gradientVeil": {
             "enabled": true,
-            "strength": 100,
+            "strength": 41.11675126903548,
             "layers": [
               {
                 "directionDeg": 90,

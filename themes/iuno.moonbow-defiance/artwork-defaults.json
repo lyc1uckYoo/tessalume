@@ -14,12 +14,12 @@
           },
           "position": {
             "x": "center",
-            "y": "center"
+            "y": "83.02848477%"
           },
-          "scale": 1.002,
+          "scale": 1,
           "origin": {
-            "x": "50%",
-            "y": "50%"
+            "x": "center",
+            "y": "83.02848477%"
           },
           "mirrorX": false,
           "mirrorY": false
@@ -84,12 +84,12 @@
           },
           "position": {
             "x": "center",
-            "y": "center"
+            "y": "50.0660568%"
           },
-          "scale": 1.002,
+          "scale": 1,
           "origin": {
-            "x": "50%",
-            "y": "50%"
+            "x": "center",
+            "y": "50.0660568%"
           },
           "mirrorX": false,
           "mirrorY": false
@@ -151,17 +151,17 @@
         "asset": "sidebar-light",
         "placement": {
           "size": {
-            "width": "auto",
-            "height": "122%"
+            "width": "240.30773975%",
+            "height": "auto"
           },
           "position": {
-            "x": "56%",
-            "y": "60%"
+            "x": "51.59468295%",
+            "y": "-104.54477919px"
           },
           "scale": 1,
           "origin": {
-            "x": "50%",
-            "y": "50%"
+            "x": "center",
+            "y": "center"
           },
           "mirrorX": false,
           "mirrorY": false
@@ -199,17 +199,17 @@
         "asset": "sidebar-dark",
         "placement": {
           "size": {
-            "width": "auto",
-            "height": "107%"
+            "width": "238.23123863%",
+            "height": "auto"
           },
           "position": {
-            "x": "51%",
-            "y": "48%"
+            "x": "50.03945452%",
+            "y": "-92.47818009px"
           },
           "scale": 1,
           "origin": {
-            "x": "50%",
-            "y": "50%"
+            "x": "center",
+            "y": "center"
           },
           "mirrorX": false,
           "mirrorY": false
@@ -279,7 +279,7 @@
           },
           "gradientVeil": {
             "enabled": true,
-            "strength": 100,
+            "strength": 28.426395939086273,
             "layers": [
               {
                 "directionDeg": 90,
@@ -330,11 +330,11 @@
           },
           "position": {
             "x": "center",
-            "y": "center"
+            "y": "50%"
           },
           "scale": 1,
           "origin": {
-            "x": "50%",
+            "x": "center",
             "y": "50%"
           },
           "mirrorX": false,
@@ -355,7 +355,7 @@
           },
           "gradientVeil": {
             "enabled": true,
-            "strength": 100,
+            "strength": 40.60913705583749,
             "layers": [
               {
                 "directionDeg": 90,

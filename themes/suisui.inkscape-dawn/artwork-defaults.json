@@ -13,13 +13,13 @@
             "height": "auto"
           },
           "position": {
-            "x": "58%",
-            "y": "42%"
+            "x": "center",
+            "y": "36.01345514%"
           },
-          "scale": 1.08,
+          "scale": 1,
           "origin": {
-            "x": "58%",
-            "y": "42%"
+            "x": "center",
+            "y": "36.01345514%"
           },
           "mirrorX": false,
           "mirrorY": false
@@ -113,17 +113,17 @@
         "asset": "sidebar-light",
         "placement": {
           "size": {
-            "width": "230%",
+            "width": "238.23123863%",
             "height": "auto"
           },
           "position": {
-            "x": "80%",
-            "y": "-168px"
+            "x": "83.42210053%",
+            "y": "-166.0672px"
           },
           "scale": 1,
           "origin": {
-            "x": "50%",
-            "y": "50%"
+            "x": "center",
+            "y": "center"
           },
           "mirrorX": false,
           "mirrorY": false
@@ -161,17 +161,17 @@
         "asset": "sidebar-dark",
         "placement": {
           "size": {
-            "width": "232%",
+            "width": "250.56%",
             "height": "auto"
           },
           "position": {
-            "x": "80%",
-            "y": "-188px"
+            "x": "76.81190223%",
+            "y": "-226.30911796px"
           },
           "scale": 1,
           "origin": {
-            "x": "50%",
-            "y": "50%"
+            "x": "center",
+            "y": "center"
           },
           "mirrorX": false,
           "mirrorY": false
@@ -241,7 +241,7 @@
           },
           "gradientVeil": {
             "enabled": true,
-            "strength": 100,
+            "strength": 13.197969543147211,
             "layers": [
               {
                 "directionDeg": 90,
@@ -316,8 +316,8 @@
             "opacity": 0
           },
           "gradientVeil": {
-            "enabled": true,
-            "strength": 100,
+            "enabled": false,
+            "strength": 0,
             "layers": [
               {
                 "directionDeg": 90,
