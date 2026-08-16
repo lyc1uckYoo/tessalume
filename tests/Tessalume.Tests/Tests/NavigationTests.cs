@@ -27,11 +27,11 @@ internal static partial class TestSuite
         foreach (var marker in new[]
                  {
                      "x:Name=\"SettingsButton\"",
-                     "x:Name=\"ExperienceButton\"",
+                     "x:Name=\"DisplayPreferencesButton\"",
                      "x:Name=\"DataButton\"",
                      "x:Name=\"AboutButton\"",
                      "x:Name=\"SettingsInfoPanel\"",
-                     "x:Name=\"ExperienceInfoPanel\"",
+                     "x:Name=\"DisplayPreferencesInfoPanel\"",
                  })
         {
             Ensure(mainXaml.Contains(marker, StringComparison.Ordinal),
@@ -45,7 +45,7 @@ internal static partial class TestSuite
             "The sidebar must contain destinations, not immediate refresh or restore commands.");
         Ensure(routeSource.Contains("internal enum AppRoute", StringComparison.Ordinal) &&
                routeSource.Contains("ArtworkStudio", StringComparison.Ordinal) &&
-               routeSource.Contains("ExperienceProfiles", StringComparison.Ordinal) &&
+               routeSource.Contains("DisplayPreferences", StringComparison.Ordinal) &&
                routeSource.Contains("DataAndUpdates", StringComparison.Ordinal) &&
                navigationSource.Contains("private void NavigateTo(AppRoute route)", StringComparison.Ordinal) &&
                aboutSource.Contains("ShowSection(AboutSection section)", StringComparison.Ordinal),
@@ -84,16 +84,16 @@ internal static partial class TestSuite
                     Ensure(window.PersonalizationInfoPanel.Visibility == Visibility.Visible &&
                            window.PersonalizationPageTitleText.Text == "图像工作台" &&
                            window.SettingsInfoPanel.Visibility == Visibility.Visible &&
-                           window.ExperienceInfoPanel.Visibility == Visibility.Collapsed,
+                           window.DisplayPreferencesInfoPanel.Visibility == Visibility.Collapsed,
                         "Image adjustments must open in their own workspace route.");
 
-                    window.ExperienceButton.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
+                    window.DisplayPreferencesButton.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
                     Ensure(window.PersonalizationInfoPanel.Visibility == Visibility.Visible &&
-                           window.PersonalizationPageTitleText.Text == "显示与方案" &&
+                           window.PersonalizationPageTitleText.Text == "显示偏好" &&
                            window.SettingsInfoPanel.Visibility == Visibility.Collapsed &&
-                           window.ExperienceInfoPanel.Visibility == Visibility.Visible &&
-                           Equals(window.ExperienceButton.Tag, "active"),
-                        "Display preferences and experience profiles must open on a separate active route.");
+                           window.DisplayPreferencesInfoPanel.Visibility == Visibility.Visible &&
+                           Equals(window.DisplayPreferencesButton.Tag, "active"),
+                        "Display preferences must open on a separate active route.");
 
                     window.DataButton.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
                     Ensure(window.AboutPage.Visibility == Visibility.Visible &&

@@ -381,7 +381,7 @@ internal static partial class TestSuite
             await File.WriteAllBytesAsync(source, newExecutable);
             await File.WriteAllBytesAsync(helper, fixtureBytes);
             var oldSettings = "{\"SchemaVersion\":3,\"FavoriteThemeIds\":[\"kept\"]}";
-            var newSettings = "{\"SchemaVersion\":4,\"FavoriteThemeIds\":[\"kept\"],\"ExperiencePresets\":[{}]}";
+            var newSettings = "{\"SchemaVersion\":4,\"FavoriteThemeIds\":[\"kept\"],\"ThemeLibrarySort\":\"recent\"}";
             await File.WriteAllTextAsync(preferencesPath, oldSettings);
             await File.WriteAllTextAsync(Path.Combine(root, "fixture-next-settings.json"), newSettings);
             await File.WriteAllTextAsync(Path.Combine(root, "fixture-mode.txt"), "healthy-migrate");

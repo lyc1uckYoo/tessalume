@@ -3,7 +3,7 @@ using Tessalume.App.Features.Personalization.ArtworkWorkbench.Presentation;
 
 internal static partial class TestSuite
 {
-    static Task ArtworkWorkbenchSupportsPreciseInputAndTransferAsync()
+    static Task ArtworkWorkbenchSupportsPreciseInputAndSourceActionsAsync()
     {
         Exception? failure = null;
         var thread = new Thread(() =>
@@ -13,15 +13,11 @@ internal static partial class TestSuite
                 var inspector = new ArtworkInspectorView();
                 ArtworkParameterValueChangedEventArgs? changed = null;
                 ArtworkParameterTextChangedEventArgs? optionChanged = null;
-                var copied = false;
-                var pasted = false;
                 var imageRequested = false;
                 var imageCleared = false;
                 var resetRequested = false;
                 inspector.NumericValueChanged += (_, args) => changed = args;
                 inspector.TextValueChanged += (_, args) => optionChanged = args;
-                inspector.CopyRequested += (_, _) => copied = true;
-                inspector.PasteRequested += (_, _) => pasted = true;
                 inspector.ChooseImageRequested += (_, _) => imageRequested = true;
                 inspector.ClearImageRequested += (_, _) => imageCleared = true;
                 inspector.ResetGroupRequested += (_, _) => resetRequested = true;
@@ -36,7 +32,6 @@ internal static partial class TestSuite
                     GradientStrength = 42,
                     Vignette = 16,
                     BlendMode = "soft-light",
-                    ReadabilityProtection = true,
                 });
                 inspector.SetSourceSummary("本地图片 · probe.png", hasLocalImage: true);
                 Ensure(inspector.BrightnessValue.Text == "91%" &&
@@ -46,11 +41,10 @@ internal static partial class TestSuite
                        inspector.BlendModeComboBox.SelectedItem is System.Windows.Controls.ComboBoxItem
                        {
                            Tag: "soft-light",
-                       } &&
-                       inspector.ReadabilityCheckBox.IsChecked == true,
+                       },
                     "The workbench inspector must reflect precise values, image source, and advanced effects.");
                 inspector.SetGroup(ArtworkParameterGroup.Effects);
-                Ensure(Equals(inspector.ResetGroupButton.Content, "恢复可读性与效果组") &&
+                Ensure(Equals(inspector.ResetGroupButton.Content, "恢复效果组") &&
                        inspector.ResetParameterButton.IsEnabled,
                     "The workbench must name the exact parameter and group reset scopes.");
                 var original = new ThemeArtworkAdjustment
@@ -102,9 +96,6 @@ internal static partial class TestSuite
                 Ensure(inspector.BrightnessSlider.Value == 137 && inspector.BrightnessValue.Text == "137%",
                     "Non-finite precise input must be rejected without reaching the WPF slider value.");
 
-                inspector.CopyButton.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
-                inspector.SetPasteAvailable(true);
-                inspector.PasteButton.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
                 inspector.ChooseImageButton.RaiseEvent(
                     new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
                 inspector.ClearImageButton.RaiseEvent(
@@ -112,35 +103,9 @@ internal static partial class TestSuite
                 inspector.BlendModeComboBox.SelectedItem = inspector.BlendModeComboBox.Items
                     .OfType<System.Windows.Controls.ComboBoxItem>()
                     .Single(item => Equals(item.Tag, "screen"));
-                Ensure(copied && pasted && imageRequested && imageCleared &&
-                       inspector.PasteButton.IsEnabled &&
+                Ensure(imageRequested && imageCleared &&
                        optionChanged is { Parameter: ArtworkParameter.BlendMode, Value: "screen" },
-                    "Region source and parameter-transfer actions must be exposed by the workbench inspector.");
-
-                var transferred = ArtworkSettingsReducer.CopyRegion(
-                    new ThemeVisualSettings
-                    {
-                        Light = new ThemeVisualModeSettings
-                        {
-                            Hero = new ThemeArtworkAdjustment
-                            {
-                                Brightness = 137,
-                                CustomImagePath = "personalization/images/hero.png",
-                            },
-                            Sidebar = new ThemeArtworkAdjustment
-                            {
-                                CustomImagePath = "personalization/images/sidebar.png",
-                            },
-                        },
-                    },
-                    ArtworkColorMode.Light,
-                    ArtworkRegion.Hero,
-                    ArtworkColorMode.Light,
-                    ArtworkRegion.Sidebar);
-                Ensure(transferred.Light.Sidebar.Brightness == 137 &&
-                       transferred.Light.Sidebar.CustomImagePath ==
-                       "personalization/images/sidebar.png",
-                    "Parameter transfer must never replace the target image source.");
+                    "Image-source actions and enumerated effect choices must remain available in the inspector.");
             }
             catch (System.Reflection.TargetInvocationException exception)
             {
@@ -164,7 +129,7 @@ internal static partial class TestSuite
         return Task.CompletedTask;
     }
 
-    static Task ArtworkWorkbenchHistoryAndPresetsWorkAsync()
+    static Task ArtworkWorkbenchHistoryAndDisplaySettingsWorkAsync()
     {
         var root = Path.Combine(Path.GetTempPath(), $"tessalume-artwork-workbench-{Guid.NewGuid():N}");
         var themesDirectory = Path.Combine(root, "themes");
@@ -271,80 +236,17 @@ internal static partial class TestSuite
                     Ensure(settings["editor.probe"].Light.Hero.Brightness == 125,
                         "A parameter-group reset must remain undoable.");
 
-                    settings["editor.probe"] = settings["editor.probe"] with
-                    {
-                        Light = settings["editor.probe"].Light with
-                        {
-                            Hero = settings["editor.probe"].Light.Hero with
-                            {
-                                CustomImagePath = "personalization/images/hero.png",
-                            },
-                            Sidebar = settings["editor.probe"].Light.Sidebar with
-                            {
-                                CustomImagePath = "personalization/images/sidebar.png",
-                            },
-                        },
-                    };
-                    updateWorkbench.Invoke(window, null);
-
-                    window.ArtworkWorkbench.Inspector.CopyButton.RaiseEvent(
-                        new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
-                    window.ArtworkWorkbench.SidebarRegionButton.RaiseEvent(
-                        new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
-                    window.ArtworkWorkbench.Inspector.PasteButton.RaiseEvent(
-                        new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
-                    Ensure(settings["editor.probe"].Light.Sidebar.Brightness == 125 &&
-                           settings["editor.probe"].Light.Sidebar.CustomImagePath ==
-                           "personalization/images/sidebar.png",
-                        "Pasting a region must transfer values without replacing the target image source.");
-
-                    window.ArtworkWorkbench.HeroRegionButton.RaiseEvent(
-                        new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
-                    window.ArtworkWorkbench.PresetNameBox.Text = "明亮构图";
-                    window.ArtworkWorkbench.SavePresetButton.RaiseEvent(
-                        new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
-                    await Task.Delay(180);
-                    window.ArtworkWorkbench.Inspector.BrightnessSlider.Value = 160;
-                    window.ArtworkWorkbench.ApplyPresetButton.RaiseEvent(
-                        new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
-                    Ensure(settings["editor.probe"].Light.Hero.Brightness == 125 &&
-                           settings["editor.probe"].Light.Hero.CustomImagePath ==
-                           "personalization/images/hero.png" &&
-                           window.ArtworkWorkbench.PresetComboBox.SelectedItem is
-                           ThemeArtworkPreset { Name: "明亮构图" } &&
-                           window.ArtworkWorkbench.ImportPresetButton.IsEnabled &&
-                           window.ArtworkWorkbench.ExportPresetButton.IsEnabled,
-                        "A personal preset must restore mode parameters without replacing image sources.");
-
                     window.DisplayPreferencesPage.MotionComboBox.SelectedValue = "reduced";
                     window.DisplayPreferencesPage.TextScaleComboBox.SelectedValue = "large";
                     window.DisplayPreferencesPage.DensityComboBox.SelectedValue = "spacious";
-                    settings["editor.probe"] = settings["editor.probe"] with
-                    {
-                        Light = settings["editor.probe"].Light with
-                        {
-                            Hero = settings["editor.probe"].Light.Hero with
-                            {
-                                CustomImagePath = "personalization/images/experience.png",
-                            },
-                        },
-                    };
-                    window.ExperienceProfilesPage.ProfileNameBox.Text = "夜间创作";
-                    window.ExperienceProfilesPage.SaveButton.RaiseEvent(
-                        new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
 
                     await Task.Delay(220);
                     using var savedStore = new UiPreferencesStore(dataDirectory);
                     var saved = savedStore.Load();
                     Ensure(saved.SchemaVersion == UiPreferences.CurrentSchemaVersion &&
-                           saved.ArtworkPresets is [{ Name: "明亮构图" }] &&
-                           saved.ExperiencePresets is
-                           [{ Name: "夜间创作", ThemeId: "editor.probe" } experience] &&
-                           experience.Settings.Display is
-                           { MotionIntensity: "reduced", TextScale: "large", Density: "spacious" } &&
-                           experience.Settings.Light.Hero.CustomImagePath ==
-                           "personalization/images/experience.png",
-                        "Parameter presets and full experience profiles must persist distinct portable scopes.");
+                           saved.ThemeVisualOverrides["editor.probe"].Display is
+                           { MotionIntensity: "reduced", TextScale: "large", Density: "spacious" },
+                        "Display preferences must persist with the current theme without a separate profile workflow.");
                 }
                 catch (System.Reflection.TargetInvocationException exception)
                 {
@@ -371,7 +273,7 @@ internal static partial class TestSuite
             if (failure is not null)
             {
                 throw new InvalidOperationException(
-                    "The Artwork Workbench 3.0 history and preset workflow failed.",
+                    "The Artwork Workbench 3.0 history and display-settings workflow failed.",
                     failure);
             }
         }
@@ -471,106 +373,6 @@ internal static partial class TestSuite
         finally
         {
             if (Directory.Exists(root)) Directory.Delete(root, recursive: true);
-        }
-    }
-
-    static async Task ArtworkPresetFilesRoundTripSafelyAsync()
-    {
-        var root = Path.Combine(Path.GetTempPath(), $"tessalume-artwork-preset-{Guid.NewGuid():N}");
-        Directory.CreateDirectory(root);
-        try
-        {
-            var path = Path.Combine(root, "柔和背景" + ThemeArtworkPresetExchange.FileExtension);
-            var preset = new ThemeArtworkPreset
-            {
-                Name = "柔和背景",
-                Settings = new ThemeVisualModeSettings
-                {
-                    Hero = new ThemeArtworkAdjustment
-                    {
-                        Brightness = 112,
-                        Contrast = 94,
-                        Zoom = 118,
-                        OffsetY = -12,
-                    },
-                    Sidebar = new ThemeArtworkAdjustment
-                    {
-                        Saturation = 86,
-                        Opacity = 92,
-                        Grayscale = 8,
-                    },
-                    Chat = new ThemeArtworkAdjustment
-                    {
-                        Brightness = 82,
-                        Blur = 2.5,
-                        HueRotation = -14,
-                    },
-                },
-            };
-            await ThemeArtworkPresetExchange.ExportAsync(path, preset);
-            var imported = await ThemeArtworkPresetExchange.ImportAsync(path);
-            var text = await File.ReadAllTextAsync(path);
-            Ensure(imported == preset.Normalize() &&
-                   text.Contains($"\"format\": \"{ThemeArtworkPresetExchange.FormatId}\"", StringComparison.Ordinal) &&
-                   text.Contains("\"schemaVersion\": 1", StringComparison.Ordinal) &&
-                   !text.Contains("themeId", StringComparison.OrdinalIgnoreCase) &&
-                   !text.Contains("path", StringComparison.OrdinalIgnoreCase),
-                "A shared artwork preset must round-trip as a versioned parameter-only file.");
-
-            var replacement = preset with
-            {
-                Settings = preset.Settings with
-                {
-                    Chat = preset.Settings.Chat with { Brightness = 76 },
-                },
-            };
-            await ThemeArtworkPresetExchange.ExportAsync(path, replacement);
-            Ensure(await ThemeArtworkPresetExchange.ImportAsync(path) == replacement.Normalize() &&
-                   !Directory.EnumerateFiles(root, "*.tmp-*", SearchOption.TopDirectoryOnly).Any(),
-                "Preset export must atomically replace an existing file without leaving temporary output.");
-
-            var validText = await File.ReadAllTextAsync(path);
-            var unknownPath = Path.Combine(root, "unknown.json");
-            await File.WriteAllTextAsync(unknownPath, "{\"unexpected\":true," + validText[1..]);
-            Ensure(await ImportIsRejectedAsync(unknownPath),
-                "Preset import must reject unknown fields instead of silently accepting a different format.");
-
-            var outOfRangePath = Path.Combine(root, "out-of-range.json");
-            var outOfRangeText = validText.Replace(
-                "\"brightness\": 112",
-                "\"brightness\": 999",
-                StringComparison.Ordinal);
-            Ensure(!string.Equals(outOfRangeText, validText, StringComparison.Ordinal),
-                "The preset safety fixture did not locate the expected brightness field.");
-            await File.WriteAllTextAsync(outOfRangePath, outOfRangeText);
-            Ensure(await ImportIsRejectedAsync(outOfRangePath),
-                "Preset import must reject renderer values outside the supported range.");
-
-            var oversizedPath = Path.Combine(root, "oversized.json");
-            await File.WriteAllBytesAsync(
-                oversizedPath,
-                new byte[ThemeArtworkPresetExchange.MaximumFileBytes + 1]);
-            Ensure(await ImportIsRejectedAsync(oversizedPath),
-                "Preset import must enforce its small parameter-file size boundary.");
-        }
-        finally
-        {
-            Directory.Delete(root, recursive: true);
-        }
-
-        return;
-
-        static async Task<bool> ImportIsRejectedAsync(string path)
-        {
-            try
-            {
-                await ThemeArtworkPresetExchange.ImportAsync(path);
-                return false;
-            }
-            catch (InvalidDataException)
-            {
-                return true;
-            }
         }
     }
 
@@ -788,6 +590,12 @@ internal static partial class TestSuite
         Ensure(runtimeSource.Contains("setVisualSettings", StringComparison.Ordinal) &&
                runtimeSource.Contains("__TESSALUME_STAGED_VISUAL_SETTINGS__", StringComparison.Ordinal),
             "The runtime must stage and live-update persisted artwork settings.");
+        Ensure(runtimeSource.Contains("region === \"sidebar\"", StringComparison.Ordinal) &&
+               runtimeSource.Contains("${lengthCss(placement?.width)} auto", StringComparison.Ordinal) &&
+               runtimeSource.Contains("placementCss(state.placement, state.region)", StringComparison.Ordinal) &&
+               runtimeSource.Contains("encodedReferenceHeight", StringComparison.Ordinal) &&
+               runtimeSource.Contains("sidebarReferenceTop", StringComparison.Ordinal),
+            "Sidebar artwork must preserve its horizontal scale and full-height top edge while clipping the bottom on shorter windows.");
         Ensure(mainWindowXaml.Contains("x:Name=\"SettingsThemeControlBar\"", StringComparison.Ordinal) &&
                mainWindowXaml.Contains("Click=\"SettingsPreviousTheme_Click\"", StringComparison.Ordinal) &&
                mainWindowXaml.Contains("Click=\"SettingsNextTheme_Click\"", StringComparison.Ordinal) &&
@@ -804,26 +612,35 @@ internal static partial class TestSuite
         Ensure(mainWindowXaml.Contains("x:Name=\"UndoButton\"", StringComparison.Ordinal) &&
                mainWindowXaml.Contains("x:Name=\"RedoButton\"", StringComparison.Ordinal) &&
                mainWindowXaml.Contains("x:Name=\"CompareButton\"", StringComparison.Ordinal) &&
-               mainWindowXaml.Contains("x:Name=\"PresetComboBox\"", StringComparison.Ordinal) &&
-               mainWindowXaml.Contains("x:Name=\"ImportPresetButton\"", StringComparison.Ordinal) &&
-               mainWindowXaml.Contains("x:Name=\"ExportPresetButton\"", StringComparison.Ordinal) &&
-               mainWindowXaml.Contains("x:Name=\"CopyButton\"", StringComparison.Ordinal) &&
-               mainWindowXaml.Contains("x:Name=\"PasteButton\"", StringComparison.Ordinal) &&
+               !mainWindowXaml.Contains("x:Name=\"CopyButton\"", StringComparison.Ordinal) &&
+               !mainWindowXaml.Contains("x:Name=\"PasteButton\"", StringComparison.Ordinal) &&
                mainWindowSource.Contains("InitializeArtworkWorkbench", StringComparison.Ordinal) &&
                mainWindowSource.Contains("ArtworkWorkbench.SettingsChanged", StringComparison.Ordinal) &&
-               artworkWorkbenchSource.Contains("ImportPresetRequested", StringComparison.Ordinal) &&
-               artworkWorkbenchSource.Contains("ExportPresetRequested", StringComparison.Ordinal),
-            "The workbench must support reversible editing, hold-to-compare, parameter transfer, and shareable personal presets.");
+               !mainWindowXaml.Contains("个人图像方案", StringComparison.Ordinal) &&
+               !mainWindowXaml.Contains("跨模式与恢复", StringComparison.Ordinal) &&
+               !mainWindowXaml.Contains("主题作者工具", StringComparison.Ordinal) &&
+               !mainWindowXaml.Contains("ExportArtworkDefaultsButton", StringComparison.Ordinal) &&
+               !mainWindowXaml.Contains("x:Name=\"PresetComboBox\"", StringComparison.Ordinal) &&
+               !mainWindowXaml.Contains("x:Name=\"CopyModeButton\"", StringComparison.Ordinal) &&
+               !mainWindowXaml.Contains("x:Name=\"ResetModeButton\"", StringComparison.Ordinal) &&
+               !mainWindowXaml.Contains("x:Name=\"ResetThemeButton\"", StringComparison.Ordinal) &&
+               !artworkWorkbenchSource.Contains("ImportPresetRequested", StringComparison.Ordinal) &&
+               !artworkWorkbenchSource.Contains("ExportPresetRequested", StringComparison.Ordinal) &&
+               !artworkWorkbenchSource.Contains("ArtworkResetScope.Mode", StringComparison.Ordinal) &&
+               !artworkWorkbenchSource.Contains("ArtworkResetScope.Theme", StringComparison.Ordinal) &&
+               !artworkWorkbenchSource.Contains("CopyMode(", StringComparison.Ordinal),
+            "The workbench must retain reversible local editing without parameter transfer, personal presets, or coarse recovery workflows.");
         Ensure(mainWindowXaml.Contains("x:Name=\"ChooseImageButton\"", StringComparison.Ordinal) &&
                mainWindowXaml.Contains("x:Name=\"ClearImageButton\"", StringComparison.Ordinal) &&
-               mainWindowXaml.Contains("<personalization:DisplayPreferencesView", StringComparison.Ordinal) &&
-               mainWindowXaml.Contains("<personalization:ExperienceProfilesView", StringComparison.Ordinal) &&
+               mainWindowXaml.Contains("<personalization:DisplaySettingsView", StringComparison.Ordinal) &&
+               !mainWindowXaml.Contains("ExperienceProfilesView", StringComparison.Ordinal) &&
+               !mainWindowXaml.Contains("体验方案", StringComparison.Ordinal) &&
                runtimeSource.Contains("customImageKey", StringComparison.Ordinal) &&
                runtimeSource.Contains("tessalumeMotion", StringComparison.Ordinal) &&
                runtimeSource.Contains("tessalumeReadability", StringComparison.Ordinal) &&
                sharedCss.Contains("background-blend-mode", StringComparison.Ordinal) &&
                sharedCss.Contains("data-tessalume-density", StringComparison.Ordinal),
-            "Personalization must connect local images, visual effects, readability, display preferences, and full experience profiles.");
+            "Personalization must connect local images, visual effects, readability, and per-theme display preferences without a profile workflow.");
         Ensure(mainWindowXaml.Contains(
                    "Event=\"PreviewKeyDown\" Handler=\"ValueEditor_PreviewKeyDown\"",
                    StringComparison.Ordinal) &&
@@ -836,10 +653,9 @@ internal static partial class TestSuite
                mainWindowXaml.Contains("x:Name=\"ResetParameterButton\"", StringComparison.Ordinal) &&
                mainWindowXaml.Contains("x:Name=\"ResetGroupButton\"", StringComparison.Ordinal) &&
                mainWindowXaml.Contains("x:Name=\"ResetRegionButton\"", StringComparison.Ordinal) &&
-               mainWindowXaml.Contains("恢复当前主题全部参数", StringComparison.Ordinal) &&
                artworkWorkbenchSource.Contains("RestoreGroupToTheme", StringComparison.Ordinal) &&
-               artworkWorkbenchSource.Contains("ArtworkResetScope.Theme", StringComparison.Ordinal),
-            "The workbench must expose parameter, group, region-mode, mode, and confirmed theme reset scopes.");
+               artworkWorkbenchSource.Contains("RestoreSlotToTheme", StringComparison.Ordinal),
+            "The workbench must expose only the local parameter, group, and current-slot restore actions.");
         foreach (var region in new[] { "hero", "sidebar", "chat" })
         {
             foreach (var mode in new[] { "light", "dark" })
@@ -910,22 +726,6 @@ internal static partial class TestSuite
                finiteFallback.Zoom == 100 &&
                finiteFallback.Blur == 0,
             "Non-finite artwork values must fall back to safe renderer defaults.");
-        var normalizedPreset = new ThemeArtworkPreset
-        {
-            Name = $"  {new string('A', 40)}  ",
-            Settings = new ThemeVisualModeSettings
-            {
-                Chat = new ThemeArtworkAdjustment
-                {
-                    Blur = 99,
-                    CustomImagePath = "personalization/images/private.png",
-                },
-            },
-        }.Normalize();
-        Ensure(normalizedPreset.Name.Length == 32 &&
-               normalizedPreset.Settings.Chat.Blur == 20 &&
-               normalizedPreset.Settings.Chat.CustomImagePath is null,
-            "Shareable artwork presets must normalize renderer values and omit machine-local images.");
         Ensure(runtimeSource.Contains("grayscale(${grayscale})", StringComparison.Ordinal) &&
                runtimeSource.Contains("hue-rotate(${hueRotation}deg)", StringComparison.Ordinal) &&
                runtimeSource.Contains("blur(${blur}px)", StringComparison.Ordinal) &&
@@ -965,11 +765,11 @@ internal static partial class TestSuite
         var appRoot = Path.Combine(repositoryRoot, "src", "Tessalume.App");
         var xaml = await ReadMainWindowXamlAsync(appRoot);
         var source = await ReadMainWindowSourceAsync(appRoot);
-        var experienceHubXaml = await File.ReadAllTextAsync(Path.Combine(
+        var displaySettingsXaml = await File.ReadAllTextAsync(Path.Combine(
             appRoot,
             "Features",
             "Personalization",
-            "ExperienceHubView.xaml"));
+            "DisplaySettingsView.xaml"));
         var artworkWorkbenchXaml = await File.ReadAllTextAsync(Path.Combine(
             appRoot,
             "Features",
@@ -1013,9 +813,9 @@ internal static partial class TestSuite
         Ensure(xaml.Contains("x:Name=\"PersonalizationInfoPanel\"", StringComparison.Ordinal) &&
                xaml.Contains("x:Name=\"PersonalizationPageTitleText\"", StringComparison.Ordinal) &&
                Regex.Matches(xaml, "x:Name=\\\"SettingsThemeControlBar\\\"").Count == 1 &&
-               !experienceHubXaml.Contains("CurrentThemeNameText", StringComparison.Ordinal) &&
-               !experienceHubXaml.Contains("PreviousThemeButton", StringComparison.Ordinal) &&
-               !experienceHubXaml.Contains("WORKBENCH 3.0 READY", StringComparison.Ordinal) &&
+               !displaySettingsXaml.Contains("CurrentThemeNameText", StringComparison.Ordinal) &&
+               !displaySettingsXaml.Contains("PreviousThemeButton", StringComparison.Ordinal) &&
+               !displaySettingsXaml.Contains("WORKBENCH 3.0 READY", StringComparison.Ordinal) &&
                !artworkWorkbenchXaml.Contains("x:Name=\"ThemeNameText\"", StringComparison.Ordinal) &&
                !artworkWorkbenchXaml.Contains("x:Name=\"ThemeContextText\"", StringComparison.Ordinal),
             "Personalization routes must share one compact context bar instead of repeating theme and mode headers inside each page.");
@@ -1037,7 +837,7 @@ internal static partial class TestSuite
             "The main product surface must scale down instead of extending beyond a small work area.");
         Ensure(mainSource.Contains("FitWindowToWorkArea", StringComparison.Ordinal) &&
                mainSource.Contains("AdaptiveViewport_SizeChanged", StringComparison.Ordinal) &&
-               mainSource.Contains("_quickSwitchWindow.Close();", StringComparison.Ordinal) &&
+               mainSource.Contains("CloseQuickSwitchWindow(rememberClosed:", StringComparison.Ordinal) &&
                mainSource.Contains("Key.F", StringComparison.Ordinal) &&
                mainSource.Contains("Key.I", StringComparison.Ordinal) &&
                mainSource.Contains("Key.F5", StringComparison.Ordinal),
@@ -1186,9 +986,9 @@ internal static partial class TestSuite
                diagnosticsSource.Contains("Dispatcher.Yield(DispatcherPriority.Render)", StringComparison.Ordinal),
             "Diagnostics navigation must render an explicit loading state before local inspection begins.");
         var settingsStart = xaml.IndexOf("x:Name=\"SettingsInfoPanel\"", StringComparison.Ordinal);
-        var experienceStart = xaml.IndexOf("x:Name=\"ExperienceInfoPanel\"", StringComparison.Ordinal);
-        var settingsMarkup = settingsStart >= 0 && experienceStart > settingsStart
-            ? xaml[settingsStart..experienceStart]
+        var displayPreferencesStart = xaml.IndexOf("x:Name=\"DisplayPreferencesInfoPanel\"", StringComparison.Ordinal);
+        var settingsMarkup = settingsStart >= 0 && displayPreferencesStart > settingsStart
+            ? xaml[settingsStart..displayPreferencesStart]
             : string.Empty;
         Ensure(!settingsMarkup.Contains("x:Name=\"StartupCheckBox\"", StringComparison.Ordinal) &&
                !settingsMarkup.Contains("x:Name=\"AutomaticUpdatesCheckBox\"", StringComparison.Ordinal) &&

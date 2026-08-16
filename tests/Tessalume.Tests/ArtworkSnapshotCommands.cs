@@ -67,7 +67,6 @@ internal static partial class TestSuite
                         {
                             inspector.BrightnessSlider.Value = 108;
                             inspector.OpacitySlider.Value = 96;
-                            inspector.BasicAdvancedExpander.IsExpanded = true;
                             inspector.ContrastSlider.Value = 106;
                             inspector.SaturationSlider.Value = 112;
                         });
@@ -110,8 +109,6 @@ internal static partial class TestSuite
                         inspector =>
                         {
                             inspector.OverlayOpacitySlider.Value = 22;
-                            inspector.ReadabilityCheckBox.IsChecked = true;
-                            inspector.EffectsAdvancedExpander.IsExpanded = true;
                             inspector.GrayscaleSlider.Value = 5;
                             inspector.HueRotationSlider.Value = 8;
                             inspector.BlurSlider.Value = 0.5;

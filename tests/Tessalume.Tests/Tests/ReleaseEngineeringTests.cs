@@ -455,8 +455,8 @@ internal static partial class TestSuite
                      "PersonalImageStore.cs",
                      "DisplayPreferencesView.xaml",
                      "DisplayPreferencesView.xaml.cs",
-                     "ExperienceProfilesView.xaml",
-                     "ExperienceProfilesView.xaml.cs",
+                     "DisplaySettingsView.xaml",
+                     "DisplaySettingsView.xaml.cs",
                  })
         {
             Ensure(File.Exists(Path.Combine(personalizationFeatureRoot, fileName)),
@@ -468,10 +468,9 @@ internal static partial class TestSuite
                      ("MainWindow.PersonalizationNavigation.cs", 220),
                      ("MainWindow.PersonalizationPreview.cs", 220),
                      ("MainWindow.PersonalizationPresentation.cs", 220),
-                     ("MainWindow.PersonalizationProfiles.cs", 220),
+                     ("MainWindow.DisplayPreferences.cs", 220),
                      ("MainWindow.ArtworkWorkbench.cs", 360),
                      ("MainWindow.ArtworkWorkbenchDialogs.cs", 240),
-                     ("MainWindow.ArtworkWorkbenchPresetDialogs.cs", 180),
                  })
         {
             var path = Path.Combine(personalizationShellRoot, fileName);
@@ -487,7 +486,6 @@ internal static partial class TestSuite
                      Path.Combine("Application", "ArtworkPlacementMapper.cs"),
                      Path.Combine("Application", "ArtworkSurfaceMetricsProbeGate.cs"),
                      Path.Combine("Application", "ArtworkHistoryService.cs"),
-                     Path.Combine("Application", "ArtworkPresetLibraryService.cs"),
                      Path.Combine("Application", "ArtworkWorkbenchSession.cs"),
                      Path.Combine("Infrastructure", "ArtworkImageSourceResolver.cs"),
                      Path.Combine("Infrastructure", "ArtworkThemeDefaultsStore.cs"),

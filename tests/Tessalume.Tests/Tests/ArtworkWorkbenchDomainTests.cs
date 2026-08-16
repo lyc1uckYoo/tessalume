@@ -56,7 +56,7 @@ internal static partial class TestSuite
         return Task.CompletedTask;
     }
 
-    static Task ArtworkWorkbenchResetScopesAreStrictAsync()
+    static Task ArtworkWorkbenchLocalResetScopesAreStrictAsync()
     {
         var original = CreateDistinctArtworkSettings();
         var defaults = new ThemeArtworkAdjustment();
@@ -121,103 +121,6 @@ internal static partial class TestSuite
                new ThemeArtworkAdjustment { CustomImagePath = regionBefore.CustomImagePath }.Normalize(),
             "A region-mode reset must restore every parameter while preserving its image.");
         AssertArtworkImagesPreserved(original, regionReset, "region-mode reset");
-
-        var modeReset = ArtworkSettingsReducer.Reset(
-            original,
-            ArtworkResetRequest.ForMode(ArtworkColorMode.Light));
-        foreach (var region in Enum.GetValues<ArtworkRegion>())
-        {
-            var before = ReadAdjustment(original, ArtworkColorMode.Light, region);
-            Ensure(ReadAdjustment(modeReset, ArtworkColorMode.Light, region) ==
-                   new ThemeArtworkAdjustment { CustomImagePath = before.CustomImagePath }.Normalize(),
-                $"A mode reset must restore Light/{region} parameters.");
-            Ensure(ReadAdjustment(modeReset, ArtworkColorMode.Dark, region) ==
-                   ReadAdjustment(original, ArtworkColorMode.Dark, region),
-                $"A Light mode reset must not change Dark/{region}.");
-        }
-        AssertArtworkImagesPreserved(original, modeReset, "mode reset");
-
-        var themeReset = ArtworkSettingsReducer.Reset(original, ArtworkResetRequest.ForTheme());
-        foreach (var mode in Enum.GetValues<ArtworkColorMode>())
-        {
-            foreach (var region in Enum.GetValues<ArtworkRegion>())
-            {
-                var before = ReadAdjustment(original, mode, region);
-                Ensure(ReadAdjustment(themeReset, mode, region) ==
-                       new ThemeArtworkAdjustment { CustomImagePath = before.CustomImagePath }.Normalize(),
-                    $"A theme reset must restore {mode}/{region} parameters.");
-            }
-        }
-        Ensure(themeReset.Display == original.Display,
-            "A theme artwork reset must not reset display preferences.");
-        AssertArtworkImagesPreserved(original, themeReset, "theme reset");
-
-        return Task.CompletedTask;
-    }
-
-    static Task ArtworkWorkbenchTransfersKeepTargetImagesAsync()
-    {
-        var original = CreateDistinctArtworkSettings();
-        var session = new ArtworkWorkbenchSession();
-        var copied = ReadAdjustment(original, ArtworkColorMode.Light, ArtworkRegion.Hero);
-        var targetBefore = ReadAdjustment(original, ArtworkColorMode.Dark, ArtworkRegion.Chat);
-        var pasted = session.PasteRegion(
-            "transfer.region",
-            original,
-            ArtworkColorMode.Dark,
-            ArtworkRegion.Chat,
-            copied);
-        var pastedTarget = ReadAdjustment(pasted, ArtworkColorMode.Dark, ArtworkRegion.Chat);
-        Ensure(pastedTarget == copied with { CustomImagePath = targetBefore.CustomImagePath },
-            "Pasting a region must copy every parameter and retain the target image source.");
-        AssertOnlyArtworkTargetMayDiffer(
-            original,
-            pasted,
-            ArtworkColorMode.Dark,
-            ArtworkRegion.Chat,
-            "region paste");
-        AssertArtworkImagesPreserved(original, pasted, "region paste");
-
-        var copiedMode = session.CopyMode(
-            "transfer.mode",
-            original,
-            ArtworkColorMode.Light,
-            ArtworkColorMode.Dark);
-        foreach (var region in Enum.GetValues<ArtworkRegion>())
-        {
-            var source = ReadAdjustment(original, ArtworkColorMode.Light, region);
-            var oldTarget = ReadAdjustment(original, ArtworkColorMode.Dark, region);
-            Ensure(ReadAdjustment(copiedMode, ArtworkColorMode.Dark, region) ==
-                   source with { CustomImagePath = oldTarget.CustomImagePath },
-                $"Mode copy must retain the Dark/{region} image source.");
-            Ensure(ReadAdjustment(copiedMode, ArtworkColorMode.Light, region) == source,
-                $"Mode copy must not change Light/{region}.");
-        }
-        AssertArtworkImagesPreserved(original, copiedMode, "mode copy");
-
-        var preset = new ThemeVisualModeSettings
-        {
-            Hero = CreateDistinctAdjustment(7, "preset/hero.png"),
-            Sidebar = CreateDistinctAdjustment(8, "preset/sidebar.png"),
-            Chat = CreateDistinctAdjustment(9, "preset/chat.png"),
-        };
-        var applied = session.ApplyPreset(
-            "transfer.preset",
-            original,
-            ArtworkColorMode.Dark,
-            preset);
-        foreach (var region in Enum.GetValues<ArtworkRegion>())
-        {
-            var presetAdjustment = ReadAdjustment(preset, region);
-            var oldTarget = ReadAdjustment(original, ArtworkColorMode.Dark, region);
-            Ensure(ReadAdjustment(applied, ArtworkColorMode.Dark, region) ==
-                   presetAdjustment with { CustomImagePath = oldTarget.CustomImagePath },
-                $"Applying a preset must retain the Dark/{region} image source.");
-            Ensure(ReadAdjustment(applied, ArtworkColorMode.Light, region) ==
-                   ReadAdjustment(original, ArtworkColorMode.Light, region),
-                $"Applying a Dark preset must not change Light/{region}.");
-        }
-        AssertArtworkImagesPreserved(original, applied, "preset apply");
 
         return Task.CompletedTask;
     }

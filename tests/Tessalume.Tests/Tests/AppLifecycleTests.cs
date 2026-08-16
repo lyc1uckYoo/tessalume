@@ -24,8 +24,6 @@ internal static partial class TestSuite
         Ensure(migratedPreferences.FavoriteThemeIds.Count == 0 &&
                migratedPreferences.ThemeVisualSettings.Count == 0 &&
                migratedPreferences.ThemeVisualOverrides.Count == 0 &&
-               migratedPreferences.ArtworkPresets.Count == 0 &&
-               migratedPreferences.ExperiencePresets.Count == 0 &&
                migratedPreferences.ThemeLibrarySort == ThemeLibraryState.DefaultSort &&
                migratedPreferences.RecentThemeUsage.Count == 0 &&
                string.IsNullOrEmpty(migratedPreferences.CreatorPromptDraft.WorkName) &&
@@ -106,9 +104,34 @@ internal static partial class TestSuite
                    LegacyZoom: 128,
                    LegacyOffsetX: -36,
                    LegacyOffsetY: 18,
-               } &&
-               versionTwoPreferences.ArtworkPresets.Count == 0,
+               },
             "Schema-two preferences must migrate non-default Zoom/Offset into an explicit legacy override.");
+
+        const string versionSixWithArtworkPresetsJson = """
+            {
+              "SchemaVersion": 6,
+              "DarkMode": true,
+              "ThemeVisualOverrides": {},
+              "ArtworkPresets": [
+                {
+                  "Name": "旧图像方案",
+                  "Settings": { "Chat": { "Brightness": 88 } }
+                }
+              ]
+            }
+            """;
+        var versionSixPreferences = UiPreferencesMigration.Deserialize(
+            versionSixWithArtworkPresetsJson,
+            options,
+            out var versionSixMigrated);
+        var versionSixSavedJson = JsonSerializer.Serialize(
+            UiPreferencesMigration.PrepareForSave(versionSixPreferences),
+            options);
+        Ensure(versionSixMigrated &&
+               versionSixPreferences.SchemaVersion == UiPreferences.CurrentSchemaVersion &&
+               versionSixPreferences.DarkMode &&
+               !versionSixSavedJson.Contains("\"ArtworkPresets\"", StringComparison.Ordinal),
+            "Schema-six preferences must discard removed personal artwork presets during migration.");
 
         var currentJson = JsonSerializer.Serialize(migratedPreferences with
         {
@@ -131,40 +154,6 @@ internal static partial class TestSuite
                     },
                 },
             },
-            ArtworkPresets =
-            [
-                new ThemeArtworkPreset
-                {
-                    Name = "柔和背景",
-                    Settings = new ThemeVisualModeSettings
-                    {
-                        Chat = new ThemeArtworkAdjustment
-                        {
-                            Brightness = 88,
-                            Saturation = 72,
-                            Blur = 2.5,
-                        },
-                    },
-                },
-            ],
-            ExperiencePresets =
-            [
-                new ThemeExperiencePreset
-                {
-                    Name = "夜间创作",
-                    ThemeId = "advanced.theme",
-                    DarkMode = true,
-                    Settings = new ThemeVisualSettings
-                    {
-                        Display = new ThemeDisplayPreferences
-                        {
-                            MotionIntensity = "reduced",
-                            TextScale = "large",
-                            Density = "spacious",
-                        },
-                    },
-                },
-            ],
             ThemeLibrarySort = ThemeLibraryState.RecentSort,
             RecentThemeUsage =
             [
@@ -190,7 +179,7 @@ internal static partial class TestSuite
         }, options);
         var currentPreferences = UiPreferencesMigration.Deserialize(currentJson, options, out var currentMigrated);
         var advancedAdjustment = currentPreferences.ThemeVisualOverrides["advanced.theme"].Dark?.Sidebar
-            ?? throw new InvalidOperationException("The schema-six sidebar override did not round-trip.");
+            ?? throw new InvalidOperationException("The current-schema sidebar override did not round-trip.");
         Ensure(!currentMigrated &&
                currentPreferences.SchemaVersion == UiPreferences.CurrentSchemaVersion &&
                advancedAdjustment.LegacyZoom == 128 &&
@@ -199,17 +188,11 @@ internal static partial class TestSuite
                advancedAdjustment.Grayscale == 24 &&
                advancedAdjustment.HueRotation == -42 &&
                advancedAdjustment.Blur == 3.5 &&
-               currentPreferences.ArtworkPresets is [{ Name: "柔和背景" } preset] &&
-               preset.Settings.Chat.Blur == 2.5 &&
-               currentPreferences.ExperiencePresets is
-               [{ Name: "夜间创作", ThemeId: "advanced.theme", DarkMode: true } experience] &&
-               experience.Settings.Display is
-               { MotionIntensity: "reduced", TextScale: "large", Density: "spacious" } &&
                currentPreferences.ThemeLibrarySort == ThemeLibraryState.RecentSort &&
                currentPreferences.RecentThemeUsage is [{ ThemeId: "advanced.theme", UseCount: 7 }] &&
                currentPreferences.CreatorPromptDrafts[CreatorPromptDraftStore.NewThemeKey] is
                { WorkName: "原神", CharacterName: "芙宁娜", UsesReferenceImages: true },
-            "Schema-six preferences must round-trip sparse personalization, creator drafts, and theme library state without another migration.");
+            "Current preferences must round-trip sparse personalization, creator drafts, and theme library state without another migration.");
 
         const string versionFourDemoJson = """
             {

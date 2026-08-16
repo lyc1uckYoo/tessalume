@@ -19,7 +19,7 @@ internal static partial class TestSuite
         "hero-light", "hero-dark", "sidebar-light", "sidebar-dark", "chat-light", "chat-dark",
     ];
 
-    static async Task ArtworkAbsoluteCompositionAndSchemaSixMigrationWorkAsync()
+    static async Task ArtworkAbsoluteCompositionAndSparseSchemaMigrationWorkAsync()
     {
         var repositoryRoot = FindRepositoryRoot();
         var themeRoot = Path.Combine(repositoryRoot, "themes", "cartethyia.gale-tide-crown");
@@ -117,6 +117,71 @@ internal static partial class TestSuite
         Ensure(!customProjection.IsDistorted,
             "A committed crop must preserve the source aspect at the target aspect.");
 
+        var fixedWidthSidebar = ArtworkPlacementMapper.AdaptFixedWidthSidebar(
+            new ThemeArtworkPlacementSpec
+            {
+                SizeMode = ThemeArtworkSizeMode.Explicit,
+                Width = ThemeArtworkLength.Percent(100d),
+                Height = ThemeArtworkLength.Percent(100d),
+                PositionX = ThemeArtworkPositionValue.Center,
+                PositionY = ThemeArtworkPositionValue.Center,
+            },
+            new ArtworkSize(260d, 800d),
+            new ArtworkSize(260d, 800d));
+        var tallSidebarProjection = ArtworkPlacementMapper.Project(
+            fixedWidthSidebar,
+            new ArtworkSize(260d, 800d),
+            new ArtworkSize(260d, 800d));
+        var shortSidebarProjection = ArtworkPlacementMapper.Project(
+            fixedWidthSidebar,
+            new ArtworkSize(260d, 800d),
+            new ArtworkSize(260d, 620d));
+        Ensure(fixedWidthSidebar.Height == ThemeArtworkLength.Auto &&
+               fixedWidthSidebar.PositionY == ThemeArtworkPositionValue.Pixels(0d) &&
+               !tallSidebarProjection.IsDistorted &&
+               !shortSidebarProjection.IsDistorted,
+            "Sidebar placement must derive height from its fixed horizontal scale and retain the full-height top edge.");
+        EnsureAlmostEqual(
+            shortSidebarProjection.RenderedImage.Width,
+            tallSidebarProjection.RenderedImage.Width,
+            "fixed-width sidebar rendered width");
+        EnsureAlmostEqual(
+            shortSidebarProjection.RenderedImage.Height,
+            tallSidebarProjection.RenderedImage.Height,
+            "fixed-width sidebar rendered height");
+        EnsureAlmostEqual(
+            shortSidebarProjection.RenderedImage.Y,
+            tallSidebarProjection.RenderedImage.Y,
+            "fixed-width sidebar top edge");
+
+        var anchoredCrop = ArtworkPlacementMapper.CommitCrop(
+            new ThemeArtworkSourcePlacement
+            {
+                Mode = ThemeArtworkPlacementMode.Crop,
+                SourceX = 0d,
+                SourceY = .1d,
+                SourceWidth = 1d,
+                SourceHeight = .8d,
+            },
+            new ArtworkSize(260d, 1000d),
+            new ArtworkSize(260d, 800d),
+            fixedWidthSurface: true);
+        Ensure(anchoredCrop.Height == ThemeArtworkLength.Auto &&
+               anchoredCrop.PositionY.Kind == ThemeArtworkPositionKind.Pixels,
+            "A sidebar crop must persist its full-height top coordinate in pixels.");
+        EnsureAlmostEqual(
+            anchoredCrop.PositionY.Value,
+            -100d,
+            "anchored sidebar persisted top edge");
+        var anchoredShortProjection = ArtworkPlacementMapper.Project(
+            anchoredCrop,
+            new ArtworkSize(260d, 1000d),
+            new ArtworkSize(260d, 620d));
+        EnsureAlmostEqual(
+            anchoredShortProjection.RenderedImage.Y,
+            -100d,
+            "anchored short sidebar top edge");
+
         const string schemaFive = """
             {
               "SchemaVersion": 5,
@@ -139,8 +204,10 @@ internal static partial class TestSuite
         var options = ArtworkIndentedJsonOptions;
         var migrated = UiPreferencesMigration.Deserialize(schemaFive, options, out var didMigrate);
         var migratedOverride = migrated.ThemeVisualOverrides["cartethyia.gale-tide-crown"];
-        Ensure(didMigrate && migrated.SchemaVersion == 6 && migrated.ThemeVisualSettings.Count == 0,
-            "Schema five must migrate to sparse schema six state.");
+        Ensure(didMigrate &&
+               migrated.SchemaVersion == UiPreferences.CurrentSchemaVersion &&
+               migrated.ThemeVisualSettings.Count == 0,
+            "Schema five must migrate to the current sparse preference state.");
         Ensure(migratedOverride.Dark?.Sidebar is
         {
             ImageSourceMode: ThemeArtworkImageSourceMode.Custom,
@@ -218,74 +285,6 @@ internal static partial class TestSuite
                    defaultsResult.Defaults,
                    themeRestored).Light?.Hero is null,
             "Restoring the slot to its theme recommendation must delete the sparse override.");
-
-        var exportSource = resolution.Settings with
-        {
-            Light = resolution.Settings.Light with
-            {
-                Hero = resolution.Settings.Light.Hero with
-                {
-                    GradientStrength = 35d,
-                    GradientVeil = new ThemeArtworkGradientVeil(),
-                    ReadabilityProtection = true,
-                    ReadabilityVeil = new ThemeArtworkReadabilityVeil(),
-                },
-            },
-        };
-        var exportedDefaults = ArtworkDefaultsExporter.Create(
-            package.Manifest.Id,
-            "1.1.0",
-            exportSource);
-        Ensure(exportedDefaults.Slots.Hero.Light.Effects.GradientVeil is
-        { Enabled: true, Strength: 35 } &&
-               exportedDefaults.Slots.Hero.Light.Effects.ReadabilityVeil is
-               { Enabled: true, Opacity: 42 } &&
-               exportedDefaults.Slots.Sidebar.Dark.Asset == "sidebar-dark" &&
-               exportedDefaults.Slots.Chat.Dark.Asset == "chat-dark",
-            "Author export must materialize legacy veil scalars and retain all six original asset references.");
-        var exportRoot = Path.Combine(
-            Path.GetTempPath(),
-            $"tessalume-artwork-defaults-export-{Guid.NewGuid():N}");
-        Directory.CreateDirectory(exportRoot);
-        try
-        {
-            var exportPath = Path.Combine(exportRoot, "artwork-defaults.json");
-            await ArtworkDefaultsExportService.ExportAsync(exportPath, exportedDefaults);
-            var restoredExport = JsonSerializer.Deserialize<ThemeArtworkDefaultsDocument>(
-                await File.ReadAllTextAsync(exportPath),
-                ArtworkWebIndentedJsonOptions)
-                ?? throw new InvalidDataException("The exported artwork defaults were empty.");
-            ThemeArtworkDefaultsValidator.Validate(restoredExport);
-            Ensure(restoredExport.ThemeId == package.Manifest.Id &&
-                   restoredExport.DefaultsVersion == "1.1.0",
-                "The author export must round-trip through the published defaults validator.");
-        }
-        finally
-        {
-            Directory.Delete(exportRoot, recursive: true);
-        }
-
-        try
-        {
-            _ = ArtworkDefaultsExporter.Create(
-                package.Manifest.Id,
-                "1.1.0",
-                resolution.Settings with
-                {
-                    Light = resolution.Settings.Light with
-                    {
-                        Hero = resolution.Settings.Light.Hero with
-                        {
-                            CompositionMode = ThemeArtworkCompositionMode.Legacy,
-                        },
-                    },
-                });
-            throw new InvalidOperationException("A legacy two-coordinate composition was exported.");
-        }
-        catch (InvalidOperationException exception) when (
-            exception.Message.Contains("旧版叠加构图", StringComparison.Ordinal))
-        {
-        }
 
         var validMotion = defaultsResult.Defaults.Slots.Hero.Light.Motion
             ?? throw new InvalidOperationException("Cartethyia hero motion is missing.");

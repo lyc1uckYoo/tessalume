@@ -75,6 +75,7 @@ internal static partial class TestSuite
                         () => Task.FromResult<bool?>(false),
                         () => Task.FromResult<bool?>(false),
                         () => { },
+                        () => { },
                         () => Task.FromResult<CodexUsageSnapshot?>(null));
                     current = quick;
                     quick.Refresh("snapshot", "爱弥斯 · 星海远航", false, []);

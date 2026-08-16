@@ -165,7 +165,7 @@ internal static partial class TestSuite
                  {
                      window.ImportInfoPanel,
                      window.SettingsInfoPanel,
-                     window.ExperienceInfoPanel,
+                     window.DisplayPreferencesInfoPanel,
                      window.DiagnosticsPage,
                      window.AboutPage,
                      window.CreatorCenter,

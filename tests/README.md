@@ -13,7 +13,7 @@
 - `Tests/ReleaseCandidateTests.cs`：覆盖 1.2 配置迁移、项目发现、体检、分享 ZIP、干净导入、用户数据备份与事务恢复的隔离端到端流程。
 - `Tests/TemplateContractTests.cs`：Template 1.0、冻结几何和内置主题契约。
 - `Tests/AppLifecycleTests.cs`：配置迁移、启动、恢复和自动更新接线。
-- `Tests/ProductSurfaceTests.cs`：主界面、设置、诊断、无障碍、视觉调节和图像方案文件安全边界。
+- `Tests/ProductSurfaceTests.cs`：主界面、设置、诊断、无障碍、个人图片与视觉调节边界。
 - `Tests/ThemeLibraryExperienceTests.cs`：主题最近使用排序、版本比较、拖放来源判断、详情交互和配置持久化。
 - `Tests/CreatorWorkflowTests.cs`：Codex 角色提示词、草稿持久化、创作者工作区版本契约、安全升级与主题创作交接。
 - `Tests/CreatorProjectTests.cs`：最近工作区、结构化创作体检、稳定文件监听、健康门控自动应用和确定性主题导出。

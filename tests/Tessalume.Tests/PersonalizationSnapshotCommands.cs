@@ -38,7 +38,7 @@ internal static partial class TestSuite
                 {
                     window = new MainWindow(new PortableLayout(portableRoot, themes, data));
                     InvokeMainWindowMethod(window, "EnsureMainUiInitialized");
-                    window.ExperienceButton.RaiseEvent(
+                    window.DisplayPreferencesButton.RaiseEvent(
                         new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
                     await Task.Delay(240);
                     CompleteInfoPageTransition(window);
@@ -48,26 +48,6 @@ internal static partial class TestSuite
                         TextScale = "large",
                         Density = "spacious",
                     }, enabled: true);
-                    var profile = new ThemeExperiencePreset
-                    {
-                        Name = "夜间沉浸",
-                        ThemeId = "示例主题",
-                        DarkMode = true,
-                        Settings = new ThemeVisualSettings
-                        {
-                            Display = new ThemeDisplayPreferences
-                            {
-                                MotionIntensity = "reduced",
-                                TextScale = "large",
-                                Density = "spacious",
-                            },
-                        },
-                    }.Normalize();
-                    window.ExperienceProfilesPage.Bind(new[] { profile });
-                    window.ExperienceProfilesPage.Select(profile);
-                    window.ExperienceProfilesPage.SetSaveEnabled(true);
-                    window.ExperienceProfilesPage.ProfileNameBox.Text = "我的创作环境";
-
                     RenderPersonalizationProfile(window, lightSnapshotPath, darkMode: false);
                     RenderPersonalizationProfile(window, darkSnapshotPath, darkMode: true);
                     if (!string.IsNullOrWhiteSpace(compactSnapshotPath))

@@ -153,7 +153,7 @@ internal static partial class TestSuite
             try
             {
                 view = new ArtworkWorkbenchView();
-                view.Configure(new PersonalImageStore(root), Array.Empty<ThemeArtworkPreset>());
+                view.Configure(new PersonalImageStore(root));
                 const string themeId = "workbench.display-history";
                 var package = CreateWorkbenchProbePackage(root, themeId);
                 var initial = new ThemeVisualSettings
@@ -281,7 +281,7 @@ internal static partial class TestSuite
                 var cases = new[]
                 {
                     new ArtworkRouteLayoutCase("1920×1080", 1920d, 1080d, false),
-                    new ArtworkRouteLayoutCase("1366×768", 1366d, 768d, true),
+                    new ArtworkRouteLayoutCase("1366×768", 1366d, 768d, false),
                     new ArtworkRouteLayoutCase("1080 logical width", 1080d, 720d, true),
                     // 1366×768 at roughly 200% scaling exposes about 683×384 DIPs.
                     new ArtworkRouteLayoutCase("1366×768 at 200%", 683d, 384d, true),
@@ -302,10 +302,6 @@ internal static partial class TestSuite
                         window,
                         window.ArtworkWorkbench.Inspector.ChooseImageButton,
                         $"{layoutCase.Name} local image action");
-                    EnsureRouteButtonIsHit(
-                        window,
-                        window.ArtworkWorkbench.CopyModeButton,
-                        $"{layoutCase.Name} mode transfer action");
                 }
             }
             catch (TargetInvocationException exception)
@@ -421,6 +417,11 @@ internal static partial class TestSuite
         {
             Ensure(scroll.ScrollableHeight > 0,
                 $"The {layoutCase.Name} route must scroll vertically instead of clipping its lower actions.");
+        }
+        else
+        {
+            Ensure(scroll.ScrollableHeight <= 0.5,
+                $"The {layoutCase.Name} route must keep the complete workbench on one page.");
         }
 
         if (layoutCase.Width < 900)

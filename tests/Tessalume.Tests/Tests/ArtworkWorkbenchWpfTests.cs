@@ -170,27 +170,26 @@ internal static partial class TestSuite
                     (view.CanvasColumn.ActualWidth + view.InspectorColumn.ActualWidth);
                 Ensure(canvasShare is >= 0.58 and <= 0.72 &&
                        view.PreviewCanvas.ActualWidth > 400 &&
-                       view.PreviewCanvas.ActualHeight >= 430 &&
+                       view.PreviewCanvas.ActualHeight >= 330 &&
                        view.PreviewCanvas.FullSourceStage.Visibility == Visibility.Visible &&
                        view.PreviewCanvas.PreviewStage.Visibility == Visibility.Collapsed,
                     "The wide workbench must give the primary canvas roughly two thirds of usable space.");
-                Ensure(AutomationProperties.GetName(view.MotionPreviewToggleButton) ==
-                       "预览或暂停图片动效",
-                    "The motion preview control must expose an accessible name.");
-                view.ResultViewButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                view.Inspector.BasicGroupButton.RaiseEvent(
+                    new RoutedEventArgs(Button.ClickEvent));
                 Ensure(view.PreviewCanvas.ViewMode == ArtworkCanvasViewMode.Result &&
                        view.PreviewCanvas.PreviewStage.Visibility == Visibility.Visible &&
                        view.PreviewCanvas.FullSourceStage.Visibility == Visibility.Collapsed,
-                    "The result view must be a distinct, directly selectable final-surface canvas.");
-                view.FullSourceViewButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                    "Non-composition parameters must switch to their final-surface preview without exposing a separate result-view control.");
+                view.Inspector.CompositionGroupButton.RaiseEvent(
+                    new RoutedEventArgs(Button.ClickEvent));
                 Ensure(view.PreviewCanvas.ViewMode == ArtworkCanvasViewMode.FullSource,
-                    "The workbench must return to full-source framing without changing settings.");
+                    "Composition parameters must return to full-source framing automatically.");
                 view.SidebarRegionButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-                Ensure(view.PreviewCanvas.MinHeight == 520,
-                    "Switching to Sidebar at the same width must select a useful canvas without pushing framing controls below the first viewport.");
+                Ensure(view.PreviewCanvas.MinHeight == 360,
+                    "Switching to Sidebar must retain a compact but useful framing canvas.");
                 view.ChatRegionButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-                Ensure(view.PreviewCanvas.MinHeight == 470,
-                    "Switching back to Chat at the same width must release the Sidebar canvas height.");
+                Ensure(view.PreviewCanvas.MinHeight == 340,
+                    "Switching back to Chat must release the extra Sidebar canvas height.");
                 Ensure(double.IsPositiveInfinity(view.InspectorScroller.MaxHeight),
                     "The wide inspector must remain reachable through the page scroll instead of a fixed-height nested viewport.");
                 view.HeroRegionButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
@@ -250,7 +249,7 @@ internal static partial class TestSuite
                         Placement = offCenterPlacement,
                     },
                     offCenterPlacement);
-                view.ResultViewButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                view.PreviewCanvas.SetViewMode(ArtworkCanvasViewMode.Result);
                 host.UpdateLayout();
                 Ensure(view.PreviewCanvas.PlacementProjection is
                 { RenderedImage.Width: > 0d, RenderedImage.Height: > 0d } &&
@@ -287,7 +286,6 @@ internal static partial class TestSuite
                 Ensure(view.PreviewCanvas.ArtworkImageCanvas.RenderTransform.Value.IsIdentity,
                     "Pausing motion must restore an identity transient transform.");
                 view.PreviewCanvas.SetViewMode(ArtworkCanvasViewMode.FullSource);
-                view.FullSourceViewButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
 
                 ArrangeArtworkWorkbench(host, 1080, 720);
                 Ensure(Grid.GetRow(view.InspectorScroller) == 0 &&
@@ -302,11 +300,8 @@ internal static partial class TestSuite
                 ArrangeArtworkWorkbench(host, 680, 720);
                 Ensure(Grid.GetRow(view.InspectorScroller) == 2 &&
                        Grid.GetColumn(view.InspectorScroller) == 0 &&
-                       Grid.GetRow(view.RecoveryCard) == 2 &&
-                       Grid.GetColumn(view.RecoveryCard) == 0 &&
-                       view.WorkspaceGapRow.ActualHeight >= 11 &&
-                       view.FooterGapRow.ActualHeight >= 11,
-                    "The narrow workbench must stack its inspector and recovery card with visible spacing.");
+                       view.WorkspaceGapRow.ActualHeight >= 11,
+                    "The narrow workbench must stack its inspector below the canvas with visible spacing.");
                 Ensure(host.ScrollableHeight > 0 &&
                        view.ActualWidth <= host.ViewportWidth + 0.5,
                     "The narrow workbench must scroll vertically without expanding beyond its viewport.");
@@ -314,7 +309,6 @@ internal static partial class TestSuite
                     host,
                     view.Inspector.ChooseImageButton,
                     "narrow local-image action");
-                EnsureButtonCenterIsHit(host, view.CopyModeButton, "narrow mode-transfer action");
             }
             catch (Exception exception)
             {
