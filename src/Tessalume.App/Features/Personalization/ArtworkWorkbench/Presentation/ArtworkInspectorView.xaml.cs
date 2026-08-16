@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
@@ -19,7 +18,7 @@ public partial class ArtworkInspectorView : UserControl
     private ArtworkParameter _selectedParameter = ArtworkParameter.Brightness;
     private ArtworkParameter? _activeInteraction;
     private bool _updating;
-    private string _valueBeforeEdit = string.Empty;
+    private bool _responsiveCover;
 
     public ArtworkInspectorView()
     {
@@ -114,7 +113,9 @@ public partial class ArtworkInspectorView : UserControl
         _group = group;
         SelectParameter(group switch
         {
-            ArtworkParameterGroup.Composition => ArtworkParameter.PlacementSize,
+            ArtworkParameterGroup.Composition => _responsiveCover
+                ? ArtworkParameter.PlacementX
+                : ArtworkParameter.PlacementSize,
             ArtworkParameterGroup.Effects => ArtworkParameter.OverlayOpacity,
             ArtworkParameterGroup.Mask => ArtworkParameter.GradientStrength,
             _ => ArtworkParameter.Brightness,
@@ -165,18 +166,45 @@ public partial class ArtworkInspectorView : UserControl
             $"恢复{regionName}{modeName}到主题推荐值并保留图片来源");
     }
 
-    internal void SetFixedWidthComposition(bool fixedWidth)
+    internal void SetFixedWidthComposition(bool fixedWidth, bool responsiveCover = false)
     {
-        SizeHeightValue.IsEnabled = !fixedWidth;
-        SizeHeightLabel.Text = fixedWidth ? "高度（自动）" : "高度";
-        SizeHeightValue.ToolTip = fixedWidth
+        _responsiveCover = responsiveCover;
+        var sizeVisibility = responsiveCover ? Visibility.Collapsed : Visibility.Visible;
+        SizeRowLabel.Visibility = sizeVisibility;
+        SizeWidthLabel.Visibility = sizeVisibility;
+        SizeHeightLabel.Visibility = sizeVisibility;
+        SizeWidthValue.Visibility = sizeVisibility;
+        SizeHeightValue.Visibility = sizeVisibility;
+        SizeWidthValue.IsEnabled = !responsiveCover;
+        SizeHeightValue.IsEnabled = !fixedWidth && !responsiveCover;
+        SizeWidthLabel.Text = responsiveCover ? "模式（自适应）" : "宽度 / 模式";
+        SizeHeightLabel.Text = fixedWidth || responsiveCover ? "高度（自动）" : "高度";
+        SizeWidthValue.ToolTip = responsiveCover
+            ? "首页横幅与聊天背景固定使用等比填满；拖动画面调整焦点，滚轮调整缩放"
+            : "选择或输入背景宽度";
+        SizeHeightValue.ToolTip = responsiveCover
+            ? "自适应填满始终保持原图比例，不单独设置高度"
+            : fixedWidth
             ? "左栏宽度固定，高度始终按原图比例自动计算"
             : "选择或输入背景高度";
         AutomationProperties.SetHelpText(
+            SizeWidthValue,
+            responsiveCover
+                ? "首页和聊天使用响应式等比填满，宽高不会独立拉伸"
+                : "选择或输入背景宽度");
+        AutomationProperties.SetHelpText(
             SizeHeightValue,
-            fixedWidth
+            responsiveCover
+                ? "响应式构图的高度由原图比例和当前窗口自动计算"
+                : fixedWidth
                 ? "左栏使用固定宽度构图，高度保持原图比例"
                 : "选择或输入背景高度");
+        if (responsiveCover &&
+            _group == ArtworkParameterGroup.Composition &&
+            _selectedParameter == ArtworkParameter.PlacementSize)
+        {
+            SelectParameter(ArtworkParameter.PlacementX);
+        }
     }
 
     internal void SetSourceSummary(string summary, bool hasLocalImage)
@@ -199,121 +227,6 @@ public partial class ArtworkInspectorView : UserControl
         if (_group == group) return;
         SetGroup(group);
         GroupChanged?.Invoke(this, new ArtworkParameterGroupEventArgs(group));
-    }
-
-    private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-    {
-        if (_updating || sender is not Slider { Tag: string tag } slider ||
-            !TryGetParameter(tag, out var parameter)) return;
-        SelectParameter(parameter);
-        if (FindValueEditor(parameter) is { } editor)
-        {
-            editor.Text = FormatValue(parameter, slider.Value);
-        }
-        NumericValueChanged?.Invoke(
-            this,
-            new ArtworkParameterValueChangedEventArgs(parameter, slider.Value));
-    }
-
-    private void Slider_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-    {
-        if (sender is Slider { Tag: string tag } && TryGetParameter(tag, out var parameter))
-        {
-            BeginInteraction(parameter);
-        }
-    }
-
-    private void Slider_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e) =>
-        EndActiveInteraction();
-
-    private void Slider_LostMouseCapture(object sender, MouseEventArgs e)
-    {
-        if (Mouse.LeftButton == MouseButtonState.Released) EndActiveInteraction();
-    }
-
-    private void Slider_GotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
-    {
-        if (sender is Slider { Tag: string tag } && TryGetParameter(tag, out var parameter))
-        {
-            BeginInteraction(parameter);
-        }
-    }
-
-    private void Slider_LostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e) =>
-        EndActiveInteraction();
-
-    private void ValueEditor_GotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
-    {
-        if (sender is not TextBox { Tag: string tag } editor ||
-            !TryGetParameter(tag, out var parameter)) return;
-        _valueBeforeEdit = editor.Text;
-        editor.SelectAll();
-        BeginInteraction(parameter);
-    }
-
-    private void ValueEditor_LostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
-    {
-        if (sender is TextBox editor) CommitValueEditor(editor);
-        EndActiveInteraction();
-    }
-
-    private void ValueEditor_PreviewKeyDown(object sender, KeyEventArgs e)
-    {
-        if (sender is not TextBox editor) return;
-        if (e.Key == Key.Enter)
-        {
-            CommitValueEditor(editor);
-            Keyboard.ClearFocus();
-            e.Handled = true;
-        }
-        else if (e.Key == Key.Escape)
-        {
-            editor.Text = _valueBeforeEdit;
-            Keyboard.ClearFocus();
-            e.Handled = true;
-        }
-        else if (e.Key is Key.Up or Key.Down &&
-                 editor.Tag is string tag &&
-                 TryGetParameter(tag, out var parameter) &&
-                 FindSlider(parameter) is { } slider)
-        {
-            var step = parameter == ArtworkParameter.Blur ? 0.5 : 1d;
-            if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift)) step *= 10;
-            slider.Value = Math.Clamp(
-                slider.Value + (e.Key == Key.Up ? step : -step),
-                slider.Minimum,
-                slider.Maximum);
-            e.Handled = true;
-        }
-    }
-
-    private void CommitValueEditor(TextBox editor)
-    {
-        if (editor.Tag is not string tag ||
-            !TryGetParameter(tag, out var parameter) ||
-            FindSlider(parameter) is not { } slider) return;
-        var text = editor.Text
-            .Replace("%", string.Empty, StringComparison.Ordinal)
-            .Replace("px", string.Empty, StringComparison.OrdinalIgnoreCase)
-            .Replace("°", string.Empty, StringComparison.Ordinal)
-            .Trim();
-        if (!double.TryParse(
-                text,
-                NumberStyles.Float,
-                CultureInfo.CurrentCulture,
-                out var value) &&
-            !double.TryParse(
-                text,
-                NumberStyles.Float,
-                CultureInfo.InvariantCulture,
-                out value) ||
-            !double.IsFinite(value))
-        {
-            editor.Text = FormatValue(parameter, slider.Value);
-            return;
-        }
-        slider.Value = Math.Clamp(value, slider.Minimum, slider.Maximum);
-        editor.Text = FormatValue(parameter, slider.Value);
     }
 
     private void BlendModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -416,84 +329,6 @@ public partial class ArtworkInspectorView : UserControl
         button.Tag = active ? "active" : "inactive";
         AutomationProperties.SetItemStatus(button, active ? "当前选中" : "未选中");
     }
-
-    private static void SetSlider(
-        Slider slider,
-        TextBox editor,
-        double value,
-        ArtworkParameter parameter)
-    {
-        slider.Value = value;
-        editor.Text = FormatValue(parameter, value);
-    }
-
-    private Slider? FindSlider(ArtworkParameter parameter) => parameter switch
-    {
-        ArtworkParameter.Brightness => BrightnessSlider,
-        ArtworkParameter.Contrast => ContrastSlider,
-        ArtworkParameter.Saturation => SaturationSlider,
-        ArtworkParameter.Opacity => OpacitySlider,
-        ArtworkParameter.Zoom => ZoomSlider,
-        ArtworkParameter.OffsetX => OffsetXSlider,
-        ArtworkParameter.OffsetY => OffsetYSlider,
-        ArtworkParameter.Grayscale => GrayscaleSlider,
-        ArtworkParameter.HueRotation => HueRotationSlider,
-        ArtworkParameter.Blur => BlurSlider,
-        ArtworkParameter.OverlayOpacity => OverlayOpacitySlider,
-        ArtworkParameter.GradientStrength => GradientStrengthSlider,
-        ArtworkParameter.Vignette => VignetteSlider,
-        _ => null,
-    };
-
-    private TextBox? FindValueEditor(ArtworkParameter parameter) => parameter switch
-    {
-        ArtworkParameter.Brightness => BrightnessValue,
-        ArtworkParameter.Contrast => ContrastValue,
-        ArtworkParameter.Saturation => SaturationValue,
-        ArtworkParameter.Opacity => OpacityValue,
-        ArtworkParameter.Zoom => ZoomValue,
-        ArtworkParameter.OffsetX => OffsetXValue,
-        ArtworkParameter.OffsetY => OffsetYValue,
-        ArtworkParameter.Grayscale => GrayscaleValue,
-        ArtworkParameter.HueRotation => HueRotationValue,
-        ArtworkParameter.Blur => BlurValue,
-        ArtworkParameter.OverlayOpacity => OverlayOpacityValue,
-        ArtworkParameter.GradientStrength => GradientStrengthValue,
-        ArtworkParameter.Vignette => VignetteValue,
-        _ => null,
-    };
-
-    private static bool TryGetParameter(string tag, out ArtworkParameter parameter)
-    {
-        parameter = tag switch
-        {
-            "brightness" => ArtworkParameter.Brightness,
-            "contrast" => ArtworkParameter.Contrast,
-            "saturation" => ArtworkParameter.Saturation,
-            "opacity" => ArtworkParameter.Opacity,
-            "zoom" => ArtworkParameter.Zoom,
-            "offsetX" => ArtworkParameter.OffsetX,
-            "offsetY" => ArtworkParameter.OffsetY,
-            "grayscale" => ArtworkParameter.Grayscale,
-            "hueRotation" => ArtworkParameter.HueRotation,
-            "blur" => ArtworkParameter.Blur,
-            "overlayOpacity" => ArtworkParameter.OverlayOpacity,
-            "gradientStrength" => ArtworkParameter.GradientStrength,
-            "vignette" => ArtworkParameter.Vignette,
-            _ => default,
-        };
-        return tag is "brightness" or "contrast" or "saturation" or "opacity" or
-            "zoom" or "offsetX" or "offsetY" or "grayscale" or "hueRotation" or
-            "blur" or "overlayOpacity" or "gradientStrength" or "vignette";
-    }
-
-    private static string FormatValue(ArtworkParameter parameter, double value) => parameter switch
-    {
-        ArtworkParameter.OffsetX or ArtworkParameter.OffsetY or ArtworkParameter.Blur =>
-            $"{value:0.#} px",
-        ArtworkParameter.HueRotation => $"{value:0.#}°",
-        _ => $"{value:0.#}%",
-    };
 
     private static string GetParameterName(ArtworkParameter parameter) => parameter switch
     {

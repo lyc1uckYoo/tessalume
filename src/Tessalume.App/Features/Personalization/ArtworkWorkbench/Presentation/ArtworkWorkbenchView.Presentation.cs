@@ -42,7 +42,9 @@ public partial class ArtworkWorkbenchView
         RenderCanvasViewMode();
         Inspector.SetRegion(_region);
         Inspector.SetAdjustment(adjustment);
-        Inspector.SetFixedWidthComposition(_region == ArtworkRegion.Sidebar);
+        Inspector.SetFixedWidthComposition(
+            _region == ArtworkRegion.Sidebar,
+            responsiveCover: _region is ArtworkRegion.Hero or ArtworkRegion.Chat);
         RenderPlacementEditor(adjustment);
         Inspector.SetProvenance(CurrentSlotResolution?.Provenance);
         Inspector.SetTargetSummary(
@@ -52,8 +54,8 @@ public partial class ArtworkWorkbenchView
         CanvasHintText.Text = _region switch
         {
             ArtworkRegion.Sidebar => "左栏固定宽度缩放；窗口高度变化时只调整纵向取景",
-            ArtworkRegion.Chat => "拖动取景框调整聊天背景",
-            _ => "拖动取景框调整首页横幅",
+            ArtworkRegion.Chat => "拖动调整人物焦点，滚轮等比缩放；窗口变化自动保持原图比例",
+            _ => "拖动调整人物焦点，滚轮等比缩放；窗口变化自动保持原图比例",
         };
         RenderMappingHint();
         RenderSourceSummary();
@@ -248,10 +250,12 @@ public partial class ArtworkWorkbenchView
             : string.Empty;
         MappingHintText.Text = placement is null || projection is null
             ? "完整原图尚未加载；最终 size / position 将在同一坐标系校准后显示。"
-            : $"输入 size: {placement.SizeCss} · position: {placement.PositionCss}；" +
-              $"最终渲染 {projection.RenderedImage.Width:0.##}×" +
-              $"{projection.RenderedImage.Height:0.##}px @ " +
-              $"{projection.RenderedImage.X:0.##}, {projection.RenderedImage.Y:0.##}px" +
+            : $"输入 size: {ArtworkPresentationFormatter.CssValue(placement.SizeCss)} · " +
+              $"position: {ArtworkPresentationFormatter.CssValue(placement.PositionCss)}；" +
+              $"最终渲染 {ArtworkPresentationFormatter.Number(projection.RenderedImage.Width)}×" +
+              $"{ArtworkPresentationFormatter.Number(projection.RenderedImage.Height)}px @ " +
+              $"{ArtworkPresentationFormatter.Number(projection.RenderedImage.X)}, " +
+              $"{ArtworkPresentationFormatter.Number(projection.RenderedImage.Y)}px" +
               $"{browserOnly}。";
     }
 
@@ -330,6 +334,9 @@ public partial class ArtworkWorkbenchView
             InspectorScroller.MaxHeight = double.PositiveInfinity;
         }
 
+        PreviewCanvas.MaxHeight = _region == ArtworkRegion.Sidebar
+            ? 520d
+            : double.PositiveInfinity;
         SyncStatusDetailText.Visibility = width < 560
             ? Visibility.Collapsed
             : Visibility.Visible;

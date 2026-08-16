@@ -10,6 +10,7 @@ namespace Tessalume.App.Features.Personalization.ArtworkWorkbench.Presentation;
 
 public partial class ArtworkInspectorView
 {
+    private readonly Dictionary<ComboBox, (string RawToken, string DisplayText)> _placementEditorStates = [];
     private bool _placementEditing;
 
     internal event EventHandler? PlacementEditingStarted;
@@ -26,7 +27,7 @@ public partial class ArtworkInspectorView
         _updating = true;
         try
         {
-            RenderPlacementEditors(_placement);
+            if (!_placementEditing) RenderPlacementEditors(_placement);
             PlacementKindText.Text = compositionMode switch
             {
                 ThemeArtworkCompositionMode.Legacy => "旧版兼容",
@@ -177,34 +178,57 @@ public partial class ArtworkInspectorView
 
     private void RenderPlacementEditors(ThemeArtworkPlacementSpec placement)
     {
-        var widthToken = placement.SizeMode switch
-        {
-            ThemeArtworkSizeMode.Contain => "contain",
-            ThemeArtworkSizeMode.Explicit => placement.Width.ToCss(),
-            _ => "cover",
-        };
-        var heightToken = placement.SizeMode == ThemeArtworkSizeMode.Explicit
-            ? placement.Height.ToCss()
+        var widthToken = _responsiveCover
+            ? placement.SizeMode == ThemeArtworkSizeMode.Contain ? "contain" : "cover"
+            : placement.SizeMode switch
+            {
+                ThemeArtworkSizeMode.Contain => "contain",
+                ThemeArtworkSizeMode.Explicit => ArtworkPresentationFormatter.ExactCss(placement.Width),
+                _ => "cover",
+            };
+        var heightToken = !_responsiveCover && placement.SizeMode == ThemeArtworkSizeMode.Explicit
+            ? ArtworkPresentationFormatter.ExactCss(placement.Height)
             : "auto";
-        var xToken = placement.PositionX.ToCss(horizontal: true);
-        var yToken = placement.PositionY.ToCss(horizontal: false);
+        var xToken = ArtworkPresentationFormatter.ExactCss(
+            placement.PositionX,
+            horizontal: true);
+        var yToken = ArtworkPresentationFormatter.ExactCss(
+            placement.PositionY,
+            horizontal: false);
         SetPlacementToken(SizeWidthValue, widthToken);
         SetPlacementToken(SizeHeightValue, heightToken);
         SetPlacementToken(PositionXValue, xToken);
         SetPlacementToken(PositionYValue, yToken);
-        PlacementSummaryText.Text =
-            $"当前：size {widthToken} {heightToken} · position {xToken} {yToken}";
+        var widthDisplay = ArtworkPresentationFormatter.CssToken(widthToken);
+        var heightDisplay = ArtworkPresentationFormatter.CssToken(heightToken);
+        var xDisplay = ArtworkPresentationFormatter.CssToken(xToken);
+        var yDisplay = ArtworkPresentationFormatter.CssToken(yToken);
+        PlacementSummaryText.Text = _responsiveCover
+            ? $"当前：等比填满 · 缩放 {ArtworkPresentationFormatter.Percent(placement.Geometry.Scale * 100d)} · " +
+              $"焦点 {xDisplay} {yDisplay}"
+            : $"当前：size {widthDisplay} {heightDisplay} · position {xDisplay} {yDisplay}";
     }
 
-    private static string GetPlacementToken(ComboBox comboBox)
+    private string GetPlacementToken(ComboBox comboBox)
     {
-        var value = comboBox.SelectedItem is ComboBoxItem { Tag: string token }
-            ? token
-            : comboBox.Text;
-        return value.Trim().ToLowerInvariant();
+        var text = comboBox.Text.Trim();
+        if (comboBox.SelectedItem is ComboBoxItem { Tag: string selectedToken } selected &&
+            string.Equals(
+                text,
+                selected.Content?.ToString(),
+                StringComparison.Ordinal))
+        {
+            return selectedToken.Trim().ToLowerInvariant();
+        }
+        if (_placementEditorStates.TryGetValue(comboBox, out var state) &&
+            string.Equals(text, state.DisplayText, StringComparison.Ordinal))
+        {
+            return state.RawToken;
+        }
+        return text.ToLowerInvariant();
     }
 
-    private static void SetPlacementToken(ComboBox comboBox, string token)
+    private void SetPlacementToken(ComboBox comboBox, string token)
     {
         var match = comboBox.Items
             .OfType<ComboBoxItem>()
@@ -213,7 +237,9 @@ public partial class ArtworkInspectorView
                 token,
                 StringComparison.OrdinalIgnoreCase));
         comboBox.SelectedItem = match;
-        comboBox.Text = match?.Content?.ToString() ?? token;
+        var display = match?.Content?.ToString() ?? ArtworkPresentationFormatter.CssToken(token);
+        comboBox.Text = display;
+        _placementEditorStates[comboBox] = (token.Trim().ToLowerInvariant(), display);
     }
 
     private void RenderParameterOrigin()

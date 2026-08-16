@@ -56,19 +56,29 @@ public partial class ArtworkWorkbenchView
             Inspector.SetPlacementValidationError("完整原图尚未就绪，请加载后再精确编辑最终构图。");
             return;
         }
+        var placement = e.Placement;
+        if (_region == ArtworkRegion.Sidebar)
+        {
+            placement = PreviewCanvas.SourcePixelSize.IsValid && PreviewCanvas.TargetSize.IsValid
+                ? ArtworkPlacementMapper.AdaptFixedWidthSidebar(
+                    placement,
+                    PreviewCanvas.SourcePixelSize,
+                    PreviewCanvas.TargetSize)
+                : ArtworkPlacementMapper.AdaptFixedWidthSidebar(placement);
+        }
+        else if (PreviewCanvas.SourcePixelSize.IsValid && PreviewCanvas.TargetSize.IsValid)
+        {
+            placement = ArtworkPlacementMapper.AdaptResponsiveCover(
+                placement,
+                PreviewCanvas.SourcePixelSize,
+                PreviewCanvas.TargetSize);
+        }
         if (!ApplyDiscrete(
                 settings => ArtworkSettingsReducer.SetCustomPlacement(
                     settings,
                     _mode,
                     _region,
-                    _region == ArtworkRegion.Sidebar
-                        ? PreviewCanvas.SourcePixelSize.IsValid && PreviewCanvas.TargetSize.IsValid
-                            ? ArtworkPlacementMapper.AdaptFixedWidthSidebar(
-                                e.Placement,
-                                PreviewCanvas.SourcePixelSize,
-                                PreviewCanvas.TargetSize)
-                            : ArtworkPlacementMapper.AdaptFixedWidthSidebar(e.Placement)
-                        : e.Placement),
+                    placement),
                 "精确输入最终构图"))
         {
             return;
@@ -94,12 +104,10 @@ public partial class ArtworkWorkbenchView
     {
         Inspector.SetGroup(e.Group);
         if (_showOriginal) return;
-        // Composition work needs the complete source and crop frame. Brightness,
-        // chat masking, and effects need the final surface so every visible control
-        // produces immediate visual feedback without asking users to change views.
-        _canvasViewMode = e.Group == ArtworkParameterGroup.Composition
-            ? ArtworkCanvasViewMode.FullSource
-            : ArtworkCanvasViewMode.Result;
+        // Every parameter is edited against the stable final canvas. The complete
+        // source is still available while holding Compare, but it no longer turns
+        // composition into a thin, window-dependent crop frame.
+        _canvasViewMode = ArtworkCanvasViewMode.Result;
         RenderCanvasViewMode();
     }
 
@@ -288,7 +296,7 @@ public partial class ArtworkWorkbenchView
         EndWheelGesture();
         if (region != ArtworkRegion.Chat && Inspector.SelectedGroup == ArtworkParameterGroup.Mask)
         {
-            _canvasViewMode = ArtworkCanvasViewMode.FullSource;
+            _canvasViewMode = ArtworkCanvasViewMode.Result;
         }
         _region = region;
         UpdateResponsiveLayout(ActualWidth);

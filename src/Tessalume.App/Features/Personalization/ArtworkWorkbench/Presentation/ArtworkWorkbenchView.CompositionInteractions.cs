@@ -38,7 +38,7 @@ public partial class ArtworkWorkbenchView
         ApplyCropMutation(
             mutation,
             start,
-            "拖动取景框调整最终构图",
+            "拖动图片调整最终构图",
             IsBlockedInDirection(mutation, deltaX, deltaY));
     }
 
@@ -93,13 +93,7 @@ public partial class ArtworkWorkbenchView
         string description,
         bool showBoundary)
     {
-        var placement = ArtworkPlacementMapper.CommitCrop(
-            mutation.Crop,
-            PreviewCanvas.SourcePixelSize,
-            PreviewCanvas.TargetSize,
-            projection.IsHorizontallyMirrored,
-            projection.IsVerticallyMirrored,
-            fixedWidthSurface: _region == ArtworkRegion.Sidebar);
+        var placement = CommitInteractiveCrop(mutation.Crop, projection);
         var next = ArtworkWorkbenchSession.UpdateGesture(
             _settings,
             settings => ArtworkSettingsReducer.SetCustomPlacement(
@@ -163,13 +157,7 @@ public partial class ArtworkWorkbenchView
             focalY,
             PreviewCanvas.SourcePixelSize,
             PreviewCanvas.TargetSize);
-        var placement = ArtworkPlacementMapper.CommitCrop(
-            mutation.Crop,
-            PreviewCanvas.SourcePixelSize,
-            PreviewCanvas.TargetSize,
-            projection.IsHorizontallyMirrored,
-            projection.IsVerticallyMirrored,
-            fixedWidthSurface: _region == ArtworkRegion.Sidebar);
+        var placement = CommitInteractiveCrop(mutation.Crop, projection);
         var next = ArtworkWorkbenchSession.UpdateGesture(
             _settings,
             settings => ArtworkSettingsReducer.SetCustomPlacement(
@@ -333,12 +321,18 @@ public partial class ArtworkWorkbenchView
     {
         if (PreviewCanvas.PlacementProjection is not { } projection) return;
         ApplyCustomPlacement(
-            ArtworkPlacementMapper.Fill(
-                PreviewCanvas.SourcePixelSize,
-                PreviewCanvas.TargetSize,
-                mirrorX: projection.IsHorizontallyMirrored,
-                mirrorY: projection.IsVerticallyMirrored,
-                fixedWidthSurface: _region == ArtworkRegion.Sidebar),
+            _region == ArtworkRegion.Sidebar
+                ? ArtworkPlacementMapper.Fill(
+                    PreviewCanvas.SourcePixelSize,
+                    PreviewCanvas.TargetSize,
+                    mirrorX: projection.IsHorizontallyMirrored,
+                    mirrorY: projection.IsVerticallyMirrored,
+                    fixedWidthSurface: true)
+                : ArtworkPlacementMapper.Cover(
+                    projection.SourceProjection.AlignmentX,
+                    projection.SourceProjection.AlignmentY,
+                    projection.IsHorizontallyMirrored,
+                    projection.IsVerticallyMirrored),
             "填满区域");
     }
 
@@ -373,13 +367,7 @@ public partial class ArtworkWorkbenchView
             PreviewCanvas.SourcePixelSize,
             PreviewCanvas.TargetSize);
         ApplyCustomPlacement(
-            ArtworkPlacementMapper.CommitCrop(
-                mutation.Crop,
-                PreviewCanvas.SourcePixelSize,
-                PreviewCanvas.TargetSize,
-                projection.IsHorizontallyMirrored,
-                projection.IsVerticallyMirrored,
-                fixedWidthSurface: _region == ArtworkRegion.Sidebar),
+            CommitInteractiveCrop(mutation.Crop, projection),
             zoomIn ? "放大图片" : "缩小图片");
         if (!zoomIn && HasBoundary(mutation)) PreviewCanvas.ShowBoundaryFeedback();
     }
@@ -398,6 +386,13 @@ public partial class ArtworkWorkbenchView
                     PreviewCanvas.TargetSize)
                 : ArtworkPlacementMapper.AdaptFixedWidthSidebar(placement);
         }
+        else if (PreviewCanvas.SourcePixelSize.IsValid && PreviewCanvas.TargetSize.IsValid)
+        {
+            placement = ArtworkPlacementMapper.AdaptResponsiveCover(
+                placement,
+                PreviewCanvas.SourcePixelSize,
+                PreviewCanvas.TargetSize);
+        }
         if (!ApplyDiscrete(
                 settings => ArtworkSettingsReducer.SetCustomPlacement(
                     settings,
@@ -407,6 +402,24 @@ public partial class ArtworkWorkbenchView
                 description)) return;
         Notify($"已{description} · 可撤销");
     }
+
+    private ThemeArtworkPlacementSpec CommitInteractiveCrop(
+        ThemeArtworkSourcePlacement crop,
+        ArtworkPlacementProjection projection) =>
+        _region == ArtworkRegion.Sidebar
+            ? ArtworkPlacementMapper.CommitCrop(
+                crop,
+                PreviewCanvas.SourcePixelSize,
+                PreviewCanvas.TargetSize,
+                projection.IsHorizontallyMirrored,
+                projection.IsVerticallyMirrored,
+                fixedWidthSurface: true)
+            : ArtworkPlacementMapper.CommitResponsiveCover(
+                crop,
+                PreviewCanvas.SourcePixelSize,
+                PreviewCanvas.TargetSize,
+                projection.IsHorizontallyMirrored,
+                projection.IsVerticallyMirrored);
 
     private static bool HasBoundary(ArtworkCropMutationResult mutation) =>
         mutation.HitLeft || mutation.HitTop || mutation.HitRight || mutation.HitBottom;

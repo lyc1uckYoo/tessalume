@@ -116,7 +116,7 @@ public partial class ArtworkWorkbenchView : UserControl, IDisposable
     private bool _isCodexConnected;
     private bool _showOriginal;
     private bool _compositionEditing;
-    private ArtworkCanvasViewMode _canvasViewMode = ArtworkCanvasViewMode.FullSource;
+    private ArtworkCanvasViewMode _canvasViewMode = ArtworkCanvasViewMode.Result;
     private ArtworkCanvasViewMode? _comparisonReturnViewMode;
     private bool _previewReloadRequired;
     private bool _disposed;

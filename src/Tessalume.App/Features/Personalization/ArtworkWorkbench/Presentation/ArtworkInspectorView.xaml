@@ -237,9 +237,9 @@
                     <Grid>
                         <Grid.ColumnDefinitions><ColumnDefinition Width="42" /><ColumnDefinition Width="*" /><ColumnDefinition Width="8" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
                         <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="4" /><RowDefinition Height="Auto" /><RowDefinition Height="9" /><RowDefinition Height="Auto" /><RowDefinition Height="4" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
-                        <TextBlock Grid.Column="1" Text="宽度 / 模式" Foreground="{DynamicResource SubtleText}" FontSize="8.8" Margin="2,0,0,0" />
+                        <TextBlock x:Name="SizeWidthLabel" Grid.Column="1" Text="宽度 / 模式" Foreground="{DynamicResource SubtleText}" FontSize="8.8" Margin="2,0,0,0" />
                         <TextBlock x:Name="SizeHeightLabel" Grid.Column="3" Text="高度" Foreground="{DynamicResource SubtleText}" FontSize="8.8" Margin="2,0,0,0" />
-                        <TextBlock Grid.Row="2" Text="尺寸" Style="{StaticResource InspectorLabel}" />
+                        <TextBlock x:Name="SizeRowLabel" Grid.Row="2" Text="尺寸" Style="{StaticResource InspectorLabel}" />
                         <ComboBox x:Name="SizeWidthValue" Grid.Row="2" Grid.Column="1" Height="36" Style="{DynamicResource SettingsComboBox}" IsEditable="True" StaysOpenOnEdit="True" Tag="sizeWidth" Text="cover" GotKeyboardFocus="PlacementValue_GotKeyboardFocus" LostKeyboardFocus="PlacementValue_LostKeyboardFocus" PreviewKeyDown="PlacementValue_PreviewKeyDown" DropDownClosed="PlacementComboBox_DropDownClosed" SelectionChanged="PlacementComboBox_SelectionChanged" AutomationProperties.Name="背景宽度">
                             <ComboBoxItem Content="填满区域" Tag="cover" />
                             <ComboBoxItem Content="完整显示" Tag="contain" />

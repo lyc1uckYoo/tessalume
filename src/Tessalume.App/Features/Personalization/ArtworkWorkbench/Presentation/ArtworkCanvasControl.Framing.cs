@@ -62,7 +62,8 @@ public partial class ArtworkCanvasControl
         FullSourceStatusText.Text = _showOriginal
             ? $"主题原始资产 {sourcePixelWidth:0}×{sourcePixelHeight:0}  ·  中性效果"
             : $"当前素材完整图 {sourcePixelWidth:0}×{sourcePixelHeight:0}  ·  " +
-              $"size {_placementProjection!.SizeCss}  ·  position {_placementProjection.PositionCss}";
+              $"size {ArtworkPresentationFormatter.CssValue(_placementProjection!.SizeCss)}  ·  " +
+              $"position {ArtworkPresentationFormatter.CssValue(_placementProjection.PositionCss)}";
     }
 
     private void PositionCropFrame()
