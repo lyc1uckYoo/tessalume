@@ -374,17 +374,17 @@ function Assert-BuiltInPetPackages([string]$PetsRoot, [string[]]$ExpectedPackage
         [pscustomobject]@{ Key = 'gaze-lower'; Row = 10; Frames = 8 }
     )
     $expectedPreviews = @(
-        [pscustomobject]@{ Path = 'previews/00-idle.gif'; Kind = 'action'; ActionKey = 'idle'; Label = '待机'; Width = 576; Height = 624; Frames = 6 },
-        [pscustomobject]@{ Path = 'previews/01-move-right.gif'; Kind = 'action'; ActionKey = 'move-right'; Label = '向右移动'; Width = 576; Height = 624; Frames = 8 },
-        [pscustomobject]@{ Path = 'previews/02-move-left.gif'; Kind = 'action'; ActionKey = 'move-left'; Label = '向左移动'; Width = 576; Height = 624; Frames = 8 },
-        [pscustomobject]@{ Path = 'previews/03-wave-touch.gif'; Kind = 'action'; ActionKey = 'wave-touch'; Label = '挥手互动'; Width = 576; Height = 624; Frames = 4 },
-        [pscustomobject]@{ Path = 'previews/04-jump.gif'; Kind = 'action'; ActionKey = 'jump'; Label = '跳跃'; Width = 576; Height = 624; Frames = 5 },
-        [pscustomobject]@{ Path = 'previews/05-blocked.gif'; Kind = 'action'; ActionKey = 'blocked'; Label = '遇到阻塞'; Width = 576; Height = 624; Frames = 8 },
-        [pscustomobject]@{ Path = 'previews/06-needs-input.gif'; Kind = 'action'; ActionKey = 'needs-input'; Label = '等待输入'; Width = 576; Height = 624; Frames = 6 },
-        [pscustomobject]@{ Path = 'previews/07-running.gif'; Kind = 'action'; ActionKey = 'running'; Label = '正在工作'; Width = 576; Height = 624; Frames = 6 },
-        [pscustomobject]@{ Path = 'previews/08-ready.gif'; Kind = 'action'; ActionKey = 'ready'; Label = '完成待看'; Width = 576; Height = 624; Frames = 6 },
-        [pscustomobject]@{ Path = 'previews/10-gaze-clockwise.gif'; Kind = 'direction'; ActionKey = 'gaze-clockwise'; Label = '16 向转身'; Width = 576; Height = 684; Frames = 16 },
-        [pscustomobject]@{ Path = 'previews/showcase.gif'; Kind = 'showcase'; ActionKey = 'showcase'; Label = '动态九宫格'; Width = 1152; Height = 1248; Frames = 8 }
+        [pscustomobject]@{ Path = 'previews/00-idle.gif'; Kind = 'action'; ActionKey = 'idle'; Label = (-join [char[]]@(0x5f85, 0x673a)); Width = 576; Height = 624; Frames = 6 },
+        [pscustomobject]@{ Path = 'previews/01-move-right.gif'; Kind = 'action'; ActionKey = 'move-right'; Label = (-join [char[]]@(0x5411, 0x53f3, 0x79fb, 0x52a8)); Width = 576; Height = 624; Frames = 8 },
+        [pscustomobject]@{ Path = 'previews/02-move-left.gif'; Kind = 'action'; ActionKey = 'move-left'; Label = (-join [char[]]@(0x5411, 0x5de6, 0x79fb, 0x52a8)); Width = 576; Height = 624; Frames = 8 },
+        [pscustomobject]@{ Path = 'previews/03-wave-touch.gif'; Kind = 'action'; ActionKey = 'wave-touch'; Label = (-join [char[]]@(0x6325, 0x624b, 0x4e92, 0x52a8)); Width = 576; Height = 624; Frames = 4 },
+        [pscustomobject]@{ Path = 'previews/04-jump.gif'; Kind = 'action'; ActionKey = 'jump'; Label = (-join [char[]]@(0x8df3, 0x8dc3)); Width = 576; Height = 624; Frames = 5 },
+        [pscustomobject]@{ Path = 'previews/05-blocked.gif'; Kind = 'action'; ActionKey = 'blocked'; Label = (-join [char[]]@(0x9047, 0x5230, 0x963b, 0x585e)); Width = 576; Height = 624; Frames = 8 },
+        [pscustomobject]@{ Path = 'previews/06-needs-input.gif'; Kind = 'action'; ActionKey = 'needs-input'; Label = (-join [char[]]@(0x7b49, 0x5f85, 0x8f93, 0x5165)); Width = 576; Height = 624; Frames = 6 },
+        [pscustomobject]@{ Path = 'previews/07-running.gif'; Kind = 'action'; ActionKey = 'running'; Label = (-join [char[]]@(0x6b63, 0x5728, 0x5de5, 0x4f5c)); Width = 576; Height = 624; Frames = 6 },
+        [pscustomobject]@{ Path = 'previews/08-ready.gif'; Kind = 'action'; ActionKey = 'ready'; Label = (-join [char[]]@(0x5b8c, 0x6210, 0x5f85, 0x770b)); Width = 576; Height = 624; Frames = 6 },
+        [pscustomobject]@{ Path = 'previews/10-gaze-clockwise.gif'; Kind = 'direction'; ActionKey = 'gaze-clockwise'; Label = ('16 ' + (-join [char[]]@(0x5411, 0x8f6c, 0x8eab))); Width = 576; Height = 684; Frames = 16 },
+        [pscustomobject]@{ Path = 'previews/showcase.gif'; Kind = 'showcase'; ActionKey = 'showcase'; Label = (-join [char[]]@(0x52a8, 0x6001, 0x4e5d, 0x5bab, 0x683c)); Width = 1152; Height = 1248; Frames = 8 }
     )
     $packages = @()
     foreach ($expectedName in $expectedNames) {
