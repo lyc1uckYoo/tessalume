@@ -1,6 +1,5 @@
 using System.Windows;
 using System.Windows.Automation;
-using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using Tessalume.App.Features.Personalization.ArtworkWorkbench.Application;
 using Tessalume.App.Features.Personalization.ArtworkWorkbench.Domain;
@@ -39,7 +38,7 @@ public partial class ArtworkWorkbenchView
         ApplyCropMutation(
             mutation,
             start,
-            "拖动区域效果调整最终取景",
+            "拖动取景框调整最终构图",
             IsBlockedInDirection(mutation, deltaX, deltaY));
     }
 
@@ -99,7 +98,8 @@ public partial class ArtworkWorkbenchView
             PreviewCanvas.SourcePixelSize,
             PreviewCanvas.TargetSize,
             projection.IsHorizontallyMirrored,
-            projection.IsVerticallyMirrored);
+            projection.IsVerticallyMirrored,
+            fixedWidthSurface: _region == ArtworkRegion.Sidebar);
         var next = ArtworkWorkbenchSession.UpdateGesture(
             _settings,
             settings => ArtworkSettingsReducer.SetCustomPlacement(
@@ -168,7 +168,8 @@ public partial class ArtworkWorkbenchView
             PreviewCanvas.SourcePixelSize,
             PreviewCanvas.TargetSize,
             projection.IsHorizontallyMirrored,
-            projection.IsVerticallyMirrored);
+            projection.IsVerticallyMirrored,
+            fixedWidthSurface: _region == ArtworkRegion.Sidebar);
         var next = ArtworkWorkbenchSession.UpdateGesture(
             _settings,
             settings => ArtworkSettingsReducer.SetCustomPlacement(
@@ -207,37 +208,17 @@ public partial class ArtworkWorkbenchView
         PreviewCanvas.SetGuidesVisible(GuideToggleButton.IsChecked == true);
     }
 
-    private void CanvasView_Click(object sender, RoutedEventArgs e)
-    {
-        if (_showOriginal) return;
-        _canvasViewMode = sender is ToggleButton { CommandParameter: "result" }
-            ? ArtworkCanvasViewMode.Result
-            : ArtworkCanvasViewMode.FullSource;
-        RenderCanvasViewMode();
-    }
-
     private void RenderCanvasViewMode()
     {
         if (PreviewCanvas is null) return;
-        FullSourceViewButton.IsChecked = _canvasViewMode == ArtworkCanvasViewMode.FullSource;
-        ResultViewButton.IsChecked = _canvasViewMode == ArtworkCanvasViewMode.Result;
         PreviewCanvas.SetViewMode(_canvasViewMode);
         UpdateResponsiveLayout(ActualWidth);
-        CanvasViewHintText.Text = _canvasViewMode == ArtworkCanvasViewMode.FullSource
-            ? "完整原图始终可见；金色框是目标区域最终取景。"
-            : "这里只显示目标区域的最终裁切、滤镜与可读性效果。";
-        RenderMotionPreviewState();
-    }
-
-    private void MotionPreview_Click(object sender, RoutedEventArgs e)
-    {
-        _motionPreviewRequested = MotionPreviewToggleButton.IsChecked == true;
         RenderMotionPreviewState();
     }
 
     private void RenderMotionPreviewState()
     {
-        if (MotionPreviewToggleButton is null || PreviewCanvas is null) return;
+        if (PreviewCanvas is null) return;
         var motion = CurrentAdjustment.Motion?.Normalize();
         var hasMotion = motion is { Mode: "loop", Keyframes.Count: > 0 };
         var displayAllowsMotion = !string.Equals(
@@ -250,34 +231,9 @@ public partial class ArtworkWorkbenchView
             StringComparison.OrdinalIgnoreCase);
         var active = hasMotion &&
             displayAllowsMotion &&
-            _motionPreviewRequested &&
             _canvasViewMode == ArtworkCanvasViewMode.Result &&
             !_showOriginal &&
             !_compositionEditing;
-        MotionPreviewToggleButton.IsEnabled = CanEdit() && hasMotion && displayAllowsMotion;
-        MotionPreviewToggleButton.IsChecked = _motionPreviewRequested && displayAllowsMotion;
-        MotionPreviewToggleButton.Content = active
-            ? "暂停动效"
-            : _motionPreviewRequested &&
-              _canvasViewMode == ArtworkCanvasViewMode.Result &&
-              _compositionEditing
-                ? "动效已暂停"
-                : "预览动效";
-        var status = !hasMotion
-            ? "当前槽位没有图片动效"
-            : !displayAllowsMotion
-                ? "全局动效设置已关闭"
-                : active
-                    ? reducedMotion
-                        ? "区域效果正在预览轻量图片动效"
-                        : "区域效果正在预览图片动效"
-                    : _canvasViewMode == ArtworkCanvasViewMode.FullSource
-                        ? "全图取景始终暂停动效"
-                        : _compositionEditing
-                            ? "构图编辑期间已暂停动效"
-                            : "图片动效已暂停";
-        MotionPreviewToggleButton.ToolTip = status + "；此开关不写入参数或撤销历史";
-        AutomationProperties.SetItemStatus(MotionPreviewToggleButton, status);
         PreviewCanvas.SetMotionPreview(active, reducedMotion);
     }
 
@@ -346,7 +302,7 @@ public partial class ArtworkWorkbenchView
         if (!_showOriginal) return;
         _showOriginal = false;
         CompareButton.ReleaseMouseCapture();
-        CompareButton.Content = "按住看主题原图";
+        CompareButton.Content = "查看原图";
         AutomationProperties.SetItemStatus(CompareButton, "显示当前调整");
         PreviewCanvas.SetShowOriginal(false);
         if (_comparisonReturnViewMode is { } returnMode)
@@ -381,7 +337,8 @@ public partial class ArtworkWorkbenchView
                 PreviewCanvas.SourcePixelSize,
                 PreviewCanvas.TargetSize,
                 mirrorX: projection.IsHorizontallyMirrored,
-                mirrorY: projection.IsVerticallyMirrored),
+                mirrorY: projection.IsVerticallyMirrored,
+                fixedWidthSurface: _region == ArtworkRegion.Sidebar),
             "填满区域");
     }
 
@@ -394,7 +351,8 @@ public partial class ArtworkWorkbenchView
             CurrentAdjustment,
             themeDefault,
             PreviewCanvas.SourcePixelSize,
-            PreviewCanvas.TargetSize);
+            PreviewCanvas.TargetSize,
+            fixedWidthSurface: _region == ArtworkRegion.Sidebar);
         ApplyCustomPlacement(
             ArtworkPlacementMapper.Center(custom.Placement ?? themeDefault),
             "居中图片");
@@ -420,7 +378,8 @@ public partial class ArtworkWorkbenchView
                 PreviewCanvas.SourcePixelSize,
                 PreviewCanvas.TargetSize,
                 projection.IsHorizontallyMirrored,
-                projection.IsVerticallyMirrored),
+                projection.IsVerticallyMirrored,
+                fixedWidthSurface: _region == ArtworkRegion.Sidebar),
             zoomIn ? "放大图片" : "缩小图片");
         if (!zoomIn && HasBoundary(mutation)) PreviewCanvas.ShowBoundaryFeedback();
     }
@@ -430,6 +389,15 @@ public partial class ArtworkWorkbenchView
         string description)
     {
         if (!CanEdit()) return;
+        if (_region == ArtworkRegion.Sidebar)
+        {
+            placement = PreviewCanvas.SourcePixelSize.IsValid && PreviewCanvas.TargetSize.IsValid
+                ? ArtworkPlacementMapper.AdaptFixedWidthSidebar(
+                    placement,
+                    PreviewCanvas.SourcePixelSize,
+                    PreviewCanvas.TargetSize)
+                : ArtworkPlacementMapper.AdaptFixedWidthSidebar(placement);
+        }
         if (!ApplyDiscrete(
                 settings => ArtworkSettingsReducer.SetCustomPlacement(
                     settings,

@@ -136,12 +136,6 @@ public sealed record ThemeArtworkAdjustment
         };
     }
 
-    public ThemeArtworkAdjustment WithoutCustomImage() => this with
-    {
-        CustomImagePath = null,
-        ThemeAssetKey = null,
-    };
-
     public static bool IsSupportedBlendMode(string? blendMode) =>
         SupportedBlendModes.Contains(blendMode ?? string.Empty);
 
@@ -243,72 +237,4 @@ public sealed record ThemeVisualSettings
         Dark = (Dark ?? new ThemeVisualModeSettings()).Normalize(),
         Display = (Display ?? new ThemeDisplayPreferences()).Normalize(),
     };
-}
-
-public sealed record ThemeArtworkPreset
-{
-    public string Name { get; init; } = string.Empty;
-
-    public ThemeVisualModeSettings Settings { get; init; } = new();
-
-    public ThemeArtworkPreset Normalize()
-    {
-        var name = (Name ?? string.Empty).Trim();
-        if (name.Length > 32)
-        {
-            name = name[..32];
-        }
-
-        return this with
-        {
-            Name = name,
-            Settings = StripCustomImages((Settings ?? new ThemeVisualModeSettings()).Normalize()),
-        };
-    }
-
-    public override string ToString() => Name;
-
-    private static ThemeVisualModeSettings StripCustomImages(ThemeVisualModeSettings settings) =>
-        settings with
-        {
-            Hero = settings.Hero.WithoutCustomImage() with { Motion = null },
-            Sidebar = settings.Sidebar.WithoutCustomImage() with { Motion = null },
-            Chat = settings.Chat.WithoutCustomImage() with { Motion = null },
-        };
-}
-
-public sealed record ThemeExperiencePreset
-{
-    public string Name { get; init; } = string.Empty;
-
-    public string ThemeId { get; init; } = string.Empty;
-
-    public bool DarkMode { get; init; }
-
-    public ThemeVisualSettings Settings { get; init; } = new();
-
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public ThemeVisualSettingsOverride? VisualOverrides { get; init; }
-
-    public ThemeExperiencePreset Normalize()
-    {
-        var name = (Name ?? string.Empty).Trim();
-        if (name.Length > 32) name = name[..32];
-        var themeId = (ThemeId ?? string.Empty).Trim();
-        if (themeId.Length > 256) themeId = themeId[..256];
-        return this with
-        {
-            Name = name,
-            ThemeId = themeId,
-            Settings = (Settings ?? new ThemeVisualSettings()).Normalize(),
-            // Published schema-five profiles contained a fully resolved neutral model.
-            // Convert it to an intent-preserving sparse delta once, so later theme
-            // recommendation updates are not overwritten by old 100/0 defaults.
-            VisualOverrides = (VisualOverrides ??
-                ThemeArtworkSettingsResolver.MigrateSchemaFive(
-                    Settings ?? new ThemeVisualSettings())).Normalize(),
-        };
-    }
-
-    public override string ToString() => Name;
 }

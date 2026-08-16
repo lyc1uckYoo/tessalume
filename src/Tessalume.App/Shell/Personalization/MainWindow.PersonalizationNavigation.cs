@@ -8,19 +8,16 @@ namespace Tessalume.App;
 public partial class MainWindow
 {
     internal Features.Personalization.DisplayPreferencesView DisplayPreferencesPage =>
-        ExperienceInfoPanel.DisplayPreferencesPage;
-
-    internal Features.Personalization.ExperienceProfilesView ExperienceProfilesPage =>
-        ExperienceInfoPanel.ExperienceProfilesPage;
+        DisplayPreferencesInfoPanel.DisplayPreferencesPage;
 
     private void Settings_Click(object sender, RoutedEventArgs e)
     {
         OpenPersonalizationPage(Features.Navigation.AppRoute.ArtworkStudio);
     }
 
-    private void Experience_Click(object sender, RoutedEventArgs e)
+    private void DisplayPreferences_Click(object sender, RoutedEventArgs e)
     {
-        OpenPersonalizationPage(Features.Navigation.AppRoute.ExperienceProfiles);
+        OpenPersonalizationPage(Features.Navigation.AppRoute.DisplayPreferences);
     }
 
     private void OpenPersonalizationPage(Features.Navigation.AppRoute route)
@@ -132,6 +129,21 @@ public partial class MainWindow
             : adjustmentTheme is not null ? "Amber" : "SubtleText"];
         SettingsPreviousThemeButton.IsEnabled = candidates.Length > 0;
         SettingsNextThemeButton.IsEnabled = candidates.Length > 0;
+        var canRestoreLastTheme = activeTheme is null && _themes.Any(theme =>
+            theme.IsValid &&
+            string.Equals(theme.ThemeId, _lastThemeId, StringComparison.OrdinalIgnoreCase));
+        var restoreLastTheme = activeTheme is null;
+        var restoreDescription = restoreLastTheme
+            ? canRestoreLastTheme ? "恢复刚刚使用的主题" : "没有可恢复的上一主题"
+            : "恢复 Codex 默认外观";
+        SettingsRestoreThemeButton.IsEnabled = activeTheme is not null || canRestoreLastTheme;
+        SettingsRestoreThemeButton.ToolTip = restoreDescription;
+        System.Windows.Automation.AutomationProperties.SetName(
+            SettingsRestoreThemeButton,
+            restoreDescription);
+        SettingsRestoreIconPath.Data = Geometry.Parse(restoreLastTheme
+            ? "M 17,8 L 20.5,8 L 20.5,4.5 M 20,8 C 18,4 14,2.5 10,3.5 C 5.5,4.5 3,9 4,13.5 C 5,18 9.5,21 14,20 C 17,19.4 19.2,17.5 20.3,15"
+            : "M 7,8 L 3.5,8 L 3.5,4.5 M 4,8 C 6,4 10,2.5 14,3.5 C 18.5,4.5 21,9 20,13.5 C 19,18 14.5,21 10,20 C 7,19.4 4.8,17.5 3.7,15");
 
         SettingsModeMoonIcon.Visibility = _codexDarkMode is true ? Visibility.Visible : Visibility.Collapsed;
         SettingsModeSunIcon.Visibility = _codexDarkMode is false ? Visibility.Visible : Visibility.Collapsed;
@@ -140,24 +152,24 @@ public partial class MainWindow
         {
             SettingsColorModeText.Text = "Codex 当前暗色";
             SettingsColorModeHintText.Text = "点击切换到亮色";
-            SettingsColorModeButton.Background = (Brush)Resources["AccentSoft"];
-            SettingsColorModeButton.BorderBrush = (Brush)Resources["Accent"];
+            SettingsColorModeButton.Background = (Brush)Resources["SettingsColorSurface"];
+            SettingsColorModeButton.BorderBrush = (Brush)Resources["SettingsColorBorder"];
             SettingsColorModeButton.ToolTip = "Codex 当前为暗色，点击切换到亮色";
         }
         else if (_codexDarkMode is false)
         {
             SettingsColorModeText.Text = "Codex 当前亮色";
             SettingsColorModeHintText.Text = "点击切换到暗色";
-            SettingsColorModeButton.Background = (Brush)Resources["SkySoft"];
-            SettingsColorModeButton.BorderBrush = (Brush)Resources["Sky"];
+            SettingsColorModeButton.Background = (Brush)Resources["SettingsColorSurface"];
+            SettingsColorModeButton.BorderBrush = (Brush)Resources["SettingsColorBorder"];
             SettingsColorModeButton.ToolTip = "Codex 当前为亮色，点击切换到暗色";
         }
         else
         {
             SettingsColorModeText.Text = "检测显示模式";
             SettingsColorModeHintText.Text = "点击连接并切换";
-            SettingsColorModeButton.Background = (Brush)Resources["SettingsControlSurface"];
-            SettingsColorModeButton.BorderBrush = (Brush)Resources["SettingsControlBorder"];
+            SettingsColorModeButton.Background = (Brush)Resources["SettingsColorSurface"];
+            SettingsColorModeButton.BorderBrush = (Brush)Resources["SettingsColorBorder"];
             SettingsColorModeButton.ToolTip = "连接 Codex 后读取并切换亮暗模式";
         }
 

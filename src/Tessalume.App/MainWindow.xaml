@@ -11,6 +11,7 @@
         Title="{x:Static local:BrandInfo.WindowTitle}"
         Icon="{x:Static local:BrandInfo.AppIcon}"
         Width="1280" Height="820" MinWidth="760" MinHeight="420"
+        MaxWidth="1280" MaxHeight="820" ResizeMode="CanMinimize"
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource WindowBackground}"
         FontFamily="Microsoft YaHei UI"
@@ -105,10 +106,10 @@
                             <TextBlock Grid.Column="1" Text="图像工作台" VerticalAlignment="Center" />
                         </Grid>
                     </Button>
-                    <Button x:Name="ExperienceButton" Style="{StaticResource NavButton}" Click="Experience_Click">
+                    <Button x:Name="DisplayPreferencesButton" Style="{StaticResource NavButton}" Click="DisplayPreferences_Click">
                         <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="27" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
                             <Path Style="{StaticResource NavIcon}" Data="M 4,6 L 20,6 M 4,12 L 20,12 M 4,18 L 20,18 M 8,3 L 8,9 M 16,9 L 16,15 M 10,15 L 10,21" />
-                            <TextBlock Grid.Column="1" Text="显示与方案" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="1" Text="显示偏好" VerticalAlignment="Center" />
                         </Grid>
                     </Button>
                     <Border Height="1" Background="{DynamicResource SidebarBrandBorder}" Margin="10,13,10,12" />
@@ -677,133 +678,196 @@
 
                     <creator:CreatorCenterView x:Name="CreatorCenter" Visibility="Collapsed" VerticalAlignment="Top" />
 
-                    <StackPanel x:Name="PersonalizationInfoPanel" Visibility="Collapsed" VerticalAlignment="Top" Margin="0,0,0,4">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <StackPanel>
-                                <TextBlock Text="个性化" Style="{StaticResource SectionEyebrowText}" Margin="1,0,0,6" />
-                                <TextBlock x:Name="PersonalizationPageTitleText" Text="图像工作台" Style="{StaticResource PageTitleText}" />
-                                <TextBlock x:Name="PersonalizationPageDescriptionText"
-                                           Text="在原图上完成最终取景，再检查页面中的真实效果。"
-                                           Style="{StaticResource PageDescriptionText}"
-                                           TextWrapping="Wrap" />
-                            </StackPanel>
-                            <Border Grid.Column="1"
-                                    Background="{DynamicResource AccentSoft}"
-                                    BorderBrush="{DynamicResource InfoBorder}"
-                                    BorderThickness="1"
-                                    CornerRadius="10"
-                                    Padding="10,5"
-                                    VerticalAlignment="Center">
-                                <StackPanel Orientation="Horizontal">
-                                    <Ellipse Width="6" Height="6" Fill="{DynamicResource Positive}" Margin="0,0,7,0" />
-                                    <TextBlock x:Name="PersonalizationPageStatusText" Text="离线也可编辑" Foreground="{DynamicResource Accent}" FontSize="9.5" FontWeight="SemiBold" />
-                                </StackPanel>
-                            </Border>
-                        </Grid>
+                    <Grid x:Name="PersonalizationInfoPanel" Visibility="Collapsed" VerticalAlignment="Top" Margin="0,0,0,4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="300" />
+                            <ColumnDefinition Width="18" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock Text="个性化" Style="{StaticResource SectionEyebrowText}" FontSize="10.5" Margin="1,0,0,5" />
+                            <DockPanel LastChildFill="True">
+                                <Border DockPanel.Dock="Right"
+                                        Background="{DynamicResource AccentSoft}"
+                                        BorderBrush="{DynamicResource InfoBorder}"
+                                        BorderThickness="1"
+                                        CornerRadius="9"
+                                        Padding="8,4"
+                                        Margin="10,0,0,0"
+                                        VerticalAlignment="Center">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Ellipse Width="6" Height="6" Fill="{DynamicResource Positive}" Margin="0,0,6,0" />
+                                        <TextBlock x:Name="PersonalizationPageStatusText" Text="离线也可编辑" Foreground="{DynamicResource Accent}" FontSize="9.5" FontWeight="SemiBold" />
+                                    </StackPanel>
+                                </Border>
+                                <TextBlock x:Name="PersonalizationPageTitleText" Text="图像工作台" Style="{StaticResource PageTitleText}" VerticalAlignment="Center" />
+                            </DockPanel>
+                            <TextBlock x:Name="PersonalizationPageDescriptionText"
+                                       Text="在原图上完成最终取景，再检查页面中的真实效果。"
+                                       Style="{StaticResource PageDescriptionText}"
+                                       FontSize="11.5"
+                                       LineHeight="18"
+                                       Margin="0,3,0,0"
+                                       TextWrapping="Wrap" />
+                        </StackPanel>
 
                         <Border x:Name="SettingsThemeControlBar"
-                                Margin="0,11,0,0"
-                                MinHeight="54"
-                                Background="{DynamicResource SettingsControlSurface}"
-                                BorderBrush="{DynamicResource SettingsControlBorder}"
+                                Grid.Column="2"
+                                MinHeight="64"
+                                Background="{DynamicResource SettingsControlBar}"
+                                BorderBrush="{DynamicResource SettingsBarBorder}"
                                 BorderThickness="1"
-                                CornerRadius="13"
-                                Padding="10,7"
+                                CornerRadius="17"
+                                Effect="{DynamicResource SettingsBarShadow}"
+                                VerticalAlignment="Center"
                                 SnapsToDevicePixels="True">
-                            <Grid x:Name="SettingsThemeSwitchPanel">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="28" />
-                                    <ColumnDefinition Width="9" />
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="12" />
-                                    <ColumnDefinition Width="Auto" />
-                                    <ColumnDefinition Width="9" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <Border Width="28" Height="28" CornerRadius="9" Background="{DynamicResource AccentSoft}" VerticalAlignment="Center">
-                                    <Path Width="13" Height="13" Data="M 8,1 L 9.7,6.3 L 15,8 L 9.7,9.7 L 8,15 L 6.3,9.7 L 1,8 L 6.3,6.3 Z"
-                                          Stretch="Uniform" Fill="{DynamicResource Accent}" />
-                                </Border>
-                                <StackPanel Grid.Column="2" VerticalAlignment="Center" MinWidth="80">
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock x:Name="SettingsCurrentThemeNameText"
-                                                   Text="Codex 默认外观"
-                                                   Foreground="{DynamicResource PrimaryText}"
-                                                   FontSize="11.5"
-                                                   FontWeight="SemiBold"
-                                                   TextTrimming="CharacterEllipsis"
-                                                   MaxWidth="360" />
-                                        <Border Background="{DynamicResource SurfaceAlt}" CornerRadius="7" Padding="6,2" Margin="7,0,0,0" VerticalAlignment="Center">
-                                            <TextBlock x:Name="SettingsThemePositionText" Text="— / —" Foreground="{DynamicResource SubtleText}" FontSize="9" FontWeight="SemiBold" />
-                                        </Border>
-                                    </StackPanel>
-                                    <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
-                                        <Ellipse x:Name="SettingsLiveDot" Width="5" Height="5" Fill="{DynamicResource Positive}" Margin="0,0,5,0" VerticalAlignment="Center" />
-                                        <TextBlock x:Name="SettingsThemeStateText" Text="正在读取状态…" Foreground="{DynamicResource MutedText}" FontSize="9.5" TextTrimming="CharacterEllipsis" />
-                                    </StackPanel>
-                                </StackPanel>
-                                <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center">
+                            <Grid ClipToBounds="True">
+                                <Border Height="1" Margin="20,0" VerticalAlignment="Top" Background="{DynamicResource SettingsBarSheen}" CornerRadius="1" />
+                                <Grid x:Name="SettingsThemeSwitchPanel" Margin="10,7">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="8" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="8" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="10" />
+                                        <ColumnDefinition Width="1" />
+                                        <ColumnDefinition Width="10" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="8" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
                                     <Button x:Name="SettingsPreviousThemeButton"
-                                            Style="{StaticResource SettingsIconButton}"
-                                            Width="30" Height="30"
+                                            Style="{StaticResource SettingsPlayerButton}"
+                                            Width="38" Height="38"
                                             Click="SettingsPreviousTheme_Click"
                                             ToolTip="应用上一个可切换主题"
                                             AutomationProperties.Name="应用上一个可切换主题">
-                                        <Path Width="11" Height="11" Data="M 15,4 L 7,12 L 15,20" Stroke="{DynamicResource PrimaryText}" StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform" />
+                                        <Viewbox Width="18" Height="18"><Canvas Width="24" Height="24">
+                                            <Rectangle Canvas.Left="4" Canvas.Top="6" Width="2.4" Height="12" RadiusX="1.2" Fill="{DynamicResource SettingsBarPrimaryText}" />
+                                            <Path Data="M 19,6 L 9,12 L 19,18 Z" Fill="{DynamicResource SettingsBarPrimaryText}" />
+                                        </Canvas></Viewbox>
                                     </Button>
-                                    <Button x:Name="SettingsNextThemeButton"
-                                            Style="{StaticResource SettingsIconButton}"
-                                            Width="30" Height="30"
-                                            Margin="5,0,0,0"
+
+                                    <Border Grid.Column="2" Height="48" MinWidth="150"
+                                            Background="{DynamicResource SettingsCurrentThemeGradient}"
+                                            BorderBrush="{DynamicResource SettingsPanelBorder}"
+                                            BorderThickness="1" CornerRadius="13" Padding="10,0">
+                                        <Border.Triggers>
+                                            <EventTrigger RoutedEvent="Loaded">
+                                                <BeginStoryboard>
+                                                    <Storyboard RepeatBehavior="Forever">
+                                                        <DoubleAnimation Storyboard.TargetName="SettingsCurrentOrbPulse" Storyboard.TargetProperty="Opacity" From="0.38" To="0.82" Duration="0:0:1.9" AutoReverse="True" RepeatBehavior="Forever" />
+                                                        <DoubleAnimation Storyboard.TargetName="SettingsCurrentOrbPulse" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" From="0.9" To="1.1" Duration="0:0:1.9" AutoReverse="True" RepeatBehavior="Forever" />
+                                                        <DoubleAnimation Storyboard.TargetName="SettingsCurrentOrbPulse" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" From="0.9" To="1.1" Duration="0:0:1.9" AutoReverse="True" RepeatBehavior="Forever" />
+                                                        <DoubleAnimation Storyboard.TargetName="SettingsCurrentOrbMotion" Storyboard.TargetProperty="(UIElement.RenderTransform).(RotateTransform.Angle)" From="0" To="360" Duration="0:0:14" RepeatBehavior="Forever" />
+                                                    </Storyboard>
+                                                </BeginStoryboard>
+                                            </EventTrigger>
+                                        </Border.Triggers>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions><ColumnDefinition Width="30" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                                            <Grid Width="25" Height="25" VerticalAlignment="Center">
+                                                <Ellipse x:Name="SettingsCurrentOrbPulse" Width="24" Height="24" Fill="{DynamicResource Rose}" Opacity="0.55" RenderTransformOrigin="0.5,0.5">
+                                                    <Ellipse.RenderTransform><ScaleTransform ScaleX="1" ScaleY="1" /></Ellipse.RenderTransform>
+                                                    <Ellipse.Effect><BlurEffect Radius="6" /></Ellipse.Effect>
+                                                </Ellipse>
+                                                <Border x:Name="SettingsCurrentOrbMotion" Width="20" Height="20" CornerRadius="10" Background="{DynamicResource PrimaryGradient}" RenderTransformOrigin="0.5,0.5">
+                                                    <Border.RenderTransform><RotateTransform Angle="0" /></Border.RenderTransform>
+                                                    <Path Width="9" Height="9" Data="M 4,0 L 5,3 L 8,4 L 5,5 L 4,8 L 3,5 L 0,4 L 3,3 Z" Stretch="Uniform" Fill="White" />
+                                                </Border>
+                                            </Grid>
+                                            <StackPanel Grid.Column="1" Margin="8,0,10,0" VerticalAlignment="Center">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="8" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                                    <TextBlock Text="当前主题" Foreground="{DynamicResource SettingsBarMutedText}" FontSize="10.5" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                                    <TextBlock x:Name="SettingsCurrentThemeNameText" Grid.Column="2" Text="Codex 默认外观" Foreground="{DynamicResource SettingsBarPrimaryText}" FontSize="13.5" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                                </Grid>
+                                                <TextBlock x:Name="SettingsThemeStateText" Text="正在读取状态…" Foreground="{DynamicResource SettingsBarMutedText}" FontSize="10.5" Margin="0,2,0,0" TextTrimming="CharacterEllipsis" />
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                                                <Border Background="{DynamicResource SettingsBadgeSurface}" BorderBrush="{DynamicResource SettingsBadgeBorder}" BorderThickness="1" CornerRadius="7" Padding="7,2" HorizontalAlignment="Right">
+                                                    <TextBlock x:Name="SettingsThemePositionText" Text="— / —" Foreground="{DynamicResource SettingsBarMutedText}" FontSize="9.5" FontWeight="SemiBold" />
+                                                </Border>
+                                                <Border Background="{DynamicResource SettingsBadgeSurface}" BorderBrush="{DynamicResource SettingsBadgeBorder}" BorderThickness="1" CornerRadius="7" Padding="6,2" Margin="0,3,0,0" HorizontalAlignment="Right">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Ellipse x:Name="SettingsLiveDot" Width="5" Height="5" Fill="{DynamicResource Positive}" Margin="0,0,5,0" VerticalAlignment="Center" />
+                                                        <TextBlock Text="LIVE" Foreground="{DynamicResource SettingsBarMutedText}" FontSize="8.5" FontWeight="Bold" />
+                                                    </StackPanel>
+                                                </Border>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+
+                                    <Button x:Name="SettingsNextThemeButton" Grid.Column="4"
+                                            Style="{StaticResource SettingsPlayerButton}"
+                                            Width="38" Height="38"
                                             Click="SettingsNextTheme_Click"
                                             ToolTip="应用下一个可切换主题"
                                             AutomationProperties.Name="应用下一个可切换主题">
-                                        <Path Width="11" Height="11" Data="M 9,4 L 17,12 L 9,20" Stroke="{DynamicResource PrimaryText}" StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Stretch="Uniform" />
+                                        <Viewbox Width="18" Height="18"><Canvas Width="24" Height="24">
+                                            <Path Data="M 5,6 L 15,12 L 5,18 Z" Fill="{DynamicResource SettingsBarPrimaryText}" />
+                                            <Rectangle Canvas.Left="17.6" Canvas.Top="6" Width="2.4" Height="12" RadiusX="1.2" Fill="{DynamicResource SettingsBarPrimaryText}" />
+                                        </Canvas></Viewbox>
                                     </Button>
-                                </StackPanel>
-                                <Button x:Name="SettingsColorModeButton"
-                                        Grid.Column="6"
-                                        Width="124"
-                                        Height="36"
-                                        Style="{StaticResource SettingsWideControlButton}"
-                                        Click="SettingsColorMode_Click"
-                                        ToolTip="切换 Codex 亮暗模式">
-                                    <Grid Width="102">
-                                        <Grid.ColumnDefinitions><ColumnDefinition Width="24" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                                        <Grid Width="20" Height="20" VerticalAlignment="Center">
-                                            <Path x:Name="SettingsModeMoonIcon" Visibility="Collapsed" Data="M 15,3 C 9,4 7,9 8.5,13.5 C 10,18 14.5,19.5 19,17 C 17,20.5 12.5,22 8.5,20 C 4,17.8 2,12.5 4,8 C 6,3.8 11,1.7 15,3 Z" Fill="{DynamicResource PrimaryText}" Stretch="Uniform" Width="16" Height="16" />
-                                            <Grid x:Name="SettingsModeSunIcon" Visibility="Collapsed">
-                                                <Ellipse Width="7" Height="7" Stroke="{DynamicResource PrimaryText}" StrokeThickness="1.8" />
-                                                <Path Data="M 12,1 L 12,4 M 12,20 L 12,23 M 1,12 L 4,12 M 20,12 L 23,12 M 4.2,4.2 L 6.2,6.2 M 17.8,17.8 L 19.8,19.8 M 19.8,4.2 L 17.8,6.2 M 6.2,17.8 L 4.2,19.8" Stroke="{DynamicResource PrimaryText}" StrokeThickness="1.7" StrokeStartLineCap="Round" Stretch="Uniform" />
+
+                                    <Border Grid.Column="6" Width="1" Height="32" Background="{DynamicResource SettingsSeparator}" VerticalAlignment="Center" />
+
+                                    <Button x:Name="SettingsRestoreThemeButton" Grid.Column="8"
+                                            Style="{StaticResource SettingsAccentIconButton}"
+                                            Width="38" Height="38"
+                                            Click="SettingsRestoreTheme_Click"
+                                            ToolTip="恢复 Codex 默认外观"
+                                            AutomationProperties.Name="恢复 Codex 默认外观">
+                                        <Viewbox Width="19" Height="19"><Canvas Width="24" Height="24">
+                                            <Path x:Name="SettingsRestoreIconPath" Data="M 7,8 L 3.5,8 L 3.5,4.5 M 4,8 C 6,4 10,2.5 14,3.5 C 18.5,4.5 21,9 20,13.5 C 19,18 14.5,21 10,20 C 7,19.4 4.8,17.5 3.7,15"
+                                                  Stroke="{DynamicResource SettingsBarPrimaryText}" StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Fill="Transparent" />
+                                        </Canvas></Viewbox>
+                                    </Button>
+
+                                    <Button x:Name="SettingsColorModeButton" Grid.Column="10"
+                                            Width="142" Height="42"
+                                            Style="{StaticResource SettingsColorControlButton}"
+                                            Click="SettingsColorMode_Click"
+                                            ToolTip="切换 Codex 亮暗模式">
+                                        <Grid Width="118">
+                                            <Grid.ColumnDefinitions><ColumnDefinition Width="27" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                            <Grid Width="21" Height="21" VerticalAlignment="Center">
+                                                <Path x:Name="SettingsModeMoonIcon" Visibility="Collapsed" Data="M 15,3 C 9,4 7,9 8.5,13.5 C 10,18 14.5,19.5 19,17 C 17,20.5 12.5,22 8.5,20 C 4,17.8 2,12.5 4,8 C 6,3.8 11,1.7 15,3 Z" Fill="{DynamicResource SettingsBarPrimaryText}" Stretch="Uniform" Width="17" Height="17" />
+                                                <Grid x:Name="SettingsModeSunIcon" Visibility="Collapsed">
+                                                    <Ellipse Width="8" Height="8" Stroke="{DynamicResource SettingsBarPrimaryText}" StrokeThickness="1.8" />
+                                                    <Path Data="M 12,1 L 12,4 M 12,20 L 12,23 M 1,12 L 4,12 M 20,12 L 23,12 M 4.2,4.2 L 6.2,6.2 M 17.8,17.8 L 19.8,19.8 M 19.8,4.2 L 17.8,6.2 M 6.2,17.8 L 4.2,19.8" Stroke="{DynamicResource SettingsBarPrimaryText}" StrokeThickness="1.7" StrokeStartLineCap="Round" Stretch="Uniform" />
+                                                </Grid>
+                                                <TextBlock x:Name="SettingsModeUnknownText" Text="?" Foreground="{DynamicResource SettingsBarPrimaryText}" FontWeight="Bold" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                             </Grid>
-                                            <TextBlock x:Name="SettingsModeUnknownText" Text="?" Foreground="{DynamicResource PrimaryText}" FontWeight="Bold" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="7,0,0,0">
+                                                <TextBlock x:Name="SettingsColorModeText" Text="检测显示模式" Foreground="{DynamicResource SettingsBarPrimaryText}" FontSize="11.5" FontWeight="SemiBold" />
+                                                <TextBlock x:Name="SettingsColorModeHintText" Text="点击连接并切换" Foreground="{DynamicResource SettingsBarMutedText}" FontSize="9.5" Margin="0,1,0,0" />
+                                            </StackPanel>
                                         </Grid>
-                                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="6,0,0,0">
-                                            <TextBlock x:Name="SettingsColorModeText" Text="检测模式" Foreground="{DynamicResource PrimaryText}" FontSize="10" FontWeight="SemiBold" />
-                                            <TextBlock x:Name="SettingsColorModeHintText" Text="点击连接并切换" Foreground="{DynamicResource MutedText}" FontSize="8.5" Margin="0,1,0,0" />
-                                        </StackPanel>
-                                    </Grid>
-                                </Button>
+                                    </Button>
+                                </Grid>
                             </Grid>
                         </Border>
 
-                        <StackPanel x:Name="SettingsInfoPanel" Visibility="Collapsed">
-                            <artwork:ArtworkWorkbenchView x:Name="ArtworkWorkbench" Margin="0,13,0,0" />
+                        <StackPanel x:Name="SettingsInfoPanel" Grid.Row="1" Grid.ColumnSpan="3" Visibility="Collapsed">
+                            <artwork:ArtworkWorkbenchView x:Name="ArtworkWorkbench" Margin="0,10,0,0" />
                         </StackPanel>
 
-                        <personalization:ExperienceHubView x:Name="ExperienceInfoPanel"
-                                                           Visibility="Collapsed"
-                                                           Margin="0,13,0,0"
-                                                           PreferencesChanged="DisplayPreferencesPage_PreferencesChanged"
-                                                           SaveProfileRequested="ExperienceProfilesPage_SaveRequested"
-                                                           ApplyProfileRequested="ExperienceProfilesPage_ApplyRequested"
-                                                           DeleteProfileRequested="ExperienceProfilesPage_DeleteRequested"
-                                                           ArtworkStudioRequested="Settings_Click" />
-                    </StackPanel>
+                        <personalization:DisplaySettingsView x:Name="DisplayPreferencesInfoPanel"
+                                                             Grid.Row="1"
+                                                             Grid.ColumnSpan="3"
+                                                             Visibility="Collapsed"
+                                                             Margin="0,12,0,0"
+                                                             PreferencesChanged="DisplayPreferencesPage_PreferencesChanged"
+                                                             ArtworkStudioRequested="Settings_Click" />
+                    </Grid>
 
                     <about:AboutView x:Name="AboutPage" Visibility="Collapsed" />
 

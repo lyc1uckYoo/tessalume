@@ -127,24 +127,6 @@ public partial class MainWindow
         }
     }
 
-    private void ArtworkWorkbench_LargeResetRequested(
-        object? sender,
-        ArtworkLargeResetEventArgs e)
-    {
-        var isMode = e.Scope == ArtworkResetScope.Mode;
-        var title = isMode ? "恢复当前亮暗模式参数？" : "恢复当前主题的全部图像参数？";
-        var message = isMode
-            ? $"只恢复当前主题的{GetArtworkModeDisplayName(ArtworkWorkbench.EditingMode)}参数；" +
-              "另一亮暗模式和六个槽位的本地图片来源都不会改变。此操作可撤销。"
-            : "恢复当前主题亮色与暗色的全部图像参数；其它主题和六个槽位的本地图片来源都不会改变。此操作可撤销。";
-        if (!ShowProductConfirmation(
-                title,
-                message,
-                isMode ? "恢复当前模式" : "恢复当前主题",
-                dangerous: true)) return;
-        ArtworkWorkbench.ExecuteLargeReset(e.Scope);
-    }
-
     private static string GetArtworkRegionDisplayName(ArtworkRegion region) => region switch
     {
         ArtworkRegion.Sidebar => "左栏图片",

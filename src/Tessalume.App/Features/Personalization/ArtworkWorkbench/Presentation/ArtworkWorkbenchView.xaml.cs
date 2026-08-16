@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
@@ -89,16 +88,6 @@ internal sealed class ArtworkChooseImageEventArgs(
     public ArtworkRegion Region { get; } = region;
 }
 
-internal sealed class ArtworkLargeResetEventArgs(ArtworkResetScope scope) : EventArgs
-{
-    public ArtworkResetScope Scope { get; } = scope;
-}
-
-internal sealed class ArtworkPresetNameEventArgs(string name) : EventArgs
-{
-    public string Name { get; } = name;
-}
-
 public partial class ArtworkWorkbenchView : UserControl, IDisposable
 {
     private readonly ArtworkWorkbenchSession _session = new();
@@ -115,7 +104,6 @@ public partial class ArtworkWorkbenchView : UserControl, IDisposable
     private ThemePackage? _package;
     private ThemeVisualSettings _settings = new();
     private ThemeVisualSettingsResolution? _settingsResolution;
-    private ThemeArtworkAdjustment? _parameterClipboard;
     private ArtworkPlacementProjection? _compositionGestureStart;
     private BitmapSource? _originalPreview;
     private BitmapSource? _themeOriginalPreview;
@@ -127,7 +115,6 @@ public partial class ArtworkWorkbenchView : UserControl, IDisposable
     private bool _isApplied;
     private bool _isCodexConnected;
     private bool _showOriginal;
-    private bool _motionPreviewRequested = true;
     private bool _compositionEditing;
     private ArtworkCanvasViewMode _canvasViewMode = ArtworkCanvasViewMode.FullSource;
     private ArtworkCanvasViewMode? _comparisonReturnViewMode;
@@ -159,7 +146,6 @@ public partial class ArtworkWorkbenchView : UserControl, IDisposable
 
         Inspector.NumericValueChanged += Inspector_NumericValueChanged;
         Inspector.TextValueChanged += Inspector_TextValueChanged;
-        Inspector.BooleanValueChanged += Inspector_BooleanValueChanged;
         Inspector.InteractionStarted += Inspector_InteractionStarted;
         Inspector.InteractionCompleted += Inspector_InteractionCompleted;
         Inspector.GroupChanged += Inspector_GroupChanged;
@@ -168,8 +154,6 @@ public partial class ArtworkWorkbenchView : UserControl, IDisposable
         Inspector.ResetRegionRequested += Inspector_ResetRegionRequested;
         Inspector.ChooseImageRequested += Inspector_ChooseImageRequested;
         Inspector.ClearImageRequested += Inspector_ClearImageRequested;
-        Inspector.CopyRequested += Inspector_CopyRequested;
-        Inspector.PasteRequested += Inspector_PasteRequested;
         Inspector.PlacementChanged += Inspector_PlacementChanged;
         Inspector.RestoreOriginalBaselineRequested +=
             Inspector_RestoreOriginalBaselineRequested;
@@ -194,18 +178,6 @@ public partial class ArtworkWorkbenchView : UserControl, IDisposable
     internal event EventHandler<ArtworkEditingModeChangedEventArgs>? EditingModeChanged;
 
     internal event EventHandler<ArtworkChooseImageEventArgs>? ChooseImageRequested;
-
-    internal event EventHandler<ArtworkLargeResetEventArgs>? LargeResetRequested;
-
-    internal event EventHandler<ArtworkPresetNameEventArgs>? SavePresetRequested;
-
-    internal event EventHandler? ImportPresetRequested;
-
-    internal event EventHandler? ExportPresetRequested;
-
-    internal event EventHandler? DeletePresetRequested;
-
-    internal event EventHandler? ExportArtworkDefaultsRequested;
 
     internal event Action<string>? NotificationRequested;
 
@@ -253,16 +225,10 @@ public partial class ArtworkWorkbenchView : UserControl, IDisposable
         RenderAll();
     }
 
-    internal ThemeArtworkPreset? SelectedPreset => PresetComboBox.SelectedItem as ThemeArtworkPreset;
-
-    internal string PresetName => PresetNameBox.Text.Trim();
-
-    internal void Configure(PersonalImageStore personalImageStore, IEnumerable presets)
+    internal void Configure(PersonalImageStore personalImageStore)
     {
         ArgumentNullException.ThrowIfNull(personalImageStore);
-        ArgumentNullException.ThrowIfNull(presets);
         _personalImageStore = personalImageStore;
-        PresetComboBox.ItemsSource = presets;
     }
 
     internal void SetContext(ArtworkWorkbenchContext context)
@@ -289,7 +255,7 @@ public partial class ArtworkWorkbenchView : UserControl, IDisposable
             _knownThemeSettings.TryGetValue(normalizedThemeId, out var known) &&
             !ArtworkParametersEqual(known, normalizedSettings))
         {
-            // A profile, restore, or another personalization surface changed the
+            // Another personalization surface changed the
             // same theme. Old artwork snapshots form a stale branch and must not
             // overwrite that external update on the next Undo.
             _session.History.Clear(normalizedThemeId);
@@ -304,10 +270,6 @@ public partial class ArtworkWorkbenchView : UserControl, IDisposable
         _settings = normalizedSettings;
         if (themeChanged)
         {
-            _motionPreviewRequested = !string.Equals(
-                _settings.Display.MotionIntensity,
-                "off",
-                StringComparison.OrdinalIgnoreCase);
             _compositionEditing = false;
         }
         if (_themeId is not null) _knownThemeSettings[_themeId] = _settings;
@@ -386,19 +348,6 @@ public partial class ArtworkWorkbenchView : UserControl, IDisposable
             reloadSource: true);
     }
 
-    internal ThemeArtworkPreset CreateCurrentPreset(string name) => new()
-    {
-        Name = name,
-        Settings = ArtworkSettingsAccessor.GetMode(_settings, _mode),
-    };
-
-    internal void SelectPreset(ThemeArtworkPreset? preset)
-    {
-        PresetComboBox.SelectedItem = preset;
-        PresetNameBox.Clear();
-        UpdatePresetActions();
-    }
-
     internal void Undo()
     {
         if (!CanEdit() ||
@@ -415,55 +364,6 @@ public partial class ArtworkWorkbenchView : UserControl, IDisposable
             !_session.TryRedo(_themeId!, _settings, out var restored)) return;
         _settings = restored with { Display = _settings.Display };
         CompleteSettingsChange("重做图像修改", reloadSource: true);
-    }
-
-    internal void ExecuteLargeReset(ArtworkResetScope scope)
-    {
-        if (!CanEdit() || scope is not (ArtworkResetScope.Mode or ArtworkResetScope.Theme)) return;
-        if (_settingsResolution is null)
-        {
-            Notify("主题推荐值尚未加载，未修改任何槽位");
-            return;
-        }
-        var description = scope == ArtworkResetScope.Mode
-            ? $"恢复{GetModeDisplayName(_mode)}三个槽位到主题推荐值"
-            : "恢复当前主题六个槽位到主题推荐值";
-        if (!ApplyDiscrete(
-                settings => RestoreSlotsToTheme(settings, scope),
-                description,
-                reloadSource: true))
-        {
-            Notify("所选范围已经跟随主题推荐值");
-            return;
-        }
-        ScheduleEffectProcessing();
-        Notify($"已{description} · 每槽本地图片来源保持不变 · 可撤销");
-    }
-
-    private ThemeVisualSettings RestoreSlotsToTheme(
-        ThemeVisualSettings settings,
-        ArtworkResetScope scope)
-    {
-        var modes = scope == ArtworkResetScope.Mode
-            ? [_mode]
-            : new[] { ArtworkColorMode.Light, ArtworkColorMode.Dark };
-        var result = settings;
-        foreach (var mode in modes)
-        {
-            foreach (var region in Enum.GetValues<ArtworkRegion>())
-            {
-                if (GetSlotResolution(mode, region)?.ThemeDefaultAdjustment is not { } baseline)
-                {
-                    continue;
-                }
-                result = ArtworkSettingsReducer.RestoreSlotToTheme(
-                    result,
-                    mode,
-                    region,
-                    baseline);
-            }
-        }
-        return result;
     }
 
     public void Dispose()

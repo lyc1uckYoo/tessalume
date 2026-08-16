@@ -38,11 +38,13 @@
     if (kind === "pixels") return `${value}px`;
     return "center";
   };
-  const placementCss = (placement) => {
+  const placementCss = (placement, region = "") => {
     const sizeMode = enumName(placement?.sizeMode, "cover");
     const size = sizeMode === "contain" || sizeMode === "cover"
       ? sizeMode
-      : `${lengthCss(placement?.width)} ${lengthCss(placement?.height)}`;
+      : region === "sidebar"
+        ? `${lengthCss(placement?.width)} auto`
+        : `${lengthCss(placement?.width)} ${lengthCss(placement?.height)}`;
     return {
       size,
       position: `${positionCss(placement?.positionX, true)} ${positionCss(placement?.positionY, false)}`,
@@ -172,11 +174,12 @@
     const placement = state.placement || {};
     const geometry = placement.geometry || {};
     const scale = Math.min(10, Math.max(.1, finite(geometry.scale, 1)));
-    const raw = placementCss(placement);
-    if (Math.abs(scale - 1) < .000001) return raw;
+    const raw = placementCss(placement, state.region);
+    const sizeMode = enumName(placement.sizeMode, "cover");
+    const fixedWidthSidebar = state.region === "sidebar" && sizeMode === "explicit";
+    if (Math.abs(scale - 1) < .000001 && !fixedWidthSidebar) return raw;
     const dimensions = await readImageDimensions(state.imageUrl);
     if (!dimensions || !target?.width || !target?.height) return raw;
-    const sizeMode = enumName(placement.sizeMode, "cover");
     let width;
     let height;
     if (sizeMode === "cover" || sizeMode === "contain") {
@@ -197,14 +200,38 @@
       } else if (height == null) {
         height = width * dimensions.height / dimensions.width;
       }
+      if (fixedWidthSidebar) {
+        width = resolveLengthPixels(placement.width, target.width) ?? dimensions.width;
+        height = width * dimensions.height / dimensions.width;
+      }
     }
     const left = resolvePositionPixels(placement.positionX, target.width, width);
-    const top = resolvePositionPixels(placement.positionY, target.height, height);
+    const storedHeightUnit = enumName(placement.height?.unit, "auto");
+    const storedHeightPercent = finite(placement.height?.value, 0);
+    const encodedReferenceHeight = fixedWidthSidebar &&
+      storedHeightUnit === "percent" && storedHeightPercent > 0
+      ? height * 100 / storedHeightPercent
+      : null;
+    const verticalBasis = encodedReferenceHeight ?? target.height;
+    const top = resolvePositionPixels(placement.positionY, verticalBasis, height);
     const originX = resolvePositionPixels(geometry.originX, target.width, 0, true);
-    const originY = resolvePositionPixels(geometry.originY, target.height, 0, true);
+    const originY = resolvePositionPixels(geometry.originY, verticalBasis, 0, true);
+    let renderedTop = originY + ((top - originY) * scale);
+    if (fixedWidthSidebar && encodedReferenceHeight == null) {
+      const widthChanged = !Number.isFinite(state.sidebarReferenceWidth) ||
+        Math.abs(state.sidebarReferenceWidth - target.width) > .5;
+      if (widthChanged || !Number.isFinite(state.sidebarReferenceTop) ||
+          target.height >= finite(state.sidebarReferenceHeight, 0)) {
+        state.sidebarReferenceWidth = target.width;
+        state.sidebarReferenceHeight = target.height;
+        state.sidebarReferenceTop = renderedTop;
+      } else {
+        renderedTop = state.sidebarReferenceTop;
+      }
+    }
     return {
       size: `${width * scale}px ${height * scale}px`,
-      position: `${originX + ((left - originX) * scale)}px ${originY + ((top - originY) * scale)}px`,
+      position: `${originX + ((left - originX) * scale)}px ${renderedTop}px`,
     };
   };
   const synchronizeVisualPlacements = async (revision = visualPlacementRevision) => {

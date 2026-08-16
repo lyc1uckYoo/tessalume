@@ -20,17 +20,10 @@ public partial class MainWindow
 
     private void InitializeArtworkWorkbench()
     {
-        ArtworkWorkbench.Configure(_personalImageStore, _artworkPresets);
+        ArtworkWorkbench.Configure(_personalImageStore);
         ArtworkWorkbench.SettingsChanged += ArtworkWorkbench_SettingsChanged;
         ArtworkWorkbench.EditingModeChanged += ArtworkWorkbench_EditingModeChanged;
         ArtworkWorkbench.ChooseImageRequested += ArtworkWorkbench_ChooseImageRequested;
-        ArtworkWorkbench.LargeResetRequested += ArtworkWorkbench_LargeResetRequested;
-        ArtworkWorkbench.SavePresetRequested += ArtworkWorkbench_SavePresetRequested;
-        ArtworkWorkbench.ImportPresetRequested += ArtworkWorkbench_ImportPresetRequested;
-        ArtworkWorkbench.ExportPresetRequested += ArtworkWorkbench_ExportPresetRequested;
-        ArtworkWorkbench.DeletePresetRequested += ArtworkWorkbench_DeletePresetRequested;
-        ArtworkWorkbench.ExportArtworkDefaultsRequested +=
-            ArtworkWorkbench_ExportArtworkDefaultsRequested;
         ArtworkWorkbench.NotificationRequested += message => ShowToast(message);
         _artworkConnectionTimer = new DispatcherTimer(DispatcherPriority.Background)
         {

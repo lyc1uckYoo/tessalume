@@ -11,7 +11,6 @@ public partial class MainWindow
         var theme = GetVisualAdjustmentTheme();
         var available = theme?.ThemeId is { Length: > 0 };
         UpdateSettingsVisualHeader();
-        ExperienceProfilesPage.SetSaveEnabled(available);
         DisplayPreferencesPage.Render(
             available
                 ? GetVisualSettings(theme!.ThemeId!).Display

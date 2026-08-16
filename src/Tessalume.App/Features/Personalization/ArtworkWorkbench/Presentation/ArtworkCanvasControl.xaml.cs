@@ -326,9 +326,28 @@ public partial class ArtworkCanvasControl : UserControl
             _placementProjection = null;
             return;
         }
+        var adjustment = _adjustment;
+        var themeDefaultPlacement = _themeDefaultPlacement;
+        if (_region == ArtworkRegion.Sidebar)
+        {
+            themeDefaultPlacement = ArtworkPlacementMapper.AdaptFixedWidthSidebar(
+                themeDefaultPlacement,
+                SourcePixelSize,
+                TargetSize);
+            if (adjustment.Placement is not null)
+            {
+                adjustment = adjustment with
+                {
+                    Placement = ArtworkPlacementMapper.AdaptFixedWidthSidebar(
+                        adjustment.Placement,
+                        SourcePixelSize,
+                        TargetSize),
+                };
+            }
+        }
         _placementProjection = ArtworkPlacementMapper.ResolveEffectivePlacement(
-            _adjustment,
-            _themeDefaultPlacement,
+            adjustment,
+            themeDefaultPlacement,
             SourcePixelSize,
             TargetSize);
         UpdateFullSourceLayout();

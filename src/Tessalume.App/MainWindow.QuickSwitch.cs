@@ -20,8 +20,10 @@ namespace Tessalume.App;
 
 public partial class MainWindow
 {
-    private void OpenQuickSwitchWindow()
+    private void OpenQuickSwitchWindow(bool rememberVisibility = false)
     {
+        if (_quickSwitchWindow is { IsVisible: true }) return;
+
         try
         {
             _quickSwitchWindow = new ThemeQuickSwitchWindow(
@@ -30,15 +32,17 @@ public partial class MainWindow
                 ToggleCodexColorSchemeAsync,
                 ReadCodexColorSchemeAsync,
                 ShowMainInterface,
+                CloseQuickSwitchAndShowMainInterface,
                 () => _usageReader.ReadAsync());
             _quickSwitchWindow.SetShellTheme(_darkMode);
-            _quickSwitchWindow.Closed += (_, _) =>
-            {
-                _quickSwitchWindow = null;
-                UpdateQuickSwitchButton();
-            };
+            _quickSwitchWindow.Closed += QuickSwitchWindow_Closed;
             RefreshQuickSwitchWindow();
             _quickSwitchWindow.Show();
+            if (rememberVisibility && !_quickSwitchVisible)
+            {
+                _quickSwitchVisible = true;
+                _ = SaveQuickSwitchVisibilityAsync();
+            }
             UpdateQuickSwitchButton();
         }
         catch (Exception exception)
@@ -53,12 +57,58 @@ public partial class MainWindow
         }
     }
 
+    private void CloseQuickSwitchWindow(bool rememberClosed)
+    {
+        if (_quickSwitchWindow is not { IsVisible: true } window) return;
+
+        var previousSuppression = _suppressQuickSwitchPreferenceChange;
+        _suppressQuickSwitchPreferenceChange = !rememberClosed;
+        try
+        {
+            window.Close();
+        }
+        finally
+        {
+            _suppressQuickSwitchPreferenceChange = previousSuppression;
+        }
+    }
+
+    private void QuickSwitchWindow_Closed(object? sender, EventArgs e)
+    {
+        if (sender is ThemeQuickSwitchWindow window)
+        {
+            window.Closed -= QuickSwitchWindow_Closed;
+        }
+        if (ReferenceEquals(_quickSwitchWindow, sender))
+        {
+            _quickSwitchWindow = null;
+        }
+        UpdateQuickSwitchButton();
+
+        if (_suppressQuickSwitchPreferenceChange || !_quickSwitchVisible) return;
+        _quickSwitchVisible = false;
+        _ = SaveQuickSwitchVisibilityAsync();
+    }
+
+    private async Task SaveQuickSwitchVisibilityAsync()
+    {
+        try
+        {
+            await SavePreferencesAsync();
+        }
+        catch (Exception exception)
+        {
+            LocalLog.Write("Saving the quick-switch visibility preference failed.", exception);
+            if (_uiInitialized)
+            {
+                StatusText.Text = "主题浮窗状态未能保存";
+            }
+        }
+    }
+
     internal async void ShowMainInterface()
     {
-        if (_quickSwitchWindow is { IsVisible: true })
-        {
-            _quickSwitchWindow.Close();
-        }
+        CloseQuickSwitchWindow(rememberClosed: false);
         EnsureMainUiInitialized();
         ShowInTaskbar = true;
         if (!IsVisible)
@@ -91,6 +141,12 @@ public partial class MainWindow
         {
             StatusText.Text = exception.Message;
         }
+    }
+
+    private void CloseQuickSwitchAndShowMainInterface()
+    {
+        CloseQuickSwitchWindow(rememberClosed: true);
+        ShowMainInterface();
     }
 
     private void RefreshQuickSwitchWindow()

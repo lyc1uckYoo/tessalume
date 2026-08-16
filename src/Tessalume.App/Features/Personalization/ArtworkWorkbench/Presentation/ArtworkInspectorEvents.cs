@@ -21,15 +21,6 @@ internal sealed class ArtworkParameterTextChangedEventArgs(
     public string Value { get; } = value;
 }
 
-internal sealed class ArtworkParameterBooleanChangedEventArgs(
-    ArtworkParameter parameter,
-    bool value) : EventArgs
-{
-    public ArtworkParameter Parameter { get; } = parameter;
-
-    public bool Value { get; } = value;
-}
-
 internal sealed class ArtworkParameterEventArgs(ArtworkParameter parameter) : EventArgs
 {
     public ArtworkParameter Parameter { get; } = parameter;

@@ -67,8 +67,6 @@ public partial class MainWindow : Window, IAsyncDisposable
         new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, ThemeVisualSettingsResolution> _themeVisualResolutions =
         new(StringComparer.OrdinalIgnoreCase);
-    private readonly ObservableCollection<ThemeArtworkPreset> _artworkPresets = [];
-    private readonly ObservableCollection<ThemeExperiencePreset> _experiencePresets = [];
     private readonly CreatorPromptDraftStore _creatorPromptDrafts;
     private ThemeCardModel? _selectedTheme;
     private ThemeQuickSwitchWindow? _quickSwitchWindow;
@@ -78,6 +76,8 @@ public partial class MainWindow : Window, IAsyncDisposable
     private int? _activePort;
     private bool _showFavorites;
     private bool _darkMode;
+    private bool _quickSwitchVisible = true;
+    private bool _suppressQuickSwitchPreferenceChange;
     private bool? _codexDarkMode;
     private bool _automaticUpdateChecks;
     private bool _updateCheckInProgress;
@@ -137,6 +137,7 @@ public partial class MainWindow : Window, IAsyncDisposable
         _darkMode = preferences.DarkMode;
         _onboardingCompleted = preferences.OnboardingCompleted || hadSavedPreferences;
         _automaticUpdateChecks = preferences.AutomaticUpdateChecks;
+        _quickSwitchVisible = preferences.QuickSwitchVisible;
         _lastUpdateCheckAt = preferences.LastUpdateCheckAt;
         _themeLibrarySort = ThemeLibraryState.NormalizeSort(preferences.ThemeLibrarySort);
         _creatorWorkspaces = new CreatorWorkspaceStore(preferences.RecentCreatorWorkspaces);
@@ -160,14 +161,6 @@ public partial class MainWindow : Window, IAsyncDisposable
                 _themeVisualOverrides[themeId] =
                     (settings ?? new ThemeVisualSettingsOverride()).Normalize();
             }
-        }
-        foreach (var preset in preferences.ArtworkPresets)
-        {
-            _artworkPresets.Add(preset.Normalize());
-        }
-        foreach (var preset in preferences.ExperiencePresets)
-        {
-            _experiencePresets.Add(preset.Normalize());
         }
         _runtime.StatusChanged += Runtime_StatusChanged;
         Closed += MainWindow_Closed;
@@ -212,7 +205,6 @@ public partial class MainWindow : Window, IAsyncDisposable
         FitWindowToWorkArea();
         SourceInitialized += (_, _) => NativeTitleBar.Apply(this, _darkMode);
         ThemeItems.ItemsSource = _visibleThemes;
-        ExperienceProfilesPage.Bind(_experiencePresets);
         _visualSettingsDebounce = new DispatcherTimer(DispatcherPriority.Background)
         {
             Interval = TimeSpan.FromMilliseconds(140),
@@ -332,6 +324,10 @@ public partial class MainWindow : Window, IAsyncDisposable
 
             _onboardingCompleted = true;
             await SavePreferencesAsync();
+            if (_quickSwitchVisible)
+            {
+                OpenQuickSwitchWindow();
+            }
             SetEngineState("等待选择主题");
             SetStatus(codexInstalled
                 ? "欢迎使用 Tessalume，请选择喜欢的主题后手动应用"
@@ -342,7 +338,10 @@ public partial class MainWindow : Window, IAsyncDisposable
             return;
         }
 
-        OpenQuickSwitchWindow();
+        if (_quickSwitchVisible)
+        {
+            OpenQuickSwitchWindow();
+        }
         if (state is not null)
         {
             await TryResumeAsync(state);
@@ -351,6 +350,10 @@ public partial class MainWindow : Window, IAsyncDisposable
         {
             SetEngineState("Codex 默认外观");
             SetStatus("请选择主题并手动应用到 Codex");
+        }
+        if (!_quickSwitchVisible)
+        {
+            ShowMainInterface();
         }
         await ShowStartupUpdateResultAsync();
         ScheduleAutomaticUpdateCheck();
@@ -378,7 +381,7 @@ public partial class MainWindow : Window, IAsyncDisposable
     {
         if (Interlocked.Exchange(ref _disposeStarted, 1) != 0) return;
 
-        _quickSwitchWindow?.Close();
+        CloseQuickSwitchWindow(rememberClosed: false);
         _quickSwitchWindow = null;
         _runtime.StatusChanged -= Runtime_StatusChanged;
         var visualSettingsPending =

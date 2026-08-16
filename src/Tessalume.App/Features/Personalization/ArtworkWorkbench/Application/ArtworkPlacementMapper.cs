@@ -32,7 +32,8 @@ internal static class ArtworkPlacementMapper
         ThemeArtworkAdjustment adjustment,
         ThemeArtworkPlacementSpec themeDefault,
         ArtworkSize imageSize,
-        ArtworkSize targetSize)
+        ArtworkSize targetSize,
+        bool fixedWidthSurface = false)
     {
         ArgumentNullException.ThrowIfNull(adjustment);
         var normalized = adjustment.Normalize();
@@ -48,7 +49,8 @@ internal static class ArtworkPlacementMapper
                 imageSize,
                 targetSize,
                 projection.IsHorizontallyMirrored,
-                projection.IsVerticallyMirrored)
+                projection.IsVerticallyMirrored,
+                fixedWidthSurface)
             : Contain(
                 projection.SourceProjection.AlignmentX,
                 projection.SourceProjection.AlignmentY,
@@ -156,7 +158,8 @@ internal static class ArtworkPlacementMapper
         ArtworkSize imageSize,
         ArtworkSize targetSize,
         bool mirrorX = false,
-        bool mirrorY = false)
+        bool mirrorY = false,
+        bool fixedWidthSurface = false)
     {
         EnsureValid(imageSize, nameof(imageSize));
         EnsureValid(targetSize, nameof(targetSize));
@@ -166,13 +169,19 @@ internal static class ArtworkPlacementMapper
             return Contain(crop.AlignmentX, crop.AlignmentY, mirrorX, mirrorY);
         }
 
+        var renderedWidth = targetSize.Width / crop.SourceWidth;
+        var renderedHeight = renderedWidth * imageSize.Height / imageSize.Width;
         return new ThemeArtworkPlacementSpec
         {
             SizeMode = ThemeArtworkSizeMode.Explicit,
             Width = ThemeArtworkLength.Percent(100d / crop.SourceWidth),
-            Height = ThemeArtworkLength.Percent(100d / crop.SourceHeight),
+            Height = fixedWidthSurface
+                ? ThemeArtworkLength.Auto
+                : ThemeArtworkLength.Percent(100d / crop.SourceHeight),
             PositionX = ToBackgroundPosition(crop.SourceX, crop.SourceWidth),
-            PositionY = ToBackgroundPosition(crop.SourceY, crop.SourceHeight),
+            PositionY = fixedWidthSurface
+                ? ThemeArtworkPositionValue.Pixels(-renderedHeight * crop.SourceY)
+                : ToBackgroundPosition(crop.SourceY, crop.SourceHeight),
             Geometry = new ThemeArtworkGeometry
             {
                 MirrorX = mirrorX,
@@ -312,7 +321,8 @@ internal static class ArtworkPlacementMapper
         double focalX = .5d,
         double focalY = .5d,
         bool mirrorX = false,
-        bool mirrorY = false)
+        bool mirrorY = false,
+        bool fixedWidthSurface = false)
     {
         EnsureValid(imageSize, nameof(imageSize));
         EnsureValid(targetSize, nameof(targetSize));
@@ -327,7 +337,13 @@ internal static class ArtworkPlacementMapper
             SourceX = Math.Clamp(focalX, 0d, 1d) - (width / 2d),
             SourceY = Math.Clamp(focalY, 0d, 1d) - (height / 2d),
         }.Normalize();
-        return CommitCrop(crop, imageSize, targetSize, mirrorX, mirrorY);
+        return CommitCrop(
+            crop,
+            imageSize,
+            targetSize,
+            mirrorX,
+            mirrorY,
+            fixedWidthSurface);
     }
 
     public static ThemeArtworkPlacementSpec Center(ThemeArtworkPlacementSpec spec) =>
@@ -336,6 +352,51 @@ internal static class ArtworkPlacementMapper
             PositionX = ThemeArtworkPositionValue.Center,
             PositionY = ThemeArtworkPositionValue.Center,
         };
+
+    public static ThemeArtworkPlacementSpec AdaptFixedWidthSidebar(
+        ThemeArtworkPlacementSpec spec)
+    {
+        var normalized = (spec ?? new ThemeArtworkPlacementSpec()).Normalize();
+        return normalized.SizeMode == ThemeArtworkSizeMode.Explicit
+            ? normalized with { Height = ThemeArtworkLength.Auto }
+            : normalized;
+    }
+
+    public static ThemeArtworkPlacementSpec AdaptFixedWidthSidebar(
+        ThemeArtworkPlacementSpec spec,
+        ArtworkSize imageSize,
+        ArtworkSize targetSize)
+    {
+        EnsureValid(imageSize, nameof(imageSize));
+        EnsureValid(targetSize, nameof(targetSize));
+        var normalized = (spec ?? new ThemeArtworkPlacementSpec()).Normalize();
+        if (normalized.SizeMode != ThemeArtworkSizeMode.Explicit)
+        {
+            return normalized;
+        }
+
+        var positionY = normalized.PositionY;
+        if (positionY.Kind != ThemeArtworkPositionKind.Pixels &&
+            normalized.Height is
+            {
+                Unit: ThemeArtworkLengthUnit.Percent,
+                Value: > Epsilon,
+            })
+        {
+            var renderedWidth = ResolveLength(normalized.Width, targetSize.Width) ??
+                                imageSize.Width;
+            var renderedHeight = renderedWidth * imageSize.Height / imageSize.Width;
+            var referenceHeight = renderedHeight * 100d / normalized.Height.Value;
+            positionY = ThemeArtworkPositionValue.Pixels(
+                (referenceHeight - renderedHeight) * ResolvePositionAlignment(positionY));
+        }
+
+        return normalized with
+        {
+            Height = ThemeArtworkLength.Auto,
+            PositionY = positionY,
+        };
+    }
 
     public static ArtworkCropMutationResult ConstrainAspect(
         ThemeArtworkSourcePlacement sourceCrop,
@@ -435,6 +496,15 @@ internal static class ArtworkPlacementMapper
                 (targetLength - renderedLength) * value / 100d,
             { Kind: ThemeArtworkPositionKind.Pixels, Value: var value } => value,
             _ => (targetLength - renderedLength) / 2d,
+        };
+
+    private static double ResolvePositionAlignment(
+        ThemeArtworkPositionValue position) => position.Normalize() switch
+        {
+            { Kind: ThemeArtworkPositionKind.Start } => 0d,
+            { Kind: ThemeArtworkPositionKind.End } => 1d,
+            { Kind: ThemeArtworkPositionKind.Percent, Value: var value } => value / 100d,
+            _ => .5d,
         };
 
     private static double ResolvePositionValue(

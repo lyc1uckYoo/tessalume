@@ -22,6 +22,26 @@
         <GradientStop Color="#FFFFFF" Offset="0" />
         <GradientStop Color="#E9E7F8" Offset="1" />
     </LinearGradientBrush>
+    <LinearGradientBrush x:Key="PersonalizationCanvasGradient" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#FCFDFF" Offset="0" />
+        <GradientStop Color="#F3F1FF" Offset="1" />
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="PersonalizationMotionGradient" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#F4F8FF" Offset="0" />
+        <GradientStop Color="#EDF2FF" Offset="1" />
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="PersonalizationTextGradient" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#F8F4FF" Offset="0" />
+        <GradientStop Color="#F1EDFF" Offset="1" />
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="PersonalizationDensityGradient" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#F1FBF9" Offset="0" />
+        <GradientStop Color="#EAF7F5" Offset="1" />
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="PersonalizationNoticeGradient" StartPoint="0,0" EndPoint="1,0">
+        <GradientStop Color="#F1F5FF" Offset="0" />
+        <GradientStop Color="#F4FAF9" Offset="1" />
+    </LinearGradientBrush>
     <LinearGradientBrush x:Key="HomeHeroGradient" StartPoint="0,0" EndPoint="1,1">
         <GradientStop Color="#E9EEFF" Offset="0" />
         <GradientStop Color="#F5EDFF" Offset="0.58" />
@@ -71,6 +91,22 @@
     <SolidColorBrush x:Key="SettingsControlBorder" Color="#C7CDDE" />
     <SolidColorBrush x:Key="SettingsControlHover" Color="#FFFFFF" />
     <SolidColorBrush x:Key="SettingsTrack" Color="#D9DDE8" />
+    <SolidColorBrush x:Key="SettingsBarSheen" Color="#B8FFFFFF" />
+    <SolidColorBrush x:Key="SettingsPlayerSurface" Color="#F7F8FC" />
+    <SolidColorBrush x:Key="SettingsPlayerBorder" Color="#C2C9DD" />
+    <SolidColorBrush x:Key="SettingsAccentSurface" Color="#EEEAFB" />
+    <SolidColorBrush x:Key="SettingsAccentBorder" Color="#C8C0ED" />
+    <SolidColorBrush x:Key="SettingsColorSurface" Color="#E8EAFB" />
+    <SolidColorBrush x:Key="SettingsColorBorder" Color="#BFC5EE" />
+    <SolidColorBrush x:Key="SettingsSeparator" Color="#9DA5B8" />
+    <SolidColorBrush x:Key="SettingsPanelBorder" Color="#B5BDD5" />
+    <SolidColorBrush x:Key="SettingsBadgeSurface" Color="#F8FAFD" />
+    <SolidColorBrush x:Key="SettingsBadgeBorder" Color="#C3CADB" />
+    <SolidColorBrush x:Key="PersonalizationCanvasBorder" Color="#CFD6EA" />
+    <SolidColorBrush x:Key="PersonalizationMotionBorder" Color="#C8D7F3" />
+    <SolidColorBrush x:Key="PersonalizationTextBorder" Color="#D8CCF0" />
+    <SolidColorBrush x:Key="PersonalizationDensityBorder" Color="#C3E1DC" />
+    <SolidColorBrush x:Key="PersonalizationNoticeBorder" Color="#CAD7E8" />
     <SolidColorBrush x:Key="DropOverlayBackground" Color="#F5F7FFF5" />
     <SolidColorBrush x:Key="HomeHeroBorder" Color="#D4DCF8" />
     <SolidColorBrush x:Key="HomeHeroPanel" Color="#CCFFFFFF" />
@@ -84,6 +120,7 @@
     <DropShadowEffect x:Key="SelectedCardShadow" Color="#665FD8" BlurRadius="20" ShadowDepth="4" Opacity="0.15" />
     <DropShadowEffect x:Key="PrimaryButtonShadow" Color="#5149C8" BlurRadius="18" ShadowDepth="4" Opacity="0.26" />
     <DropShadowEffect x:Key="SettingsBarShadow" Color="#59637A" BlurRadius="24" ShadowDepth="7" Opacity="0.18" />
+    <DropShadowEffect x:Key="PersonalizationCardShadow" Color="#5960A0" BlurRadius="22" ShadowDepth="5" Opacity="0.13" />
     <DropShadowEffect x:Key="HomeHeroShadow" Color="#444B78" BlurRadius="22" ShadowDepth="6" Opacity="0.12" />
     <DropShadowEffect x:Key="HomeCardShadow" Color="#222B45" BlurRadius="16" ShadowDepth="3" Opacity="0.11" />
     <DropShadowEffect x:Key="HomeDockShadow" Color="#454E78" BlurRadius="20" ShadowDepth="5" Opacity="0.14" />
@@ -293,6 +330,18 @@
         <Setter Property="Height" Value="44" />
         <Setter Property="Padding" Value="10,0" />
     </Style>
+    <Style x:Key="SettingsPlayerButton" TargetType="Button" BasedOn="{StaticResource SettingsIconButton}">
+        <Setter Property="Background" Value="{DynamicResource SettingsPlayerSurface}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource SettingsPlayerBorder}" />
+    </Style>
+    <Style x:Key="SettingsAccentIconButton" TargetType="Button" BasedOn="{StaticResource SettingsIconButton}">
+        <Setter Property="Background" Value="{DynamicResource SettingsAccentSurface}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource SettingsAccentBorder}" />
+    </Style>
+    <Style x:Key="SettingsColorControlButton" TargetType="Button" BasedOn="{StaticResource SettingsWideControlButton}">
+        <Setter Property="Background" Value="{DynamicResource SettingsColorSurface}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource SettingsColorBorder}" />
+    </Style>
     <Style x:Key="SettingsMiniButton" TargetType="Button" BasedOn="{StaticResource SettingsIconButton}">
         <Setter Property="Width" Value="28" />
         <Setter Property="Height" Value="28" />
@@ -300,17 +349,31 @@
     <Style x:Key="SettingsComboBoxItem" TargetType="ComboBoxItem">
         <Setter Property="Foreground" Value="{DynamicResource PrimaryText}" />
         <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
         <Setter Property="Padding" Value="9,7" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusVisual}" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ComboBoxItem">
-                    <Border x:Name="ItemSurface" Background="{TemplateBinding Background}" CornerRadius="7" Padding="{TemplateBinding Padding}">
+                    <Border x:Name="ItemSurface"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="7"
+                            Padding="{TemplateBinding Padding}">
                         <ContentPresenter />
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsHighlighted" Value="True"><Setter TargetName="ItemSurface" Property="Background" Value="{DynamicResource AccentSoft}" /></Trigger>
-                        <Trigger Property="IsSelected" Value="True"><Setter TargetName="ItemSurface" Property="Background" Value="{DynamicResource ActiveNav}" /></Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="ItemSurface" Property="Background" Value="{DynamicResource ActiveNav}" />
+                            <Setter TargetName="ItemSurface" Property="BorderBrush" Value="{DynamicResource Accent}" />
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="ItemSurface" Property="BorderBrush" Value="{DynamicResource Accent}" />
+                        </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
@@ -343,18 +406,42 @@
                                 </ControlTemplate>
                             </ToggleButton.Template>
                         </ToggleButton>
-                        <ContentPresenter Margin="{TemplateBinding Padding}" VerticalAlignment="Center" IsHitTestVisible="False"
+                        <ContentPresenter x:Name="SelectedContent" Margin="{TemplateBinding Padding}" VerticalAlignment="Center" IsHitTestVisible="False"
                                           Content="{TemplateBinding SelectionBoxItem}" ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" ContentStringFormat="{TemplateBinding SelectionBoxItemStringFormat}" />
+                        <TextBox x:Name="PART_EditableTextBox"
+                                 Visibility="Collapsed"
+                                 Margin="9,0,28,0"
+                                 Padding="0"
+                                 Background="Transparent"
+                                 BorderThickness="0"
+                                 Foreground="{TemplateBinding Foreground}"
+                                 CaretBrush="{DynamicResource Accent}"
+                                 FocusVisualStyle="{x:Null}"
+                                 IsReadOnly="{TemplateBinding IsReadOnly}"
+                                 VerticalContentAlignment="Center"
+                                 Text="{Binding Text, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                            <TextBox.Template>
+                                <ControlTemplate TargetType="TextBox">
+                                    <ScrollViewer x:Name="PART_ContentHost" />
+                                </ControlTemplate>
+                            </TextBox.Template>
+                        </TextBox>
                         <TextBlock x:Name="EmptySelectionText" Text="选择方案" Foreground="{DynamicResource SubtleText}" FontSize="11" Margin="9,0,28,0" VerticalAlignment="Center" Visibility="Collapsed" IsHitTestVisible="False" />
                         <Popup x:Name="PART_Popup" Placement="Bottom" IsOpen="{TemplateBinding IsDropDownOpen}" AllowsTransparency="True" Focusable="False" PopupAnimation="Fade">
-                            <Border MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}" MaxHeight="220" Margin="0,4,0,0" Padding="4"
-                                    Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="10">
+                            <Border MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}" MaxHeight="220" Margin="0,5,0,0" Padding="4"
+                                    Background="{DynamicResource SurfaceElevated}" BorderBrush="{DynamicResource SettingsControlBorder}" BorderThickness="1" CornerRadius="10"
+                                    Effect="{DynamicResource HomeCardShadow}" SnapsToDevicePixels="True">
                                 <ScrollViewer VerticalScrollBarVisibility="Auto" CanContentScroll="True"><ItemsPresenter /></ScrollViewer>
                             </Border>
                         </Popup>
                     </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="SelectedIndex" Value="-1"><Setter TargetName="EmptySelectionText" Property="Visibility" Value="Visible" /></Trigger>
+                        <Trigger Property="IsEditable" Value="True">
+                            <Setter TargetName="SelectedContent" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="EmptySelectionText" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="PART_EditableTextBox" Property="Visibility" Value="Visible" />
+                        </Trigger>
                         <Trigger Property="IsEnabled" Value="False"><Setter TargetName="DropDownToggle" Property="Opacity" Value="0.45" /></Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -441,6 +528,7 @@
         <Setter Property="FontSize" Value="11" />
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Tag" Value="inactive" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusVisual}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">

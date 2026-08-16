@@ -78,9 +78,9 @@ public partial class ArtworkInspectorView
     {
         SelectParameter(sender switch
         {
-            TextBox box when ReferenceEquals(box, PositionXValue) =>
+            ComboBox box when ReferenceEquals(box, PositionXValue) =>
                 ArtworkParameter.PlacementX,
-            TextBox box when ReferenceEquals(box, PositionYValue) =>
+            ComboBox box when ReferenceEquals(box, PositionYValue) =>
                 ArtworkParameter.PlacementY,
             _ => ArtworkParameter.PlacementSize,
         });
@@ -95,6 +95,17 @@ public partial class ArtworkInspectorView
         Dispatcher.BeginInvoke(
             DispatcherPriority.Input,
             new Action(CompletePlacementEditingWhenFocusLeaves));
+    }
+
+    private void PlacementComboBox_DropDownClosed(object sender, EventArgs e) =>
+        CommitPlacementEditors();
+
+    private void PlacementComboBox_SelectionChanged(
+        object sender,
+        SelectionChangedEventArgs e)
+    {
+        if (_updating || !IsLoaded) return;
+        CommitPlacementEditors();
     }
 
     private void CompletePlacementEditingWhenFocusLeaves()
@@ -116,8 +127,8 @@ public partial class ArtworkInspectorView
         if (_updating) return;
         try
         {
-            var widthToken = SizeWidthValue.Text.Trim().ToLowerInvariant();
-            var heightToken = SizeHeightValue.Text.Trim().ToLowerInvariant();
+            var widthToken = GetPlacementToken(SizeWidthValue);
+            var heightToken = GetPlacementToken(SizeHeightValue);
             var sizeMode = widthToken switch
             {
                 "cover" => ThemeArtworkSizeMode.Cover,
@@ -134,10 +145,10 @@ public partial class ArtworkInspectorView
                     ? ThemeArtworkPlacementParser.ParseLength(heightToken)
                     : ThemeArtworkLength.Auto,
                 PositionX = ThemeArtworkPlacementParser.ParsePosition(
-                    PositionXValue.Text,
+                    GetPlacementToken(PositionXValue),
                     horizontal: true),
                 PositionY = ThemeArtworkPlacementParser.ParsePosition(
-                    PositionYValue.Text,
+                    GetPlacementToken(PositionYValue),
                     horizontal: false),
                 // Theme/Custom values retain their typed geometry so changing one
                 // token never rewrites px/%/auto siblings. Legacy is folded before
@@ -166,17 +177,43 @@ public partial class ArtworkInspectorView
 
     private void RenderPlacementEditors(ThemeArtworkPlacementSpec placement)
     {
-        SizeWidthValue.Text = placement.SizeMode switch
+        var widthToken = placement.SizeMode switch
         {
             ThemeArtworkSizeMode.Contain => "contain",
             ThemeArtworkSizeMode.Explicit => placement.Width.ToCss(),
             _ => "cover",
         };
-        SizeHeightValue.Text = placement.SizeMode == ThemeArtworkSizeMode.Explicit
+        var heightToken = placement.SizeMode == ThemeArtworkSizeMode.Explicit
             ? placement.Height.ToCss()
             : "auto";
-        PositionXValue.Text = placement.PositionX.ToCss(horizontal: true);
-        PositionYValue.Text = placement.PositionY.ToCss(horizontal: false);
+        var xToken = placement.PositionX.ToCss(horizontal: true);
+        var yToken = placement.PositionY.ToCss(horizontal: false);
+        SetPlacementToken(SizeWidthValue, widthToken);
+        SetPlacementToken(SizeHeightValue, heightToken);
+        SetPlacementToken(PositionXValue, xToken);
+        SetPlacementToken(PositionYValue, yToken);
+        PlacementSummaryText.Text =
+            $"当前：size {widthToken} {heightToken} · position {xToken} {yToken}";
+    }
+
+    private static string GetPlacementToken(ComboBox comboBox)
+    {
+        var value = comboBox.SelectedItem is ComboBoxItem { Tag: string token }
+            ? token
+            : comboBox.Text;
+        return value.Trim().ToLowerInvariant();
+    }
+
+    private static void SetPlacementToken(ComboBox comboBox, string token)
+    {
+        var match = comboBox.Items
+            .OfType<ComboBoxItem>()
+            .FirstOrDefault(item => string.Equals(
+                item.Tag as string,
+                token,
+                StringComparison.OrdinalIgnoreCase));
+        comboBox.SelectedItem = match;
+        comboBox.Text = match?.Content?.ToString() ?? token;
     }
 
     private void RenderParameterOrigin()

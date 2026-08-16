@@ -351,6 +351,12 @@ public partial class MainWindow
         await RestoreDefaultAsync();
     }
 
+    private async void SettingsRestoreTheme_Click(object sender, RoutedEventArgs e)
+    {
+        await ToggleRestoreThemeAsync();
+        UpdateSettingsVisualHeader();
+    }
+
     private async Task<bool> ToggleRestoreThemeAsync()
     {
         if (!string.IsNullOrWhiteSpace(_activeThemeId))
@@ -449,12 +455,12 @@ public partial class MainWindow
             _activePort = port.Value;
             var dark = await _runtime.ToggleColorSchemeAsync(port.Value, cancellationToken);
             _codexDarkMode = dark;
-            if (_currentRoute is Features.Navigation.AppRoute.ArtworkStudio or Features.Navigation.AppRoute.ExperienceProfiles)
+            if (_currentRoute is Features.Navigation.AppRoute.ArtworkStudio or Features.Navigation.AppRoute.DisplayPreferences)
             {
                 _editingVisualDarkMode = dark;
             }
             UpdateCodexModeButton();
-            if (_currentRoute is Features.Navigation.AppRoute.ArtworkStudio or Features.Navigation.AppRoute.ExperienceProfiles)
+            if (_currentRoute is Features.Navigation.AppRoute.ArtworkStudio or Features.Navigation.AppRoute.DisplayPreferences)
             {
                 UpdateVisualAdjustmentControls();
             }
@@ -496,12 +502,12 @@ public partial class MainWindow
             _activePort = port.Value;
             var dark = await _runtime.ReadColorSchemeAsync(port.Value);
             _codexDarkMode = dark;
-            if (_currentRoute is Features.Navigation.AppRoute.ArtworkStudio or Features.Navigation.AppRoute.ExperienceProfiles)
+            if (_currentRoute is Features.Navigation.AppRoute.ArtworkStudio or Features.Navigation.AppRoute.DisplayPreferences)
             {
                 _editingVisualDarkMode = dark;
             }
             UpdateCodexModeButton();
-            if (_currentRoute is Features.Navigation.AppRoute.ArtworkStudio or Features.Navigation.AppRoute.ExperienceProfiles)
+            if (_currentRoute is Features.Navigation.AppRoute.ArtworkStudio or Features.Navigation.AppRoute.DisplayPreferences)
             {
                 UpdateVisualAdjustmentControls();
             }

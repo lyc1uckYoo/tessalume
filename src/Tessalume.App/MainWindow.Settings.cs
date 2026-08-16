@@ -10,11 +10,11 @@ public partial class MainWindow
     {
         if (_quickSwitchWindow is { IsVisible: true })
         {
-            _quickSwitchWindow.Close();
+            CloseQuickSwitchWindow(rememberClosed: true);
             return;
         }
 
-        OpenQuickSwitchWindow();
+        OpenQuickSwitchWindow(rememberVisibility: true);
     }
 
     private void StartupButton_Click(object sender, RoutedEventArgs e)
@@ -78,6 +78,7 @@ public partial class MainWindow
         DarkMode = _darkMode,
         OnboardingCompleted = _onboardingCompleted,
         AutomaticUpdateChecks = _automaticUpdateChecks,
+        QuickSwitchVisible = _quickSwitchVisible,
         LastUpdateCheckAt = _lastUpdateCheckAt,
         RecentCreatorWorkspaces = _creatorWorkspaces.Snapshot(),
         CreatorPromptDrafts = _creatorPromptDrafts.Snapshot(),
@@ -88,7 +89,5 @@ public partial class MainWindow
             pair => pair.Key,
             pair => pair.Value.Normalize(),
             StringComparer.OrdinalIgnoreCase),
-        ArtworkPresets = _artworkPresets.Select(preset => preset.Normalize()).ToList(),
-        ExperiencePresets = _experiencePresets.Select(preset => preset.Normalize()).ToList(),
     });
 }

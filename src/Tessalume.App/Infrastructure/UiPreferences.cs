@@ -16,7 +16,7 @@ internal sealed class UnsupportedUiPreferencesSchemaException(
 
 internal sealed record UiPreferences
 {
-    public const int CurrentSchemaVersion = 6;
+    public const int CurrentSchemaVersion = 7;
 
     public int SchemaVersion { get; init; } = CurrentSchemaVersion;
 
@@ -25,6 +25,8 @@ internal sealed record UiPreferences
     public bool OnboardingCompleted { get; init; }
 
     public bool AutomaticUpdateChecks { get; init; } = true;
+
+    public bool QuickSwitchVisible { get; init; } = true;
 
     public DateTimeOffset? LastUpdateCheckAt { get; init; }
 
@@ -36,10 +38,6 @@ internal sealed record UiPreferences
 
     public Dictionary<string, ThemeVisualSettingsOverride> ThemeVisualOverrides { get; init; } =
         new(StringComparer.OrdinalIgnoreCase);
-
-    public List<ThemeArtworkPreset> ArtworkPresets { get; init; } = [];
-
-    public List<ThemeExperiencePreset> ExperiencePresets { get; init; } = [];
 
     public string ThemeLibrarySort { get; init; } = ThemeLibraryState.DefaultSort;
 
@@ -82,6 +80,7 @@ internal static class UiPreferencesMigration
             3 => DeserializeVersionThree(json, options),
             4 => DeserializeVersionFour(json, options),
             5 => DeserializeVersionFive(json, options),
+            6 => DeserializeVersionSix(json, options),
             UiPreferences.CurrentSchemaVersion => DeserializeCurrent(json, options),
             _ => throw new JsonException($"Unsupported UI preferences schema {sourceVersion}."),
         };
@@ -155,6 +154,10 @@ internal static class UiPreferencesMigration
         JsonSerializer.Deserialize<UiPreferences>(json, options)
         ?? throw new JsonException("UI preferences could not be read.");
 
+    private static UiPreferences DeserializeVersionSix(string json, JsonSerializerOptions options) =>
+        JsonSerializer.Deserialize<UiPreferences>(json, options)
+        ?? throw new JsonException("UI preferences could not be read.");
+
     private static UiPreferences DeserializeCurrent(string json, JsonSerializerOptions options) =>
         JsonSerializer.Deserialize<UiPreferences>(json, options)
         ?? throw new JsonException("UI preferences could not be read.");
@@ -175,13 +178,11 @@ internal static class UiPreferencesMigration
         {
             SchemaVersion = UiPreferences.CurrentSchemaVersion,
             FavoriteThemeIds = preferences.FavoriteThemeIds ?? [],
-            // Schema six persists only sparse overrides. This property remains as a
+            // Schema six and later persist only sparse overrides. This property remains as a
             // deserialization bridge for schema five and earlier files.
             ThemeVisualSettings = new Dictionary<string, ThemeVisualSettings>(
                 StringComparer.OrdinalIgnoreCase),
             ThemeVisualOverrides = overrides,
-            ArtworkPresets = NormalizeArtworkPresets(preferences.ArtworkPresets),
-            ExperiencePresets = NormalizeExperiencePresets(preferences.ExperiencePresets),
             ThemeLibrarySort = ThemeLibraryState.NormalizeSort(preferences.ThemeLibrarySort),
             RecentThemeUsage = ThemeLibraryState.NormalizeUsage(preferences.RecentThemeUsage),
             CreatorPromptDrafts = CreatorPromptDraftStore.Normalize(
@@ -211,37 +212,4 @@ internal static class UiPreferencesMigration
         return result;
     }
 
-    private static List<ThemeArtworkPreset> NormalizeArtworkPresets(
-        IEnumerable<ThemeArtworkPreset>? presets)
-    {
-        var result = new List<ThemeArtworkPreset>();
-        var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var candidate in presets ?? [])
-        {
-            if (candidate is null) continue;
-            var preset = candidate.Normalize();
-            if (string.IsNullOrWhiteSpace(preset.Name) || !names.Add(preset.Name)) continue;
-            result.Add(preset);
-            if (result.Count == 24) break;
-        }
-        return result;
-    }
-
-    private static List<ThemeExperiencePreset> NormalizeExperiencePresets(
-        IEnumerable<ThemeExperiencePreset>? presets)
-    {
-        var result = new List<ThemeExperiencePreset>();
-        var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var candidate in presets ?? [])
-        {
-            if (candidate is null) continue;
-            var preset = candidate.Normalize();
-            if (string.IsNullOrWhiteSpace(preset.Name) ||
-                string.IsNullOrWhiteSpace(preset.ThemeId) ||
-                !names.Add(preset.Name)) continue;
-            result.Add(preset);
-            if (result.Count == 24) break;
-        }
-        return result;
-    }
 }

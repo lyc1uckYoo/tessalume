@@ -180,7 +180,7 @@
             baseOpacity: opacity,
           };
           visualSlotStates.set(`${region}-${mode}`, state);
-          const rawPlacement = placementCss(state.placement);
+          const rawPlacement = placementCss(state.placement, state.region);
           setPlacementVariables(state, rawPlacement.size, rawPlacement.position);
         } else {
           // An absent key explicitly means "use the theme original". Removing the

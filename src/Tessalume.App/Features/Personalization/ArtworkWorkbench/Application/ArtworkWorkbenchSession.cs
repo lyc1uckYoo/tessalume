@@ -48,41 +48,6 @@ internal sealed class ArtworkWorkbenchSession
         ArtworkResetRequest request) =>
         Mutate(themeId, current, settings => ArtworkSettingsReducer.Reset(settings, request));
 
-    public ThemeVisualSettings PasteRegion(
-        string themeId,
-        ThemeVisualSettings current,
-        ArtworkColorMode targetMode,
-        ArtworkRegion targetRegion,
-        ThemeArtworkAdjustment copiedParameters) =>
-        Mutate(
-            themeId,
-            current,
-            settings => ArtworkSettingsReducer.PasteRegion(
-                settings,
-                targetMode,
-                targetRegion,
-                copiedParameters));
-
-    public ThemeVisualSettings CopyMode(
-        string themeId,
-        ThemeVisualSettings current,
-        ArtworkColorMode sourceMode,
-        ArtworkColorMode targetMode) =>
-        Mutate(
-            themeId,
-            current,
-            settings => ArtworkSettingsReducer.CopyMode(settings, sourceMode, targetMode));
-
-    public ThemeVisualSettings ApplyPreset(
-        string themeId,
-        ThemeVisualSettings current,
-        ArtworkColorMode targetMode,
-        ThemeVisualModeSettings preset) =>
-        Mutate(
-            themeId,
-            current,
-            settings => ArtworkSettingsReducer.ApplyPreset(settings, targetMode, preset));
-
     public bool TryUndo(
         string themeId,
         ThemeVisualSettings current,

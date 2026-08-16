@@ -32,6 +32,7 @@
             <Setter Property="FontSize" Value="11" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
@@ -81,7 +82,7 @@
                     </StackPanel>
                     <TextBlock Text="先了解三个关键动作，再开始选择你的第一套主题。" Foreground="{DynamicResource WelcomeMuted}" FontSize="11" Margin="0,6,0,0" />
                 </StackPanel>
-                <Button Grid.Column="2" Width="30" Height="30" Content="×" Background="Transparent" BorderThickness="0" AutomationProperties.Name="关闭欢迎引导"
+                <Button Grid.Column="2" Width="30" Height="30" Content="×" Background="Transparent" BorderThickness="0" FocusVisualStyle="{x:Null}" AutomationProperties.Name="关闭欢迎引导"
                         Foreground="{DynamicResource WelcomeMuted}" FontSize="17" Cursor="Hand" ToolTip="退出" Click="Exit_Click" />
             </Grid>
 

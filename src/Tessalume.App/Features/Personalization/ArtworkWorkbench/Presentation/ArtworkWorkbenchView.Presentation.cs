@@ -22,7 +22,6 @@ public partial class ArtworkWorkbenchView
         DarkModeButton.IsEnabled = available;
         CanvasCard.IsEnabled = available;
         InspectorScroller.IsEnabled = available;
-        FooterGrid.IsEnabled = available;
 
         SetSelectionButton(HeroRegionButton, _region == ArtworkRegion.Hero);
         SetSelectionButton(SidebarRegionButton, _region == ArtworkRegion.Sidebar);
@@ -42,31 +41,23 @@ public partial class ArtworkWorkbenchView
         PreviewCanvas.SetGuidesVisible(GuideToggleButton.IsChecked == true);
         RenderCanvasViewMode();
         Inspector.SetAdjustment(adjustment);
+        Inspector.SetFixedWidthComposition(_region == ArtworkRegion.Sidebar);
         RenderPlacementEditor(adjustment);
         Inspector.SetProvenance(CurrentSlotResolution?.Provenance);
         Inspector.SetTargetSummary(
             GetRegionDisplayName(_region),
             GetModeDisplayName(_mode));
-        Inspector.SetPasteAvailable(_parameterClipboard is not null);
         CanvasTitleText.Text = $"{GetRegionDisplayName(_region)} · {GetModeDisplayName(_mode)}";
         CanvasHintText.Text = _region switch
         {
-            ArtworkRegion.Sidebar => "拖动调整背景位置 · 纵向画布对应 Template 1.0 左栏",
-            ArtworkRegion.Chat => "拖动调整背景位置 · 外框对应任务页实际裁切边界",
-            _ => "拖动调整位置 · 金色框对应模板文字层的起始与最大宽度",
+            ArtworkRegion.Sidebar => "左栏固定宽度缩放；窗口高度变化时只调整纵向取景",
+            ArtworkRegion.Chat => "拖动取景框调整聊天背景",
+            _ => "拖动取景框调整首页横幅",
         };
         RenderMappingHint();
-        ModeTransferHintText.Text = _mode == ArtworkColorMode.Light
-            ? "复制亮色三区域参数到暗色；暗色图片来源保持不变。"
-            : "复制暗色三区域参数到亮色；亮色图片来源保持不变。";
-        CopyModeButton.Content = _mode == ArtworkColorMode.Light
-            ? "复制到暗色参数"
-            : "复制到亮色参数";
-        ResetModeButton.Content = $"恢复{GetModeDisplayName(_mode)}三个区域";
         RenderSourceSummary();
         RenderCompositionSource(adjustment);
         UpdateHistoryActions();
-        UpdatePresetActions();
     }
 
     private void RenderCompositionSource(ThemeArtworkAdjustment adjustment)
@@ -166,6 +157,15 @@ public partial class ArtworkWorkbenchView
         {
             placement = ResolveLegacyPlacementForEditing(adjustment) ?? placement;
         }
+        if (_region == ArtworkRegion.Sidebar)
+        {
+            placement = PreviewCanvas.SourcePixelSize.IsValid && PreviewCanvas.TargetSize.IsValid
+                ? ArtworkPlacementMapper.AdaptFixedWidthSidebar(
+                    placement,
+                    PreviewCanvas.SourcePixelSize,
+                    PreviewCanvas.TargetSize)
+                : ArtworkPlacementMapper.AdaptFixedWidthSidebar(placement);
+        }
         Inspector.SetPlacement(placement, adjustment.CompositionMode);
     }
 
@@ -185,7 +185,8 @@ public partial class ArtworkWorkbenchView
                 adjustment,
                 themeDefault,
                 PreviewCanvas.SourcePixelSize,
-                PreviewCanvas.TargetSize)
+                PreviewCanvas.TargetSize,
+                fixedWidthSurface: _region == ArtworkRegion.Sidebar)
             .Placement;
     }
 
@@ -262,17 +263,6 @@ public partial class ArtworkWorkbenchView
         RedoButton.IsEnabled = status.CanRedo;
     }
 
-    private void UpdatePresetActions()
-    {
-        if (ApplyPresetButton is null) return;
-        var selected = SelectedPreset is not null;
-        ApplyPresetButton.IsEnabled = CanEdit() && selected;
-        ExportPresetButton.IsEnabled = selected;
-        DeletePresetButton.IsEnabled = selected;
-        SavePresetButton.IsEnabled = CanEdit();
-        ImportPresetButton.IsEnabled = true;
-    }
-
     private void RenderApplyState(ArtworkApplyState state, string detail)
     {
         if (SyncStatusText is null) return;
@@ -324,51 +314,21 @@ public partial class ArtworkWorkbenchView
             WorkspaceGapRow.Height = new GridLength(12);
             Grid.SetRow(InspectorScroller, 2);
             Grid.SetColumn(InspectorScroller, 0);
-            PreviewCanvas.MinHeight = (_canvasViewMode, _region) switch
-            {
-                (ArtworkCanvasViewMode.Result, ArtworkRegion.Hero) => 300,
-                (_, ArtworkRegion.Sidebar) => 520,
-                (_, ArtworkRegion.Chat) => 460,
-                _ => 420,
-            };
+            PreviewCanvas.MinHeight = _region == ArtworkRegion.Sidebar ? 360 : 330;
             InspectorScroller.MaxHeight = double.PositiveInfinity;
         }
         else
         {
-            CanvasColumn.Width = new GridLength(1.7, GridUnitType.Star);
+            CanvasColumn.Width = new GridLength(1.5, GridUnitType.Star);
             WorkspaceGapColumn.Width = new GridLength(12);
             InspectorColumn.Width = new GridLength(1, GridUnitType.Star);
             WorkspaceGapRow.Height = new GridLength(0);
             Grid.SetRow(InspectorScroller, 0);
             Grid.SetColumn(InspectorScroller, 2);
-            PreviewCanvas.MinHeight = (_canvasViewMode, _region) switch
-            {
-                (ArtworkCanvasViewMode.Result, ArtworkRegion.Hero) => 300,
-                (_, ArtworkRegion.Sidebar) => 520,
-                _ => 470,
-            };
+            PreviewCanvas.MinHeight = _region == ArtworkRegion.Sidebar ? 360 : 340;
             InspectorScroller.MaxHeight = double.PositiveInfinity;
         }
 
-        var stackFooter = width < 700;
-        if (stackFooter)
-        {
-            FooterPrimaryColumn.Width = new GridLength(1, GridUnitType.Star);
-            FooterGapColumn.Width = new GridLength(0);
-            FooterSecondaryColumn.Width = new GridLength(0);
-            FooterGapRow.Height = new GridLength(12);
-            Grid.SetRow(RecoveryCard, 2);
-            Grid.SetColumn(RecoveryCard, 0);
-        }
-        else
-        {
-            FooterPrimaryColumn.Width = new GridLength(1.45, GridUnitType.Star);
-            FooterGapColumn.Width = new GridLength(12);
-            FooterSecondaryColumn.Width = new GridLength(1, GridUnitType.Star);
-            FooterGapRow.Height = new GridLength(0);
-            Grid.SetRow(RecoveryCard, 0);
-            Grid.SetColumn(RecoveryCard, 2);
-        }
         SyncStatusDetailText.Visibility = width < 560
             ? Visibility.Collapsed
             : Visibility.Visible;

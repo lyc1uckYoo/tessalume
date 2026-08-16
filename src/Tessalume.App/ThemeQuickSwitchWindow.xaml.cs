@@ -16,6 +16,7 @@ public partial class ThemeQuickSwitchWindow : Window
     private readonly Func<Task<bool?>> _toggleColorScheme;
     private readonly Func<Task<bool?>> _readColorScheme;
     private readonly Action _showHome;
+    private readonly Action _closeAndShowHome;
     private readonly Func<Task<CodexUsageSnapshot?>> _readUsage;
     private readonly DispatcherTimer _usageTimer;
     private IReadOnlyList<ThemeCardModel> _switchCandidates = [];
@@ -29,6 +30,7 @@ public partial class ThemeQuickSwitchWindow : Window
         Func<Task<bool?>> toggleColorScheme,
         Func<Task<bool?>> readColorScheme,
         Action showHome,
+        Action closeAndShowHome,
         Func<Task<CodexUsageSnapshot?>> readUsage)
     {
         _applyTheme = applyTheme;
@@ -36,6 +38,7 @@ public partial class ThemeQuickSwitchWindow : Window
         _toggleColorScheme = toggleColorScheme;
         _readColorScheme = readColorScheme;
         _showHome = showHome;
+        _closeAndShowHome = closeAndShowHome;
         _readUsage = readUsage;
         _usageTimer = new DispatcherTimer { Interval = TimeSpan.FromMinutes(1) };
         _usageTimer.Tick += UsageTimer_Tick;

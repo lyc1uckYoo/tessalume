@@ -18,8 +18,7 @@ public partial class ThemeQuickSwitchWindow
 
     private void Close_Click(object sender, RoutedEventArgs e)
     {
-        _showHome();
-        Close();
+        _closeAndShowHome();
     }
 
     private void WindowDrag_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)

@@ -42,21 +42,6 @@ public partial class ArtworkWorkbenchView
             $"调整{GetParameterDisplayName(e.Parameter)}");
     }
 
-    private void Inspector_BooleanValueChanged(
-        object? sender,
-        ArtworkParameterBooleanChangedEventArgs e)
-    {
-        if (!CanEdit()) return;
-        ApplyDiscrete(
-            settings => ArtworkSettingsReducer.SetParameter(
-                settings,
-                _mode,
-                _region,
-                e.Parameter,
-                e.Value),
-            e.Value ? "开启文字可读性保护" : "关闭文字可读性保护");
-    }
-
     private void Inspector_PlacementChanged(
         object? sender,
         ArtworkPlacementChangedEventArgs e)
@@ -76,7 +61,14 @@ public partial class ArtworkWorkbenchView
                     settings,
                     _mode,
                     _region,
-                    e.Placement),
+                    _region == ArtworkRegion.Sidebar
+                        ? PreviewCanvas.SourcePixelSize.IsValid && PreviewCanvas.TargetSize.IsValid
+                            ? ArtworkPlacementMapper.AdaptFixedWidthSidebar(
+                                e.Placement,
+                                PreviewCanvas.SourcePixelSize,
+                                PreviewCanvas.TargetSize)
+                            : ArtworkPlacementMapper.AdaptFixedWidthSidebar(e.Placement)
+                        : e.Placement),
                 "精确输入最终构图"))
         {
             return;
@@ -274,33 +266,13 @@ public partial class ArtworkWorkbenchView
     {
         if (!CanEdit()) return;
         var current = CurrentAdjustment;
-        if (string.IsNullOrWhiteSpace(current.CustomImagePath)) return;
+        if (string.IsNullOrWhiteSpace(current.CustomImagePath))
+        {
+            Notify("当前已经在使用主题原图");
+            return;
+        }
         _ = TrySetCustomImagePath(_themeId!, _mode, _region, null);
         Notify($"{GetRegionDisplayName(_region)}已使用主题原图 · 参数保持不变");
-    }
-
-    private void Inspector_CopyRequested(object? sender, EventArgs e)
-    {
-        if (!CanEdit()) return;
-        _parameterClipboard = CurrentAdjustment.WithoutCustomImage().Normalize();
-        Inspector.SetPasteAvailable(true);
-        Notify($"已复制{GetRegionDisplayName(_region)}参数 · 不包含图片来源");
-    }
-
-    private void Inspector_PasteRequested(object? sender, EventArgs e)
-    {
-        if (!CanEdit() || _parameterClipboard is null) return;
-        var before = _settings;
-        _settings = _session.PasteRegion(
-            _themeId!,
-            _settings,
-            _mode,
-            _region,
-            _parameterClipboard);
-        if (ThemeVisualSettingsSemanticComparer.Instance.Equals(_settings, before)) return;
-        CompleteSettingsChange("粘贴区域参数", reloadSource: false);
-        ScheduleEffectProcessing();
-        Notify($"已粘贴到{GetRegionDisplayName(_region)} · 图片来源未改变");
     }
 
     private void Region_Click(object sender, RoutedEventArgs e)
@@ -337,74 +309,6 @@ public partial class ArtworkWorkbenchView
     private void Undo_Click(object sender, RoutedEventArgs e) => Undo();
 
     private void Redo_Click(object sender, RoutedEventArgs e) => Redo();
-
-    private void CopyMode_Click(object sender, RoutedEventArgs e)
-    {
-        if (!CanEdit()) return;
-        var target = _mode == ArtworkColorMode.Light
-            ? ArtworkColorMode.Dark
-            : ArtworkColorMode.Light;
-        var before = _settings;
-        _settings = _session.CopyMode(_themeId!, _settings, _mode, target);
-        if (ThemeVisualSettingsSemanticComparer.Instance.Equals(_settings, before))
-        {
-            Notify($"{GetModeDisplayName(target)}参数已经相同");
-            return;
-        }
-        CompleteSettingsChange("复制到另一亮暗模式", reloadSource: false);
-        Notify($"已复制到{GetModeDisplayName(target)}参数 · 三个目标图片来源均保持不变");
-    }
-
-    private void ResetMode_Click(object sender, RoutedEventArgs e) =>
-        LargeResetRequested?.Invoke(
-            this,
-            new ArtworkLargeResetEventArgs(ArtworkResetScope.Mode));
-
-    private void ResetTheme_Click(object sender, RoutedEventArgs e) =>
-        LargeResetRequested?.Invoke(
-            this,
-            new ArtworkLargeResetEventArgs(ArtworkResetScope.Theme));
-
-    private void ApplyPreset_Click(object sender, RoutedEventArgs e)
-    {
-        if (!CanEdit() || SelectedPreset is not { } preset) return;
-        var before = _settings;
-        _settings = _session.ApplyPreset(_themeId!, _settings, _mode, preset.Settings);
-        if (ThemeVisualSettingsSemanticComparer.Instance.Equals(_settings, before))
-        {
-            Notify("当前模式已经使用这套方案参数");
-            return;
-        }
-        CompleteSettingsChange($"应用个人方案“{preset.Name}”", reloadSource: false);
-        ScheduleEffectProcessing();
-        Notify($"已应用“{preset.Name}” · 当前图片来源保持不变");
-    }
-
-    private void SavePreset_Click(object sender, RoutedEventArgs e)
-    {
-        if (!CanEdit()) return;
-        var name = PresetName;
-        if (string.IsNullOrWhiteSpace(name) && SelectedPreset is { } selected)
-        {
-            name = selected.Name;
-        }
-        SavePresetRequested?.Invoke(this, new ArtworkPresetNameEventArgs(name));
-    }
-
-    private void ImportPreset_Click(object sender, RoutedEventArgs e) =>
-        ImportPresetRequested?.Invoke(this, EventArgs.Empty);
-
-    private void ExportPreset_Click(object sender, RoutedEventArgs e) =>
-        ExportPresetRequested?.Invoke(this, EventArgs.Empty);
-
-    private void DeletePreset_Click(object sender, RoutedEventArgs e) =>
-        DeletePresetRequested?.Invoke(this, EventArgs.Empty);
-
-    private void ExportArtworkDefaults_Click(object sender, RoutedEventArgs e) =>
-        ExportArtworkDefaultsRequested?.Invoke(this, EventArgs.Empty);
-
-    private void PresetComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e) =>
-        UpdatePresetActions();
 
     private void ApplyParameterMutation(
         Func<ThemeVisualSettings, ThemeVisualSettings> mutation,

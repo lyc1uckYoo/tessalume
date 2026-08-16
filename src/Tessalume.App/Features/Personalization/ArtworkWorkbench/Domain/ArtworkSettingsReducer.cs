@@ -229,8 +229,6 @@ internal static class ArtworkSettingsReducer
                 ResetGroup(settings, request.Mode, request.Region, group),
             ArtworkResetScope.RegionMode =>
                 ResetRegionMode(settings, request.Mode, request.Region),
-            ArtworkResetScope.Mode => ResetMode(settings, request.Mode),
-            ArtworkResetScope.Theme => ResetTheme(settings),
             ArtworkResetScope.Parameter => throw new ArgumentException(
                 "A parameter reset requires a parameter.",
                 nameof(request)),
@@ -290,109 +288,6 @@ internal static class ArtworkSettingsReducer
         ArtworkColorMode mode,
         ArtworkRegion region) =>
         UpdateAdjustment(settings, mode, region, ResetAdjustmentPreservingImage);
-
-    public static ThemeVisualSettings ResetMode(
-        ThemeVisualSettings settings,
-        ArtworkColorMode mode)
-    {
-        var current = ArtworkSettingsAccessor.GetMode(settings, mode);
-        var replacement = new ThemeVisualModeSettings
-        {
-            Hero = ResetAdjustmentPreservingImage(current.Hero),
-            Sidebar = ResetAdjustmentPreservingImage(current.Sidebar),
-            Chat = ResetAdjustmentPreservingImage(current.Chat),
-        };
-        return ArtworkSettingsAccessor.SetMode(settings, mode, replacement);
-    }
-
-    public static ThemeVisualSettings ResetTheme(ThemeVisualSettings settings)
-    {
-        ArgumentNullException.ThrowIfNull(settings);
-        return ResetMode(ResetMode(settings, ArtworkColorMode.Light), ArtworkColorMode.Dark);
-    }
-
-    public static ThemeVisualSettings PasteRegion(
-        ThemeVisualSettings settings,
-        ArtworkColorMode targetMode,
-        ArtworkRegion targetRegion,
-        ThemeArtworkAdjustment copiedParameters)
-    {
-        ArgumentNullException.ThrowIfNull(copiedParameters);
-        var target = ArtworkSettingsAccessor.GetAdjustment(settings, targetMode, targetRegion);
-        return ArtworkSettingsAccessor.SetAdjustment(
-            settings,
-            targetMode,
-            targetRegion,
-            CopyParametersPreservingTargetImage(copiedParameters, target));
-    }
-
-    public static ThemeVisualSettings CopyRegion(
-        ThemeVisualSettings settings,
-        ArtworkColorMode sourceMode,
-        ArtworkRegion sourceRegion,
-        ArtworkColorMode targetMode,
-        ArtworkRegion targetRegion)
-    {
-        var source = ArtworkSettingsAccessor.GetAdjustment(settings, sourceMode, sourceRegion);
-        return PasteRegion(settings, targetMode, targetRegion, source);
-    }
-
-    public static ThemeVisualSettings CopyMode(
-        ThemeVisualSettings settings,
-        ArtworkColorMode sourceMode,
-        ArtworkColorMode targetMode)
-    {
-        var source = ArtworkSettingsAccessor.GetMode(settings, sourceMode);
-        var target = ArtworkSettingsAccessor.GetMode(settings, targetMode);
-        var replacement = MergeParametersPreservingTargetImages(source, target);
-        return ArtworkSettingsAccessor.SetMode(settings, targetMode, replacement);
-    }
-
-    public static ThemeVisualSettings ApplyPreset(
-        ThemeVisualSettings settings,
-        ArtworkColorMode targetMode,
-        ThemeVisualModeSettings preset)
-    {
-        ArgumentNullException.ThrowIfNull(preset);
-        var target = ArtworkSettingsAccessor.GetMode(settings, targetMode);
-        var replacement = MergeParametersPreservingTargetImages(preset, target);
-        return ArtworkSettingsAccessor.SetMode(settings, targetMode, replacement);
-    }
-
-    public static ThemeArtworkAdjustment CopyParametersPreservingTargetImage(
-        ThemeArtworkAdjustment source,
-        ThemeArtworkAdjustment target)
-    {
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(target);
-        var normalizedSource = source.Normalize();
-        var normalizedTarget = target.Normalize();
-        return (normalizedSource with
-        {
-            CustomImagePath = normalizedTarget.CustomImagePath,
-            ThemeAssetKey = normalizedTarget.ThemeAssetKey,
-            Motion = normalizedTarget.Motion,
-            Placement = normalizedSource.CompositionMode == ThemeArtworkCompositionMode.Theme
-                ? normalizedTarget.Placement
-                : normalizedSource.Placement,
-        }).Normalize();
-    }
-
-    private static ThemeVisualModeSettings MergeParametersPreservingTargetImages(
-        ThemeVisualModeSettings source,
-        ThemeVisualModeSettings target)
-    {
-        var normalizedSource = (source ?? new ThemeVisualModeSettings()).Normalize();
-        var normalizedTarget = (target ?? new ThemeVisualModeSettings()).Normalize();
-        return new ThemeVisualModeSettings
-        {
-            Hero = CopyParametersPreservingTargetImage(normalizedSource.Hero, normalizedTarget.Hero),
-            Sidebar = CopyParametersPreservingTargetImage(
-                normalizedSource.Sidebar,
-                normalizedTarget.Sidebar),
-            Chat = CopyParametersPreservingTargetImage(normalizedSource.Chat, normalizedTarget.Chat),
-        }.Normalize();
-    }
 
     private static ThemeArtworkAdjustment ResetGroup(
         ThemeArtworkAdjustment adjustment,

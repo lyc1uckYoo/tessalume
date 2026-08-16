@@ -3,7 +3,6 @@ using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
 using Tessalume.App.Features.Personalization.ArtworkWorkbench.Domain;
 using Tessalume.Core.Runtime;
 
@@ -32,8 +31,6 @@ public partial class ArtworkInspectorView : UserControl
 
     internal event EventHandler<ArtworkParameterTextChangedEventArgs>? TextValueChanged;
 
-    internal event EventHandler<ArtworkParameterBooleanChangedEventArgs>? BooleanValueChanged;
-
     internal event EventHandler<ArtworkParameterEventArgs>? InteractionStarted;
 
     internal event EventHandler<ArtworkParameterEventArgs>? InteractionCompleted;
@@ -53,10 +50,6 @@ public partial class ArtworkInspectorView : UserControl
     internal event EventHandler? ChooseImageRequested;
 
     internal event EventHandler? ClearImageRequested;
-
-    internal event EventHandler? CopyRequested;
-
-    internal event EventHandler? PasteRequested;
 
     internal ArtworkParameter SelectedParameter => _selectedParameter;
 
@@ -92,8 +85,6 @@ public partial class ArtworkInspectorView : UserControl
                 ArtworkParameter.GradientStrength);
             SetSlider(VignetteSlider, VignetteValue, _adjustment.Vignette, ArtworkParameter.Vignette);
             OverlayColorValue.Text = _adjustment.OverlayColor;
-            ReadabilityCheckBox.IsChecked =
-                _adjustment.ReadabilityProtection || _adjustment.ReadabilityVeil.Enabled;
             foreach (var candidate in BlendModeComboBox.Items.OfType<ComboBoxItem>())
             {
                 if (string.Equals(
@@ -105,7 +96,7 @@ public partial class ArtworkInspectorView : UserControl
                     break;
                 }
             }
-            ClearImageButton.IsEnabled = !string.IsNullOrWhiteSpace(_adjustment.CustomImagePath);
+            ClearImageButton.IsEnabled = true;
         }
         finally
         {
@@ -137,7 +128,7 @@ public partial class ArtworkInspectorView : UserControl
         ResetGroupButton.Content = $"恢复{group switch
         {
             ArtworkParameterGroup.Composition => "构图",
-            ArtworkParameterGroup.Effects => "可读性与效果",
+            ArtworkParameterGroup.Effects => "效果",
             _ => "明暗",
         }}组";
         SelectedParameterText.Text = $"当前参数：{GetParameterName(_selectedParameter)}";
@@ -151,13 +142,26 @@ public partial class ArtworkInspectorView : UserControl
             $"恢复{regionName}{modeName}到主题推荐值并保留图片来源");
     }
 
+    internal void SetFixedWidthComposition(bool fixedWidth)
+    {
+        SizeHeightValue.IsEnabled = !fixedWidth;
+        SizeHeightLabel.Text = fixedWidth ? "高度（自动）" : "高度";
+        SizeHeightValue.ToolTip = fixedWidth
+            ? "左栏宽度固定，高度始终按原图比例自动计算"
+            : "选择或输入背景高度";
+        AutomationProperties.SetHelpText(
+            SizeHeightValue,
+            fixedWidth
+                ? "左栏使用固定宽度构图，高度保持原图比例"
+                : "选择或输入背景高度");
+    }
+
     internal void SetSourceSummary(string summary, bool hasLocalImage)
     {
         SourceBadgeText.Text = summary;
-        ClearImageButton.IsEnabled = hasLocalImage;
+        ClearImageButton.IsEnabled = true;
+        ClearImageButton.Content = hasLocalImage ? "切回主题原图" : "正在使用主题原图";
     }
-
-    internal void SetPasteAvailable(bool available) => PasteButton.IsEnabled = available;
 
     private void Group_Click(object sender, RoutedEventArgs e)
     {
@@ -297,17 +301,6 @@ public partial class ArtworkInspectorView : UserControl
             new ArtworkParameterTextChangedEventArgs(ArtworkParameter.BlendMode, value));
     }
 
-    private void ReadabilityCheckBox_Changed(object sender, RoutedEventArgs e)
-    {
-        if (_updating) return;
-        SelectParameter(ArtworkParameter.ReadabilityProtection);
-        BooleanValueChanged?.Invoke(
-            this,
-            new ArtworkParameterBooleanChangedEventArgs(
-                ArtworkParameter.ReadabilityProtection,
-                ReadabilityCheckBox.IsChecked == true));
-    }
-
     private void OverlayColorValue_LostKeyboardFocus(
         object sender,
         KeyboardFocusChangedEventArgs e) => CommitOverlayColor();
@@ -362,12 +355,6 @@ public partial class ArtworkInspectorView : UserControl
     private void ClearImage_Click(object sender, RoutedEventArgs e) =>
         ClearImageRequested?.Invoke(this, EventArgs.Empty);
 
-    private void Copy_Click(object sender, RoutedEventArgs e) =>
-        CopyRequested?.Invoke(this, EventArgs.Empty);
-
-    private void Paste_Click(object sender, RoutedEventArgs e) =>
-        PasteRequested?.Invoke(this, EventArgs.Empty);
-
     private void BeginInteraction(ArtworkParameter parameter)
     {
         SelectParameter(parameter);
@@ -400,17 +387,10 @@ public partial class ArtworkInspectorView : UserControl
         RenderParameterOrigin();
     }
 
-    private void SetGroupButton(Button button, bool active)
+    private static void SetGroupButton(Button button, bool active)
     {
         button.Tag = active ? "active" : "inactive";
         AutomationProperties.SetItemStatus(button, active ? "当前选中" : "未选中");
-        button.Background = active
-            ? TryFindResource("AccentSoft") as Brush
-            : Brushes.Transparent;
-        button.BorderBrush = active
-            ? TryFindResource("Accent") as Brush
-            : Brushes.Transparent;
-        button.Foreground = TryFindResource(active ? "Accent" : "MutedText") as Brush;
     }
 
     private static void SetSlider(

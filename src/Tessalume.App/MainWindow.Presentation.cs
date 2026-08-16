@@ -48,8 +48,28 @@ public partial class MainWindow
             dark ? "#35243E" : "#E7EAF4");
         SetGradientBrush(
             "SettingsCurrentThemeGradient",
-            dark ? "#3A2B45" : "#FFFFFF",
-            dark ? "#2A233A" : "#E9E7F8");
+            dark ? "#49324F" : "#FFFFFF",
+            dark ? "#302842" : "#DDDDF8");
+        SetGradientBrush(
+            "PersonalizationCanvasGradient",
+            dark ? "#202838" : "#FCFDFF",
+            dark ? "#25213A" : "#F3F1FF");
+        SetGradientBrush(
+            "PersonalizationMotionGradient",
+            dark ? "#243249" : "#F4F8FF",
+            dark ? "#202B43" : "#EDF2FF");
+        SetGradientBrush(
+            "PersonalizationTextGradient",
+            dark ? "#302A47" : "#F8F4FF",
+            dark ? "#28243F" : "#F1EDFF");
+        SetGradientBrush(
+            "PersonalizationDensityGradient",
+            dark ? "#20383A" : "#F1FBF9",
+            dark ? "#1E3034" : "#EAF7F5");
+        SetGradientBrush(
+            "PersonalizationNoticeGradient",
+            dark ? "#202C42" : "#F1F5FF",
+            dark ? "#203536" : "#F4FAF9");
         SetGradientBrush(
             "HomeHeroGradient",
             dark ? "#1A2135" : "#E9EEFF",
@@ -96,6 +116,22 @@ public partial class MainWindow
         SetBrush("SettingsControlBorder", dark ? "#32FFFFFF" : "#C7CDDE");
         SetBrush("SettingsControlHover", dark ? "#29FFFFFF" : "#FFFFFF");
         SetBrush("SettingsTrack", dark ? "#46505D" : "#D9DDE8");
+        SetBrush("SettingsBarSheen", dark ? "#38FFFFFF" : "#B8FFFFFF");
+        SetBrush("SettingsPlayerSurface", dark ? "#18FFFFFF" : "#F7F8FC");
+        SetBrush("SettingsPlayerBorder", dark ? "#2AFFFFFF" : "#C2C9DD");
+        SetBrush("SettingsAccentSurface", dark ? "#287D66CF" : "#EEEAFB");
+        SetBrush("SettingsAccentBorder", dark ? "#397F70D6" : "#C8C0ED");
+        SetBrush("SettingsColorSurface", dark ? "#2A9B6AD1" : "#E8EAFB");
+        SetBrush("SettingsColorBorder", dark ? "#4AAF86E4" : "#BFC5EE");
+        SetBrush("SettingsSeparator", dark ? "#30FFFFFF" : "#9DA5B8");
+        SetBrush("SettingsPanelBorder", dark ? "#3AFFFFFF" : "#B5BDD5");
+        SetBrush("SettingsBadgeSurface", dark ? "#18FFFFFF" : "#F8FAFD");
+        SetBrush("SettingsBadgeBorder", dark ? "#2FFFFFFF" : "#C3CADB");
+        SetBrush("PersonalizationCanvasBorder", dark ? "#414A63" : "#CFD6EA");
+        SetBrush("PersonalizationMotionBorder", dark ? "#3B4D6E" : "#C8D7F3");
+        SetBrush("PersonalizationTextBorder", dark ? "#53476E" : "#D8CCF0");
+        SetBrush("PersonalizationDensityBorder", dark ? "#365759" : "#C3E1DC");
+        SetBrush("PersonalizationNoticeBorder", dark ? "#3D5364" : "#CAD7E8");
         SetBrush("DropOverlayBackground", dark ? "#F51A202B" : "#F5F7FFF5");
         SetBrush("HomeHeroBorder", dark ? "#3B4668" : "#D4DCF8");
         SetBrush("HomeHeroPanel", dark ? "#24FFFFFF" : "#CCFFFFFF");
@@ -111,6 +147,13 @@ public partial class MainWindow
             BlurRadius = dark ? 28 : 24,
             ShadowDepth = dark ? 8 : 7,
             Opacity = dark ? 0.4 : 0.18,
+        };
+        Resources["PersonalizationCardShadow"] = new System.Windows.Media.Effects.DropShadowEffect
+        {
+            Color = (Color)ColorConverter.ConvertFromString(dark ? "#080A11" : "#5960A0"),
+            BlurRadius = dark ? 26 : 22,
+            ShadowDepth = dark ? 7 : 5,
+            Opacity = dark ? 0.34 : 0.13,
         };
         foreach (var theme in _themes)
         {
@@ -168,7 +211,7 @@ public partial class MainWindow
             : $"我的收藏  {_favoriteThemeIds.Count}";
         UpdateInfoNavigationButton(DiagnosticsButton, _currentRoute == Features.Navigation.AppRoute.Diagnostics);
         UpdateInfoNavigationButton(SettingsButton, _currentRoute == Features.Navigation.AppRoute.ArtworkStudio);
-        UpdateInfoNavigationButton(ExperienceButton, _currentRoute == Features.Navigation.AppRoute.ExperienceProfiles);
+        UpdateInfoNavigationButton(DisplayPreferencesButton, _currentRoute == Features.Navigation.AppRoute.DisplayPreferences);
         UpdateInfoNavigationButton(ImportGuideButton, _currentRoute == Features.Navigation.AppRoute.ImportTheme);
         UpdateInfoNavigationButton(CreatorCenterButton, _currentRoute == Features.Navigation.AppRoute.CreatorCenter);
         UpdateInfoNavigationButton(DataButton, _currentRoute == Features.Navigation.AppRoute.DataAndUpdates);

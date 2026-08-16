@@ -48,8 +48,6 @@ internal enum ArtworkResetScope
     Parameter,
     ParameterGroup,
     RegionMode,
-    Mode,
-    Theme,
 }
 
 internal readonly record struct ArtworkTarget(
@@ -79,12 +77,6 @@ internal readonly record struct ArtworkResetRequest(
         ArtworkColorMode mode,
         ArtworkRegion region) =>
         new(ArtworkResetScope.RegionMode, mode, region);
-
-    public static ArtworkResetRequest ForMode(ArtworkColorMode mode) =>
-        new(ArtworkResetScope.Mode, mode);
-
-    public static ArtworkResetRequest ForTheme() =>
-        new(ArtworkResetScope.Theme);
 }
 
 internal static class ArtworkParameterExtensions

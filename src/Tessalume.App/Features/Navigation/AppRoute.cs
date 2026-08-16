@@ -9,7 +9,7 @@ internal enum AppRoute
     ThemeLibrary,
     ImportTheme,
     ArtworkStudio,
-    ExperienceProfiles,
+    DisplayPreferences,
     Diagnostics,
     DataAndUpdates,
     About,

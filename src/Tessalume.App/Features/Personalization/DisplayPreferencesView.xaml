@@ -5,58 +5,143 @@
              TextOptions.TextFormattingMode="Display"
              TextOptions.TextRenderingMode="ClearType"
              TextOptions.TextHintingMode="Fixed">
-    <Border Style="{DynamicResource ProductCard}" Padding="18">
-        <StackPanel>
-            <Grid>
-                <Grid.ColumnDefinitions><ColumnDefinition Width="42" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                <Border Width="32" Height="32" CornerRadius="10" Background="{DynamicResource SkySoft}">
-                    <TextBlock Text="Aa" Foreground="{DynamicResource Sky}" FontSize="11" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                </Border>
-                <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                    <TextBlock Text="显示偏好" Foreground="{DynamicResource PrimaryText}" FontSize="13" FontWeight="SemiBold" />
-                    <TextBlock Text="控制主题动效、Codex 正文字号与内容疏密；跟随当前主题保存。" Foreground="{DynamicResource MutedText}" FontSize="10" Margin="0,3,0,0" />
-                </StackPanel>
-                <Border Grid.Column="2" Background="{DynamicResource SkySoft}" CornerRadius="8" Padding="8,4" VerticalAlignment="Center">
-                    <TextBlock Text="体验控制" Foreground="{DynamicResource Sky}" FontSize="9.5" FontWeight="SemiBold" />
-                </Border>
-            </Grid>
+    <UserControl.Resources>
+        <Style x:Key="PreferenceTile" TargetType="Border">
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="17" />
+            <Setter Property="Padding" Value="16" />
+            <Setter Property="MinHeight" Value="182" />
+        </Style>
+    </UserControl.Resources>
 
-            <Grid Margin="0,14,0,0">
-                <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="10" /><ColumnDefinition Width="*" /><ColumnDefinition Width="10" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                <Border Style="{DynamicResource InsetCard}" Padding="13">
-                    <StackPanel>
-                        <TextBlock Text="动效强度" Foreground="{DynamicResource PrimaryText}" FontSize="11" FontWeight="SemiBold" />
-                        <TextBlock Text="减少动画可降低干扰和资源占用" Foreground="{DynamicResource MutedText}" FontSize="9.5" Margin="0,3,0,8" />
-                        <ComboBox x:Name="MotionComboBox" Height="32" Style="{DynamicResource SettingsComboBox}" SelectedValuePath="Tag" SelectionChanged="Selection_Changed" AutomationProperties.Name="主题动效强度">
-                            <ComboBoxItem Content="完整" Tag="full" />
-                            <ComboBoxItem Content="轻量" Tag="reduced" />
-                            <ComboBoxItem Content="关闭" Tag="off" />
-                        </ComboBox>
+    <Border Background="{DynamicResource PersonalizationCanvasGradient}"
+            BorderBrush="{DynamicResource PersonalizationCanvasBorder}"
+            BorderThickness="1"
+            CornerRadius="22"
+            Effect="{DynamicResource PersonalizationCardShadow}"
+            SnapsToDevicePixels="True">
+        <Grid ClipToBounds="True">
+            <Ellipse Width="240" Height="240" HorizontalAlignment="Right" VerticalAlignment="Top"
+                     Margin="0,-150,-90,0" Fill="{DynamicResource Accent}" Opacity="0.055" IsHitTestVisible="False" />
+            <Ellipse Width="190" Height="190" HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                     Margin="-105,0,0,-125" Fill="{DynamicResource Teal}" Opacity="0.045" IsHitTestVisible="False" />
+
+            <StackPanel Margin="22,20,22,22">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="54" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Border Width="44" Height="44" CornerRadius="14" Background="{DynamicResource PrimaryGradient}">
+                        <Grid>
+                            <Ellipse Width="30" Height="30" Fill="#24FFFFFF" />
+                            <TextBlock Text="Aa" Foreground="White" FontSize="14" FontWeight="Bold"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Grid>
+                    </Border>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="显示偏好" Foreground="{DynamicResource PrimaryText}" FontSize="18" FontWeight="SemiBold" />
+                        <TextBlock Text="把动画、正文字号和内容节奏调到更舒服的状态。"
+                                   Foreground="{DynamicResource MutedText}" FontSize="12.5" LineHeight="19" Margin="0,4,0,0" />
                     </StackPanel>
-                </Border>
-                <Border Grid.Column="2" Style="{DynamicResource InsetCard}" Padding="13">
-                    <StackPanel>
-                        <TextBlock Text="正文字号" Foreground="{DynamicResource PrimaryText}" FontSize="11" FontWeight="SemiBold" />
-                        <TextBlock Text="调整聊天区和左栏文字的整体比例" Foreground="{DynamicResource MutedText}" FontSize="9.5" Margin="0,3,0,8" />
-                        <ComboBox x:Name="TextScaleComboBox" Height="32" Style="{DynamicResource SettingsComboBox}" SelectedValuePath="Tag" SelectionChanged="Selection_Changed" AutomationProperties.Name="Codex 正文字号">
-                            <ComboBoxItem Content="较小" Tag="small" />
-                            <ComboBoxItem Content="标准" Tag="standard" />
-                            <ComboBoxItem Content="较大" Tag="large" />
-                        </ComboBox>
-                    </StackPanel>
-                </Border>
-                <Border Grid.Column="4" Style="{DynamicResource InsetCard}" Padding="13">
-                    <StackPanel>
-                        <TextBlock Text="界面密度" Foreground="{DynamicResource PrimaryText}" FontSize="11" FontWeight="SemiBold" />
-                        <TextBlock Text="控制消息之间的留白与阅读节奏" Foreground="{DynamicResource MutedText}" FontSize="9.5" Margin="0,3,0,8" />
-                        <ComboBox x:Name="DensityComboBox" Height="32" Style="{DynamicResource SettingsComboBox}" SelectedValuePath="Tag" SelectionChanged="Selection_Changed" AutomationProperties.Name="Codex 界面密度">
-                            <ComboBoxItem Content="紧凑" Tag="compact" />
-                            <ComboBoxItem Content="舒适" Tag="comfortable" />
-                            <ComboBoxItem Content="宽松" Tag="spacious" />
-                        </ComboBox>
-                    </StackPanel>
-                </Border>
-            </Grid>
-        </StackPanel>
+                    <Border Grid.Column="2" Background="{DynamicResource AccentSoft}" BorderBrush="{DynamicResource InfoBorder}"
+                            BorderThickness="1" CornerRadius="10" Padding="11,6" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse Width="6" Height="6" Fill="{DynamicResource Positive}" Margin="0,0,7,0" VerticalAlignment="Center" />
+                            <TextBlock Text="跟随当前主题" Foreground="{DynamicResource Accent}" FontSize="10.5" FontWeight="SemiBold" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <Grid Margin="0,19,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="14" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="14" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Border Style="{StaticResource PreferenceTile}"
+                            Background="{DynamicResource PersonalizationMotionGradient}"
+                            BorderBrush="{DynamicResource PersonalizationMotionBorder}">
+                        <StackPanel>
+                            <Grid>
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="38" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                <Border Width="32" Height="32" CornerRadius="10" Background="{DynamicResource SkySoft}">
+                                    <TextBlock Text="✦" Foreground="{DynamicResource Sky}" FontSize="15" FontWeight="Bold"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="动效强度" Foreground="{DynamicResource PrimaryText}" FontSize="14.5" FontWeight="SemiBold" />
+                                    <TextBlock Text="MOTION" Foreground="{DynamicResource Sky}" FontSize="9" FontWeight="Bold" Margin="0,1,0,0" />
+                                </StackPanel>
+                            </Grid>
+                            <TextBlock Text="减少动态干扰，也能降低持续动画的资源占用。"
+                                       TextWrapping="Wrap" Foreground="{DynamicResource MutedText}" FontSize="11.5" LineHeight="18" MinHeight="36" Margin="0,10,0,0" />
+                            <ComboBox x:Name="MotionComboBox" Style="{DynamicResource SettingsComboBox}" Height="40" FontSize="12.5" FontWeight="SemiBold" Padding="11,0,30,0" Margin="0,14,0,0"
+                                      SelectedValuePath="Tag" SelectionChanged="Selection_Changed" AutomationProperties.Name="主题动效强度">
+                                <ComboBoxItem Content="完整动效" Tag="full" />
+                                <ComboBoxItem Content="轻量动效" Tag="reduced" />
+                                <ComboBoxItem Content="关闭动效" Tag="off" />
+                            </ComboBox>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="2" Style="{StaticResource PreferenceTile}"
+                            Background="{DynamicResource PersonalizationTextGradient}"
+                            BorderBrush="{DynamicResource PersonalizationTextBorder}">
+                        <StackPanel>
+                            <Grid>
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="38" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                <Border Width="32" Height="32" CornerRadius="10" Background="{DynamicResource AccentSoft}">
+                                    <TextBlock Text="Aa" Foreground="{DynamicResource Accent}" FontSize="12" FontWeight="Bold"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="正文字号" Foreground="{DynamicResource PrimaryText}" FontSize="14.5" FontWeight="SemiBold" />
+                                    <TextBlock Text="TEXT SIZE" Foreground="{DynamicResource Accent}" FontSize="9" FontWeight="Bold" Margin="0,1,0,0" />
+                                </StackPanel>
+                            </Grid>
+                            <TextBlock Text="同步调整聊天正文与左栏文字，长时间阅读更轻松。"
+                                       TextWrapping="Wrap" Foreground="{DynamicResource MutedText}" FontSize="11.5" LineHeight="18" MinHeight="36" Margin="0,10,0,0" />
+                            <ComboBox x:Name="TextScaleComboBox" Style="{DynamicResource SettingsComboBox}" Height="40" FontSize="12.5" FontWeight="SemiBold" Padding="11,0,30,0" Margin="0,14,0,0"
+                                      SelectedValuePath="Tag" SelectionChanged="Selection_Changed" AutomationProperties.Name="Codex 正文字号">
+                                <ComboBoxItem Content="较小" Tag="small" />
+                                <ComboBoxItem Content="标准" Tag="standard" />
+                                <ComboBoxItem Content="较大" Tag="large" />
+                            </ComboBox>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="4" Style="{StaticResource PreferenceTile}"
+                            Background="{DynamicResource PersonalizationDensityGradient}"
+                            BorderBrush="{DynamicResource PersonalizationDensityBorder}">
+                        <StackPanel>
+                            <Grid>
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="38" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                <Border Width="32" Height="32" CornerRadius="10" Background="{DynamicResource TealSoft}">
+                                    <TextBlock Text="≡" Foreground="{DynamicResource Teal}" FontSize="18" FontWeight="Bold"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,-2,0,0" />
+                                </Border>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="界面密度" Foreground="{DynamicResource PrimaryText}" FontSize="14.5" FontWeight="SemiBold" />
+                                    <TextBlock Text="SPACING" Foreground="{DynamicResource Teal}" FontSize="9" FontWeight="Bold" Margin="0,1,0,0" />
+                                </StackPanel>
+                            </Grid>
+                            <TextBlock Text="控制消息间距与页面留白，找到合适的阅读节奏。"
+                                       TextWrapping="Wrap" Foreground="{DynamicResource MutedText}" FontSize="11.5" LineHeight="18" MinHeight="36" Margin="0,10,0,0" />
+                            <ComboBox x:Name="DensityComboBox" Style="{DynamicResource SettingsComboBox}" Height="40" FontSize="12.5" FontWeight="SemiBold" Padding="11,0,30,0" Margin="0,14,0,0"
+                                      SelectedValuePath="Tag" SelectionChanged="Selection_Changed" AutomationProperties.Name="Codex 界面密度">
+                                <ComboBoxItem Content="紧凑" Tag="compact" />
+                                <ComboBoxItem Content="舒适" Tag="comfortable" />
+                                <ComboBoxItem Content="宽松" Tag="spacious" />
+                            </ComboBox>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </StackPanel>
+        </Grid>
     </Border>
 </UserControl>

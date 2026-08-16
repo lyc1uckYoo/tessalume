@@ -25,14 +25,14 @@ public partial class MainWindow
         // compact reading measure used by Tessalume 2.0.
         InfoContentHost.MaxWidth = route == AppRoute.ArtworkStudio ? 1440 : 940;
         SetArtworkConnectionMonitoring(route == AppRoute.ArtworkStudio);
-        var isPersonalization = route is AppRoute.ArtworkStudio or AppRoute.ExperienceProfiles;
+        var isPersonalization = route is AppRoute.ArtworkStudio or AppRoute.DisplayPreferences;
         ThemeLibraryPage.Visibility = Visibility.Collapsed;
         InfoPage.Visibility = Visibility.Visible;
         ImportInfoPanel.Visibility = route == AppRoute.ImportTheme ? Visibility.Visible : Visibility.Collapsed;
         CreatorCenter.Visibility = route == AppRoute.CreatorCenter ? Visibility.Visible : Visibility.Collapsed;
         PersonalizationInfoPanel.Visibility = isPersonalization ? Visibility.Visible : Visibility.Collapsed;
         SettingsInfoPanel.Visibility = route == AppRoute.ArtworkStudio ? Visibility.Visible : Visibility.Collapsed;
-        ExperienceInfoPanel.Visibility = route == AppRoute.ExperienceProfiles ? Visibility.Visible : Visibility.Collapsed;
+        DisplayPreferencesInfoPanel.Visibility = route == AppRoute.DisplayPreferences ? Visibility.Visible : Visibility.Collapsed;
         DiagnosticsPage.Visibility = route == AppRoute.Diagnostics ? Visibility.Visible : Visibility.Collapsed;
         AboutPage.Visibility = route is AppRoute.About or AppRoute.DataAndUpdates
             ? Visibility.Visible
@@ -49,10 +49,10 @@ public partial class MainWindow
     private void RenderPersonalizationPageHeader(AppRoute route)
     {
         var artwork = route == AppRoute.ArtworkStudio;
-        PersonalizationPageTitleText.Text = artwork ? "图像工作台" : "显示与方案";
+        PersonalizationPageTitleText.Text = artwork ? "图像工作台" : "显示偏好";
         PersonalizationPageDescriptionText.Text = artwork
             ? "在原图上完成最终取景，再检查页面中的真实效果。"
-            : "调整阅读体验，或把当前主题、图像和显示偏好保存为方案。";
-        PersonalizationPageStatusText.Text = artwork ? "离线也可编辑" : "按主题保存";
+            : "调整动效、正文字号和内容疏密，让当前主题读起来更舒服。";
+        PersonalizationPageStatusText.Text = artwork ? "离线也可编辑" : "跟随主题保存";
     }
 }
