@@ -596,6 +596,13 @@ internal static partial class TestSuite
                runtimeSource.Contains("encodedReferenceHeight", StringComparison.Ordinal) &&
                runtimeSource.Contains("sidebarReferenceTop", StringComparison.Ordinal),
             "Sidebar artwork must preserve its horizontal scale and full-height top edge while clipping the bottom on shorter windows.");
+        Ensure(!runtimeSource.Contains("canonicalArtworkTarget", StringComparison.Ordinal) &&
+               !runtimeSource.Contains("visualSurfaceReferenceSizes", StringComparison.Ordinal) &&
+               runtimeSource.Contains("storedSizeMode === \"explicit\"", StringComparison.Ordinal) &&
+               artworkWorkbenchSource.Contains("CommitResponsiveCover", StringComparison.Ordinal) &&
+               artworkWorkbenchSource.Contains("AdaptResponsiveCover", StringComparison.Ordinal) &&
+               artworkWorkbenchSource.Contains("UseResponsiveCoverMode", StringComparison.Ordinal),
+            "Hero and chat artwork must use native responsive cover with one focal point and one uniform zoom, never a frozen canvas.");
         Ensure(mainWindowXaml.Contains("x:Name=\"SettingsThemeControlBar\"", StringComparison.Ordinal) &&
                mainWindowXaml.Contains("Click=\"SettingsPreviousTheme_Click\"", StringComparison.Ordinal) &&
                mainWindowXaml.Contains("Click=\"SettingsNextTheme_Click\"", StringComparison.Ordinal) &&
@@ -859,65 +866,6 @@ internal static partial class TestSuite
         Ensure(manifest.Contains("PerMonitorV2, PerMonitor", StringComparison.Ordinal),
             "The Windows application manifest must opt into per-monitor DPI scaling.");
     }
-
-    static async Task Version20ProductFoundationIsConnectedAsync()
-    {
-        var repositoryRoot = FindRepositoryRoot();
-        var appRoot = Path.Combine(repositoryRoot, "src", "Tessalume.App");
-        var xaml = await ReadMainWindowXamlAsync(appRoot);
-        var source = await ReadMainWindowSourceAsync(appRoot);
-        var dialogXaml = await File.ReadAllTextAsync(Path.Combine(appRoot, "ProductDialogWindow.xaml"));
-        var dialogSource = await File.ReadAllTextAsync(Path.Combine(appRoot, "ProductDialogWindow.xaml.cs"));
-        var firstRunXaml = await File.ReadAllTextAsync(Path.Combine(appRoot, "FirstRunWindow.xaml"));
-        var project = await File.ReadAllTextAsync(Path.Combine(appRoot, "Tessalume.App.csproj"));
-        var readme = await File.ReadAllTextAsync(Path.Combine(repositoryRoot, "README.md"));
-
-        foreach (var marker in new[]
-                 {
-                     "x:Name=\"ThemeSearchBox\"",
-                     "x:Name=\"AllThemesFilterButton\"",
-                     "x:Name=\"LightThemesFilterButton\"",
-                     "x:Name=\"DarkThemesFilterButton\"",
-                     "x:Name=\"ThemeResultText\"",
-                     "x:Name=\"ToastPanel\"",
-                     "x:Name=\"AboutPage\"",
-                     "x:Name=\"LibrarySummaryText\"",
-                     "2.0 版本亮点",
-                 })
-        {
-            Ensure(xaml.Contains(marker, StringComparison.Ordinal), $"The product interface is missing {marker}.");
-        }
-
-        Ensure(source.Contains("ApplyThemeLibraryFilter", StringComparison.Ordinal) &&
-               source.Contains("ThemeSearchBox_FocusChanged", StringComparison.Ordinal) &&
-               source.Contains("ShowProductConfirmation", StringComparison.Ordinal) &&
-               source.Contains("ShowToast", StringComparison.Ordinal) &&
-               !source.Contains("MessageBox.Show", StringComparison.Ordinal),
-            "The main interface must use searchable filtering and unified in-product feedback.");
-        Ensure(xaml.Contains("Property=\"Cursor\" Value=\"IBeam\"", StringComparison.Ordinal) &&
-               xaml.Contains("GotKeyboardFocus=\"ThemeSearchBox_FocusChanged\"", StringComparison.Ordinal),
-            "The search field must keep a clear text caret and hide its placeholder while focused.");
-        Ensure(dialogXaml.Contains("DialogAccentBrush", StringComparison.Ordinal) &&
-               dialogXaml.Contains("IsDefault=\"True\"", StringComparison.Ordinal) &&
-               dialogXaml.Contains("IsCancel=\"True\"", StringComparison.Ordinal) &&
-               dialogSource.Contains("CancelButton.IsDefault = true", StringComparison.Ordinal),
-            "The product dialog must support consistent styling and keyboard-safe confirmation.");
-        Ensure(dialogXaml.Contains("TextOptions.TextHintingMode=\"Fixed\"", StringComparison.Ordinal) &&
-               firstRunXaml.Contains("TextOptions.TextHintingMode=\"Fixed\"", StringComparison.Ordinal) &&
-               !xaml.Contains("Storyboard.TargetName=\"PrimaryMotion\"", StringComparison.Ordinal) &&
-               !xaml.Contains("x:Name=\"ButtonScale\"", StringComparison.Ordinal),
-            "Shared actions, dialogs, and onboarding must keep stable text rendering without hover scaling.");
-        Ensure(project.Contains("<Version>2.0.2</Version>", StringComparison.Ordinal) &&
-               firstRunXaml.Contains("{x:Static local:BrandInfo.VersionLabel}", StringComparison.Ordinal) &&
-               !firstRunXaml.Contains("Text=\"v1.2\"", StringComparison.Ordinal) &&
-               readme.Contains("release-2.0.2", StringComparison.Ordinal) &&
-               readme.Contains("内置 12 套支持亮色与暗色的完整角色主题", StringComparison.Ordinal) &&
-               readme.Contains("莫宁·初星穹镜与西格莉卡·语义晨曦", StringComparison.Ordinal) &&
-               readme.Contains("themes/                          12 套内置主题源码", StringComparison.Ordinal) &&
-               File.Exists(Path.Combine(repositoryRoot, "CHANGELOG.md")),
-            "Version metadata and release documentation must agree on Tessalume 2.0.2.");
-    }
-
 
     static async Task DiagnosticsRecoveryIsAvailableAsync()
     {

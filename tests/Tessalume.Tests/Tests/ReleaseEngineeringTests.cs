@@ -5,9 +5,12 @@ internal static partial class TestSuite
         var repositoryRoot = FindRepositoryRoot();
         var source = await File.ReadAllTextAsync(Path.Combine(repositoryRoot, "一键构建EXE.ps1"));
         Ensure(source.Contains("[switch]$NoLaunch", StringComparison.Ordinal) &&
+               source.Contains("[switch]$FullValidation", StringComparison.Ordinal) &&
+               source.Contains("'--build'", StringComparison.Ordinal) &&
+               source.Contains("'--full'", StringComparison.Ordinal) &&
                source.Contains("if (-not $NoLaunch)", StringComparison.Ordinal) &&
                source.Contains("Start-Process -FilePath $finalExe -WorkingDirectory $output", StringComparison.Ordinal),
-            "The one-click build must launch the newly published EXE by default and retain an explicit opt-out.");
+            "The one-click build must separate daily and release validation, launch by default, and retain an explicit opt-out.");
     }
 
     static async Task ReleaseReadinessAssetsAreDocumentedAsync()
@@ -93,10 +96,12 @@ internal static partial class TestSuite
 
         Ensure(ci.Contains("一键构建EXE.ps1", StringComparison.Ordinal) &&
                ci.Contains("-NoLaunch", StringComparison.Ordinal) &&
+               ci.Contains("-FullValidation", StringComparison.Ordinal) &&
                ci.Contains("actions/upload-artifact@v4", StringComparison.Ordinal),
             "CI must execute the same complete release build used locally and retain its verified artifacts.");
         Ensure(release.Contains("tags:", StringComparison.Ordinal) &&
                release.Contains("'v*.*.*'", StringComparison.Ordinal) &&
+               release.Contains("-FullValidation", StringComparison.Ordinal) &&
                release.Contains("does not match project version", StringComparison.Ordinal) &&
                release.Contains("Get-ReleaseNotes.ps1", StringComparison.Ordinal) &&
                release.Contains("gh release create", StringComparison.Ordinal) &&

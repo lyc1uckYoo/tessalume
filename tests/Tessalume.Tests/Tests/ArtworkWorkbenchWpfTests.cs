@@ -114,6 +114,17 @@ internal static partial class TestSuite
                        view.PreviewCanvas.TargetSize == new ArtworkSize(275d, 998d),
                     "The next successful probe must replace standard geometry in both the badge and primary canvas without another user action.");
                 view.HeroRegionButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                view.SetSurfaceMetrics(
+                    ArtworkRegion.Hero,
+                    new ArtworkSurfacePreviewMetrics(
+                        980d,
+                        360d,
+                        1.25d,
+                        IsLive: true,
+                        "current compact Codex home surface"));
+                Ensure(view.SurfaceMetricsText.Text == "在线实测 980×360 · DPR 1.25" &&
+                       view.PreviewCanvas.TargetSize == new ArtworkSize(980d, 360d),
+                    "Hero editing must preview the current live surface while responsive cover remains window-independent.");
 
                 var typedInspector = new ArtworkInspectorView();
                 var cartethyiaPlacement = new ThemeArtworkPlacementSpec
@@ -171,8 +182,8 @@ internal static partial class TestSuite
                 Ensure(canvasShare is >= 0.58 and <= 0.72 &&
                        view.PreviewCanvas.ActualWidth > 400 &&
                        view.PreviewCanvas.ActualHeight >= 330 &&
-                       view.PreviewCanvas.FullSourceStage.Visibility == Visibility.Visible &&
-                       view.PreviewCanvas.PreviewStage.Visibility == Visibility.Collapsed,
+                       view.PreviewCanvas.FullSourceStage.Visibility == Visibility.Collapsed &&
+                       view.PreviewCanvas.PreviewStage.Visibility == Visibility.Visible,
                     "The wide workbench must give the primary canvas roughly two thirds of usable space.");
                 view.Inspector.BasicGroupButton.RaiseEvent(
                     new RoutedEventArgs(Button.ClickEvent));
@@ -182,11 +193,25 @@ internal static partial class TestSuite
                     "Non-composition parameters must switch to their final-surface preview without exposing a separate result-view control.");
                 view.Inspector.CompositionGroupButton.RaiseEvent(
                     new RoutedEventArgs(Button.ClickEvent));
-                Ensure(view.PreviewCanvas.ViewMode == ArtworkCanvasViewMode.FullSource,
-                    "Composition parameters must return to full-source framing automatically.");
+                Ensure(view.PreviewCanvas.ViewMode == ArtworkCanvasViewMode.Result,
+                    "Composition parameters must remain on the stable final canvas for direct drag and zoom editing.");
                 view.SidebarRegionButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                host.UpdateLayout();
                 Ensure(view.PreviewCanvas.MinHeight == 360,
                     "Switching to Sidebar must retain a compact but useful framing canvas.");
+                Ensure(view.PreviewCanvas.ViewportBorder.ActualWidth >= 220d &&
+                       Math.Abs(
+                           view.PreviewCanvas.ViewportBorder.ActualWidth /
+                           view.PreviewCanvas.ViewportBorder.ActualHeight -
+                           275d / 998d) < .001d &&
+                       view.PreviewCanvas.PreviewScrollViewer.VerticalScrollBarVisibility ==
+                       ScrollBarVisibility.Auto &&
+                       view.PreviewCanvas.PreviewScrollViewer.ScrollableHeight > 0d,
+                    "The arranged Sidebar canvas must enlarge its proportional review surface and expose the full height through scrolling " +
+                    $"(viewport {view.PreviewCanvas.ViewportBorder.ActualWidth:0.##}×" +
+                    $"{view.PreviewCanvas.ViewportBorder.ActualHeight:0.##}, " +
+                    $"canvas {view.PreviewCanvas.ActualWidth:0.##}×{view.PreviewCanvas.ActualHeight:0.##}, " +
+                    $"scroll {view.PreviewCanvas.PreviewScrollViewer.ScrollableHeight:0.##}).");
                 view.ChatRegionButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
                 Ensure(view.PreviewCanvas.MinHeight == 340,
                     "Switching back to Chat must release the extra Sidebar canvas height.");

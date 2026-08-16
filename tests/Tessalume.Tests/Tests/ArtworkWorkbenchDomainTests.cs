@@ -287,14 +287,38 @@ internal static partial class TestSuite
                 .5d,
                 source,
                 target);
-            var committed = ArtworkPlacementMapper.CommitCrop(zoomed.Crop, source, target);
+            var committed = region == ArtworkRegion.Sidebar
+                ? ArtworkPlacementMapper.CommitCrop(
+                    zoomed.Crop,
+                    source,
+                    target,
+                    fixedWidthSurface: true)
+                : ArtworkPlacementMapper.CommitResponsiveCover(
+                    zoomed.Crop,
+                    source,
+                    target);
             var projectedAgain = ArtworkPlacementMapper.Project(committed, source, target);
             Ensure(projectedAgain.CoversSurface &&
                    projectedAgain.SourceProjection.SourceWidth <
                    fillProjection.SourceProjection.SourceWidth &&
                    projectedAgain.SourceProjection.SourceHeight <
                    fillProjection.SourceProjection.SourceHeight,
-                $"{region} zoom must commit directly to final percentage size/position.");
+                $"{region} zoom must commit to an aspect-correct final crop.");
+            if (region is ArtworkRegion.Hero or ArtworkRegion.Chat)
+            {
+                var alternateTarget = region == ArtworkRegion.Hero
+                    ? new ArtworkSize(980d, 360d)
+                    : new ArtworkSize(980d, 760d);
+                var alternateProjection = ArtworkPlacementMapper.Project(
+                    committed,
+                    source,
+                    alternateTarget);
+                Ensure(committed.SizeMode == ThemeArtworkSizeMode.Cover &&
+                       committed.Geometry.Scale > 1d &&
+                       alternateProjection.CoversSurface &&
+                       !alternateProjection.IsDistorted,
+                    $"{region} edits must persist as responsive cover, focal point, and one uniform zoom across window ratios.");
+            }
         }
 
         var exact = ThemeArtworkPlacementParser.Parse(new ThemeArtworkCssPlacement
@@ -306,6 +330,13 @@ internal static partial class TestSuite
                exact.PositionCss == "52% -200px" &&
                exact.Normalize() == exact,
             "Typed px/%/auto placement must round-trip without hidden normalization.");
+        var responsiveExact = ArtworkPlacementMapper.UseResponsiveCoverMode(exact);
+        Ensure(responsiveExact.SizeMode == ThemeArtworkSizeMode.Cover &&
+               responsiveExact.PositionX == exact.PositionX &&
+               responsiveExact.PositionY == exact.PositionY &&
+               responsiveExact.Geometry.OriginX == exact.PositionX &&
+               responsiveExact.Geometry.OriginY == exact.PositionY,
+            "Hero and chat must migrate legacy independent width/height values to responsive cover without losing their focal point.");
 
         var offlineSession = new ArtworkWorkbenchSession();
         var offlineBefore = CreateDistinctArtworkSettings();

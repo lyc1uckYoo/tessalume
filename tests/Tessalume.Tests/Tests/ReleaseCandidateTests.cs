@@ -1,8 +1,8 @@
 internal static partial class TestSuite
 {
-    static async Task Version20IsolatedCreatorToRecoveryFlowAsync()
+    static async Task IsolatedCreatorToRecoveryFlowAsync()
     {
-        var root = Path.Combine(Path.GetTempPath(), $"tessalume-13-e2e-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"tessalume-release-e2e-{Guid.NewGuid():N}");
         var workspace = Path.Combine(root, "workspace");
         var project = Path.Combine(workspace, "themes", "fixture.creator-theme");
         var library = Path.Combine(root, "themes");
@@ -17,7 +17,7 @@ internal static partial class TestSuite
         try
         {
             using var fixture = await CreatorThemeFixture.CreateAsync(project);
-            const string versionOnePreferences = """
+            const string legacyPreferences = """
                 {
                   "SchemaVersion": 1,
                   "DarkMode": true,
@@ -32,7 +32,7 @@ internal static partial class TestSuite
                 }
                 """;
             var settingsPath = Path.Combine(data, "ui-settings.json");
-            await File.WriteAllTextAsync(settingsPath, versionOnePreferences);
+            await File.WriteAllTextAsync(settingsPath, legacyPreferences);
             using (var preferencesStore = new UiPreferencesStore(data))
             {
                 var migrated = preferencesStore.Load();
@@ -48,7 +48,7 @@ internal static partial class TestSuite
                        data,
                        "backups",
                        "latest-before-preferences-migration.json")),
-                "The isolated 1.2 upgrade must preserve its original preferences before migration.");
+                "The isolated upgrade must preserve the original preferences before migration.");
 
             var loader = new ThemePackageLoader();
             var workspaceHealth = await new ThemeProjectScanner(loader).ScanWorkspaceAsync(workspace);
@@ -94,7 +94,8 @@ internal static partial class TestSuite
             {
                 restoredPreferences = preferencesStore.Load();
             }
-            var restoredTheme = await loader.LoadAsync(Path.Combine(library, "fixture.creator-theme"));
+            var restoredTheme = await loader.LoadAsync(
+                Path.Combine(library, "fixture.creator-theme"));
             Ensure(restoredPreferences.SchemaVersion == UiPreferences.CurrentSchemaVersion &&
                    restoredPreferences.DarkMode &&
                    !restoredPreferences.AutomaticUpdateChecks &&
@@ -102,7 +103,7 @@ internal static partial class TestSuite
                    restoredPreferences.ThemeVisualOverrides["fixture.creator-theme"].Dark?.Chat?.Brightness == 84 &&
                    restoredPreferences.RecentCreatorWorkspaces.Count == 1 &&
                    restoredTheme.Validation.IsValid,
-                "The 1.2 → 1.3 → export → import → backup → restore flow must preserve every user setting and a valid theme.");
+                "Migration, export, import, backup, and restore must preserve every user setting and a valid theme.");
         }
         finally
         {

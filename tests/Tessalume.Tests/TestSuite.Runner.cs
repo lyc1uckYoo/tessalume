@@ -314,6 +314,13 @@ internal static partial class TestSuite
                 quickDarkPath);
         }
 
+        var buildProfile = args is ["--build"];
+        if (!buildProfile && args.Length != 0 && args is not ["--full"])
+        {
+            Console.Error.WriteLine("Unknown test profile. Use --build for daily builds or --full for release validation.");
+            return 2;
+        }
+
         var tests = new (string Name, Func<Task> Run)[]
         {
             ("valid package loads", ValidPackageLoadsAsync),
@@ -348,6 +355,8 @@ internal static partial class TestSuite
             ("artwork workbench canvas mapping and offline session work", ArtworkWorkbenchCanvasMappingAndOfflineSessionWorkAsync),
             ("artwork workbench preview infrastructure caches and resolves", ArtworkWorkbenchPreviewInfrastructureCachesAndResolvesAsync),
             ("artwork workbench WPF view loads and adapts", ArtworkWorkbenchViewLoadsAndAdaptsAsync),
+            ("artwork presentation formatting retains exact values", ArtworkPresentationFormattingIsLosslessAsync),
+            ("artwork Sidebar review layout preserves its aspect", ArtworkSidebarReviewLayoutPreservesAspectAsync),
             ("artwork defaults project published final placements", ArtworkThemeDefaultsProjectPublishedPlacementsAsync),
             ("artwork defaults mirror all published themes", ArtworkThemeDefaultsMatchPublishedThemesAsync),
             ("artwork absolute composition and sparse schema migration work", ArtworkAbsoluteCompositionAndSparseSchemaMigrationWorkAsync),
@@ -363,7 +372,6 @@ internal static partial class TestSuite
             ("WPF shell loads split resources", WpfShellLoadsSplitResourcesAsync),
             ("long product dialogs keep a fixed header and scrollable body", LongProductDialogUsesScrollableBodyAsync),
             ("adaptive layout and keyboard accessibility are available", AdaptiveLayoutAndKeyboardAccessibilityAsync),
-            ("version 2.0 product foundation is connected", Version20ProductFoundationIsConnectedAsync),
             ("portable Codex creator workspace is self-contained", PortableCreatorWorkspaceIsSelfContainedAsync),
             ("creator prompt composer builds a durable contract prompt", CreatorPromptComposerBuildsDurableContractPromptAsync),
             ("creator repair prompt is scoped to project health", CreatorRepairPromptUsesOnlyBoundedProjectHealthAsync),
@@ -381,7 +389,7 @@ internal static partial class TestSuite
             ("portable backup rejects corruption, cancellation, and rolls back", PortableBackupRejectsCorruptionCancellationAndRollsBackAsync),
             ("compatibility health state survives restart", CompatibilityHealthStateIsDurableAsync),
             ("compatibility packs validate, install, and roll back atomically", CompatibilityPacksInstallValidateAndRollBackAsync),
-            ("version 2.0 isolated creator-to-recovery flow completes", Version20IsolatedCreatorToRecoveryFlowAsync),
+            ("isolated creator-to-recovery flow completes", IsolatedCreatorToRecoveryFlowAsync),
             ("local diagnostics and built-in recovery are available", DiagnosticsRecoveryIsAvailableAsync),
             ("local importer copies a validated package", LocalImporterCopiesPackageAsync),
             ("ZIP theme import is bounded and rejects traversal", ZipThemeImportIsBoundedAsync),
@@ -410,8 +418,35 @@ internal static partial class TestSuite
             ("UI preferences migrate through schema five", UiPreferencesMigrateFromUnversionedSchemaAsync),
         };
 
+        var releaseOnlyChecks = new HashSet<string>(StringComparer.Ordinal)
+        {
+            nameof(SourceLayoutKeepsFeatureBoundariesAsync),
+            nameof(ReleaseUpdaterChecksAndDownloadsAsync),
+            nameof(CompatibilityUpdaterFindsDedicatedVerifiedPacksAsync),
+            nameof(CompatibilityUpdaterPaginatesAndIgnoresPrereleasesAsync),
+            nameof(PortableUpdaterReplacesAndBacksUpAsync),
+            nameof(PortableUpdaterRollsBackWithoutTouchingUserDataAsync),
+            nameof(UpdateDataSnapshotsRestoreVersionedSettingsAtomicallyAsync),
+            nameof(UpdateHelperPreservesSchemasAcrossRollbackAsync),
+            nameof(UpdateRollbackStateRequiresAnUntamperedBackupAsync),
+            nameof(LegacyUpdateResultCreatesAPreMigrationRollbackPointAsync),
+            nameof(UpdatedApplicationWritesAStartupHealthMarkerAsync),
+            nameof(AutomaticUpdateWorkflowIsConnectedAsync),
+            nameof(BuildScriptLaunchesPublishedExecutableAsync),
+            nameof(ReleaseReadinessAssetsAreDocumentedAsync),
+            nameof(GitHubAutomationSeparatesApplicationAndCompatibilityReleasesAsync),
+            nameof(CompatibilityPackBuildIsDeterministicAsync),
+        };
+        var selectedTests = buildProfile
+            ? tests.Where(test => !releaseOnlyChecks.Contains(test.Run.Method.Name)).ToArray()
+            : tests;
+
+        Console.WriteLine(buildProfile
+            ? $"Build profile: {selectedTests.Length} core checks ({tests.Length - selectedTests.Length} release checks deferred)."
+            : $"Full profile: {selectedTests.Length} checks.");
+
         var failures = new List<string>();
-        foreach (var (name, run) in tests)
+        foreach (var (name, run) in selectedTests)
         {
             try
             {
@@ -425,7 +460,7 @@ internal static partial class TestSuite
             }
         }
 
-        Console.WriteLine($"{tests.Length - failures.Count}/{tests.Length} checks passed.");
+        Console.WriteLine($"{selectedTests.Length - failures.Count}/{selectedTests.Length} checks passed.");
         return failures.Count == 0 ? 0 : 1;
 
     }

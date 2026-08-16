@@ -175,7 +175,7 @@ internal static partial class TestSuite
             loadPreview: false)
         {
             // Screenshot fixtures exercise the fully editable local-preview path
-            // with the critical 355% Cartethyia sidebar recommendation.
+            // with the current published Cartethyia sidebar recommendation.
             // Keeping the theme selected but unapplied makes the result independent
             // of any Codex instance that happens to be running on the developer PC.
             IsApplied = false,

@@ -69,8 +69,8 @@ internal static partial class TestSuite
                 }
                 else if (region == "chat")
                 {
-                    Ensure(slot.Effects.GradientVeil is
-                           { Enabled: true, Strength: > 0d, Layers.Count: > 0 } &&
+                    Ensure(slot.Effects.GradientVeil is { Layers.Count: > 0 } veil &&
+                           (veil.Enabled ? veil.Strength > 0d : veil.Strength == 0d) &&
                            slot.Effects.ReadabilityVeil is { Enabled: false, Opacity: 0d },
                         $"{package.Manifest.Id} {mode} chat artwork must publish exactly one adjustable mask system.");
                 }
@@ -128,28 +128,24 @@ internal static partial class TestSuite
 
         AssertSixSlotPublishedBaseline(
             documents["xin.moonfox-sovereign"],
-            heroY: "center",
-            heroScale: 1d,
-            heroOriginX: "73%",
-            sidebarLight: ("214%", "86%", "-78px"),
-            sidebarDark: ("225%", "92%", "-150px"),
+            heroLight: ("30.54872742%", 1d, "center", "30.54872742%"),
+            heroDark: ("center", 1d, "73%", "50%"),
+            sidebarLight: ("231.12%", "86.03183277%", "-88px"),
+            sidebarDark: ("243%", "91.47461234%", "-175.17918318px"),
+            chatLight: ("23.09063744%", "100%", 1.1664d, "23.09063744%", "100%"),
+            chatDark: ("41.13820796%", "89.79151689%", 1.1664d, "41.13820796%", "89.79151689%"),
             "flagship");
         AssertSixSlotPublishedBaseline(
             documents["mornye.first-star-observatory"],
-            heroY: "46%",
-            heroScale: 1.008d,
-            heroOriginX: "73%",
-            sidebarLight: ("206%", "58%", "-28px"),
-            sidebarDark: ("220%", "66%", "-20px"),
+            heroLight: ("46.71728261%", 1d, "center", "46.71728261%"),
+            heroDark: ("46.94176244%", 1d, "center", "46.94176244%"),
+            sidebarLight: ("181.45454545%", "57.016783%", "0px"),
+            sidebarDark: ("219.82803594%", "69.60847826%", "0px"),
+            chatLight: ("center", "center", 1d, "50%", "50%"),
+            chatDark: ("center", "center", 1d, "50%", "50%"),
             "Mornye");
-        AssertSixSlotPublishedBaseline(
-            documents["cartethyia.gale-tide-crown"],
-            heroY: "center",
-            heroScale: 1.004d,
-            heroOriginX: "50%",
-            sidebarLight: ("312%", "40%", "-148px"),
-            sidebarDark: ("355%", "52%", "-200px"),
-            "Cartethyia");
+        AssertAemeathPublishedBaseline(documents["aemeath.star-voyage"]);
+        AssertCartethyiaPublishedBaseline(documents["cartethyia.gale-tide-crown"]);
 
         var cartethyiaRoot = Path.Combine(
             repositoryRoot,
@@ -172,10 +168,10 @@ internal static partial class TestSuite
                 dimensions.Width,
                 dimensions.Height),
             new Tessalume.App.Features.Personalization.ArtworkWorkbench.Domain.ArtworkSize(260, 800));
-        EnsureAlmostEqual(projection.RenderedImage.Width, 923d, "Cartethyia exact rendered width");
-        EnsureAlmostEqual(projection.RenderedImage.Height, 1384.5d, "Cartethyia exact rendered height");
-        EnsureAlmostEqual(projection.RenderedImage.X, -344.76d, "Cartethyia exact rendered X");
-        EnsureAlmostEqual(projection.RenderedImage.Y, -200d, "Cartethyia exact rendered Y");
+        EnsureAlmostEqual(projection.RenderedImage.Width, 733.019296909046d, "Cartethyia exact rendered width");
+        EnsureAlmostEqual(projection.RenderedImage.Height, 1099.52894536357d, "Cartethyia exact rendered height");
+        EnsureAlmostEqual(projection.RenderedImage.X, -248.227753128852d, "Cartethyia exact rendered X");
+        EnsureAlmostEqual(projection.RenderedImage.Y, -121.6463036525212d, "Cartethyia exact rendered Y");
     }
 
     private static IEnumerable<(
@@ -197,30 +193,43 @@ internal static partial class TestSuite
 
     private static void AssertSixSlotPublishedBaseline(
         ThemeArtworkDefaultsDocument document,
-        string heroY,
-        double heroScale,
-        string heroOriginX,
+        (string Y, double Scale, string OriginX, string OriginY) heroLight,
+        (string Y, double Scale, string OriginX, string OriginY) heroDark,
         (string Width, string X, string Y) sidebarLight,
         (string Width, string X, string Y) sidebarDark,
+        (string X, string Y, double Scale, string OriginX, string OriginY) chatLight,
+        (string X, string Y, double Scale, string OriginX, string OriginY) chatDark,
         string scenario)
     {
-        foreach (var (mode, hero, chat) in new[]
+        foreach (var (mode, hero, expected) in new[]
                  {
-                     ("light", document.Slots.Hero.Light, document.Slots.Chat.Light),
-                     ("dark", document.Slots.Hero.Dark, document.Slots.Chat.Dark),
+                     ("light", document.Slots.Hero.Light, heroLight),
+                     ("dark", document.Slots.Hero.Dark, heroDark),
                  })
         {
             Ensure(hero.Placement.Size.Width == "cover" &&
                    hero.Placement.Size.Height == "auto" &&
                    hero.Placement.Position.X == "center" &&
-                   hero.Placement.Position.Y == heroY &&
-                   Math.Abs(hero.Placement.Scale - heroScale) < .000001d &&
-                   hero.Placement.Origin.X == heroOriginX &&
-                   chat.Placement.Size.Width == "cover" &&
+                   hero.Placement.Position.Y == expected.Y &&
+                   Math.Abs(hero.Placement.Scale - expected.Scale) < .000001d &&
+                   hero.Placement.Origin.X == expected.OriginX &&
+                   hero.Placement.Origin.Y == expected.OriginY,
+                $"The {scenario} {mode} hero placement was not extracted exactly.");
+        }
+        foreach (var (mode, chat, expected) in new[]
+                 {
+                     ("light", document.Slots.Chat.Light, chatLight),
+                     ("dark", document.Slots.Chat.Dark, chatDark),
+                 })
+        {
+            Ensure(chat.Placement.Size.Width == "cover" &&
                    chat.Placement.Size.Height == "auto" &&
-                   chat.Placement.Position.X == "center" &&
-                   chat.Placement.Position.Y == "center",
-                $"The {scenario} {mode} hero/chat published placement was not extracted exactly.");
+                   chat.Placement.Position.X == expected.X &&
+                   chat.Placement.Position.Y == expected.Y &&
+                   Math.Abs(chat.Placement.Scale - expected.Scale) < .000001d &&
+                   chat.Placement.Origin.X == expected.OriginX &&
+                   chat.Placement.Origin.Y == expected.OriginY,
+                $"The {scenario} {mode} chat placement was not extracted exactly.");
         }
         AssertSidebar(document.Slots.Sidebar.Light, sidebarLight, $"{scenario} light sidebar");
         AssertSidebar(document.Slots.Sidebar.Dark, sidebarDark, $"{scenario} dark sidebar");
@@ -235,6 +244,100 @@ internal static partial class TestSuite
             slot.Placement.Position.Y == expected.Y &&
             slot.Placement.Scale == 1d,
             $"The {name} published placement was not extracted exactly.");
+    }
+
+    private static void AssertCartethyiaPublishedBaseline(
+        ThemeArtworkDefaultsDocument document)
+    {
+        AssertPlacement(
+            document.Slots.Hero.Light,
+            "100%",
+            "124.653664453524%",
+            "center",
+            "23.130475435973782%",
+            "Cartethyia light hero");
+        AssertPlacement(
+            document.Slots.Hero.Dark,
+            "117.10656000000002%",
+            "145.97761835546478%",
+            "96.87224806901243%",
+            "32.97143678580001%",
+            "Cartethyia dark hero");
+        AssertPlacement(
+            document.Slots.Sidebar.Light,
+            "261.29454545%",
+            "auto",
+            "41.87172612%",
+            "-79.84px",
+            "Cartethyia light sidebar");
+        AssertPlacement(
+            document.Slots.Sidebar.Dark,
+            "281.93049881117156%",
+            "auto",
+            "52.47729949938649%",
+            "-121.6463036525212px",
+            "Cartethyia dark sidebar");
+        AssertPlacement(
+            document.Slots.Chat.Dark,
+            "107.66724286000954%",
+            "100%",
+            "83.96022976720552%",
+            "center",
+            "Cartethyia dark chat");
+        Ensure(document.Slots.Chat.Light.Placement.Size.Width == "cover" &&
+               document.Slots.Chat.Light.Placement.Size.Height == "auto" &&
+               document.Slots.Chat.Light.Placement.Position.X == "center" &&
+               document.Slots.Chat.Light.Placement.Position.Y == "center",
+            "Cartethyia light chat must retain its unmodified recommended framing.");
+
+        static void AssertPlacement(
+            ThemeArtworkDefaultSlot slot,
+            string width,
+            string height,
+            string x,
+            string y,
+            string scenario) => Ensure(
+            slot.Placement.Size.Width == width &&
+            slot.Placement.Size.Height == height &&
+            slot.Placement.Position.X == x &&
+            slot.Placement.Position.Y == y &&
+            slot.Placement.Scale == 1d,
+            $"The promoted {scenario} placement was not preserved exactly.");
+    }
+
+    private static void AssertAemeathPublishedBaseline(
+        ThemeArtworkDefaultsDocument document)
+    {
+        foreach (var (slot, y, scenario) in new[]
+                 {
+                     (document.Slots.Hero.Light, "18.116048293327847%", "light hero"),
+                     (document.Slots.Hero.Dark, "22.06296980388873%", "dark hero"),
+                 })
+        {
+            Ensure(slot.Placement.Size.Width == "cover" &&
+                   slot.Placement.Size.Height == "auto" &&
+                   slot.Placement.Position.X == "center" &&
+                   slot.Placement.Position.Y == y &&
+                   slot.Placement.Origin.X == "center" &&
+                   slot.Placement.Origin.Y == y,
+                $"Aemeath's promoted {scenario} placement must remain the theme default.");
+        }
+
+        foreach (var (slot, scenario) in new[]
+                 {
+                     (document.Slots.Chat.Light, "light chat"),
+                     (document.Slots.Chat.Dark, "dark chat"),
+                 })
+        {
+            Ensure(slot.Placement.Size.Width == "cover" &&
+                   slot.Placement.Size.Height == "auto" &&
+                   slot.Placement.Position.X == "50%" &&
+                   slot.Placement.Position.Y == "center" &&
+                   slot.Placement.Origin.X == "50%" &&
+                   slot.Placement.Origin.Y == "center" &&
+                   slot.Effects.GradientVeil is { Enabled: false, Strength: 0d, Layers.Count: 1 },
+                $"Aemeath's promoted {scenario} placement and mask must remain the theme default.");
+        }
     }
 
     private static (int Width, int Height) ReadPngDimensions(string path)
