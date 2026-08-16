@@ -238,14 +238,13 @@
                                SnapsToDevicePixels="True" />
                     </Canvas>
                     <Border x:Name="TintOverlay" IsHitTestVisible="False" />
-                    <Grid x:Name="ImageReadabilityVeilOverlay" IsHitTestVisible="False" />
-                    <Grid x:Name="GradientOverlay" IsHitTestVisible="False" />
                     <Border x:Name="VignetteOverlay" IsHitTestVisible="False" />
                 </Grid>
 
-                <Border x:Name="ReadabilityOverlay"
-                        IsHitTestVisible="False"
-                        Visibility="Collapsed" />
+                <Grid x:Name="MaskLayer" IsHitTestVisible="False">
+                    <Grid x:Name="ImageReadabilityVeilOverlay" IsHitTestVisible="False" />
+                    <Grid x:Name="GradientOverlay" IsHitTestVisible="False" />
+                </Grid>
 
                 <Grid x:Name="RuntimeMockLayer" IsHitTestVisible="False">
                     <Border x:Name="RuntimeTopChrome"

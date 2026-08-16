@@ -95,10 +95,11 @@
       return `rgba(${(value >> 16) & 255},${(value >> 8) & 255},${value & 255},${opacity})`;
     };
     const overlayColor = color(adjustment.overlayColor);
-    const layers = [];
+    const imageLayers = [];
+    const maskLayers = [];
     const vignette = clampPercent(adjustment.vignette) / 100;
     if (vignette > 0) {
-      layers.push(`radial-gradient(circle at center,transparent 45%,rgba(0,0,0,${Math.min(.78, vignette * .78)}) 100%)`);
+      imageLayers.push(`radial-gradient(circle at center,transparent 45%,rgba(0,0,0,${Math.min(.78, vignette * .78)}) 100%)`);
     }
     let gradientVeil = adjustment.gradientVeil || {};
     let readabilityVeil = adjustment.readabilityVeil || {};
@@ -122,17 +123,17 @@
         const stopCss = stops.map((stop) =>
           `${colorAlpha(color(stop?.color), Math.min(1, clampPercent(stop?.opacity) / 100 * strength))} ${clampPercent(stop?.position)}%`,
         ).join(",");
-        layers.push(`linear-gradient(${finite(layer?.directionDeg, 90)}deg,${stopCss})`);
+        maskLayers.push(`linear-gradient(${finite(layer?.directionDeg, 90)}deg,${stopCss})`);
       }
       if (!configured.length && strength > 0) {
-        layers.push(`linear-gradient(90deg,${colorAlpha(overlayColor, Math.min(.82, strength * .82))},transparent 72%)`);
+        maskLayers.push(`linear-gradient(90deg,${colorAlpha(overlayColor, Math.min(.82, strength * .82))},transparent 72%)`);
       }
     }
     if (legacyGradientStrength > 0) {
-      layers.push(`linear-gradient(90deg,${colorAlpha(overlayColor, Math.min(.82, legacyGradientStrength * .82))},transparent 72%)`);
+      maskLayers.push(`linear-gradient(90deg,${colorAlpha(overlayColor, Math.min(.82, legacyGradientStrength * .82))},transparent 72%)`);
     }
     if (readabilityVeil?.enabled === true) {
-      layers.push(
+      maskLayers.push(
         `linear-gradient(${finite(readabilityVeil.directionDeg, 90)}deg,` +
         `${colorAlpha(color(readabilityVeil.color), clampPercent(readabilityVeil.opacity) / 100)} ` +
         `${clampPercent(readabilityVeil.rangeStart)}%,transparent ` +
@@ -140,13 +141,24 @@
       );
     }
     const overlayOpacity = clampPercent(adjustment.overlayOpacity) / 100;
+    let overlayLayer = null;
     if (overlayOpacity > 0) {
       const value = colorAlpha(overlayColor, Math.min(.86, overlayOpacity * .86));
-      layers.push(`linear-gradient(${value},${value})`);
+      overlayLayer = `linear-gradient(${value},${value})`;
     }
-    layers.push(`url("${state.imageUrl}")`);
-    state.overlayCount = layers.length - 1;
-    visualSettingsTarget.style.setProperty(state.assetVariable, layers.join(","));
+    if (state.region === "chat") {
+      visualSettingsTarget.style.setProperty(
+        state.maskVariable,
+        maskLayers.length ? maskLayers.join(",") : "none",
+      );
+      visualSettingVariables.add(state.maskVariable);
+    } else {
+      imageLayers.push(...maskLayers);
+    }
+    if (overlayLayer) imageLayers.push(overlayLayer);
+    imageLayers.push(`url("${state.imageUrl}")`);
+    state.overlayCount = imageLayers.length - 1;
+    visualSettingsTarget.style.setProperty(state.assetVariable, imageLayers.join(","));
     visualSettingVariables.add(state.assetVariable);
   };
   const setPlacementVariables = (state, size, position) => {

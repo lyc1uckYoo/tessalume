@@ -218,6 +218,22 @@ html.tessalume-theme-active.electron-dark.tessalume-is-task main[data-tessalume-
   background-blend-mode:var(--tessalume-visual-chat-dark-blend,normal)!important;
 }
 
+/* Chat readability masks are independent from the artwork layer. They stay
+   fixed to the reading surface while the image is cropped, filtered, or moved. */
+html.tessalume-theme-active:not(.electron-dark).tessalume-is-task main[data-tessalume-surface="main"]::after {
+  background-image:var(--tessalume-visual-chat-light-mask-image,none)!important;
+  background-size:100% 100%!important;
+  background-position:center!important;
+  background-repeat:no-repeat!important;
+}
+
+html.tessalume-theme-active.electron-dark.tessalume-is-task main[data-tessalume-surface="main"]::after {
+  background-image:var(--tessalume-visual-chat-dark-mask-image,none)!important;
+  background-size:100% 100%!important;
+  background-position:center!important;
+  background-repeat:no-repeat!important;
+}
+
 html[data-tessalume-visual-placement~="hero-light"].tessalume-theme-active:not(.electron-dark).tessalume-is-home [data-tessalume-surface="home"]>div:first-child>div:first-child>div:first-child::before {
   background-image:var(--tessalume-asset-hero-light)!important;
   background-size:var(--tessalume-visual-hero-light-background-size,cover)!important;
@@ -272,13 +288,7 @@ html[data-tessalume-visual-placement~="chat-dark"].tessalume-theme-active.electr
   transform-origin:center!important;
 }
 
-/* Optional user readability protection. It is disabled by default and scoped to
-   the selected region and color mode. */
-html[data-tessalume-readability~="hero-light"]:not(.electron-dark) [data-theme-role="hero"],
-html[data-tessalume-readability~="hero-dark"].electron-dark [data-theme-role="hero"] {
-  text-shadow:0 2px 16px rgba(0,0,0,.42)!important;
-}
-
+/* Optional sidebar readability protection remains unchanged. */
 html[data-tessalume-readability~="sidebar-light"]:not(.electron-dark) [data-tessalume-surface="sidebar"] :is([data-app-action-sidebar-project-row],[data-app-action-sidebar-thread-row]),
 html[data-tessalume-readability~="sidebar-dark"].electron-dark [data-tessalume-surface="sidebar"] :is([data-app-action-sidebar-project-row],[data-app-action-sidebar-thread-row]) {
   background:color-mix(in srgb,var(--color-background-primary,#fff) 78%,transparent)!important;

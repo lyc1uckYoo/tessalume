@@ -185,10 +185,11 @@
             <Border Height="1" Background="{DynamicResource SettingsControlBorder}" Margin="0,11" />
 
             <Border Background="{DynamicResource SettingsControlSurface}" BorderBrush="{DynamicResource SettingsControlBorder}" BorderThickness="1" CornerRadius="12" Padding="4" Margin="0,0,0,12">
-                <UniformGrid Columns="3">
+                <UniformGrid x:Name="ParameterTabs" Columns="3">
                     <Button x:Name="CompositionGroupButton" Style="{StaticResource InspectorTabButton}" Height="36" Tag="active" CommandParameter="composition" Content="构图" Click="Group_Click" AutomationProperties.Name="显示构图参数" />
                     <Button x:Name="BasicGroupButton" Style="{StaticResource InspectorTabButton}" Height="36" Tag="inactive" CommandParameter="basic" Content="明暗" Click="Group_Click" Margin="4,0" AutomationProperties.Name="显示明暗参数" />
                     <Button x:Name="EffectsGroupButton" Style="{StaticResource InspectorTabButton}" Height="36" Tag="inactive" CommandParameter="effects" Content="效果" Click="Group_Click" AutomationProperties.Name="显示效果参数" />
+                    <Button x:Name="MaskGroupButton" Visibility="Collapsed" Style="{StaticResource InspectorTabButton}" Height="36" Tag="inactive" CommandParameter="mask" Content="遮罩" Click="Group_Click" Margin="4,0,0,0" AutomationProperties.Name="显示聊天文字遮罩参数" />
                 </UniformGrid>
             </Border>
 
@@ -300,7 +301,6 @@
                         <Grid Margin="0,2"><Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /><ColumnDefinition Width="58" /></Grid.ColumnDefinitions><TextBlock Text="灰度" Style="{StaticResource InspectorLabel}" /><Slider x:Name="GrayscaleSlider" Grid.Column="1" Style="{StaticResource InspectorSlider}" Tag="grayscale" Minimum="0" Maximum="100" Value="0" AutomationProperties.Name="图像灰度" /><TextBox x:Name="GrayscaleValue" Grid.Column="2" Style="{StaticResource InspectorValue}" Tag="grayscale" Text="0%" AutomationProperties.Name="灰度精确值" /></Grid>
                         <Grid Margin="0,2"><Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /><ColumnDefinition Width="58" /></Grid.ColumnDefinitions><TextBlock Text="色相" Style="{StaticResource InspectorLabel}" /><Slider x:Name="HueRotationSlider" Grid.Column="1" Style="{StaticResource InspectorSlider}" Tag="hueRotation" Minimum="-180" Maximum="180" Value="0" AutomationProperties.Name="图像色相旋转" /><TextBox x:Name="HueRotationValue" Grid.Column="2" Style="{StaticResource InspectorValue}" Tag="hueRotation" Text="0°" AutomationProperties.Name="色相旋转精确值" /></Grid>
                         <Grid Margin="0,2"><Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /><ColumnDefinition Width="58" /></Grid.ColumnDefinitions><TextBlock Text="柔化" Style="{StaticResource InspectorLabel}" /><Slider x:Name="BlurSlider" Grid.Column="1" Style="{StaticResource InspectorSlider}" Tag="blur" Minimum="0" Maximum="20" TickFrequency="0.5" Value="0" AutomationProperties.Name="图像柔化" /><TextBox x:Name="BlurValue" Grid.Column="2" Style="{StaticResource InspectorValue}" Tag="blur" Text="0 px" AutomationProperties.Name="柔化精确值" /></Grid>
-                        <Grid Margin="0,2"><Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /><ColumnDefinition Width="58" /></Grid.ColumnDefinitions><TextBlock Text="渐变" Style="{StaticResource InspectorLabel}" /><Slider x:Name="GradientStrengthSlider" Grid.Column="1" Style="{StaticResource InspectorSlider}" Tag="gradientStrength" Minimum="0" Maximum="100" Value="0" AutomationProperties.Name="图像渐变强度" /><TextBox x:Name="GradientStrengthValue" Grid.Column="2" Style="{StaticResource InspectorValue}" Tag="gradientStrength" Text="0%" AutomationProperties.Name="渐变强度精确值" /></Grid>
                         <Grid Margin="0,2"><Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /><ColumnDefinition Width="58" /></Grid.ColumnDefinitions><TextBlock Text="暗角" Style="{StaticResource InspectorLabel}" /><Slider x:Name="VignetteSlider" Grid.Column="1" Style="{StaticResource InspectorSlider}" Tag="vignette" Minimum="0" Maximum="100" Value="0" AutomationProperties.Name="图像暗角" /><TextBox x:Name="VignetteValue" Grid.Column="2" Style="{StaticResource InspectorValue}" Tag="vignette" Text="0%" AutomationProperties.Name="暗角精确值" /></Grid>
                         <Grid Margin="0,4,0,0">
                             <Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
@@ -316,6 +316,31 @@
                         </Grid>
                     </StackPanel>
                 </StackPanel>
+            </StackPanel>
+
+            <StackPanel x:Name="MaskPanel" Visibility="Collapsed">
+                <Border Background="{DynamicResource AccentSoft}"
+                        BorderBrush="{DynamicResource InfoBorder}"
+                        BorderThickness="1"
+                        CornerRadius="12"
+                        Padding="12,11">
+                    <StackPanel>
+                        <DockPanel LastChildFill="True">
+                            <Border DockPanel.Dock="Right" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource SettingsControlBorder}" BorderThickness="1" CornerRadius="7" Padding="7,3">
+                                <TextBlock Text="聊天专属" Foreground="{DynamicResource Accent}" FontSize="8.8" FontWeight="SemiBold" />
+                            </Border>
+                            <TextBlock Text="文字阅读遮罩" Foreground="{DynamicResource PrimaryText}" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" />
+                        </DockPanel>
+                        <TextBlock Text="只覆盖聊天背景；亮色与暗色分别保存，每个主题都能独立调整。"
+                                   Foreground="{DynamicResource MutedText}" FontSize="9.5" TextWrapping="Wrap" LineHeight="15" Margin="0,5,0,9" />
+                        <Grid>
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="58" /><ColumnDefinition Width="*" /><ColumnDefinition Width="58" /></Grid.ColumnDefinitions>
+                            <TextBlock Text="遮罩强度" Style="{StaticResource InspectorLabel}" />
+                            <Slider x:Name="GradientStrengthSlider" Grid.Column="1" Style="{StaticResource InspectorSlider}" Tag="gradientStrength" Minimum="0" Maximum="100" Value="0" AutomationProperties.Name="聊天背景文字遮罩强度" />
+                            <TextBox x:Name="GradientStrengthValue" Grid.Column="2" Style="{StaticResource InspectorValue}" Tag="gradientStrength" Text="0%" AutomationProperties.Name="聊天背景文字遮罩强度精确值" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
             </StackPanel>
 
             <Border Height="1" Background="{DynamicResource SettingsControlBorder}" Margin="0,12,0,10" />

@@ -14,6 +14,7 @@ public partial class ArtworkInspectorView : UserControl
     private ThemeArtworkPlacementSpec _placement = new();
     private IReadOnlyDictionary<string, ThemeArtworkValueSource> _provenance =
         new Dictionary<string, ThemeArtworkValueSource>(StringComparer.Ordinal);
+    private ArtworkRegion _region = ArtworkRegion.Hero;
     private ArtworkParameterGroup _group = ArtworkParameterGroup.Basic;
     private ArtworkParameter _selectedParameter = ArtworkParameter.Brightness;
     private ArtworkParameter? _activeInteraction;
@@ -106,11 +107,16 @@ public partial class ArtworkInspectorView : UserControl
 
     internal void SetGroup(ArtworkParameterGroup group)
     {
+        if (group == ArtworkParameterGroup.Mask && _region != ArtworkRegion.Chat)
+        {
+            group = ArtworkParameterGroup.Composition;
+        }
         _group = group;
         SelectParameter(group switch
         {
             ArtworkParameterGroup.Composition => ArtworkParameter.PlacementSize,
             ArtworkParameterGroup.Effects => ArtworkParameter.OverlayOpacity,
+            ArtworkParameterGroup.Mask => ArtworkParameter.GradientStrength,
             _ => ArtworkParameter.Brightness,
         });
         BasicPanel.Visibility = group == ArtworkParameterGroup.Basic
@@ -122,16 +128,33 @@ public partial class ArtworkInspectorView : UserControl
         EffectsPanel.Visibility = group == ArtworkParameterGroup.Effects
             ? Visibility.Visible
             : Visibility.Collapsed;
+        MaskPanel.Visibility = group == ArtworkParameterGroup.Mask
+            ? Visibility.Visible
+            : Visibility.Collapsed;
         SetGroupButton(BasicGroupButton, group == ArtworkParameterGroup.Basic);
         SetGroupButton(CompositionGroupButton, group == ArtworkParameterGroup.Composition);
         SetGroupButton(EffectsGroupButton, group == ArtworkParameterGroup.Effects);
+        SetGroupButton(MaskGroupButton, group == ArtworkParameterGroup.Mask);
         ResetGroupButton.Content = $"恢复{group switch
         {
             ArtworkParameterGroup.Composition => "构图",
             ArtworkParameterGroup.Effects => "效果",
+            ArtworkParameterGroup.Mask => "遮罩",
             _ => "明暗",
         }}组";
         SelectedParameterText.Text = $"当前参数：{GetParameterName(_selectedParameter)}";
+    }
+
+    internal void SetRegion(ArtworkRegion region)
+    {
+        _region = region;
+        var chat = region == ArtworkRegion.Chat;
+        MaskGroupButton.Visibility = chat ? Visibility.Visible : Visibility.Collapsed;
+        ParameterTabs.Columns = chat ? 4 : 3;
+        if (!chat && _group == ArtworkParameterGroup.Mask)
+        {
+            SetGroup(ArtworkParameterGroup.Composition);
+        }
     }
 
     internal void SetTargetSummary(string regionName, string modeName)
@@ -170,6 +193,7 @@ public partial class ArtworkInspectorView : UserControl
         {
             "composition" => ArtworkParameterGroup.Composition,
             "effects" => ArtworkParameterGroup.Effects,
+            "mask" => ArtworkParameterGroup.Mask,
             _ => ArtworkParameterGroup.Basic,
         };
         if (_group == group) return;
@@ -488,7 +512,7 @@ public partial class ArtworkInspectorView : UserControl
         ArtworkParameter.Blur => "柔化",
         ArtworkParameter.OverlayColor => "叠色颜色",
         ArtworkParameter.OverlayOpacity => "叠色强度",
-        ArtworkParameter.GradientStrength => "渐变",
+        ArtworkParameter.GradientStrength => "聊天遮罩",
         ArtworkParameter.Vignette => "暗角",
         ArtworkParameter.BlendMode => "混合模式",
         ArtworkParameter.ReadabilityProtection => "文字可读性",

@@ -47,6 +47,7 @@ internal static class ArtworkSettingsReducer
             {
                 OverlayOpacity = baseline.OverlayOpacity,
             },
+            ArtworkParameter.GradientStrength when region != ArtworkRegion.Chat => adjustment,
             ArtworkParameter.GradientStrength => adjustment with
             {
                 GradientStrength = baseline.GradientStrength,
@@ -82,6 +83,13 @@ internal static class ArtworkSettingsReducer
                 OffsetX = 0d,
                 OffsetY = 0d,
             },
+            ArtworkParameterGroup.Mask => adjustment with
+            {
+                GradientStrength = baseline.GradientStrength,
+                GradientVeil = baseline.GradientVeil,
+                ReadabilityProtection = baseline.ReadabilityProtection,
+                ReadabilityVeil = baseline.ReadabilityVeil,
+            },
             ArtworkParameterGroup.Effects => adjustment with
             {
                 Grayscale = baseline.Grayscale,
@@ -89,12 +97,8 @@ internal static class ArtworkSettingsReducer
                 Blur = baseline.Blur,
                 OverlayColor = baseline.OverlayColor,
                 OverlayOpacity = baseline.OverlayOpacity,
-                GradientStrength = baseline.GradientStrength,
-                GradientVeil = baseline.GradientVeil,
                 Vignette = baseline.Vignette,
                 BlendMode = baseline.BlendMode,
-                ReadabilityProtection = baseline.ReadabilityProtection,
-                ReadabilityVeil = baseline.ReadabilityVeil,
             },
             _ => adjustment with
             {
@@ -162,6 +166,7 @@ internal static class ArtworkSettingsReducer
             ArtworkParameter.HueRotation => adjustment with { HueRotation = value },
             ArtworkParameter.Blur => adjustment with { Blur = value },
             ArtworkParameter.OverlayOpacity => adjustment with { OverlayOpacity = value },
+            ArtworkParameter.GradientStrength when region != ArtworkRegion.Chat => adjustment,
             ArtworkParameter.GradientStrength => adjustment with
             {
                 GradientStrength = 0d,
@@ -169,6 +174,12 @@ internal static class ArtworkSettingsReducer
                 {
                     Enabled = value > 0d,
                     Strength = value,
+                },
+                ReadabilityProtection = false,
+                ReadabilityVeil = adjustment.ReadabilityVeil with
+                {
+                    Enabled = false,
+                    Opacity = 0d,
                 },
             },
             ArtworkParameter.Vignette => adjustment with { Vignette = value },
@@ -265,6 +276,7 @@ internal static class ArtworkSettingsReducer
             ArtworkParameter.GradientStrength => adjustment with
             {
                 GradientStrength = defaults.GradientStrength,
+                GradientVeil = defaults.GradientVeil,
             },
             ArtworkParameter.Vignette => adjustment with { Vignette = defaults.Vignette },
             ArtworkParameter.BlendMode => adjustment with { BlendMode = defaults.BlendMode },
@@ -302,6 +314,13 @@ internal static class ArtworkSettingsReducer
                 OffsetX = defaults.OffsetX,
                 OffsetY = defaults.OffsetY,
             },
+            ArtworkParameterGroup.Mask => adjustment with
+            {
+                GradientStrength = defaults.GradientStrength,
+                GradientVeil = defaults.GradientVeil,
+                ReadabilityProtection = defaults.ReadabilityProtection,
+                ReadabilityVeil = defaults.ReadabilityVeil,
+            },
             ArtworkParameterGroup.Effects => adjustment with
             {
                 Grayscale = defaults.Grayscale,
@@ -309,10 +328,8 @@ internal static class ArtworkSettingsReducer
                 Blur = defaults.Blur,
                 OverlayColor = defaults.OverlayColor,
                 OverlayOpacity = defaults.OverlayOpacity,
-                GradientStrength = defaults.GradientStrength,
                 Vignette = defaults.Vignette,
                 BlendMode = defaults.BlendMode,
-                ReadabilityProtection = defaults.ReadabilityProtection,
             },
             _ => adjustment with
             {

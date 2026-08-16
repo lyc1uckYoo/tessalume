@@ -505,16 +505,36 @@ public static class ThemeArtworkSettingsResolver
         ThemeArtworkDefaultSlots defaults,
         ThemeVisualModeSettingsOverride? overrides,
         bool dark) => new(
-        ResolveSlot(dark ? defaults.Hero.Dark : defaults.Hero.Light, overrides?.Hero),
-        ResolveSlot(dark ? defaults.Sidebar.Dark : defaults.Sidebar.Light, overrides?.Sidebar),
-        ResolveSlot(dark ? defaults.Chat.Dark : defaults.Chat.Light, overrides?.Chat));
+        ResolveSlot(
+            dark ? defaults.Hero.Dark : defaults.Hero.Light,
+            overrides?.Hero,
+            supportsReadabilityMask: false),
+        ResolveSlot(
+            dark ? defaults.Sidebar.Dark : defaults.Sidebar.Light,
+            overrides?.Sidebar,
+            supportsReadabilityMask: true),
+        ResolveSlot(
+            dark ? defaults.Chat.Dark : defaults.Chat.Light,
+            overrides?.Chat,
+            supportsReadabilityMask: true));
 
     private static ThemeArtworkSlotResolution ResolveSlot(
         ThemeArtworkDefaultSlot defaults,
-        ThemeArtworkOverride? userOverride)
+        ThemeArtworkOverride? userOverride,
+        bool supportsReadabilityMask)
     {
         var normalizedDefaults = (defaults ?? new ThemeArtworkDefaultSlot()).Normalize();
         var baseline = CreateDefaultAdjustment(normalizedDefaults);
+        if (!supportsReadabilityMask)
+        {
+            baseline = (baseline with
+            {
+                GradientStrength = 0d,
+                GradientVeil = new ThemeArtworkGradientVeil(),
+                ReadabilityProtection = false,
+                ReadabilityVeil = new ThemeArtworkReadabilityVeil(),
+            }).Normalize();
+        }
         var delta = userOverride?.Normalize();
         if (delta is null)
         {
@@ -548,15 +568,21 @@ public static class ThemeArtworkSettingsResolver
             Grayscale = delta.Grayscale ?? baseline.Grayscale,
             HueRotation = delta.HueRotation ?? baseline.HueRotation,
             Blur = delta.Blur ?? baseline.Blur,
-            GradientStrength = delta.LegacyGradientStrength ?? baseline.GradientStrength,
+            GradientStrength = supportsReadabilityMask
+                ? delta.LegacyGradientStrength ?? baseline.GradientStrength
+                : 0d,
             OverlayColor = delta.OverlayColor ?? baseline.OverlayColor,
             OverlayOpacity = delta.OverlayOpacity ?? baseline.OverlayOpacity,
-            GradientVeil = delta.GradientVeil ?? baseline.GradientVeil,
+            GradientVeil = supportsReadabilityMask
+                ? delta.GradientVeil ?? baseline.GradientVeil
+                : new ThemeArtworkGradientVeil(),
             Vignette = delta.Vignette ?? baseline.Vignette,
             BlendMode = delta.BlendMode ?? baseline.BlendMode,
-            ReadabilityVeil = delta.ReadabilityVeil ?? baseline.ReadabilityVeil,
-            ReadabilityProtection = delta.LegacyReadabilityProtection ??
-                baseline.ReadabilityProtection,
+            ReadabilityVeil = supportsReadabilityMask
+                ? delta.ReadabilityVeil ?? baseline.ReadabilityVeil
+                : new ThemeArtworkReadabilityVeil(),
+            ReadabilityProtection = supportsReadabilityMask &&
+                (delta.LegacyReadabilityProtection ?? baseline.ReadabilityProtection),
             Motion = delta.MotionEnabled == false ? null : baseline.Motion,
         }).Normalize();
         return CreateResolution(normalizedDefaults.Asset, baseline, adjustment, delta);

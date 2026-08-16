@@ -92,6 +92,7 @@
         const scaleVariable = `--tessalume-visual-${region}-${mode}-scale`;
         const blendVariable = `--tessalume-visual-${region}-${mode}-blend`;
         const assetVariable = `--tessalume-asset-${region}-${mode}`;
+        const maskVariable = `--tessalume-visual-${region}-${mode}-mask-image`;
         const themeAssetKey = typeof adjustment.themeAssetKey === "string" && adjustment.themeAssetKey
           ? adjustment.themeAssetKey.replace(/[^a-z0-9_-]/gi, "-")
           : `${region}-${mode}`;
@@ -104,9 +105,10 @@
           ? customImageObjectUrls.get(customImageKey) || preparedImageUrls.get(customImageKey)
           : originalAssetUrl;
         if (imageUrl) {
-          const layers = [];
+          const imageLayers = [];
+          const maskLayers = [];
           if (vignette > 0) {
-            layers.push(`radial-gradient(circle at center,transparent 45%,rgba(0,0,0,${Math.min(.78, vignette * .78)}) 100%)`);
+            imageLayers.push(`radial-gradient(circle at center,transparent 45%,rgba(0,0,0,${Math.min(.78, vignette * .78)}) 100%)`);
           }
           let gradientVeil = adjustment.gradientVeil || {};
           let readabilityVeil = adjustment.readabilityVeil || {};
@@ -135,15 +137,15 @@
                   const position = readPercent(stop?.position, 0, 0, 100);
                   return `${rgba(color, Math.min(1, stopOpacity * strength))} ${position}%`;
                 }).join(",");
-                layers.push(`linear-gradient(${finite(layer?.directionDeg, 90)}deg,${stopCss})`);
+                maskLayers.push(`linear-gradient(${finite(layer?.directionDeg, 90)}deg,${stopCss})`);
               }
             } else if (strength > 0) {
               // Deterministic schema-five compatibility for the former single veil.
-              layers.push(`linear-gradient(90deg,${rgba(overlayColor, Math.min(.82, strength * .82))},transparent 72%)`);
+              maskLayers.push(`linear-gradient(90deg,${rgba(overlayColor, Math.min(.82, strength * .82))},transparent 72%)`);
             }
           }
           if (gradientStrength > 0) {
-            layers.push(`linear-gradient(90deg,${rgba(overlayColor, Math.min(.82, gradientStrength * .82))},transparent 72%)`);
+            maskLayers.push(`linear-gradient(90deg,${rgba(overlayColor, Math.min(.82, gradientStrength * .82))},transparent 72%)`);
           }
           if (readabilityVeil?.enabled === true) {
             const color = readColor(readabilityVeil.color);
@@ -151,15 +153,26 @@
             const direction = finite(readabilityVeil.directionDeg, 90);
             const start = readPercent(readabilityVeil.rangeStart, 0, 0, 100);
             const end = readPercent(readabilityVeil.rangeEnd, 100, 0, 100);
-            layers.push(
+            maskLayers.push(
               `linear-gradient(${direction}deg,${rgba(color, veilOpacity)} ${start}%,transparent ${end}%)`,
             );
           }
+          let overlayLayer = null;
           if (overlayOpacity > 0) {
-            layers.push(`linear-gradient(${rgba(overlayColor, Math.min(.86, overlayOpacity * .86))},${rgba(overlayColor, Math.min(.86, overlayOpacity * .86))})`);
+            overlayLayer = `linear-gradient(${rgba(overlayColor, Math.min(.86, overlayOpacity * .86))},${rgba(overlayColor, Math.min(.86, overlayOpacity * .86))})`;
           }
-          layers.push(`url("${imageUrl}")`);
-          html.style.setProperty(assetVariable, layers.join(","));
+          if (region === "chat") {
+            html.style.setProperty(
+              maskVariable,
+              maskLayers.length ? maskLayers.join(",") : "none",
+            );
+            visualSettingVariables.add(maskVariable);
+          } else {
+            imageLayers.push(...maskLayers);
+          }
+          if (overlayLayer) imageLayers.push(overlayLayer);
+          imageLayers.push(`url("${imageUrl}")`);
+          html.style.setProperty(assetVariable, imageLayers.join(","));
           visualSettingVariables.add(assetVariable);
           const state = {
             region,
@@ -171,9 +184,10 @@
               geometry: { scale: 1 },
             },
             imageUrl,
-            overlayCount: layers.length - 1,
+            overlayCount: imageLayers.length - 1,
             adjustment,
             assetVariable,
+            maskVariable,
             baseOffsetX: compositionMode === "legacy" ? offsetX : 0,
             baseOffsetY: compositionMode === "legacy" ? offsetY : 0,
             baseScale: compositionMode === "legacy" ? zoom : 1,
@@ -186,6 +200,7 @@
           // An absent key explicitly means "use the theme original". Removing the
           // prior variable also handles packages that do not define this slot.
           html.style.removeProperty(assetVariable);
+          if (region === "chat") html.style.removeProperty(maskVariable);
         }
         html.style.setProperty(
           filterVariable,

@@ -553,6 +553,13 @@ internal static partial class TestSuite
                 OffsetX = defaults.OffsetX,
                 OffsetY = defaults.OffsetY,
             },
+            ArtworkParameterGroup.Mask => adjustment with
+            {
+                GradientStrength = defaults.GradientStrength,
+                GradientVeil = defaults.GradientVeil,
+                ReadabilityProtection = defaults.ReadabilityProtection,
+                ReadabilityVeil = defaults.ReadabilityVeil,
+            },
             ArtworkParameterGroup.Effects => adjustment with
             {
                 Grayscale = defaults.Grayscale,
@@ -560,10 +567,8 @@ internal static partial class TestSuite
                 Blur = defaults.Blur,
                 OverlayColor = defaults.OverlayColor,
                 OverlayOpacity = defaults.OverlayOpacity,
-                GradientStrength = defaults.GradientStrength,
                 Vignette = defaults.Vignette,
                 BlendMode = defaults.BlendMode,
-                ReadabilityProtection = defaults.ReadabilityProtection,
             },
             _ => throw new ArgumentOutOfRangeException(nameof(group), group, null),
         }).Normalize();

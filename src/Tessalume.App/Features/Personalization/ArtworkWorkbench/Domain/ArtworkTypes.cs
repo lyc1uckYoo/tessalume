@@ -18,6 +18,7 @@ internal enum ArtworkParameterGroup
     Basic,
     Composition,
     Effects,
+    Mask,
 }
 
 internal enum ArtworkParameter
@@ -94,6 +95,9 @@ internal static class ArtworkParameterExtensions
         ArtworkParameter.PlacementSize or
         ArtworkParameter.PlacementX or
         ArtworkParameter.PlacementY => ArtworkParameterGroup.Composition,
+
+        ArtworkParameter.GradientStrength or
+        ArtworkParameter.ReadabilityProtection => ArtworkParameterGroup.Mask,
 
         _ => ArtworkParameterGroup.Effects,
     };

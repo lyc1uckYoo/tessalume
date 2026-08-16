@@ -95,7 +95,7 @@ public partial class ArtworkWorkbenchView
         Inspector.SetGroup(e.Group);
         if (_showOriginal) return;
         // Composition work needs the complete source and crop frame. Brightness,
-        // readability, and effects need the final surface so every visible control
+        // chat masking, and effects need the final surface so every visible control
         // produces immediate visual feedback without asking users to change views.
         _canvasViewMode = e.Group == ArtworkParameterGroup.Composition
             ? ArtworkCanvasViewMode.FullSource
@@ -286,6 +286,10 @@ public partial class ArtworkWorkbenchView
         };
         if (_region == region) return;
         EndWheelGesture();
+        if (region != ArtworkRegion.Chat && Inspector.SelectedGroup == ArtworkParameterGroup.Mask)
+        {
+            _canvasViewMode = ArtworkCanvasViewMode.FullSource;
+        }
         _region = region;
         UpdateResponsiveLayout(ActualWidth);
         RenderAll();

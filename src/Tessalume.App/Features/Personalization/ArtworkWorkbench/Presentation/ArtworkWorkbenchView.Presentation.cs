@@ -40,6 +40,7 @@ public partial class ArtworkWorkbenchView
                 new ThemeArtworkPlacementSpec());
         PreviewCanvas.SetGuidesVisible(GuideToggleButton.IsChecked == true);
         RenderCanvasViewMode();
+        Inspector.SetRegion(_region);
         Inspector.SetAdjustment(adjustment);
         Inspector.SetFixedWidthComposition(_region == ArtworkRegion.Sidebar);
         RenderPlacementEditor(adjustment);
@@ -360,6 +361,7 @@ public partial class ArtworkWorkbenchView
     {
         ArtworkParameterGroup.Composition => "构图",
         ArtworkParameterGroup.Effects => "效果",
+        ArtworkParameterGroup.Mask => "遮罩",
         _ => "基础",
     };
 
@@ -380,7 +382,7 @@ public partial class ArtworkWorkbenchView
         ArtworkParameter.Blur => "柔化",
         ArtworkParameter.OverlayColor => "叠色颜色",
         ArtworkParameter.OverlayOpacity => "叠色强度",
-        ArtworkParameter.GradientStrength => "渐变",
+        ArtworkParameter.GradientStrength => "聊天遮罩",
         ArtworkParameter.Vignette => "暗角",
         ArtworkParameter.BlendMode => "混合模式",
         ArtworkParameter.ReadabilityProtection => "文字可读性",

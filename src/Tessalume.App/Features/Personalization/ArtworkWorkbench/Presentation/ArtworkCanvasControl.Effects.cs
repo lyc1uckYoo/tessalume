@@ -54,7 +54,6 @@ public partial class ArtworkCanvasControl
         };
         VignetteOverlay.Opacity = Math.Min(0.78, effective.Vignette / 100d * 0.78);
 
-        RenderReadabilityProtection(effective.ReadabilityProtection);
     }
 
     private void RenderGradientVeils(
@@ -143,34 +142,6 @@ public partial class ArtworkCanvasControl
         color.R,
         color.G,
         color.B);
-
-    private void RenderReadabilityProtection(bool enabled)
-    {
-        ReadabilityOverlay.Visibility = enabled && _region == ArtworkRegion.Chat
-            ? Visibility.Visible
-            : Visibility.Collapsed;
-        var maskColor = _mode == ArtworkColorMode.Dark
-            ? Color.FromRgb(8, 12, 20)
-            : Color.FromRgb(250, 252, 255);
-        ReadabilityOverlay.Background = new LinearGradientBrush(
-            Color.FromArgb(105, maskColor.R, maskColor.G, maskColor.B),
-            Color.FromArgb(20, maskColor.R, maskColor.G, maskColor.B),
-            new Point(0, 0.5),
-            new Point(1, 0.5));
-        RuntimeMockLayer.Effect = enabled && _region == ArtworkRegion.Hero
-            ? new DropShadowEffect
-            {
-                BlurRadius = 12,
-                Color = Colors.Black,
-                Opacity = 0.72,
-                ShadowDepth = 1,
-            }
-            : null;
-        if (_region == ArtworkRegion.Sidebar)
-        {
-            SidebarMock.Opacity = enabled ? 1d : 0.82d;
-        }
-    }
 
     private void UpdateGuides()
     {
