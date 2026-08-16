@@ -104,7 +104,7 @@ internal static partial class TestSuite
             File.WriteAllText(sentinelPath, "outside workspace");
             var managedLink = Path.Combine(workspace, ".agents");
             Directory.Delete(managedLink, recursive: true);
-            Directory.CreateSymbolicLink(managedLink, externalManagedDirectory);
+            CreateCreatorWorkspaceDirectoryLink(managedLink, externalManagedDirectory);
             File.WriteAllText(
                 Path.Combine(workspace, CreatorWorkspaceContract.MarkerFileName),
                 """
@@ -136,6 +136,48 @@ internal static partial class TestSuite
             if (Directory.Exists(root)) Directory.Delete(root, recursive: true);
         }
         return Task.CompletedTask;
+    }
+
+    private static void CreateCreatorWorkspaceDirectoryLink(string link, string target)
+    {
+        try
+        {
+            Directory.CreateSymbolicLink(link, target);
+            return;
+        }
+        catch (Exception exception) when (
+            OperatingSystem.IsWindows() &&
+            exception is UnauthorizedAccessException or IOException)
+        {
+            // A junction exercises the same reparse-point boundary without
+            // requiring SeCreateSymbolicLinkPrivilege on locked-down Windows hosts.
+        }
+
+        var startInfo = new System.Diagnostics.ProcessStartInfo(
+            Environment.GetEnvironmentVariable("ComSpec") ?? "cmd.exe")
+        {
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+        };
+        foreach (var argument in new[] { "/d", "/c", "mklink", "/J", link, target })
+        {
+            startInfo.ArgumentList.Add(argument);
+        }
+
+        using var process = System.Diagnostics.Process.Start(startInfo) ??
+                            throw new InvalidOperationException("Could not start the junction test helper.");
+        var standardOutput = process.StandardOutput.ReadToEnd();
+        var standardError = process.StandardError.ReadToEnd();
+        process.WaitForExit();
+        if (process.ExitCode != 0 || !Directory.Exists(link) ||
+            (File.GetAttributes(link) & FileAttributes.ReparsePoint) == 0)
+        {
+            throw new IOException(
+                $"Could not create a test-only directory reparse point. " +
+                $"Exit {process.ExitCode}: {standardOutput} {standardError}");
+        }
     }
 
     static async Task CreatorProjectScannerProducesStructuredHealthAsync()

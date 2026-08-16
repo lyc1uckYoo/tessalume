@@ -7,6 +7,7 @@ using Tessalume.App.Features.Personalization.ArtworkWorkbench.Application;
 using Tessalume.App.Features.Personalization.ArtworkWorkbench.Domain;
 using Tessalume.App.Features.Personalization.ArtworkWorkbench.Infrastructure;
 using Tessalume.App.Features.Personalization.ArtworkWorkbench.Presentation;
+using Tessalume.Core.Pets;
 using Tessalume.Core.Runtime;
 
 internal static partial class TestSuite
@@ -42,15 +43,11 @@ internal static partial class TestSuite
                     _ => new ArtworkSize(1440d, 420d),
                 };
                 var path = package.AssetPaths[asset];
-                var decoder = System.Windows.Media.Imaging.BitmapDecoder.Create(
-                    new Uri(path),
-                    System.Windows.Media.Imaging.BitmapCreateOptions.DelayCreation,
-                    System.Windows.Media.Imaging.BitmapCacheOption.OnLoad);
-                var frame = decoder.Frames[0];
+                var sourceSize = await ReadPublishedArtworkSizeAsync(path);
                 var spec = ThemeArtworkPlacementParser.Parse(slot.Placement);
                 var projection = ArtworkPlacementMapper.Project(
                     spec,
-                    new ArtworkSize(frame.PixelWidth, frame.PixelHeight),
+                    sourceSize,
                     target);
                 Ensure(projection.RenderedImage.IsValid &&
                        projection.SizeCss == spec.SizeCss &&
@@ -467,6 +464,49 @@ internal static partial class TestSuite
             $"The {scenario} center must hit its intended button " +
             $"(hit: {hit?.GetType().FullName ?? "none"}, center: {center}).");
     }
+
+    private static async Task<ArtworkSize> ReadPublishedArtworkSizeAsync(string path)
+    {
+        var header = new byte[24];
+        await using (var stream = File.OpenRead(path))
+        {
+            await stream.ReadExactlyAsync(header);
+        }
+
+        if (TryReadPublishedPngSize(header) is { } pngSize)
+        {
+            return pngSize;
+        }
+
+        if (IsPublishedWebP(header))
+        {
+            var webP = await PetWebPReader.ReadAsync(path);
+            return new ArtworkSize(webP.Width, webP.Height);
+        }
+
+        throw new InvalidDataException($"Published artwork is neither PNG nor WebP: {path}");
+    }
+
+    private static ArtworkSize? TryReadPublishedPngSize(byte[] header)
+    {
+        ReadOnlySpan<byte> pngSignature =
+            [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+        if (!header.AsSpan(0, 8).SequenceEqual(pngSignature)) return null;
+
+        var width = System.Buffers.Binary.BinaryPrimitives.ReadInt32BigEndian(
+            header.AsSpan(16, 4));
+        var height = System.Buffers.Binary.BinaryPrimitives.ReadInt32BigEndian(
+            header.AsSpan(20, 4));
+        if (width <= 0 || height <= 0)
+        {
+            throw new InvalidDataException("Published PNG has invalid dimensions.");
+        }
+        return new ArtworkSize(width, height);
+    }
+
+    private static bool IsPublishedWebP(byte[] header) =>
+        header.AsSpan(0, 4).SequenceEqual("RIFF"u8) &&
+        header.AsSpan(8, 4).SequenceEqual("WEBP"u8);
 
     private readonly record struct ArtworkRouteLayoutCase(
         string Name,

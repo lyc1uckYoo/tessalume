@@ -314,6 +314,28 @@ internal static partial class TestSuite
                 quickDarkPath);
         }
 
+        if (args is [
+                "--pet-center-snapshots",
+                var petLightSnapshotPath,
+                var petDarkSnapshotPath,
+                var petCompactSnapshotPath])
+        {
+            return await RenderPetCenterSnapshotsAsync(
+                petLightSnapshotPath,
+                petDarkSnapshotPath,
+                petCompactSnapshotPath);
+        }
+
+        if (args is [
+                "--pet-center-snapshots",
+                var basicPetLightSnapshotPath,
+                var basicPetDarkSnapshotPath])
+        {
+            return await RenderPetCenterSnapshotsAsync(
+                basicPetLightSnapshotPath,
+                basicPetDarkSnapshotPath);
+        }
+
         var buildProfile = args is ["--build"];
         if (!buildProfile && args.Length != 0 && args is not ["--full"])
         {
@@ -324,6 +346,10 @@ internal static partial class TestSuite
         var tests = new (string Name, Func<Task> Run)[]
         {
             ("valid package loads", ValidPackageLoadsAsync),
+            ("pet packages reject unsafe or inconsistent assets", PetPackageValidationRejectsUnsafeOrInconsistentAssetsAsync),
+            ("pet installer transactions are atomic and scoped", PetInstallerTransactionsAreAtomicAndScopedAsync),
+            ("pet status state and ID scanning stay truthful", PetStatusStateAndIdScanningRemainTruthfulAsync),
+            ("built-in pet package publishes and extracts safely", BuiltInPetPackageIsPublishedAndExtractedSafelyAsync),
             ("path traversal is rejected", PathTraversalIsRejectedAsync),
             ("remote CSS is rejected", RemoteCssIsRejectedAsync),
             ("null manifest sections produce validation", NullManifestSectionsProduceValidationAsync),
@@ -370,6 +396,8 @@ internal static partial class TestSuite
             ("navigation routes keep dense workflows separated", NavigationRoutesKeepDenseWorkflowsSeparatedAsync),
             ("source layout keeps product feature boundaries", SourceLayoutKeepsFeatureBoundariesAsync),
             ("WPF shell loads split resources", WpfShellLoadsSplitResourcesAsync),
+            ("pet center route and accessibility contract is complete", PetCenterRouteAndAccessibilityContractIsCompleteAsync),
+            ("pet center view renders and adapts without external effects", PetCenterViewRendersAndAdaptsWithoutExternalEffectsAsync),
             ("long product dialogs keep a fixed header and scrollable body", LongProductDialogUsesScrollableBodyAsync),
             ("adaptive layout and keyboard accessibility are available", AdaptiveLayoutAndKeyboardAccessibilityAsync),
             ("portable Codex creator workspace is self-contained", PortableCreatorWorkspaceIsSelfContainedAsync),
