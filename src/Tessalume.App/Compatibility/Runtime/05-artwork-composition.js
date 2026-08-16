@@ -39,7 +39,11 @@
     return "center";
   };
   const placementCss = (placement, region = "") => {
-    const sizeMode = enumName(placement?.sizeMode, "cover");
+    const storedSizeMode = enumName(placement?.sizeMode, "cover");
+    const sizeMode = (region === "hero" || region === "chat") &&
+      storedSizeMode === "explicit"
+      ? "cover"
+      : storedSizeMode;
     const size = sizeMode === "contain" || sizeMode === "cover"
       ? sizeMode
       : region === "sidebar"
@@ -187,7 +191,11 @@
     const geometry = placement.geometry || {};
     const scale = Math.min(10, Math.max(.1, finite(geometry.scale, 1)));
     const raw = placementCss(placement, state.region);
-    const sizeMode = enumName(placement.sizeMode, "cover");
+    const storedSizeMode = enumName(placement.sizeMode, "cover");
+    const sizeMode = (state.region === "hero" || state.region === "chat") &&
+      storedSizeMode === "explicit"
+      ? "cover"
+      : storedSizeMode;
     const fixedWidthSidebar = state.region === "sidebar" && sizeMode === "explicit";
     if (Math.abs(scale - 1) < .000001 && !fixedWidthSidebar) return raw;
     const dimensions = await readImageDimensions(state.imageUrl);

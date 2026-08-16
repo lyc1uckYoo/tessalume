@@ -3,7 +3,7 @@ using Tessalume.Core.Runtime;
 
 namespace Tessalume.App.Features.Personalization.ArtworkWorkbench.Application;
 
-internal static class ArtworkPlacementMapper
+internal static partial class ArtworkPlacementMapper
 {
     private const double Epsilon = .000001d;
 
@@ -346,12 +346,22 @@ internal static class ArtworkPlacementMapper
             fixedWidthSurface);
     }
 
-    public static ThemeArtworkPlacementSpec Center(ThemeArtworkPlacementSpec spec) =>
-        (spec ?? new ThemeArtworkPlacementSpec()).Normalize() with
+    public static ThemeArtworkPlacementSpec Center(ThemeArtworkPlacementSpec spec)
+    {
+        var normalized = (spec ?? new ThemeArtworkPlacementSpec()).Normalize();
+        return normalized with
         {
             PositionX = ThemeArtworkPositionValue.Center,
             PositionY = ThemeArtworkPositionValue.Center,
+            Geometry = normalized.SizeMode == ThemeArtworkSizeMode.Cover
+                ? normalized.Geometry with
+                {
+                    OriginX = ThemeArtworkPositionValue.Center,
+                    OriginY = ThemeArtworkPositionValue.Center,
+                }
+                : normalized.Geometry,
         };
+    }
 
     public static ThemeArtworkPlacementSpec AdaptFixedWidthSidebar(
         ThemeArtworkPlacementSpec spec)
