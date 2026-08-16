@@ -23,7 +23,7 @@ ICO_SIZES = [
     (128, 128),
     (256, 256),
 ]
-SAFE_PADDING_RATIO = 0.04
+SAFE_PADDING_RATIO = 0.0
 
 
 def normalize_master(image: Image.Image) -> Image.Image:
