@@ -230,27 +230,15 @@ internal static partial class TestSuite
         Ensure(payload.Contains("min-height:64px!important", StringComparison.Ordinal),
             "The composer surface must keep a visible minimum hit area.");
         Ensure(sharedTemplate.Contains(
-                   "[data-codex-composer-root]:has([data-in-progress-fixed-content=\"true\"] > *)",
-                   StringComparison.Ordinal) &&
-               payload.Contains("data-in-progress-fixed-content=\"true\"", StringComparison.Ordinal) &&
-               payload.Contains("composer-progress", StringComparison.Ordinal) &&
-               payload.Contains(
-                   "data-tessalume-composer-progress",
-                   StringComparison.Ordinal) &&
-               payload.Contains(
-                   "box-shadow:inset 0 1px color-mix(in srgb,currentColor 9%,transparent)!important",
-                   StringComparison.Ordinal),
-            "Native multi-step progress must semantically suppress the exposed composer drop-shadow without depending on localized step text.");
-        Ensure(sharedTemplate.Contains(
-                   ".composer-surface-chrome::before,",
+                   "[data-in-progress-fixed-content=\"true\"] > * > [class*=\"bg-gradient-to-t\"][class*=\"from-surface\"]",
                    StringComparison.Ordinal) &&
                sharedTemplate.Contains(
-                   ".composer-surface-chrome[data-tessalume-composer-progress=\"true\"]::after",
+                   "[data-tessalume-progress-fade=\"true\"]",
                    StringComparison.Ordinal) &&
-               sharedTemplate.Contains("box-shadow:none!important;", StringComparison.Ordinal) &&
-               sharedTemplate.Contains("filter:none!important;", StringComparison.Ordinal) &&
-               sharedTemplate.Contains("transform:none!important;", StringComparison.Ordinal),
-            "Native multi-step progress must also pause theme focus lifts and pseudo-element glow shadows around the composer.");
+               sharedTemplate.Contains("background-image:none!important;", StringComparison.Ordinal) &&
+               payload.Contains("decorateComposerProgressFade", StringComparison.Ordinal) &&
+               payload.Contains("data-tessalume-progress-fade", StringComparison.Ordinal),
+            "Native progress fades must stay transparent without depending on localized step text.");
         Ensure(payload.Contains("findComposerSurface", StringComparison.Ordinal) &&
                payload.Contains("[data-codex-composer=\"true\"]", StringComparison.Ordinal) &&
                payload.Contains("ComposerLayoutRoot", StringComparison.Ordinal) &&
