@@ -334,9 +334,6 @@ public partial class ArtworkWorkbenchView
             InspectorScroller.MaxHeight = double.PositiveInfinity;
         }
 
-        PreviewCanvas.MaxHeight = _region == ArtworkRegion.Sidebar
-            ? 520d
-            : double.PositiveInfinity;
         SyncStatusDetailText.Visibility = width < 560
             ? Visibility.Collapsed
             : Visibility.Visible;

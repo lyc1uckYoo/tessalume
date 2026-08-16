@@ -17,11 +17,6 @@ internal enum ArtworkCanvasViewMode
     Result,
 }
 
-internal readonly record struct ArtworkCanvasPresentationLayout(
-    double Width,
-    double Height,
-    bool ScrollVertically);
-
 internal sealed class ArtworkCanvasDragEventArgs(Vector totalDelta, Size viewportSize) : EventArgs
 {
     public Vector TotalDelta { get; } = totalDelta;
@@ -127,9 +122,6 @@ public partial class ArtworkCanvasControl : UserControl
         FullSourceStage.Visibility = viewMode == ArtworkCanvasViewMode.FullSource
             ? Visibility.Visible
             : Visibility.Collapsed;
-        PreviewScrollViewer.Visibility = viewMode == ArtworkCanvasViewMode.Result
-            ? Visibility.Visible
-            : Visibility.Collapsed;
         PreviewStage.Visibility = viewMode == ArtworkCanvasViewMode.Result
             ? Visibility.Visible
             : Visibility.Collapsed;
@@ -150,7 +142,6 @@ public partial class ArtworkCanvasControl : UserControl
         HeroMock.Visibility = region == ArtworkRegion.Hero ? Visibility.Visible : Visibility.Collapsed;
         SidebarMock.Visibility = region == ArtworkRegion.Sidebar ? Visibility.Visible : Visibility.Collapsed;
         ChatMock.Visibility = region == ArtworkRegion.Chat ? Visibility.Visible : Visibility.Collapsed;
-        if (region == ArtworkRegion.Sidebar) PreviewScrollViewer.ScrollToTop();
         ResizeViewport(CanvasHost.RenderSize);
         UpdateFullSourceLayout();
         UpdateGuides();
@@ -308,65 +299,24 @@ public partial class ArtworkCanvasControl : UserControl
     private void ResizeViewport(Size hostSize)
     {
         if (hostSize.Width <= 0 || hostSize.Height <= 0) return;
-        var layout = CalculatePresentationLayout(_region, hostSize, _targetViewport);
-        var sidebarReview = _region == ArtworkRegion.Sidebar;
-        PreviewScrollViewer.VerticalScrollBarVisibility = layout.ScrollVertically
-            ? ScrollBarVisibility.Auto
-            : ScrollBarVisibility.Disabled;
-        PreviewScrollViewer.VerticalContentAlignment = sidebarReview
-            ? VerticalAlignment.Top
-            : VerticalAlignment.Center;
-        PreviewScrollViewer.PanningMode = layout.ScrollVertically
-            ? PanningMode.VerticalOnly
-            : PanningMode.None;
-        PreviewStage.VerticalAlignment = sidebarReview
-            ? VerticalAlignment.Top
-            : VerticalAlignment.Center;
+        var availableWidth = Math.Max(120, hostSize.Width - 22);
+        var availableHeight = Math.Max(220, hostSize.Height - 22);
         ViewportBorder.HorizontalAlignment = HorizontalAlignment.Center;
-        PreviewStage.Width = layout.Width;
-        PreviewStage.Height = layout.Height;
-        ViewportBorder.Width = layout.Width;
-        ViewportBorder.Height = layout.Height;
+        var reference = new ArtworkSize(_targetViewport.Width, _targetViewport.Height);
+        var aspectRatio = reference.Width / reference.Height;
+
+        var width = availableWidth;
+        var height = width / aspectRatio;
+        if (height > availableHeight)
+        {
+            height = availableHeight;
+            width = height * aspectRatio;
+        }
+        PreviewStage.Width = Math.Max(1, width);
+        PreviewStage.Height = Math.Max(1, height);
+        ViewportBorder.Width = Math.Max(1, width);
+        ViewportBorder.Height = Math.Max(1, height);
         UpdateResultPlacement();
-    }
-
-    internal static ArtworkCanvasPresentationLayout CalculatePresentationLayout(
-        ArtworkRegion region,
-        Size hostSize,
-        Size targetViewport)
-    {
-        var availableWidth = Math.Max(1d, hostSize.Width - 22d);
-        var availableHeight = Math.Max(1d, hostSize.Height - 22d);
-        var targetWidth = Math.Max(1d, targetViewport.Width);
-        var targetHeight = Math.Max(1d, targetViewport.Height);
-        var aspectRatio = targetWidth / targetHeight;
-
-        if (region == ArtworkRegion.Sidebar)
-        {
-            var minimumReviewWidth = Math.Min(220d, availableWidth);
-            var preferredReviewWidth = Math.Clamp(
-                availableWidth * .46d,
-                minimumReviewWidth,
-                320d);
-            var width = Math.Min(availableWidth, preferredReviewWidth);
-            var height = width / aspectRatio;
-            return new ArtworkCanvasPresentationLayout(
-                Math.Max(1d, width),
-                Math.Max(1d, height),
-                height > availableHeight + .5d);
-        }
-
-        var fittedWidth = availableWidth;
-        var fittedHeight = fittedWidth / aspectRatio;
-        if (fittedHeight > availableHeight)
-        {
-            fittedHeight = availableHeight;
-            fittedWidth = fittedHeight * aspectRatio;
-        }
-        return new ArtworkCanvasPresentationLayout(
-            Math.Max(1d, fittedWidth),
-            Math.Max(1d, fittedHeight),
-            false);
     }
 
     private void UpdatePlacementProjection()

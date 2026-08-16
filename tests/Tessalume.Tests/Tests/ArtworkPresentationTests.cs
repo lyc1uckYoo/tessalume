@@ -142,41 +142,52 @@ internal static partial class TestSuite
         return Task.CompletedTask;
     }
 
-    static Task ArtworkSidebarReviewLayoutPreservesAspectAsync()
+    static Task ArtworkSidebarPreviewFitsWholeHeightAsync()
     {
-        var target = new Size(260d, 800d);
-        foreach (var (name, host) in new[]
-                 {
-                     ("1920×1080", new Size(760d, 440d)),
-                     ("1366×768", new Size(540d, 340d)),
-                     ("200% DPI", new Size(320d, 260d)),
-                 })
+        Exception? failure = null;
+        var thread = new Thread(() =>
         {
-            var layout = ArtworkCanvasControl.CalculatePresentationLayout(
-                ArtworkRegion.Sidebar,
-                host,
-                target);
-            var availableWidth = Math.Max(1d, host.Width - 22d);
-            var fullFitWidth = Math.Max(1d, host.Height - 22d) * target.Width / target.Height;
-            Ensure(layout.Width <= availableWidth + .001d &&
-                   Math.Abs(layout.Width / layout.Height - target.Width / target.Height) < .000001d &&
-                   layout.Width >= Math.Min(availableWidth, fullFitWidth * 1.6d) &&
-                   layout.ScrollVertically,
-                $"The {name} Sidebar review must stay proportional, fit horizontally, and use vertical scrolling instead of a tiny full-height strip.");
+            try
+            {
+                var canvas = new ArtworkCanvasControl();
+                canvas.SetRegion(ArtworkRegion.Sidebar);
+                canvas.SetTargetViewport(new Size(260d, 800d));
+                canvas.SetViewMode(ArtworkCanvasViewMode.Result);
+                foreach (var (name, host) in new[]
+                         {
+                             ("1920×1080", new Size(760d, 440d)),
+                             ("1366×768", new Size(540d, 340d)),
+                             ("200% DPI", new Size(320d, 260d)),
+                         })
+                {
+                    InvokePrivate(canvas, "ResizeViewport", host);
+                    var availableWidth = Math.Max(120d, host.Width - 22d);
+                    var availableHeight = Math.Max(220d, host.Height - 22d);
+                    Ensure(canvas.ViewportBorder.Width <= availableWidth + .001d &&
+                           canvas.ViewportBorder.Height <= availableHeight + .001d &&
+                           Math.Abs(
+                               canvas.ViewportBorder.Width / canvas.ViewportBorder.Height -
+                               260d / 800d) < .000001d &&
+                           Math.Abs(canvas.ViewportBorder.Height - availableHeight) < .001d,
+                        $"The {name} Sidebar preview must show the whole portrait at its true aspect ratio without enlargement or internal scrolling.");
+                }
+            }
+            catch (Exception exception)
+            {
+                failure = exception is TargetInvocationException invocation
+                    ? invocation.InnerException ?? invocation
+                    : exception;
+            }
+        });
+        thread.SetApartmentState(ApartmentState.STA);
+        thread.Start();
+        thread.Join();
+        if (failure is not null)
+        {
+            throw new InvalidOperationException(
+                "The full-height Sidebar presentation checks failed.",
+                failure);
         }
-
-        var hero = ArtworkCanvasControl.CalculatePresentationLayout(
-            ArtworkRegion.Hero,
-            new Size(760d, 440d),
-            new Size(1440d, 420d));
-        var chat = ArtworkCanvasControl.CalculatePresentationLayout(
-            ArtworkRegion.Chat,
-            new Size(760d, 440d),
-            new Size(1440d, 900d));
-        Ensure(!hero.ScrollVertically && !chat.ScrollVertically &&
-               hero.Width <= 738d && hero.Height <= 418d &&
-               chat.Width <= 738d && chat.Height <= 418d,
-            "Hero and chat must retain their existing fit-to-canvas presentation without Sidebar scrolling.");
         return Task.CompletedTask;
     }
 

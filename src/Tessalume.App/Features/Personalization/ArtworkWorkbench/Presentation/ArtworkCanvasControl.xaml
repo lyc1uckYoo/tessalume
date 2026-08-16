@@ -198,19 +198,10 @@
             </Grid>
         </Border>
 
-        <ScrollViewer x:Name="PreviewScrollViewer"
-                      Visibility="Collapsed"
-                      HorizontalScrollBarVisibility="Disabled"
-                      VerticalScrollBarVisibility="Disabled"
-                      HorizontalContentAlignment="Center"
-                      VerticalContentAlignment="Center"
-                      CanContentScroll="False"
-                      PanningMode="None">
         <Grid x:Name="PreviewStage"
               Visibility="Collapsed"
               HorizontalAlignment="Center"
-              VerticalAlignment="Center"
-              Margin="4">
+              VerticalAlignment="Center">
             <Border x:Name="ViewportBorder"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
@@ -386,6 +377,5 @@
             </Grid>
             </Border>
         </Grid>
-        </ScrollViewer>
     </Grid>
 </UserControl>

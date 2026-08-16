@@ -356,7 +356,7 @@ internal static partial class TestSuite
             ("artwork workbench preview infrastructure caches and resolves", ArtworkWorkbenchPreviewInfrastructureCachesAndResolvesAsync),
             ("artwork workbench WPF view loads and adapts", ArtworkWorkbenchViewLoadsAndAdaptsAsync),
             ("artwork presentation formatting retains exact values", ArtworkPresentationFormattingIsLosslessAsync),
-            ("artwork Sidebar review layout preserves its aspect", ArtworkSidebarReviewLayoutPreservesAspectAsync),
+            ("artwork Sidebar preview fits its full height", ArtworkSidebarPreviewFitsWholeHeightAsync),
             ("artwork defaults project published final placements", ArtworkThemeDefaultsProjectPublishedPlacementsAsync),
             ("artwork defaults mirror all published themes", ArtworkThemeDefaultsMatchPublishedThemesAsync),
             ("artwork absolute composition and sparse schema migration work", ArtworkAbsoluteCompositionAndSparseSchemaMigrationWorkAsync),

@@ -199,19 +199,17 @@ internal static partial class TestSuite
                 host.UpdateLayout();
                 Ensure(view.PreviewCanvas.MinHeight == 360,
                     "Switching to Sidebar must retain a compact but useful framing canvas.");
-                Ensure(view.PreviewCanvas.ViewportBorder.ActualWidth >= 220d &&
-                       Math.Abs(
+                Ensure(Math.Abs(
                            view.PreviewCanvas.ViewportBorder.ActualWidth /
                            view.PreviewCanvas.ViewportBorder.ActualHeight -
                            275d / 998d) < .001d &&
-                       view.PreviewCanvas.PreviewScrollViewer.VerticalScrollBarVisibility ==
-                       ScrollBarVisibility.Auto &&
-                       view.PreviewCanvas.PreviewScrollViewer.ScrollableHeight > 0d,
-                    "The arranged Sidebar canvas must enlarge its proportional review surface and expose the full height through scrolling " +
+                       view.PreviewCanvas.ViewportBorder.ActualWidth < 220d &&
+                       view.PreviewCanvas.ViewportBorder.ActualHeight <=
+                       view.PreviewCanvas.CanvasHost.ActualHeight - 22d + .001d,
+                    "The arranged Sidebar canvas must display the full portrait at its true aspect ratio without enlarging it " +
                     $"(viewport {view.PreviewCanvas.ViewportBorder.ActualWidth:0.##}×" +
                     $"{view.PreviewCanvas.ViewportBorder.ActualHeight:0.##}, " +
-                    $"canvas {view.PreviewCanvas.ActualWidth:0.##}×{view.PreviewCanvas.ActualHeight:0.##}, " +
-                    $"scroll {view.PreviewCanvas.PreviewScrollViewer.ScrollableHeight:0.##}).");
+                    $"canvas {view.PreviewCanvas.ActualWidth:0.##}×{view.PreviewCanvas.ActualHeight:0.##}).");
                 view.ChatRegionButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
                 Ensure(view.PreviewCanvas.MinHeight == 340,
                     "Switching back to Chat must release the extra Sidebar canvas height.");
