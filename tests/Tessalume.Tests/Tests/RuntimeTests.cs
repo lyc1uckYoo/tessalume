@@ -241,6 +241,16 @@ internal static partial class TestSuite
                    "box-shadow:inset 0 1px color-mix(in srgb,currentColor 9%,transparent)!important",
                    StringComparison.Ordinal),
             "Native multi-step progress must semantically suppress the exposed composer drop-shadow without depending on localized step text.");
+        Ensure(sharedTemplate.Contains(
+                   ".composer-surface-chrome::before,",
+                   StringComparison.Ordinal) &&
+               sharedTemplate.Contains(
+                   ".composer-surface-chrome[data-tessalume-composer-progress=\"true\"]::after",
+                   StringComparison.Ordinal) &&
+               sharedTemplate.Contains("box-shadow:none!important;", StringComparison.Ordinal) &&
+               sharedTemplate.Contains("filter:none!important;", StringComparison.Ordinal) &&
+               sharedTemplate.Contains("transform:none!important;", StringComparison.Ordinal),
+            "Native multi-step progress must also pause theme focus lifts and pseudo-element glow shadows around the composer.");
         Ensure(payload.Contains("findComposerSurface", StringComparison.Ordinal) &&
                payload.Contains("[data-codex-composer=\"true\"]", StringComparison.Ordinal) &&
                payload.Contains("ComposerLayoutRoot", StringComparison.Ordinal) &&
