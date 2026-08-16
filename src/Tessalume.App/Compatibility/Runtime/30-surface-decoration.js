@@ -132,6 +132,23 @@
         markSurface(panel, "output-panel");
       });
     };
+    const decorateComposerProgress = () => {
+      const composer = findComposerSurface();
+      if (!composer) return;
+      markSurface(composer, "composer");
+      const composerRoot = composer.closest('[data-codex-composer-root]');
+      const progress = composerRoot?.querySelector(
+        '[data-in-progress-fixed-content="true"]',
+      );
+      // The native progress portal lifts the composer above the bottom edge.
+      // Expose that state semantically so the shared template can suppress the
+      // otherwise hidden long drop-shadow without relying on localized text.
+      setData(
+        composer,
+        "composer-progress",
+        progress?.childElementCount > 0 ? "true" : "false",
+      );
+    };
     const decorateTaskCriticalSurfaces = (mutations) => {
       if (!mutations?.length || !html.classList.contains(roleClass("is-task"))) return;
       const markdownSelector = selectorList(
@@ -168,6 +185,9 @@
       // Mark the environment panel immediately as well. Deferring this work to
       // the debounced repair can starve while live counters keep mutating.
       decorateOutputPanels();
+      // Progress counters also mutate continuously. Update the composer state
+      // on the critical path so its shadow changes in the same render cycle.
+      decorateComposerProgress();
     };
     const decorateSharedSurfaces = (main, aside, home) => {
       mark(main, roleClass("main"));
@@ -183,7 +203,7 @@
       markSurface(aside, "sidebar");
       markSurface(home, "home");
       markSurface(windowBar, "window-bar");
-      markSurface(findComposerSurface(), "composer");
+      decorateComposerProgress();
 
       let messageIndex = 0;
       queryAll(
