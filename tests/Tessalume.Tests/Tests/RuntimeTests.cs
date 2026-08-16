@@ -206,6 +206,12 @@ internal static partial class TestSuite
         var package = await LoadRepresentativePackageAsync(repositoryRoot);
 
         var payload = await BuildPayloadAsync(repositoryRoot, package);
+        var sharedTemplate = await File.ReadAllTextAsync(Path.Combine(
+            repositoryRoot,
+            "src",
+            "Tessalume.App",
+            "Compatibility",
+            "theme-template-v1.css"));
         Ensure(payload.Contains("from-token-main-surface-primary", StringComparison.Ordinal),
             "The runtime must neutralize Codex's native bottom composer fade for every active theme.");
         Ensure(payload.Contains("bg-gradient-to-t", StringComparison.Ordinal) &&
@@ -223,7 +229,10 @@ internal static partial class TestSuite
             "The runtime must keep the sticky composer visible on Codex home layout changes.");
         Ensure(payload.Contains("min-height:64px!important", StringComparison.Ordinal),
             "The composer surface must keep a visible minimum hit area.");
-        Ensure(payload.Contains("data-in-progress-fixed-content=\"true\"", StringComparison.Ordinal) &&
+        Ensure(sharedTemplate.Contains(
+                   "[data-codex-composer-root]:has([data-in-progress-fixed-content=\"true\"] > *)",
+                   StringComparison.Ordinal) &&
+               payload.Contains("data-in-progress-fixed-content=\"true\"", StringComparison.Ordinal) &&
                payload.Contains("composer-progress", StringComparison.Ordinal) &&
                payload.Contains(
                    "data-tessalume-composer-progress",

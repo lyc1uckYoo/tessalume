@@ -41,6 +41,7 @@ html.tessalume-theme-active .composer-surface-chrome {
    lifts theme shadows that normally fall below the viewport into view. Keep the
    theme surface, border and focus treatment, but suppress that exposed outer
    halo while progress is present. */
+html.tessalume-theme-active.tessalume-is-task [data-codex-composer-root]:has([data-in-progress-fixed-content="true"] > *) .composer-surface-chrome,
 html.tessalume-theme-active.tessalume-is-task .composer-surface-chrome[data-tessalume-composer-progress="true"] {
   box-shadow:inset 0 1px color-mix(in srgb,currentColor 9%,transparent)!important;
 }
