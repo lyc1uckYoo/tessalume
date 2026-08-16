@@ -10,6 +10,7 @@ internal enum AppRoute
     ImportTheme,
     ArtworkStudio,
     DisplayPreferences,
+    Pets,
     Diagnostics,
     DataAndUpdates,
     About,

@@ -210,6 +210,7 @@ public partial class MainWindow
             ? "我的收藏"
             : $"我的收藏  {_favoriteThemeIds.Count}";
         UpdateInfoNavigationButton(DiagnosticsButton, _currentRoute == Features.Navigation.AppRoute.Diagnostics);
+        UpdateInfoNavigationButton(PetsButton, _currentRoute == Features.Navigation.AppRoute.Pets);
         UpdateInfoNavigationButton(SettingsButton, _currentRoute == Features.Navigation.AppRoute.ArtworkStudio);
         UpdateInfoNavigationButton(DisplayPreferencesButton, _currentRoute == Features.Navigation.AppRoute.DisplayPreferences);
         UpdateInfoNavigationButton(ImportGuideButton, _currentRoute == Features.Navigation.AppRoute.ImportTheme);

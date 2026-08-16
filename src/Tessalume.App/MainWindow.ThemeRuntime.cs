@@ -41,6 +41,7 @@ public partial class MainWindow
         if (result.Succeeded)
         {
             await RecordThemeUsageAsync(package.Manifest.Id);
+            ScheduleCompanionPetSuggestion(package.Manifest.Id);
         }
         return result.Succeeded;
     }

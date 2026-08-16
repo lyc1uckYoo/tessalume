@@ -33,6 +33,16 @@ public sealed class CodexPackageLauncher(LoopbackCdpDiscovery discovery)
         CancellationToken cancellationToken = default) =>
         (await FindPackageInfoAsync(cancellationToken)).Version;
 
+    /// <summary>
+    /// Opens the installed Codex package without adding theme-runtime debugging
+    /// arguments. Windows activates the existing app instance when one is running.
+    /// </summary>
+    public static async Task OpenCodexAsync(CancellationToken cancellationToken = default)
+    {
+        var appUserModelId = await FindAppUserModelIdAsync(cancellationToken);
+        _ = PackagedAppActivation.Launch(appUserModelId, string.Empty);
+    }
+
     public static int FindFreePort()
     {
         for (var port = 9340; port <= 9399; port++)

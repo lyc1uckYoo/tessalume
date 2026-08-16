@@ -9,6 +9,7 @@ public partial class MainWindow
     {
         _currentRoute = AppRoute.ThemeLibrary;
         SetArtworkConnectionMonitoring(false);
+        PetCenterPage.SetPageActive(false);
         ThemeLibraryPage.Visibility = Visibility.Visible;
         InfoPage.Visibility = Visibility.Collapsed;
         UpdateCategoryButtons();
@@ -23,13 +24,20 @@ public partial class MainWindow
         // The canvas-led artwork route needs enough width to preserve the real
         // banner/sidebar/chat proportions. Other information routes retain the
         // compact reading measure used by Tessalume 2.0.
-        InfoContentHost.MaxWidth = route == AppRoute.ArtworkStudio ? 1440 : 940;
+        InfoContentHost.MaxWidth = route switch
+        {
+            AppRoute.ArtworkStudio => 1440,
+            AppRoute.Pets => 1040,
+            _ => 940,
+        };
         SetArtworkConnectionMonitoring(route == AppRoute.ArtworkStudio);
         var isPersonalization = route is AppRoute.ArtworkStudio or AppRoute.DisplayPreferences;
         ThemeLibraryPage.Visibility = Visibility.Collapsed;
         InfoPage.Visibility = Visibility.Visible;
         ImportInfoPanel.Visibility = route == AppRoute.ImportTheme ? Visibility.Visible : Visibility.Collapsed;
         CreatorCenter.Visibility = route == AppRoute.CreatorCenter ? Visibility.Visible : Visibility.Collapsed;
+        PetCenterPage.Visibility = route == AppRoute.Pets ? Visibility.Visible : Visibility.Collapsed;
+        PetCenterPage.SetPageActive(route == AppRoute.Pets);
         PersonalizationInfoPanel.Visibility = isPersonalization ? Visibility.Visible : Visibility.Collapsed;
         SettingsInfoPanel.Visibility = route == AppRoute.ArtworkStudio ? Visibility.Visible : Visibility.Collapsed;
         DisplayPreferencesInfoPanel.Visibility = route == AppRoute.DisplayPreferences ? Visibility.Visible : Visibility.Collapsed;

@@ -7,6 +7,8 @@ namespace Tessalume.App.Controls;
 
 public partial class ThemeDetailPanel : UserControl
 {
+    private const string CompanionThemeId = "aemeath.star-voyage";
+
     internal ThemeCardModel? Theme { get; private set; }
 
     public event EventHandler? CloseRequested;
@@ -14,6 +16,8 @@ public partial class ThemeDetailPanel : UserControl
     public event EventHandler? ApplyRequested;
 
     public event EventHandler? OpenFolderRequested;
+
+    public event EventHandler? CompanionPetRequested;
 
     public ThemeDetailPanel()
     {
@@ -39,6 +43,12 @@ public partial class ThemeDetailPanel : UserControl
         AppliedBadge.Visibility = theme.IsApplied ? Visibility.Visible : Visibility.Collapsed;
         ApplyButton.IsEnabled = theme.IsValid;
         ApplyButton.Content = theme.IsApplied ? "重新应用主题" : "应用到 Codex";
+        CompanionPetButton.Visibility = string.Equals(
+            theme.ThemeId,
+            CompanionThemeId,
+            StringComparison.OrdinalIgnoreCase)
+            ? Visibility.Visible
+            : Visibility.Collapsed;
 
         SetPreview(LightPreviewImage, LightFallback, theme.LightPreview, theme.PreviewAlignmentX);
         SetPreview(DarkPreviewImage, DarkFallback, theme.DarkPreview, theme.PreviewAlignmentX);
@@ -71,4 +81,7 @@ public partial class ThemeDetailPanel : UserControl
 
     private void OpenFolderButton_Click(object sender, RoutedEventArgs e) =>
         OpenFolderRequested?.Invoke(this, EventArgs.Empty);
+
+    private void CompanionPetButton_Click(object sender, RoutedEventArgs e) =>
+        CompanionPetRequested?.Invoke(this, EventArgs.Empty);
 }

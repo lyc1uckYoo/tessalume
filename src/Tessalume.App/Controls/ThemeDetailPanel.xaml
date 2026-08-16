@@ -102,7 +102,12 @@
 
                 <Grid Grid.Row="4" VerticalAlignment="Bottom">
                     <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="8" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                    <Button Style="{DynamicResource SecondaryActionButton}" Content="打开主题目录" Click="OpenFolderButton_Click" MinWidth="116" Height="40" />
+                    <StackPanel Orientation="Horizontal">
+                        <Button Style="{DynamicResource SecondaryActionButton}" Content="打开主题目录" Click="OpenFolderButton_Click" MinWidth="116" Height="40" />
+                        <Button x:Name="CompanionPetButton" Style="{DynamicResource SecondaryActionButton}" Content="查看配套宠物"
+                                Click="CompanionPetButton_Click" MinWidth="124" Height="40" Margin="8,0,0,0"
+                                Visibility="Collapsed" AutomationProperties.Name="查看主题的配套宠物" />
+                    </StackPanel>
                     <Button Grid.Column="2" Style="{DynamicResource QuietActionButton}" Content="关闭" Click="CloseButton_Click" MinWidth="84" Height="40" />
                     <Button x:Name="ApplyButton" Grid.Column="4" Style="{DynamicResource PrimaryActionButton}" Content="应用到 Codex" Click="ApplyButton_Click" MinWidth="142" Height="42" />
                 </Grid>

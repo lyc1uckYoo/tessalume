@@ -110,6 +110,13 @@ public partial class MainWindow
         }
     }
 
+    private async void ThemeDetailPanel_CompanionPetRequested(object? sender, EventArgs e)
+    {
+        CloseThemeDetailPanel();
+        NavigateTo(Features.Navigation.AppRoute.Pets);
+        await RefreshPetCenterAsync();
+    }
+
     private void CloseThemeDetailPanel()
     {
         if (!_uiInitialized || ThemeDetailPanel.Visibility != Visibility.Visible) return;

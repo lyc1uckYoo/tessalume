@@ -15,6 +15,7 @@ using Tessalume.App.Features.Diagnostics;
 using Tessalume.App.Features.Navigation;
 using Tessalume.App.Features.Personalization;
 using Tessalume.App.Features.Personalization.ArtworkWorkbench.Infrastructure;
+using Tessalume.App.Features.Pets;
 using Tessalume.App.Infrastructure;
 using Tessalume.App.Models;
 using Tessalume.Core.Backup;
@@ -104,9 +105,14 @@ public partial class MainWindow : Window, IAsyncDisposable
     private DispatcherTimer? _toastTimer;
     private AppRoute _currentRoute = AppRoute.ThemeLibrary;
 
-    internal MainWindow(PortableLayout? layout = null)
+    internal MainWindow(
+        PortableLayout? layout = null,
+        PetApplicationServiceOptions? petOptions = null,
+        IPetCommandClipboard? petClipboard = null)
     {
         _layout = layout ?? PortableLayout.Create();
+        _petOptions = petOptions;
+        _petClipboard = petClipboard ?? new SystemPetCommandClipboard();
         _personalImageStore = new PersonalImageStore(_layout.DataDirectory);
         _stateStore = new StudioStateStore(_layout.DataDirectory);
         _preferencesStore = new UiPreferencesStore(_layout.DataDirectory);
@@ -171,6 +177,7 @@ public partial class MainWindow : Window, IAsyncDisposable
         if (_uiInitialized) return;
 
         InitializeComponent();
+        InitializePetCenterFeature();
         InitializeArtworkWorkbench();
         DiagnosticsPage.RefreshRequested += DiagnosticsPage_RefreshRequested;
         DiagnosticsPage.OpenLogDirectoryRequested += DiagnosticsPage_OpenLogDirectoryRequested;
@@ -407,6 +414,15 @@ public partial class MainWindow : Window, IAsyncDisposable
         _visualApplyCancellation = null;
         _personalizationCancellation.Cancel();
         _personalizationCancellation.Dispose();
+        _petCancellation.Cancel();
+        if (_petApplicationService is not null)
+        {
+            await _petApplicationService.WaitForIdleAsync();
+            _petApplicationService.Dispose();
+            _petApplicationService = null;
+        }
+        _petCancellation.Dispose();
+        PetCenterPage?.Dispose();
         _aboutUpdateService.Dispose();
         if (CreatorCenter is not null)
         {
