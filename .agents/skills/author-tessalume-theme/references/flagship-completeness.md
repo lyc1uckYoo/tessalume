@@ -135,6 +135,8 @@ checklist in working notes, not in the publishable theme package.
   alone is insufficient.
 - Headings, code, links, lists, edited-file summaries and diff/status surfaces
   remain legible in both modes.
+- Tables, code blocks and display math retain the native full-width or inner
+  scrolling behavior; character frames must never clip structured output.
 
 ### Composer
 

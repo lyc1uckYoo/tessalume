@@ -375,6 +375,39 @@ internal static partial class TestSuite
             "Display preferences must retain immediate CSS fallbacks while semantic surfaces are discovered.");
     }
 
+    static async Task RuntimePreservesWideAssistantContentAsync()
+    {
+        var repositoryRoot = FindRepositoryRoot();
+        var runtime = await ReadCompatibilityRuntimeSourceAsync(repositoryRoot);
+        var sharedCss = await File.ReadAllTextAsync(Path.Combine(
+            repositoryRoot,
+            "src",
+            "Tessalume.App",
+            "Compatibility",
+            ThemePayloadBuilder.SharedTemplateStyleFileName));
+
+        Ensure(runtime.Contains(
+                   "table,[role=\"table\"],pre,.katex-display",
+                   StringComparison.Ordinal) &&
+               runtime.Contains("data-tessalume-wide-content", StringComparison.Ordinal) &&
+               runtime.Contains(
+                   "surfaced.push([content, previousWideContent, wideContentAttribute])",
+                   StringComparison.Ordinal),
+            "The runtime must mark streamed structured assistant content and restore the marker on cleanup.");
+        Ensure(sharedCss.Contains(
+                   "[data-tessalume-wide-content=\"true\"]",
+                   StringComparison.Ordinal) &&
+               sharedCss.Contains(
+                   ":has(:is(table,[role=\"table\"],pre,.katex-display))",
+                   StringComparison.Ordinal) &&
+               sharedCss.Contains("width:100%!important;", StringComparison.Ordinal) &&
+               sharedCss.Contains("max-width:100%!important;", StringComparison.Ordinal) &&
+               sharedCss.Contains("overflow:visible!important;", StringComparison.Ordinal),
+            "Wide assistant structures must use the complete message lane without being clipped by theme frames.");
+        Ensure(sharedCss.Contains("max-width:min(88%,820px)!important;", StringComparison.Ordinal),
+            "Narrative assistant replies must retain the compact Template 1.0 frame.");
+    }
+
     static async Task RuntimeDecoratesTaskSurfacesBeforeDeferredRepairAsync()
     {
         var repositoryRoot = FindRepositoryRoot();

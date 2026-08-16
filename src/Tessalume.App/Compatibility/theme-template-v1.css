@@ -701,6 +701,18 @@ html.tessalume-theme-active [data-tessalume-message="assistant"] [data-tessalume
   margin-right:auto!important;
 }
 
+/* Narrative replies keep their compact character frame. Tables, code blocks
+   and display math use the full assistant lane and retain native inner
+   scrolling instead of being clipped by a theme's decorative frame. */
+html.tessalume-theme-active [data-tessalume-message="assistant"] [data-tessalume-surface="markdown"][data-tessalume-wide-content="true"],
+html.tessalume-theme-active [data-tessalume-message="assistant"] [data-tessalume-surface="markdown"]:has(:is(table,[role="table"],pre,.katex-display)) {
+  box-sizing:border-box!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  overflow:visible!important;
+}
+
 html.tessalume-theme-active [data-tessalume-message="user"] [data-user-message-bubble="true"] {
   max-width:min(79%,760px)!important;
   margin-left:auto!important;

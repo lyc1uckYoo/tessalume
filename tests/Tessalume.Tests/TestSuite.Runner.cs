@@ -334,6 +334,7 @@ internal static partial class TestSuite
             ("runtime diagnostics use Tessalume markers", RuntimeDiagnosticsUseTessalumeMarkersAsync),
             ("skipped pet overlays retain the processed marker", SkippedPetOverlaysRetainProcessedMarkerAsync),
             ("runtime removes native composer fade", RuntimeRemovesNativeComposerFadeAsync),
+            ("runtime preserves wide assistant content", RuntimePreservesWideAssistantContentAsync),
             ("display preferences change effective runtime styles", DisplayPreferencesChangeEffectiveRuntimeStylesAsync),
             ("runtime decorates task surfaces before deferred repair", RuntimeDecoratesTaskSurfacesBeforeDeferredRepairAsync),
             ("published themes use canonical injection contract", PublishedThemesUseCanonicalInjectionContractAsync),

@@ -52,6 +52,13 @@
       if (!content?.isConnected) return null;
       mark(content, roleClass("markdown"));
       markSurface(content, "markdown");
+      if (content.querySelector('table,[role="table"],pre,.katex-display') &&
+          content.getAttribute("data-tessalume-wide-content") !== "true") {
+        const wideContentAttribute = "data-tessalume-wide-content";
+        const previousWideContent = content.getAttribute(wideContentAttribute);
+        content.setAttribute(wideContentAttribute, "true");
+        surfaced.push([content, previousWideContent, wideContentAttribute]);
+      }
       const unit = closestFirst(content, "messageUnitAncestor", ["[data-content-search-unit-key]"]);
       const key = unit?.getAttribute("data-content-search-unit-key") || "";
       const unitId = key.split(":").at(-1) || "";
