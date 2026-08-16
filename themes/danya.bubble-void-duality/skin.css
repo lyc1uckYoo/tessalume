@@ -1657,13 +1657,13 @@ html.dny-theme .dny-message-user {
   color:var(--dny-text)!important;
 }
 
-.dny-markdown {
+html.dny-theme [data-tessalume-message] .dny-markdown {
   color:var(--dny-text)!important;
   font-size:14px;
   line-height:1.74;
 }
 
-.dny-markdown p {
+html.dny-theme [data-tessalume-message] .dny-markdown p {
   color:var(--dny-text)!important;
   line-height:1.74;
 }

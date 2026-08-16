@@ -1411,13 +1411,13 @@ html.qxo-theme.electron-dark .qxo-task-title::after {
   box-shadow:0 10px 28px rgba(61,43,45,.11)!important;
 }
 
-.qxo-markdown {
+html.qxo-theme [data-tessalume-message] .qxo-markdown {
   color:var(--qxo-text)!important;
   font-size:14px;
   line-height:1.74;
 }
 
-.qxo-markdown p {
+html.qxo-theme [data-tessalume-message] .qxo-markdown p {
   color:var(--qxo-text)!important;
   line-height:1.74;
 }
