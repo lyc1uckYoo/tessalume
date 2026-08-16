@@ -2,7 +2,7 @@
   "$schema": "../../schemas/theme-artwork-defaults-v1.schema.json",
   "schemaVersion": 1,
   "themeId": "iuno.moonbow-defiance",
-  "defaultsVersion": "1.0.0",
+  "defaultsVersion": "1.1.0",
   "slots": {
     "hero": {
       "light": {
@@ -105,7 +105,7 @@
           "blendMode": "normal",
           "overlay": {
             "color": "#35495E",
-            "opacity": 24
+            "opacity": 0
           },
           "gradientVeil": {
             "enabled": false,
@@ -354,9 +354,47 @@
             "opacity": 0
           },
           "gradientVeil": {
-            "enabled": false,
-            "strength": 0,
-            "layers": []
+            "enabled": true,
+            "strength": 100,
+            "layers": [
+              {
+                "directionDeg": 90,
+                "start": 0,
+                "end": 100,
+                "stops": [
+                  {
+                    "position": 0,
+                    "color": "#050A13",
+                    "opacity": 55
+                  },
+                  {
+                    "position": 31,
+                    "color": "#050A13",
+                    "opacity": 24
+                  },
+                  {
+                    "position": 47,
+                    "color": "#050A13",
+                    "opacity": 4
+                  },
+                  {
+                    "position": 58,
+                    "color": "#050A13",
+                    "opacity": 3
+                  },
+                  {
+                    "position": 78,
+                    "color": "#050A13",
+                    "opacity": 24
+                  },
+                  {
+                    "position": 100,
+                    "color": "#050A13",
+                    "opacity": 46
+                  }
+                ]
+              }
+            ]
           },
           "vignette": 0,
           "readabilityVeil": {

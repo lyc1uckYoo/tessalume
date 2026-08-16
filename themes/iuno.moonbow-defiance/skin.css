@@ -352,9 +352,7 @@ html.iun-theme.electron-dark aside :is(button,a) { text-shadow:0 1px 3px rgba(0,
 }
 
 .iun-home .group\/home-suggestions button:hover { border-color:var(--iun-gold)!important; box-shadow:0 13px 34px color-mix(in srgb,var(--iun-cyan) 22%,transparent)!important; }
-.iun-hero-copy { isolation:isolate; color:var(--iun-text); text-shadow:0 1px 0 color-mix(in srgb,var(--iun-solid) 70%,transparent); }
-.iun-hero-copy::before { content:""; position:absolute; z-index:-1; inset:-18px -28px -16px -24px; pointer-events:none; border-radius:46% 54% 50% 44%; background:radial-gradient(ellipse at 34% 44%,rgba(250,248,239,.76),rgba(250,248,239,.28) 52%,rgba(250,248,239,.06) 70%,transparent 80%); filter:blur(6px); }
-.electron-dark .iun-hero-copy::before { background:radial-gradient(ellipse at 34% 44%,rgba(17,34,53,.28),rgba(17,34,53,.10) 52%,transparent 76%); }
+.iun-hero-copy { color:var(--iun-text); text-shadow:0 1px 0 color-mix(in srgb,var(--iun-solid) 70%,transparent); }
 .electron-dark .iun-hero-copy { text-shadow:0 2px 16px rgba(0,0,0,.65); }
 .iun-hero-kicker { color:var(--iun-blue); font:700 8px/1 var(--iun-mono); letter-spacing:.17em; }
 .iun-hero-kicker i { border:1px solid var(--iun-gold); border-radius:50%; background:var(--iun-cyan); box-shadow:0 0 14px var(--iun-cyan); animation:iun-anchor-pulse 2.4s ease-in-out infinite; }

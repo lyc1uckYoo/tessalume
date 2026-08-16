@@ -35,6 +35,8 @@ internal static partial class TestSuite
                    defaults is { IsExact: true, Diagnostic: null },
                 $"{package.Manifest.Id} must load its declared defaults without a standard fallback: {defaults.Diagnostic}");
             ThemeArtworkDefaultsValidator.Validate(defaults.Defaults);
+            Ensure(defaults.Defaults.DefaultsVersion == "1.1.0",
+                $"{package.Manifest.Id} must publish the chat-mask defaults contract as version 1.1.0.");
             documents[package.Manifest.Id] = defaults.Defaults;
 
             var resolution = ThemeArtworkSettingsResolver.Resolve(defaults.Defaults, null);
@@ -58,6 +60,20 @@ internal static partial class TestSuite
                        resolved.Adjustment.OffsetY == 0d &&
                        resolved.UserOverride is null,
                     $"{package.Manifest.Id} {region}/{mode} must resolve directly from one final theme placement.");
+                if (region == "hero")
+                {
+                    Ensure(slot.Effects.Overlay.Opacity == 0d &&
+                           slot.Effects.GradientVeil is { Enabled: false, Layers.Count: 0 } &&
+                           slot.Effects.ReadabilityVeil is { Enabled: false, Opacity: 0d },
+                        $"{package.Manifest.Id} {mode} homepage artwork must not publish a readability mask.");
+                }
+                else if (region == "chat")
+                {
+                    Ensure(slot.Effects.GradientVeil is
+                           { Enabled: true, Strength: > 0d, Layers.Count: > 0 } &&
+                           slot.Effects.ReadabilityVeil is { Enabled: false, Opacity: 0d },
+                        $"{package.Manifest.Id} {mode} chat artwork must publish exactly one adjustable mask system.");
+                }
             }
         }
         Ensure(slotCount == 72, $"The defaults matrix must contain 72 exact slots; found {slotCount}.");
@@ -98,6 +114,17 @@ internal static partial class TestSuite
                runtimeSource.Contains("prefers-reduced-motion:reduce", StringComparison.Ordinal) &&
                runtimeSource.Contains("artworkCompositionProtocolVersion: 1", StringComparison.Ordinal),
             "The shared runtime must keep full rhythm, reduce only motion amplitude to 35%, and fully disable motion on request or OS preference.");
+        var templateCss = await File.ReadAllTextAsync(Path.Combine(
+            repositoryRoot,
+            "src",
+            "Tessalume.App",
+            "Compatibility",
+            "theme-template-v1.css"));
+        Ensure(runtimeSource.Contains("const maskLayers = [];", StringComparison.Ordinal) &&
+               runtimeSource.Contains("state.maskVariable", StringComparison.Ordinal) &&
+               templateCss.Contains("--tessalume-visual-chat-light-mask-image", StringComparison.Ordinal) &&
+               templateCss.Contains("--tessalume-visual-chat-dark-mask-image", StringComparison.Ordinal),
+            "Chat masks must remain an independent runtime layer instead of being baked into the artwork image.");
 
         AssertSixSlotPublishedBaseline(
             documents["xin.moonfox-sovereign"],

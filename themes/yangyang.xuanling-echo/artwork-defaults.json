@@ -2,7 +2,7 @@
   "$schema": "../../schemas/theme-artwork-defaults-v1.schema.json",
   "schemaVersion": 1,
   "themeId": "yangyang.xuanling-echo",
-  "defaultsVersion": "1.0.0",
+  "defaultsVersion": "1.1.0",
   "slots": {
     "hero": {
       "light": {
@@ -38,37 +38,9 @@
             "opacity": 0
           },
           "gradientVeil": {
-            "enabled": true,
-            "strength": 100,
-            "layers": [
-              {
-                "directionDeg": 90,
-                "start": 0,
-                "end": 73,
-                "stops": [
-                  {
-                    "position": 0,
-                    "color": "#FBFEFF",
-                    "opacity": 82
-                  },
-                  {
-                    "position": 34,
-                    "color": "#FBFEFF",
-                    "opacity": 45
-                  },
-                  {
-                    "position": 58,
-                    "color": "#FBFEFF",
-                    "opacity": 6
-                  },
-                  {
-                    "position": 73,
-                    "color": "#FBFEFF",
-                    "opacity": 0
-                  }
-                ]
-              }
-            ]
+            "enabled": false,
+            "strength": 0,
+            "layers": []
           },
           "vignette": 0,
           "readabilityVeil": {
@@ -136,32 +108,9 @@
             "opacity": 0
           },
           "gradientVeil": {
-            "enabled": true,
-            "strength": 100,
-            "layers": [
-              {
-                "directionDeg": 90,
-                "start": 0,
-                "end": 60,
-                "stops": [
-                  {
-                    "position": 0,
-                    "color": "#060B1B",
-                    "opacity": 76
-                  },
-                  {
-                    "position": 39,
-                    "color": "#060B1B",
-                    "opacity": 26
-                  },
-                  {
-                    "position": 60,
-                    "color": "#060B1B",
-                    "opacity": 0
-                  }
-                ]
-              }
-            ]
+            "enabled": false,
+            "strength": 0,
+            "layers": []
           },
           "vignette": 0,
           "readabilityVeil": {
@@ -405,9 +354,47 @@
             "opacity": 0
           },
           "gradientVeil": {
-            "enabled": false,
-            "strength": 0,
-            "layers": []
+            "enabled": true,
+            "strength": 100,
+            "layers": [
+              {
+                "directionDeg": 90,
+                "start": 0,
+                "end": 100,
+                "stops": [
+                  {
+                    "position": 0,
+                    "color": "#060B1B",
+                    "opacity": 55
+                  },
+                  {
+                    "position": 31,
+                    "color": "#060B1B",
+                    "opacity": 24
+                  },
+                  {
+                    "position": 47,
+                    "color": "#060B1B",
+                    "opacity": 4
+                  },
+                  {
+                    "position": 58,
+                    "color": "#060B1B",
+                    "opacity": 3
+                  },
+                  {
+                    "position": 78,
+                    "color": "#060B1B",
+                    "opacity": 24
+                  },
+                  {
+                    "position": 100,
+                    "color": "#060B1B",
+                    "opacity": 46
+                  }
+                ]
+              }
+            ]
           },
           "vignette": 0,
           "readabilityVeil": {

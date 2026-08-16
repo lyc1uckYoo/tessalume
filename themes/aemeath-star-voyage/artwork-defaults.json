@@ -2,24 +2,24 @@
   "$schema": "../../schemas/theme-artwork-defaults-v1.schema.json",
   "schemaVersion": 1,
   "themeId": "aemeath.star-voyage",
-  "defaultsVersion": "1.0.0",
+  "defaultsVersion": "1.1.0",
   "slots": {
     "hero": {
       "light": {
         "asset": "hero-light",
         "placement": {
           "size": {
-            "width": "cover",
-            "height": "auto"
+            "width": "100%",
+            "height": "124.653664453524%"
           },
           "position": {
             "x": "center",
-            "y": "46%"
+            "y": "16.418896769951854%"
           },
-          "scale": 1.012,
+          "scale": 1,
           "origin": {
-            "x": "73%",
-            "y": "50%"
+            "x": "center",
+            "y": "center"
           },
           "mirrorX": false,
           "mirrorY": false
@@ -38,37 +38,9 @@
             "opacity": 0
           },
           "gradientVeil": {
-            "enabled": true,
-            "strength": 100,
-            "layers": [
-              {
-                "directionDeg": 90,
-                "start": 0,
-                "end": 100,
-                "stops": [
-                  {
-                    "position": 0,
-                    "color": "#FFFAFD",
-                    "opacity": 58
-                  },
-                  {
-                    "position": 0,
-                    "color": "#FFFAFD",
-                    "opacity": 30
-                  },
-                  {
-                    "position": 0,
-                    "color": "#FFFAFD",
-                    "opacity": 8
-                  },
-                  {
-                    "position": 100,
-                    "color": "#FFFAFD",
-                    "opacity": 0
-                  }
-                ]
-              }
-            ]
+            "enabled": false,
+            "strength": 0,
+            "layers": []
           },
           "vignette": 0,
           "readabilityVeil": {
@@ -107,17 +79,17 @@
         "asset": "hero-dark",
         "placement": {
           "size": {
-            "width": "cover",
-            "height": "auto"
+            "width": "100%",
+            "height": "124.653664453524%"
           },
           "position": {
             "x": "center",
-            "y": "46%"
+            "y": "31.2809704220211%"
           },
-          "scale": 1.012,
+          "scale": 1,
           "origin": {
-            "x": "73%",
-            "y": "50%"
+            "x": "center",
+            "y": "center"
           },
           "mirrorX": false,
           "mirrorY": false
@@ -136,37 +108,9 @@
             "opacity": 0
           },
           "gradientVeil": {
-            "enabled": true,
-            "strength": 100,
-            "layers": [
-              {
-                "directionDeg": 90,
-                "start": 0,
-                "end": 0,
-                "stops": [
-                  {
-                    "position": 0,
-                    "color": "#050916",
-                    "opacity": 72
-                  },
-                  {
-                    "position": 0,
-                    "color": "#050916",
-                    "opacity": 42
-                  },
-                  {
-                    "position": 0,
-                    "color": "#050916",
-                    "opacity": 12
-                  },
-                  {
-                    "position": 0,
-                    "color": "#050916",
-                    "opacity": 0
-                  }
-                ]
-              }
-            ]
+            "enabled": false,
+            "strength": 0,
+            "layers": []
           },
           "vignette": 0,
           "readabilityVeil": {
@@ -223,7 +167,7 @@
           "mirrorY": false
         },
         "effects": {
-          "brightness": 100,
+          "brightness": 91.9987341772152,
           "contrast": 100,
           "saturation": 100,
           "opacity": 100,
@@ -255,12 +199,12 @@
         "asset": "sidebar-dark",
         "placement": {
           "size": {
-            "width": "225%",
+            "width": "237.79766467%",
             "height": "auto"
           },
           "position": {
-            "x": "82%",
-            "y": "-150px"
+            "x": "80.47680376%",
+            "y": "-163.94863143px"
           },
           "scale": 1,
           "origin": {
@@ -271,7 +215,7 @@
           "mirrorY": false
         },
         "effects": {
-          "brightness": 100,
+          "brightness": 90.0236286919832,
           "contrast": 100,
           "saturation": 100,
           "opacity": 100,
@@ -305,11 +249,11 @@
         "asset": "chat-light",
         "placement": {
           "size": {
-            "width": "cover",
-            "height": "auto"
+            "width": "107.66724286000954%",
+            "height": "100%"
           },
           "position": {
-            "x": "center",
+            "x": "100%",
             "y": "center"
           },
           "scale": 1,
@@ -321,7 +265,7 @@
           "mirrorY": false
         },
         "effects": {
-          "brightness": 100,
+          "brightness": 97.3000000000001,
           "contrast": 100,
           "saturation": 100,
           "opacity": 100,
@@ -381,11 +325,11 @@
         "asset": "chat-dark",
         "placement": {
           "size": {
-            "width": "cover",
-            "height": "auto"
+            "width": "107.66724286000954%",
+            "height": "100%"
           },
           "position": {
-            "x": "center",
+            "x": "100%",
             "y": "center"
           },
           "scale": 1,
@@ -397,7 +341,7 @@
           "mirrorY": false
         },
         "effects": {
-          "brightness": 100,
+          "brightness": 88.02531645569705,
           "contrast": 100,
           "saturation": 100,
           "opacity": 100,
@@ -410,9 +354,47 @@
             "opacity": 0
           },
           "gradientVeil": {
-            "enabled": false,
-            "strength": 0,
-            "layers": []
+            "enabled": true,
+            "strength": 100,
+            "layers": [
+              {
+                "directionDeg": 90,
+                "start": 0,
+                "end": 100,
+                "stops": [
+                  {
+                    "position": 0,
+                    "color": "#050916",
+                    "opacity": 55
+                  },
+                  {
+                    "position": 31,
+                    "color": "#050916",
+                    "opacity": 24
+                  },
+                  {
+                    "position": 47,
+                    "color": "#050916",
+                    "opacity": 4
+                  },
+                  {
+                    "position": 58,
+                    "color": "#050916",
+                    "opacity": 3
+                  },
+                  {
+                    "position": 78,
+                    "color": "#050916",
+                    "opacity": 24
+                  },
+                  {
+                    "position": 100,
+                    "color": "#050916",
+                    "opacity": 46
+                  }
+                ]
+              }
+            ]
           },
           "vignette": 0,
           "readabilityVeil": {
