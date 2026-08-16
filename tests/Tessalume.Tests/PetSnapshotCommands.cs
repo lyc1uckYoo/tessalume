@@ -35,14 +35,17 @@ internal static partial class TestSuite
                 "The validated Flying Snowfluff package is unavailable.");
         var productFrames = package.PreviewFiles
             .Select(frame => new PetPreviewFrame(
-                frame.Metadata.StateKey ?? Path.GetFileNameWithoutExtension(frame.FullPath),
-                frame.Metadata.Label ?? frame.Metadata.StateKey ?? "状态预览",
-                frame.FullPath))
+                frame.Metadata.ActionKey,
+                frame.Metadata.Label ?? frame.Metadata.ActionKey,
+                frame.FullPath,
+                frame.Metadata.Kind,
+                frame.GifInfo.FrameCount,
+                frame.GifInfo.Width,
+                frame.GifInfo.Height,
+                frame.Metadata.RepresentativeFrame))
             .ToArray();
-        Ensure(productFrames.Length == 6,
-            "The Flying Snowfluff product snapshot requires five state previews and the action showcase.");
-        var idlePreview = productFrames[0].FilePath!;
-        var readyPreview = productFrames[3].FilePath!;
+        Ensure(productFrames.Length == 11,
+            "The Flying Snowfluff product snapshot requires all eleven animated previews.");
         var petOptions = new PetApplicationServiceOptions(
             Path.Combine(portableRoot, "codex-pets"),
             Path.Combine(portableRoot, "pet-backups"),
@@ -77,11 +80,11 @@ internal static partial class TestSuite
                     InvokeMainWindowMethod(window, "NavigateTo", AppRoute.Pets);
                     CompleteInfoPageTransition(window);
 
-                    var state = CreatePetCenterProbeState(idlePreview, readyPreview) with
+                    var state = new PetCenterPresentationState
                     {
                         Status = PetCenterStatus.AwaitingCodexSelection,
                         StatusTitle = "等待在 Codex 中选择",
-                        StatusDetail = "文件已安全安装。请在 Codex 的 Settings → Pets 中 Refresh 并选择飞行雪绒。",
+                        StatusDetail = "文件已安全安装，等待你在 Codex 中完成选择。",
                         ProductVersion = package.Catalog.ProductVersion,
                         ProtocolSummary =
                             $"图集协议 v{package.Catalog.Protocol.SpriteVersionNumber} · " +
@@ -92,7 +95,8 @@ internal static partial class TestSuite
                         LicenseSummary = package.Catalog.License.Name ?? package.Catalog.License.Kind,
                         InstallLocation = "当前用户 .codex\\pets",
                         PrimaryAction = PetCenterAction.OpenCodex,
-                        PrimaryActionText = "打开 Codex 完成选择",
+                        PrimaryActionText = "打开 Codex",
+                        PrimaryActionEnabled = true,
                         CanAcknowledgeSelection = true,
                         CanUninstall = true,
                         CanRestoreBackup = false,
@@ -100,26 +104,29 @@ internal static partial class TestSuite
                         PreviewFrames = productFrames,
                     };
 
-                    RenderPetCenterSnapshotProfile(
+                    await RenderPetCenterSnapshotProfileAsync(
                         window,
                         state,
                         lightSnapshotPath,
                         darkMode: false,
-                        new Size(1280, 820));
-                    RenderPetCenterSnapshotProfile(
+                        new Size(1600, 900),
+                        "idle");
+                    await RenderPetCenterSnapshotProfileAsync(
                         window,
                         state,
                         darkSnapshotPath,
                         darkMode: true,
-                        new Size(1280, 820));
+                        new Size(1600, 900),
+                        "showcase");
                     if (!string.IsNullOrWhiteSpace(compactSnapshotPath))
                     {
-                        RenderPetCenterSnapshotProfile(
+                        await RenderPetCenterSnapshotProfileAsync(
                             window,
                             state,
                             compactSnapshotPath,
                             darkMode: false,
-                            new Size(900, 720));
+                            new Size(900, 720),
+                            "idle");
                     }
                 }
                 catch (Exception exception)
@@ -164,21 +171,21 @@ internal static partial class TestSuite
         }
     }
 
-    private static void RenderPetCenterSnapshotProfile(
+    private static async Task RenderPetCenterSnapshotProfileAsync(
         MainWindow window,
         PetCenterPresentationState state,
         string snapshotPath,
         bool darkMode,
-        Size size)
+        Size size,
+        string previewKey)
     {
         InvokeMainWindowMethod(window, "ApplyStudioTheme", darkMode);
+        ArrangeMainSurface(window, size);
         window.PetCenterPage.Render(state);
-        if (darkMode)
-        {
-            FindPetButton(window.PetCenterPage, "九宫格")
-                .RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-        }
-        window.PetCenterPage.SetPageActive(false);
+        window.PetCenterPage.PreviewPlayer.Select(previewKey);
+        window.PetCenterPage.PreviewPlayer.SetActive(true);
+        await window.PetCenterPage.PreviewPlayer.WaitForCurrentLoadAsync();
+        await Task.Delay(220);
         ArrangeMainSurface(window, size);
         window.InfoScroll.ScrollToTop();
         ArrangeMainSurface(window, size);

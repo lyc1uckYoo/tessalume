@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text.Json;
 using Tessalume.App.Infrastructure;
+using Tessalume.Core.Pets;
 
 internal static partial class TestSuite
 {
@@ -20,7 +21,7 @@ internal static partial class TestSuite
         var protocol = root.GetProperty("protocol");
         var states = protocol.GetProperty("states").EnumerateArray().ToArray();
         var frameTotal = states.Sum(state => state.GetProperty("frames").GetInt32());
-        Ensure(root.GetProperty("schemaVersion").GetInt32() == 1 &&
+        Ensure(root.GetProperty("schemaVersion").GetInt32() == 2 &&
                root.GetProperty("id").GetString() == "flying-snowfluff" &&
                root.GetProperty("id").GetString() == manifest.RootElement.GetProperty("id").GetString() &&
                root.GetProperty("productVersion").GetString() == "1.0.0" &&
@@ -64,24 +65,52 @@ internal static partial class TestSuite
         }
 
         var previews = root.GetProperty("previews").EnumerateArray().ToArray();
-        Ensure(previews.Length == 6 && previews.All(preview =>
-                   declaredFiles[preview.GetProperty("path").GetString()!].GetProperty("role").GetString() == "preview"),
-            "The WPF pet center needs five state previews plus one declared action showcase.");
-        foreach (var preview in previews.Where(preview =>
-                     preview.GetProperty("stateKey").GetString() != "showcase"))
+        var expectedPreviews = new Dictionary<string, (string Kind, string Label, int Width, int Height, int Frames)>(
+            StringComparer.Ordinal)
         {
-            var previewPath = Path.Combine(packageRoot, preview.GetProperty("path").GetString()!);
-            var (width, height, colorType) = ReadBuiltInPetPngHeader(previewPath);
-            Ensure(width == 192 && height == 208 && colorType == 6,
-                $"Pet preview must be a 192x208 RGBA PNG cropped from one atlas cell: {previewPath}.");
+            ["idle"] = ("action", "待机", 576, 624, 6),
+            ["move-right"] = ("action", "向右移动", 576, 624, 8),
+            ["move-left"] = ("action", "向左移动", 576, 624, 8),
+            ["wave-touch"] = ("action", "挥手互动", 576, 624, 4),
+            ["jump"] = ("action", "跳跃", 576, 624, 5),
+            ["blocked"] = ("action", "遇到阻塞", 576, 624, 8),
+            ["needs-input"] = ("action", "等待输入", 576, 624, 6),
+            ["running"] = ("action", "正在工作", 576, 624, 6),
+            ["ready"] = ("action", "完成待看", 576, 624, 6),
+            ["gaze-clockwise"] = ("direction", "16 向转身", 576, 684, 16),
+            ["showcase"] = ("showcase", "动态九宫格", 1152, 1248, 8),
+        };
+        Ensure(previews.Length == expectedPreviews.Count && previews.All(preview =>
+                   declaredFiles[preview.GetProperty("path").GetString()!].GetProperty("role").GetString() == "preview"),
+            "The WPF pet center needs all eleven declared animated previews.");
+        var loaded = await new PetPackageLoader().LoadAsync(packageRoot);
+        Ensure(loaded.Validation.IsValid && loaded.Package is not null &&
+               loaded.Package.InstallFiles.Count() == 2 &&
+               loaded.Package.PreviewInfos.Count == expectedPreviews.Count,
+            "The release package must validate eleven GIFs while keeping only two Codex install files.");
+        var package = loaded.Package!;
+        foreach (var preview in previews)
+        {
+            var path = preview.GetProperty("path").GetString()!;
+            var key = preview.GetProperty("actionKey").GetString()!;
+            var expected = expectedPreviews[key];
+            var info = package.PreviewInfos[path];
+            Ensure(preview.GetProperty("mediaType").GetString() == "image/gif" &&
+                   preview.GetProperty("stateKey").GetString() == key &&
+                   preview.GetProperty("kind").GetString() == expected.Kind &&
+                   preview.GetProperty("label").GetString() == expected.Label &&
+                   preview.GetProperty("expectedFrameCount").GetInt32() == expected.Frames &&
+                   preview.GetProperty("width").GetInt32() == expected.Width &&
+                   preview.GetProperty("height").GetInt32() == expected.Height &&
+                   preview.GetProperty("representativeFrame").GetInt32() == 0 &&
+                   preview.GetProperty("loop").GetBoolean() &&
+                   info.Width == expected.Width &&
+                   info.Height == expected.Height &&
+                   info.FrameCount == expected.Frames,
+                $"Animated preview metadata does not match its GIF: {path}.");
         }
-        var showcase = previews.Single(preview =>
-            preview.GetProperty("stateKey").GetString() == "showcase");
-        var showcasePath = Path.Combine(packageRoot, showcase.GetProperty("path").GetString()!);
-        var (showcaseWidth, showcaseHeight, showcaseColorType) = ReadBuiltInPetPngHeader(showcasePath);
-        Ensure(showcase.GetProperty("kind").GetString() == "showcase" &&
-               showcaseWidth == 1152 && showcaseHeight == 1248 && showcaseColorType == 2,
-            "The supplied nine-panel action showcase must remain the sole 1152x1248 RGB product preview.");
+        Ensure(!actualRelativePaths.Any(path => path.EndsWith(".png", StringComparison.OrdinalIgnoreCase)),
+            "Static PNG substitutes must not remain in the animated preview release package.");
 
         var temporaryRoot = Path.Combine(Path.GetTempPath(), $"tessalume-built-in-pets-{Guid.NewGuid():N}");
         try
@@ -107,11 +136,11 @@ internal static partial class TestSuite
             Ensure(File.GetLastWriteTimeUtc(unchangedPath) == unchangedWriteTime,
                 "Repeated built-in pet extraction must leave matching files untouched.");
 
-            var damagedPreview = Path.Combine(extractedRoot, "previews", "blocked.png");
+            var damagedPreview = Path.Combine(extractedRoot, "previews", "05-blocked.gif");
             await File.WriteAllBytesAsync(damagedPreview, [0x00]);
             BuiltInAssetInstaller.EnsurePetsInstalled(layout);
             Ensure(HashBuiltInPetReleaseFile(damagedPreview) ==
-                   HashBuiltInPetReleaseFile(Path.Combine(packageRoot, "previews", "blocked.png")),
+                   HashBuiltInPetReleaseFile(Path.Combine(packageRoot, "previews", "05-blocked.gif")),
                 "Built-in pet extraction must repair a damaged portable catalog asset.");
             Ensure(!Directory.EnumerateFileSystemEntries(
                     Path.GetDirectoryName(damagedPreview)!,
@@ -146,6 +175,7 @@ internal static partial class TestSuite
                buildSource.Contains("$builtInPetPackageNames = @('flying-snowfluff')", StringComparison.Ordinal) &&
                buildSource.Contains("Assert-SafeBuiltInPetTree", StringComparison.Ordinal) &&
                buildSource.Contains("Get-PetWebPMetadata", StringComparison.Ordinal) &&
+               buildSource.Contains("Get-PetGifMetadata", StringComparison.Ordinal) &&
                buildSource.Contains("Kind = 'showcase'", StringComparison.Ordinal) &&
                buildSource.Contains("Assert-BuiltInPetPackages", StringComparison.Ordinal) &&
                buildSource.Contains("-p:BuiltInPetsRoot=$sourcePets", StringComparison.Ordinal) &&
@@ -237,7 +267,7 @@ internal static partial class TestSuite
                 temporaryLayout.PetsDirectory,
                 "flying-snowfluff",
                 "previews",
-                "blocked.png");
+                "05-blocked.gif");
             File.WriteAllBytes(blockedPreview, [0x00]);
             var legacyTemporaryLink = blockedPreview + ".tmp";
             Directory.CreateSymbolicLink(legacyTemporaryLink, temporaryExternal);
@@ -340,7 +370,7 @@ internal static partial class TestSuite
                 petsRoot);
             Ensure(productPreview.ExitCode != 0 &&
                    productPreview.Output.Contains("preview", StringComparison.OrdinalIgnoreCase),
-                "The showcase grid must be accepted only as the single product preview.");
+                "The animated showcase must retain its dedicated preview kind.");
             await File.WriteAllTextAsync(catalogPath, catalogSource);
 
             var externalDirectory = Path.Combine(projectRoot, "external-pet-package");
@@ -468,15 +498,4 @@ internal static partial class TestSuite
     private static string HashBuiltInPetReleaseFile(string path) =>
         Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(path))).ToLowerInvariant();
 
-    private static (int Width, int Height, byte ColorType) ReadBuiltInPetPngHeader(string path)
-    {
-        var header = File.ReadAllBytes(path);
-        Ensure(header.Length >= 26 && header.AsSpan(0, 8).SequenceEqual(
-                   new byte[] { 0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a }),
-            $"Pet preview is not a valid PNG: {path}.");
-        return (
-            System.Buffers.Binary.BinaryPrimitives.ReadInt32BigEndian(header.AsSpan(16, 4)),
-            System.Buffers.Binary.BinaryPrimitives.ReadInt32BigEndian(header.AsSpan(20, 4)),
-            header[25]);
-    }
 }

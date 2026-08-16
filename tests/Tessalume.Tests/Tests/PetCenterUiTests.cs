@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Windows.Automation;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -45,6 +46,12 @@ internal static partial class TestSuite
         var previewSource = await File.ReadAllTextAsync(Path.Combine(
             petRoot,
             "PetPreviewPlayer.cs"));
+        var decoderSource = await File.ReadAllTextAsync(Path.Combine(
+            petRoot,
+            "PetGifFrameDecoder.cs"));
+        var motionSource = await File.ReadAllTextAsync(Path.Combine(
+            petRoot,
+            "PetMotionPreference.cs"));
         var mainWindowSource = await File.ReadAllTextAsync(Path.Combine(
             appRoot,
             "MainWindow.xaml.cs"));
@@ -85,7 +92,9 @@ internal static partial class TestSuite
                petShellSource.Contains(
                    "NavigateTo(Features.Navigation.AppRoute.Pets)",
                    StringComparison.Ordinal) &&
-               navigationSource.Contains("AppRoute.Pets => 1040", StringComparison.Ordinal) &&
+               navigationSource.Contains(
+                   "AppRoute.Pets => double.PositiveInfinity",
+                   StringComparison.Ordinal) &&
                navigationSource.Contains(
                    "PetCenterPage.Visibility = route == AppRoute.Pets",
                    StringComparison.Ordinal) &&
@@ -99,10 +108,9 @@ internal static partial class TestSuite
 
         foreach (var marker in new[]
                  {
-                     "AutomationProperties.Name=\"飞行雪绒状态预览\"",
+                     "AutomationProperties.Name=\"飞行雪绒动态动作预览\"",
                      "AutomationProperties.Name=\"宠物主操作\"",
                      "AutomationProperties.Name=\"复制斜杠 pet 命令\"",
-                     "AutomationProperties.Name=\"打开 Codex\"",
                      "AutomationProperties.Name=\"确认已在 Codex 完成宠物选择\"",
                      "AutomationProperties.Name=\"卸载 Tessalume 管理的宠物文件\"",
                      "AutomationProperties.Name=\"恢复最近的宠物备份\"",
@@ -115,13 +123,10 @@ internal static partial class TestSuite
 
         foreach (var sharedStyle in new[]
                  {
-                     "Style=\"{DynamicResource SectionEyebrowText}\"",
                      "Style=\"{DynamicResource PageTitleText}\"",
                      "Style=\"{DynamicResource PageDescriptionText}\"",
-                     "Style=\"{DynamicResource ProductCard}\"",
                      "Style=\"{DynamicResource PrimaryActionButton}\"",
                      "Style=\"{DynamicResource QuietActionButton}\"",
-                     "Style=\"{DynamicResource InsetCard}\"",
                  })
         {
             Ensure(petXaml.Contains(sharedStyle, StringComparison.Ordinal),
@@ -130,14 +135,10 @@ internal static partial class TestSuite
 
         foreach (var guidance in new[]
                  {
-                     "Settings",
-                     "Pets",
-                     "Refresh 后选择",
-                     "输入 /pet",
-                     "不会点击 Codex 界面、不会发送命令",
-                     "只读取和管理当前用户 .codex\\pets",
-                     "不读取聊天、账号、日志或其他 Codex 配置",
-                     "应用主题不会偷偷安装宠物",
+                     "Pets → Refresh 并选择飞行雪绒 → 输入 /pet",
+                     "仅管理当前用户 .codex\\pets",
+                     "配套主题：",
+                     "爱弥斯 · 星海远航",
                  })
         {
             Ensure(petXaml.Contains(guidance, StringComparison.Ordinal),
@@ -148,31 +149,55 @@ internal static partial class TestSuite
                !petViewSource.Contains("Clipboard.", StringComparison.Ordinal) &&
                !petViewSource.Contains("Process.Start", StringComparison.Ordinal),
             "The reusable view must expose copy/open intents without touching the clipboard or launching Codex itself.");
-        Ensure(previewSource.Contains("MaximumCachedFrames = 6", StringComparison.Ordinal) &&
-               previewSource.Contains("DecodePixelWidth = 288", StringComparison.Ordinal) &&
-               previewSource.Contains("TimeSpan.FromMilliseconds(900)", StringComparison.Ordinal) &&
+        Ensure(decoderSource.Contains("GifBitmapDecoder", StringComparison.Ordinal) &&
+               decoderSource.Contains("MaximumRetainedDecodedBytes = 24L * 1024 * 1024", StringComparison.Ordinal) &&
+               decoderSource.Contains("CalculateTargetSize", StringComparison.Ordinal) &&
+               decoderSource.Contains("ReadFrameDuration", StringComparison.Ordinal) &&
+               previewSource.Contains("CancelLoadAndReleaseFrames", StringComparison.Ordinal) &&
+               previewSource.Contains("_timer.Interval = _frameDurations[_frameIndex]", StringComparison.Ordinal) &&
                previewSource.Contains("_timer.Stop()", StringComparison.Ordinal) &&
+               motionSource.Contains("SystemParameters.ClientAreaAnimation", StringComparison.Ordinal) &&
                petViewSource.Contains("SetPageActive", StringComparison.Ordinal) &&
                petViewSource.Contains("PetCenterView_IsVisibleChanged", StringComparison.Ordinal) &&
                petViewSource.Contains("PetCenterView_Unloaded", StringComparison.Ordinal),
             "The product preview must keep bounded decoding and stop its timer when the page is inactive.");
-        Ensure(petXaml.Contains("Content=\"九宫格\" Tag=\"showcase\"", StringComparison.Ordinal) &&
-               petServiceSource.Contains("种动作 ·", StringComparison.Ordinal) &&
+        foreach (var previewMarker in new[]
+                 {
+                     "Content=\"待机\" Tag=\"idle\"",
+                     "Content=\"向右移动\" Tag=\"move-right\"",
+                     "Content=\"向左移动\" Tag=\"move-left\"",
+                     "Content=\"挥手互动\" Tag=\"wave-touch\"",
+                     "Content=\"跳跃\" Tag=\"jump\"",
+                     "Content=\"遇到阻塞\" Tag=\"blocked\"",
+                     "Content=\"等待输入\" Tag=\"needs-input\"",
+                     "Content=\"正在工作\" Tag=\"running\"",
+                     "Content=\"完成待看\" Tag=\"ready\"",
+                     "Content=\"16 向转身\" Tag=\"gaze-clockwise\"",
+                     "Content=\"动态九宫格\" Tag=\"showcase\"",
+                 })
+        {
+            Ensure(petXaml.Contains(previewMarker, StringComparison.Ordinal),
+                $"The pet stage is missing animated selector {previewMarker}.");
+        }
+        Ensure(petServiceSource.Contains("种动作 ·", StringComparison.Ordinal) &&
                petServiceSource.Contains("向转身 ·", StringComparison.Ordinal) &&
                petServiceSource.Contains("有效格", StringComparison.Ordinal) &&
-               snapshotSource.Contains("if (darkMode)", StringComparison.Ordinal) &&
                snapshotSource.Contains(
-                   "FindPetButton(window.PetCenterPage, \"九宫格\")",
+                   "new Size(1600, 900)",
+                   StringComparison.Ordinal) &&
+               snapshotSource.Contains(
+                   "\"showcase\"",
                    StringComparison.Ordinal),
             "The supplied nine-panel showcase and truthful 9-action/16-direction protocol summary must remain visible.");
         Ensure(publishedPackage!.Catalog.Protocol.States.Count - 2 == 9 &&
                publishedPackage.Catalog.Protocol.States.TakeLast(2).Sum(state => state.Frames) == 16 &&
                publishedPackage.Catalog.Protocol.UsedFrameCount == 74 &&
-               publishedPackage.PreviewFiles.Count() == 6 &&
+               publishedPackage.PreviewFiles.Count() == 11 &&
                publishedPackage.PreviewFiles.Any(preview =>
-                   preview.Metadata.StateKey == "showcase" &&
+                   preview.Metadata.ActionKey == "showcase" &&
                    preview.Metadata.Kind == "showcase" &&
-                   preview.Metadata.Label == "动作九宫格" &&
+                   preview.Metadata.Label == "动态九宫格" &&
+                   preview.GifInfo.FrameCount == 8 &&
                    File.Exists(preview.FullPath)),
             "The published package must supply 9 actions, 16 directional turns, 74 used cells, and its verified showcase asset.");
         Ensure(petServiceSource.Contains("RunInBackgroundAsync", StringComparison.Ordinal) &&
@@ -312,16 +337,10 @@ internal static partial class TestSuite
             $"tessalume-pet-center-ui-{Guid.NewGuid():N}");
         var themesDirectory = Path.Combine(root, "themes");
         var dataDirectory = Path.Combine(root, "data");
-        var previewDirectory = Path.Combine(root, "preview");
         Directory.CreateDirectory(themesDirectory);
         Directory.CreateDirectory(dataDirectory);
-        Directory.CreateDirectory(previewDirectory);
-        var idlePreview = CreatePetPreviewProbe(
-            Path.Combine(previewDirectory, "idle.png"),
-            Color.FromRgb(117, 226, 255));
-        var readyPreview = CreatePetPreviewProbe(
-            Path.Combine(previewDirectory, "ready.png"),
-            Color.FromRgb(151, 241, 186));
+        var corruptPreviewPath = Path.Combine(dataDirectory, "corrupt-preview.gif");
+        File.WriteAllBytes(corruptPreviewPath, [0x47]);
         var clipboard = new RecordingPetClipboard();
         var petOptions = new PetApplicationServiceOptions(
             Path.Combine(root, "codex-pets"),
@@ -347,6 +366,8 @@ internal static partial class TestSuite
 
         var thread = new Thread(() =>
         {
+            SynchronizationContext.SetSynchronizationContext(
+                new DispatcherSynchronizationContext(Dispatcher.CurrentDispatcher));
             MainWindow? window = null;
             PetCenterView? view = null;
             try
@@ -368,10 +389,11 @@ internal static partial class TestSuite
                            !invalidManagementState.CanRestoreBackup &&
                            invalidManagementState.ProtocolSummary ==
                            "图集协议 v2 · 9 种动作 · 16 向转身 · 74 有效格" &&
-                           invalidManagementState.PreviewFrames.Count == 6 &&
+                           invalidManagementState.PreviewFrames.Count == 11 &&
                            invalidManagementState.PreviewFrames.Any(frame =>
                                frame.Key == "showcase" &&
-                               frame.Label == "动作九宫格" &&
+                               frame.Label == "动态九宫格" &&
+                               frame.ExpectedFrameCount == 8 &&
                                frame.FilePath is not null &&
                                File.Exists(frame.FilePath)),
                         "A corrupt management schema must render recovery while preserving the actual package protocol and all product previews.");
@@ -412,36 +434,48 @@ internal static partial class TestSuite
                 PetCenterAction? requestedAction = null;
                 view.PrimaryActionRequested += (_, action) => requestedAction = action;
                 view.Render(invalidManagementState);
-                FindPetButton(view, "九宫格")
-                    .RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-                Ensure(view.PreviewStateText.Text == "动作九宫格" &&
-                       view.PetPreviewImage.Source is BitmapSource
-                       {
-                           PixelWidth: > 0 and <= 288,
-                           PixelHeight: > 0,
-                       },
-                    "Selecting 九宫格 must decode and present the published showcase through the bounded preview player.");
+                view.PreviewPlayer.SetActive(true);
+                AwaitWithDispatcher(view.PreviewPlayer.WaitForCurrentLoadAsync());
+                VerifyEveryAnimatedPetPreview(view, invalidManagementState.PreviewFrames);
                 view.PrimaryActionButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
                 Ensure(requestedAction == PetCenterAction.RecoverState &&
-                       view.RestoreBackupButton.Visibility == Visibility.Collapsed,
-                    "The corrupt-state UI must expose only the archival recovery action and hide restore.");
+                       view.RestoreBackupButton.Visibility == Visibility.Visible &&
+                       !view.RestoreBackupButton.IsEnabled &&
+                       view.UninstallButton.Visibility == Visibility.Visible &&
+                       !view.UninstallButton.IsEnabled,
+                    "The corrupt-state UI must keep every management action visible while disabling unavailable mutations.");
 
-                var state = CreatePetCenterProbeState(idlePreview, readyPreview);
+                var state = invalidManagementState with
+                {
+                    Status = PetCenterStatus.UpdateAvailable,
+                    StatusTitle = "有更新",
+                    StatusDetail = "新版已完整校验；更新前会先备份当前受管文件。",
+                    PrimaryAction = PetCenterAction.Update,
+                    PrimaryActionText = "安全更新",
+                    PrimaryActionEnabled = true,
+                    CanUninstall = true,
+                    CanAcknowledgeSelection = false,
+                    CanRestoreBackup = true,
+                    LatestBackupLabel = "测试备份 · 可恢复",
+                };
                 view.Render(state);
 
-                Ensure(view.HeaderStatusText.Text == "有更新" &&
-                       view.InstallationStatusTitle.Text == "有更新" &&
+                Ensure(view.InstallationStatusTitle.Text == "有更新" &&
                        view.InstallationStatusDetail.Text.Contains("备份", StringComparison.Ordinal) &&
                        Equals(view.PrimaryActionButton.Content, "安全更新") &&
                        view.PrimaryActionButton.IsEnabled &&
                        view.UninstallButton.Visibility == Visibility.Visible &&
-                       view.AcknowledgeSelectionButton.Visibility == Visibility.Visible &&
+                       view.UninstallButton.IsEnabled &&
+                       view.RefreshButton.Visibility == Visibility.Visible &&
                        view.RestoreBackupButton.Visibility == Visibility.Visible &&
+                       view.RestoreBackupButton.IsEnabled &&
+                       view.AcknowledgeSelectionButton.Visibility == Visibility.Collapsed &&
+                       view.ActivationGuidePanel.Visibility == Visibility.Collapsed &&
                        Equals(view.RestoreBackupButton.ToolTip, "测试备份 · 可恢复") &&
                        view.ProductVersionText.Text == "1.0.0" &&
-                       view.ProtocolText.Text == "Codex Pets v1" &&
+                       view.ProtocolText.Text.Contains("9 种动作", StringComparison.Ordinal) &&
                        view.InstallLocationText.Text.Contains(root, StringComparison.OrdinalIgnoreCase),
-                    "Rendering must present one truthful status, one primary action, and package metadata.");
+                    "Rendering must present one truthful status, one primary action, compact metadata, and visible management tools.");
 
                 requestedAction = null;
                 var copyRequests = 0;
@@ -459,8 +493,24 @@ internal static partial class TestSuite
                        view.PrimaryActionButton.Focusable &&
                        copyButton.IsTabStop &&
                        view.PrimaryActionButton.IsTabStop &&
-                       AutomationProperties.GetName(view.PetPreviewImage) == "飞行雪绒状态预览",
+                       AutomationProperties.GetName(view.PetPreviewImage) == "飞行雪绒动态动作预览",
                     "Primary, copy, and preview controls must remain keyboard and UI Automation reachable.");
+
+                var awaitingState = state with
+                {
+                    Status = PetCenterStatus.AwaitingCodexSelection,
+                    StatusTitle = "等待 Codex 中选择",
+                    StatusDetail = "文件已安装；需要在 Codex 中刷新并选择。",
+                    PrimaryAction = PetCenterAction.OpenCodex,
+                    PrimaryActionText = "打开 Codex",
+                    CanAcknowledgeSelection = true,
+                };
+                view.Render(awaitingState);
+                Ensure(view.ActivationGuidePanel.Visibility == Visibility.Visible &&
+                       view.AcknowledgeSelectionButton.Visibility == Visibility.Visible &&
+                       CountVisibleButtonsWithContent(view, "打开 Codex") == 1 &&
+                       Equals(view.PrimaryActionButton.Content, "打开 Codex"),
+                    "Awaiting selection must show one Open Codex action and one concise activation guide without duplicate instructions.");
 
                 var pageParent = LogicalTreeHelper.GetParent(view);
                 Ensure(pageParent is Panel,
@@ -482,36 +532,45 @@ internal static partial class TestSuite
                 };
 
                 ArrangePetCenter(host, 1040, 760);
-                Ensure(Grid.GetColumn(view.DetailsPanel) == 2 &&
-                       Grid.GetRow(view.DetailsPanel) == 0 &&
-                       Grid.GetColumn(view.CompanionThemeCard) == 2 &&
-                       Grid.GetRow(view.CompanionThemeCard) == 0,
-                    "The wide pet center must retain a balanced preview/details and guide/theme composition.");
+                var previewWideOrigin = view.PreviewStage
+                    .TransformToAncestor(view.WorkspaceGrid)
+                    .Transform(new Point());
+                Ensure(Grid.GetColumn(view.PreviewStage) == 0 &&
+                       Grid.GetRow(view.PreviewStage) == 0 &&
+                       Grid.GetColumn(view.ActionSelector) == 0 &&
+                       Grid.GetRow(view.ActionSelector) == 1 &&
+                       Grid.GetColumn(view.ControlPanelHost) == 2 &&
+                       Grid.GetRow(view.ControlPanelHost) == 0 &&
+                       Grid.GetRowSpan(view.ControlPanelHost) == 2 &&
+                       previewWideOrigin.X >= 0 &&
+                       view.PreviewStage.ActualWidth >= view.WorkspaceGrid.ActualWidth * 0.54 &&
+                       host.ScrollableWidth <= 0.5,
+                    "The wide workspace must devote most width to the live stage and use the remaining column for one complete control surface.");
 
                 ArrangePetCenter(host, 680, 720);
-                Ensure(Grid.GetColumn(view.DetailsPanel) == 0 &&
-                       Grid.GetRow(view.DetailsPanel) == 0 &&
-                       Grid.GetColumn(view.PreviewCard) == 0 &&
-                       Grid.GetRow(view.PreviewCard) == 2 &&
-                       Grid.GetColumn(view.MetadataPanel) == 0 &&
-                       Grid.GetRow(view.MetadataPanel) == 3 &&
-                       Grid.GetColumn(view.CompanionThemeCard) == 0 &&
-                       Grid.GetRow(view.CompanionThemeCard) == 1 &&
-                       Grid.GetColumnSpan(view.CompanionThemeCard) == 3 &&
+                Ensure(Grid.GetColumn(view.PreviewStage) == 0 &&
+                       Grid.GetRow(view.PreviewStage) == 0 &&
+                       Grid.GetColumn(view.ControlPanelHost) == 0 &&
+                       Grid.GetRow(view.ControlPanelHost) == 1 &&
+                       Grid.GetColumn(view.ActionSelector) == 0 &&
+                       Grid.GetRow(view.ActionSelector) == 2 &&
                        host.ScrollableWidth <= 0.5 &&
                        view.ActualWidth <= host.ViewportWidth + 0.5,
-                    "The narrow pet center must stack without horizontal overflow or unreachable controls.");
+                    "The compact workspace must show the live stage first, then status/actions, and wrap every selector without horizontal overflow.");
                 var primaryActionOrigin = view.PrimaryActionButton
                     .TransformToAncestor(host)
                     .Transform(new Point());
                 Ensure(copyButton.ActualWidth > 0 &&
-                       copyButton.ActualHeight >= 36 &&
+                       copyButton.ActualHeight >= 34 &&
                        view.PrimaryActionButton.ActualWidth > 0 &&
-                       view.PrimaryActionButton.ActualHeight >= 43 &&
+                       view.PrimaryActionButton.ActualHeight >= 40 &&
+                       view.RefreshButton.ActualHeight >= 32 &&
+                       view.RestoreBackupButton.ActualHeight >= 32 &&
+                       view.UninstallButton.ActualHeight >= 32 &&
                        primaryActionOrigin.Y >= 0 &&
                        primaryActionOrigin.Y + view.PrimaryActionButton.ActualHeight <=
                        host.ViewportHeight + 0.5,
-                    "Key pet actions must retain usable hit targets and the primary CTA must stay in the first compact viewport.");
+                    "All pet actions must retain consistent hit targets and the single primary action must stay in the first compact viewport.");
 
                 var highDpiBitmap = new RenderTargetBitmap(
                     (int)Math.Ceiling(view.ActualWidth * 2),
@@ -525,21 +584,38 @@ internal static partial class TestSuite
                        highDpiBitmap.PixelWidth >= Math.Ceiling(view.ActualWidth * 2),
                     "The arranged pet center must remain renderable at 200% DPI without changing its DIP layout.");
 
-                var previewTimer = GetPetPreviewTimer(view);
-                SetPetPreviewPlayerActive(view, true);
-                Ensure(previewTimer.IsEnabled,
-                    "A route-active preview player with multiple bounded frames should animate.");
+                view.PreviewPlayer.Select("showcase");
+                view.PreviewPlayer.SetActive(true);
+                AwaitWithDispatcher(view.PreviewPlayer.WaitForCurrentLoadAsync());
+                Ensure(view.PreviewPlayer.IsAnimating &&
+                       view.PreviewPlayer.DecodedFrameCount == 8 &&
+                       view.PreviewPlayer.EstimatedDecodedBytes <= 24L * 1024 * 1024,
+                    "The dynamic nine-panel showcase must decode eight bounded frames and animate.");
                 view.Visibility = Visibility.Collapsed;
                 InvokePetVisibilityChanged(view);
-                Ensure(!previewTimer.IsEnabled,
-                    "Collapsing the pet page must stop its preview timer immediately.");
+                Ensure(!view.PreviewPlayer.IsAnimating &&
+                       view.PreviewPlayer.DecodedFrameCount == 0 &&
+                       view.PreviewPlayer.EstimatedDecodedBytes == 0 &&
+                       view.PetPreviewImage.Source is null,
+                    "Collapsing the pet page must stop playback and release the selected GIF frames immediately.");
+                var hiddenFrameIndex = view.PreviewPlayer.CurrentFrameIndex;
+                AwaitWithDispatcher(Task.Delay(260));
+                Ensure(view.PreviewPlayer.CurrentFrameIndex == hiddenFrameIndex,
+                    "A hidden pet page must not advance frames in the background.");
                 view.Visibility = Visibility.Visible;
-                SetPetPreviewPlayerActive(view, true);
-                Ensure(previewTimer.IsEnabled,
+                InvokePetVisibilityChanged(view);
+                view.PreviewPlayer.SetActive(true);
+                AwaitWithDispatcher(view.PreviewPlayer.WaitForCurrentLoadAsync());
+                Ensure(view.PreviewPlayer.IsAnimating,
                     "A later visible route activation should resume the bounded preview.");
                 view.SetPageActive(false);
-                Ensure(!previewTimer.IsEnabled,
-                    "Leaving the route must stop the preview even when the control remains visible.");
+                Ensure(!view.PreviewPlayer.IsAnimating &&
+                       view.PreviewPlayer.DecodedFrameCount == 0,
+                    "Leaving the route must stop playback and release frames even when the control remains visible.");
+
+                VerifyReducedMotionAndCorruptPreviewFallback(
+                    invalidManagementState.PreviewFrames,
+                    corruptPreviewPath);
 
                 host.Content = null;
             }
@@ -579,67 +655,129 @@ internal static partial class TestSuite
         return Task.CompletedTask;
     }
 
-    private static PetCenterPresentationState CreatePetCenterProbeState(
-        string idlePreview,
-        string readyPreview) =>
-        new()
-        {
-            Status = PetCenterStatus.UpdateAvailable,
-            StatusTitle = "有更新",
-            StatusDetail = "新版已完整校验；更新前会先备份当前受管文件。",
-            ProductVersion = "1.0.0",
-            ProtocolSummary = "Codex Pets v1",
-            Author = "Tessalume Tests",
-            LicenseSummary = "测试许可",
-            InstallLocation = Path.Combine(Path.GetDirectoryName(idlePreview)!, "codex-pets"),
-            PrimaryAction = PetCenterAction.Update,
-            PrimaryActionText = "安全更新",
-            PrimaryActionEnabled = true,
-            CanUninstall = true,
-            CanAcknowledgeSelection = true,
-            CanRestoreBackup = true,
-            LatestBackupLabel = "测试备份 · 可恢复",
-            PreviewFrames =
-            [
-                new PetPreviewFrame("idle", "待机", idlePreview),
-                new PetPreviewFrame("ready", "完成", readyPreview),
-            ],
-        };
-
-    private static string CreatePetPreviewProbe(string path, Color color)
+    private static void VerifyEveryAnimatedPetPreview(
+        PetCenterView view,
+        IReadOnlyList<PetPreviewFrame> previews)
     {
-        const int width = 48;
-        const int height = 52;
-        var stride = width * 4;
-        var pixels = new byte[stride * height];
-        for (var y = 0; y < height; y++)
+        var expected = new (string Key, string Label, int Frames)[]
         {
-            for (var x = 0; x < width; x++)
+            ("idle", "待机", 6),
+            ("move-right", "向右移动", 8),
+            ("move-left", "向左移动", 8),
+            ("wave-touch", "挥手互动", 4),
+            ("jump", "跳跃", 5),
+            ("blocked", "遇到阻塞", 8),
+            ("needs-input", "等待输入", 6),
+            ("running", "正在工作", 6),
+            ("ready", "完成待看", 6),
+            ("gaze-clockwise", "16 向转身", 16),
+            ("showcase", "动态九宫格", 8),
+        };
+        Ensure(previews.Count == expected.Length,
+            "The pet center must expose all 11 animated preview entries.");
+
+        foreach (var (key, label, frameCount) in expected)
+        {
+            var toggle = FindPetPreviewToggle(view, label);
+            toggle.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+            AwaitWithDispatcher(view.PreviewPlayer.WaitForCurrentLoadAsync());
+            Ensure(view.PreviewPlayer.CurrentKey == key &&
+                   view.PreviewStateText.Text == label &&
+                   view.PreviewPlayer.DecodedFrameCount == frameCount &&
+                   view.PreviewPlayer.EstimatedDecodedBytes is > 0 and <= 24L * 1024 * 1024 &&
+                   view.PreviewPlayer.IsAnimating &&
+                   view.PetPreviewImage.Source is BitmapSource
+                   {
+                       PixelWidth: > 0 and <= 720,
+                       PixelHeight: > 0 and <= 720,
+                   },
+                $"Animated preview '{label}' must decode its catalog frame count within the runtime bounds " +
+                $"(key={view.PreviewPlayer.CurrentKey}, frames={view.PreviewPlayer.DecodedFrameCount}, " +
+                $"bytes={view.PreviewPlayer.EstimatedDecodedBytes}, animating={view.PreviewPlayer.IsAnimating}, " +
+                $"source={view.PetPreviewImage.Source?.GetType().Name ?? "null"}, " +
+                $"playback={view.PreviewPlayer.PlaybackDescription}).");
+            var sourceBefore = view.PetPreviewImage.Source;
+            var frameBefore = view.PreviewPlayer.CurrentFrameIndex;
+            WaitForPetFrameAdvance(view.PreviewPlayer, view.PetPreviewImage, sourceBefore, frameBefore);
+            Ensure(!ReferenceEquals(sourceBefore, view.PetPreviewImage.Source) ||
+                   view.PreviewPlayer.CurrentFrameIndex != frameBefore,
+                $"Animated preview '{label}' must visibly advance to a different decoded frame.");
+        }
+    }
+
+    private static void WaitForPetFrameAdvance(
+        PetPreviewPlayer player,
+        Image image,
+        ImageSource? sourceBefore,
+        int frameBefore)
+    {
+        for (var attempt = 0; attempt < 30; attempt++)
+        {
+            AwaitWithDispatcher(Task.Delay(70));
+            if (!ReferenceEquals(sourceBefore, image.Source) ||
+                player.CurrentFrameIndex != frameBefore)
             {
-                var offset = y * stride + x * 4;
-                var inside = Math.Pow((x - width / 2d) / 18d, 2) +
-                    Math.Pow((y - height / 2d) / 21d, 2) <= 1;
-                pixels[offset] = inside ? color.B : (byte)0;
-                pixels[offset + 1] = inside ? color.G : (byte)0;
-                pixels[offset + 2] = inside ? color.R : (byte)0;
-                pixels[offset + 3] = inside ? (byte)255 : (byte)0;
+                return;
             }
         }
 
-        var bitmap = BitmapSource.Create(
-            width,
-            height,
-            96,
-            96,
-            PixelFormats.Bgra32,
-            null,
-            pixels,
-            stride);
-        var encoder = new PngBitmapEncoder();
-        encoder.Frames.Add(BitmapFrame.Create(bitmap));
-        using var stream = File.Create(path);
-        encoder.Save(stream);
-        return path;
+        throw new InvalidOperationException(
+            $"Preview '{player.CurrentKey}' did not advance within the bounded wait.");
+    }
+
+    private static void VerifyReducedMotionAndCorruptPreviewFallback(
+        IReadOnlyList<PetPreviewFrame> previews,
+        string corruptPreviewPath)
+    {
+        var showcase = previews.Single(preview => preview.Key == "showcase");
+        var reducedImage = new Image();
+        var reducedLabel = new TextBlock();
+        using (var reducedPlayer = new PetPreviewPlayer(
+                   reducedImage,
+                   reducedLabel,
+                   new FixedPetMotionPreference(isReducedMotion: true)))
+        {
+            reducedPlayer.Configure([showcase]);
+            reducedPlayer.SetDisplayBounds(420, 455);
+            reducedPlayer.SetActive(true);
+            AwaitWithDispatcher(reducedPlayer.WaitForCurrentLoadAsync());
+            var reducedSource = reducedImage.Source;
+            Ensure(reducedPlayer.IsReducedMotion &&
+                   !reducedPlayer.IsAnimating &&
+                   reducedPlayer.DecodedFrameCount == 1 &&
+                   reducedSource is BitmapSource &&
+                   reducedPlayer.PlaybackDescription.Contains("减少动态", StringComparison.Ordinal),
+                "Reduced-motion mode must decode one representative frame and keep its timer stopped.");
+            AwaitWithDispatcher(Task.Delay(260));
+            Ensure(ReferenceEquals(reducedSource, reducedImage.Source) &&
+                   reducedPlayer.CurrentFrameIndex == 0,
+                "Reduced-motion mode must never advance in the background.");
+        }
+
+        var corruptImage = new Image();
+        var corruptLabel = new TextBlock();
+        using var corruptPlayer = new PetPreviewPlayer(
+            corruptImage,
+            corruptLabel,
+            new FixedPetMotionPreference(isReducedMotion: false));
+        corruptPlayer.Configure(
+        [
+            new PetPreviewFrame(
+                "corrupt",
+                "损坏预览",
+                corruptPreviewPath,
+                ExpectedFrameCount: 2,
+                SourceWidth: 2,
+                SourceHeight: 2),
+        ]);
+        corruptPlayer.SetActive(true);
+        AwaitWithDispatcher(corruptPlayer.WaitForCurrentLoadAsync());
+        Ensure(corruptImage.Source is null &&
+               !corruptPlayer.IsAnimating &&
+               corruptPlayer.DecodedFrameCount == 0 &&
+               corruptPlayer.EstimatedDecodedBytes == 0 &&
+               corruptPlayer.PlaybackDescription.Contains("暂不可用", StringComparison.Ordinal),
+            "A damaged GIF must fail closed without blocking the UI or retaining decoded memory.");
     }
 
     private static void ArrangePetCenter(ScrollViewer host, double width, double height)
@@ -683,6 +821,53 @@ internal static partial class TestSuite
         throw new InvalidOperationException($"Unable to find pet action '{content}'.");
     }
 
+    private static ToggleButton FindPetPreviewToggle(DependencyObject root, string content)
+    {
+        foreach (var childValue in LogicalTreeHelper.GetChildren(root))
+        {
+            if (childValue is ToggleButton { Content: string text } toggle &&
+                string.Equals(text, content, StringComparison.Ordinal))
+            {
+                return toggle;
+            }
+
+            if (childValue is not DependencyObject child)
+            {
+                continue;
+            }
+
+            try
+            {
+                return FindPetPreviewToggle(child, content);
+            }
+            catch (InvalidOperationException)
+            {
+                // Continue searching siblings until the requested animated action is found.
+            }
+        }
+
+        throw new InvalidOperationException($"Unable to find pet preview '{content}'.");
+    }
+
+    private static int CountVisibleButtonsWithContent(DependencyObject root, string content)
+    {
+        var count = root is Button
+        {
+            Content: string text,
+            Visibility: Visibility.Visible,
+        } && string.Equals(text, content, StringComparison.Ordinal)
+            ? 1
+            : 0;
+        foreach (var childValue in LogicalTreeHelper.GetChildren(root))
+        {
+            if (childValue is DependencyObject child)
+            {
+                count += CountVisibleButtonsWithContent(child, content);
+            }
+        }
+        return count;
+    }
+
     private static void ClearPetCenterEventHandlers(
         PetCenterView view,
         bool preserveCopyCommand = false)
@@ -710,34 +895,6 @@ internal static partial class TestSuite
                     BindingFlags.Instance | BindingFlags.NonPublic)
                 ?.SetValue(view, null);
         }
-    }
-
-    private static DispatcherTimer GetPetPreviewTimer(PetCenterView view)
-    {
-        var player = typeof(PetCenterView).GetField(
-                "_previewPlayer",
-                BindingFlags.Instance | BindingFlags.NonPublic)
-            ?.GetValue(view)
-            ?? throw new MissingFieldException(nameof(PetCenterView), "_previewPlayer");
-        return (DispatcherTimer)(player.GetType().GetField(
-                "_timer",
-                BindingFlags.Instance | BindingFlags.NonPublic)
-            ?.GetValue(player)
-            ?? throw new MissingFieldException(player.GetType().Name, "_timer"));
-    }
-
-    private static void SetPetPreviewPlayerActive(PetCenterView view, bool active)
-    {
-        var player = typeof(PetCenterView).GetField(
-                "_previewPlayer",
-                BindingFlags.Instance | BindingFlags.NonPublic)
-            ?.GetValue(view)
-            ?? throw new MissingFieldException(nameof(PetCenterView), "_previewPlayer");
-        var method = player.GetType().GetMethod(
-            "SetActive",
-            BindingFlags.Instance | BindingFlags.Public)
-            ?? throw new MissingMethodException(player.GetType().Name, "SetActive");
-        method.Invoke(player, [active]);
     }
 
     private static void InvokePetVisibilityChanged(PetCenterView view)
@@ -845,6 +1002,17 @@ internal static partial class TestSuite
         {
             CopyCount++;
             LastText = text;
+        }
+    }
+
+    private sealed class FixedPetMotionPreference(bool isReducedMotion) : IPetMotionPreference
+    {
+        public bool IsReducedMotion { get; } = isReducedMotion;
+
+        public event EventHandler? Changed
+        {
+            add { }
+            remove { }
         }
     }
 }

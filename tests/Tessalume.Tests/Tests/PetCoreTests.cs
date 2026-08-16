@@ -22,6 +22,15 @@ internal static partial class TestSuite
         Ensure(builtInPackage.SpritesheetInfo is
         { Width: 1536, Height: 2288, HasAlpha: true, Encoding: "VP8L" },
             "The bundled lossless WebP header must declare the fixed dimensions and alpha channel.");
+        Ensure(builtInPackage.PreviewInfos.Count == 11 &&
+               builtInPackage.Catalog.Previews.Select(preview => preview.ActionKey).SequenceEqual(
+               [
+                   "idle", "move-right", "move-left", "wave-touch", "jump", "blocked",
+                   "needs-input", "running", "ready", "gaze-clockwise", "showcase",
+               ]) &&
+               builtInPackage.Catalog.Previews.Select(preview => preview.ExpectedFrameCount)
+                   .SequenceEqual([6, 8, 8, 4, 5, 8, 6, 6, 6, 16, 8]),
+            "The bundled catalog must expose all eleven truthful animated preview entries.");
 
         using var fixture = await PetCoreFixture.CreateAsync();
         var loader = new PetPackageLoader();
@@ -69,6 +78,79 @@ internal static partial class TestSuite
                    issue.Code == "catalog.file.hash.mismatch"),
             "A spritesheet hash mismatch must fail validation.");
 
+        var remotePreviewRoot = fixture.CopyPackage("remote-preview");
+        await PetMutateCatalogAsync(remotePreviewRoot, catalog =>
+        {
+            catalog["previews"]!.AsArray()[0]!["path"] = "https://example.invalid/idle.gif";
+        });
+        var remotePreview = await loader.LoadAsync(remotePreviewRoot);
+        Ensure(!remotePreview.Validation.IsValid && remotePreview.Validation.Issues.Any(issue =>
+                   issue.Code == "catalog.preview.path.invalid"),
+            "Remote GIF previews must be rejected as package-local resources.");
+
+        var corruptGifRoot = fixture.CopyPackage("corrupt-gif");
+        var corruptGifPath = Path.Combine(corruptGifRoot, "previews", "idle.gif");
+        var corruptGifBytes = await File.ReadAllBytesAsync(corruptGifPath);
+        corruptGifBytes[0] = (byte)'B';
+        await File.WriteAllBytesAsync(corruptGifPath, corruptGifBytes);
+        await PetRefreshCatalogFileAsync(corruptGifRoot, "previews/idle.gif");
+        var corruptGif = await loader.LoadAsync(corruptGifRoot);
+        Ensure(!corruptGif.Validation.IsValid && corruptGif.Validation.Issues.Any(issue =>
+                   issue.Code == "preview.gif.invalid"),
+            "A hash-consistent file with an invalid GIF signature must fail structural validation.");
+
+        var wrongGifFramesRoot = fixture.CopyPackage("wrong-gif-frames");
+        await PetMutateCatalogAsync(wrongGifFramesRoot, catalog =>
+        {
+            catalog["previews"]!.AsArray()[0]!["expectedFrameCount"] = 3;
+        });
+        var wrongGifFrames = await loader.LoadAsync(wrongGifFramesRoot);
+        Ensure(!wrongGifFrames.Validation.IsValid && wrongGifFrames.Validation.Issues.Any(issue =>
+                   issue.Code == "preview.gif.frame-count.mismatch"),
+            "GIF frame counts must match the explicit animated-preview contract.");
+
+        var wrongGifDimensionsRoot = fixture.CopyPackage("wrong-gif-dimensions");
+        await PetMutateCatalogAsync(wrongGifDimensionsRoot, catalog =>
+        {
+            catalog["previews"]!.AsArray()[0]!["width"] = 1281;
+        });
+        var wrongGifDimensions = await loader.LoadAsync(wrongGifDimensionsRoot);
+        Ensure(!wrongGifDimensions.Validation.IsValid && wrongGifDimensions.Validation.Issues.Any(issue =>
+                   issue.Code == "catalog.preview.dimensions.invalid"),
+            "Declared GIF dimensions outside the decoder boundary must be rejected.");
+
+        var abnormalDelayRoot = fixture.CopyPackage("abnormal-gif-delay");
+        var abnormalDelayPath = Path.Combine(abnormalDelayRoot, "previews", "idle.gif");
+        var abnormalDelayBytes = await File.ReadAllBytesAsync(abnormalDelayPath);
+        var graphicsControlIndex = abnormalDelayBytes.AsSpan().IndexOf(
+            new byte[] { 0x21, 0xf9, 0x04, 0x08 });
+        Ensure(graphicsControlIndex >= 0, "The synthetic GIF must expose a graphics-control delay.");
+        abnormalDelayBytes[graphicsControlIndex + 4] = 0xff;
+        abnormalDelayBytes[graphicsControlIndex + 5] = 0xff;
+        await File.WriteAllBytesAsync(abnormalDelayPath, abnormalDelayBytes);
+        await PetRefreshCatalogFileAsync(abnormalDelayRoot, "previews/idle.gif");
+        var abnormalDelay = await loader.LoadAsync(abnormalDelayRoot);
+        Ensure(!abnormalDelay.Validation.IsValid && abnormalDelay.Validation.Issues.Any(issue =>
+                   issue.Code == "preview.gif.delay.invalid"),
+            "Abnormal GIF frame delays must fail the bounded playback contract.");
+
+        var oversizedPreviewRoot = fixture.CopyPackage("oversized-gif");
+        var oversizedPreviewPath = Path.Combine(oversizedPreviewRoot, "previews", "idle.gif");
+        await using (var oversizedPreview = new FileStream(
+                         oversizedPreviewPath,
+                         FileMode.Open,
+                         FileAccess.Write,
+                         FileShare.None))
+        {
+            oversizedPreview.SetLength(PetPackageContract.MaximumPreviewFileBytes + 1);
+        }
+        await PetRefreshCatalogFileAsync(oversizedPreviewRoot, "previews/idle.gif");
+        var oversizedPreviewResult = await loader.LoadAsync(oversizedPreviewRoot);
+        Ensure(!oversizedPreviewResult.Validation.IsValid &&
+               oversizedPreviewResult.Validation.Issues.Any(issue =>
+                   issue.Code == "catalog.preview.file.too-large"),
+            "GIF preview files above 8 MiB must be rejected before playback.");
+
         var falseCountRoot = fixture.CopyPackage("false-count");
         await PetMutateCatalogAsync(falseCountRoot, catalog =>
         {
@@ -96,8 +178,8 @@ internal static partial class TestSuite
         if (OperatingSystem.IsWindows())
         {
             var hardLinkRoot = fixture.CopyPackage("hard-link");
-            var linkedPreview = Path.Combine(hardLinkRoot, "previews", "idle.png");
-            var externalPreview = Path.Combine(fixture.Root, "outside-preview.png");
+            var linkedPreview = Path.Combine(hardLinkRoot, "previews", "idle.gif");
+            var externalPreview = Path.Combine(fixture.Root, "outside-preview.gif");
             File.Copy(linkedPreview, externalPreview);
             File.Delete(linkedPreview);
             if (CreateHardLink(linkedPreview, externalPreview, IntPtr.Zero))
@@ -910,18 +992,19 @@ internal static partial class TestSuite
                 Path.Combine(packageRoot, "spritesheet.webp"),
                 CreateWebP(payloadMarker));
             await File.WriteAllBytesAsync(
-                Path.Combine(packageRoot, "previews", "idle.png"),
-                [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+                Path.Combine(packageRoot, "previews", "idle.gif"),
+                Convert.FromBase64String(
+                    "R0lGODlhAgACAIEAAAAAAAAAAAAAAAAAACH/C05FVFNDQVBFMi4wAwEAAAAh+QQICgAAACwAAAAAAgACAAAIBgABCAQQEAAh+QQIDAAAACwAAAAAAgACAIH///8AAAAAAAAAAAAIBgABCAQQEAA7"));
 
             var files = new[]
             {
                 await CatalogFileAsync(packageRoot, "pet.json", PetPackageContract.ManifestRole),
                 await CatalogFileAsync(packageRoot, "spritesheet.webp", PetPackageContract.SpritesheetRole),
-                await CatalogFileAsync(packageRoot, "previews/idle.png", PetPackageContract.PreviewRole),
+                await CatalogFileAsync(packageRoot, "previews/idle.gif", PetPackageContract.PreviewRole),
             };
             var catalog = new
             {
-                schemaVersion = 1,
+                schemaVersion = 2,
                 id = "test.flying-pet",
                 displayName = "Test Flying Pet",
                 description = "Temporary test-only pet package.",
@@ -954,7 +1037,20 @@ internal static partial class TestSuite
                 files,
                 previews = new[]
                 {
-                    new { path = "previews/idle.png", kind = "primary", label = "Idle", stateKey = "idle" },
+                    new
+                    {
+                        path = "previews/idle.gif",
+                        kind = "action",
+                        mediaType = "image/gif",
+                        actionKey = "idle",
+                        stateKey = "idle",
+                        label = "Idle",
+                        expectedFrameCount = 2,
+                        width = 2,
+                        height = 2,
+                        representativeFrame = 0,
+                        loop = true,
+                    },
                 },
                 recommendedThemeIds = new[] { "test.companion-theme" },
             };
