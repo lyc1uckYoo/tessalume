@@ -53,7 +53,7 @@
     <EmbeddedResource Include="$(BuiltInPetsRoot)\flying-snowfluff\catalog.json;$(BuiltInPetsRoot)\flying-snowfluff\pet.json;$(BuiltInPetsRoot)\flying-snowfluff\spritesheet.webp">
       <LogicalName>Tessalume.BuiltInPets/flying-snowfluff/%(Filename)%(Extension)</LogicalName>
     </EmbeddedResource>
-    <EmbeddedResource Include="$(BuiltInPetsRoot)\flying-snowfluff\previews\*.png">
+    <EmbeddedResource Include="$(BuiltInPetsRoot)\flying-snowfluff\previews\*.gif">
       <LogicalName>Tessalume.BuiltInPets/flying-snowfluff/previews/%(Filename)%(Extension)</LogicalName>
     </EmbeddedResource>
     <EmbeddedResource Include="..\..\examples\**\*">

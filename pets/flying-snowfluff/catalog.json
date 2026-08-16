@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "id": "flying-snowfluff",
   "displayName": "飞行雪绒",
   "description": "爱弥斯的电子幽灵形态：栖居在屏幕边缘、会工作也会撒娇的飞行雪绒。",
@@ -53,49 +53,84 @@
       "role": "codex-spritesheet"
     },
     {
-      "path": "previews/idle.png",
-      "sha256": "8405c958ad410307de0e293adc077e75806d22eedd05dc3a2fbbc447d160b860",
-      "size": 39449,
+      "path": "previews/00-idle.gif",
+      "sha256": "60b0cc3d2d56b18edd90d14a7b1997814ca687a739b7bb915715334d4c59591f",
+      "size": 639287,
       "role": "preview"
     },
     {
-      "path": "previews/running.png",
-      "sha256": "219964a976a172a16c746b0e9442619be2a3c34a6fdfdb77370834e470a09612",
-      "size": 39937,
+      "path": "previews/01-move-right.gif",
+      "sha256": "b5b74b92119184bf11df8024a026f3df8d37e6f5abae7cd382aca371d19db560",
+      "size": 818814,
       "role": "preview"
     },
     {
-      "path": "previews/needs-input.png",
-      "sha256": "d7eb2c4da658b1a2b8446fe910e5aae0aa164eda9ce1579a6edcecd5dcebec11",
-      "size": 39087,
+      "path": "previews/02-move-left.gif",
+      "sha256": "c68114b50db4185bedba679709ff02493e3130e53587c85a27bc787e9c34d067",
+      "size": 819337,
       "role": "preview"
     },
     {
-      "path": "previews/ready.png",
-      "sha256": "f5bbccae0b02042c8cc9dc8fffe888b97675581286234ea717256d7a1eaa184a",
-      "size": 38240,
+      "path": "previews/03-wave-touch.gif",
+      "sha256": "94f798ec0ee54333a3b9b4323725021fcbb17bf692fc42fc989024660b6d5588",
+      "size": 391051,
       "role": "preview"
     },
     {
-      "path": "previews/blocked.png",
-      "sha256": "e03c0354415570d73031ecd93d3ffb32b8a1b500e4c5760df38398b500c6dd13",
-      "size": 33235,
+      "path": "previews/04-jump.gif",
+      "sha256": "387549db801d38e3369ceedd23ca1463bc127949ddc484c21135e6978ee51128",
+      "size": 479933,
       "role": "preview"
     },
     {
-      "path": "previews/showcase-grid.png",
-      "sha256": "911330e4b8c81fc5fb9b3e8b325bca0aa9bd8207c4c7036015c54258a99c1fb2",
-      "size": 913920,
+      "path": "previews/05-blocked.gif",
+      "sha256": "2d4098463eee44832d31e627de1e8e906774ac5788ad854f817e121414ccfe63",
+      "size": 685489,
+      "role": "preview"
+    },
+    {
+      "path": "previews/06-needs-input.gif",
+      "sha256": "6e6b010ee9f27bc07d63376207b3256c759ece3936388e116736cc9cfaca7a56",
+      "size": 640387,
+      "role": "preview"
+    },
+    {
+      "path": "previews/07-running.gif",
+      "sha256": "6a3d95d3742fb4cf7c497868527748954fcf4ee5206106006057c147178c81f7",
+      "size": 612340,
+      "role": "preview"
+    },
+    {
+      "path": "previews/08-ready.gif",
+      "sha256": "3b7c4d543299b2406c46cd10a83161753099950b340c0f4ce1e8a3cf0857cf79",
+      "size": 581373,
+      "role": "preview"
+    },
+    {
+      "path": "previews/10-gaze-clockwise.gif",
+      "sha256": "d3e8647954cdfbabc9ee31490dd4fe8a2479e0ae1f0816765284e673fb58a255",
+      "size": 1375007,
+      "role": "preview"
+    },
+    {
+      "path": "previews/showcase.gif",
+      "sha256": "79b97beff291f1c5fafd6d42e36afebe0b98b74c1626059012d47a2cf052c370",
+      "size": 3389774,
       "role": "preview"
     }
   ],
   "previews": [
-    { "path": "previews/idle.png", "kind": "primary", "label": "待机", "stateKey": "idle" },
-    { "path": "previews/running.png", "kind": "state", "label": "正在工作", "stateKey": "running" },
-    { "path": "previews/needs-input.png", "kind": "state", "label": "等待输入", "stateKey": "needs-input" },
-    { "path": "previews/ready.png", "kind": "state", "label": "完成待看", "stateKey": "ready" },
-    { "path": "previews/blocked.png", "kind": "state", "label": "遇到阻塞", "stateKey": "blocked" },
-    { "path": "previews/showcase-grid.png", "kind": "showcase", "label": "动作九宫格", "stateKey": "showcase" }
+    { "path": "previews/00-idle.gif", "kind": "action", "mediaType": "image/gif", "actionKey": "idle", "stateKey": "idle", "label": "待机", "expectedFrameCount": 6, "width": 576, "height": 624, "representativeFrame": 0, "loop": true },
+    { "path": "previews/01-move-right.gif", "kind": "action", "mediaType": "image/gif", "actionKey": "move-right", "stateKey": "move-right", "label": "向右移动", "expectedFrameCount": 8, "width": 576, "height": 624, "representativeFrame": 0, "loop": true },
+    { "path": "previews/02-move-left.gif", "kind": "action", "mediaType": "image/gif", "actionKey": "move-left", "stateKey": "move-left", "label": "向左移动", "expectedFrameCount": 8, "width": 576, "height": 624, "representativeFrame": 0, "loop": true },
+    { "path": "previews/03-wave-touch.gif", "kind": "action", "mediaType": "image/gif", "actionKey": "wave-touch", "stateKey": "wave-touch", "label": "挥手互动", "expectedFrameCount": 4, "width": 576, "height": 624, "representativeFrame": 0, "loop": true },
+    { "path": "previews/04-jump.gif", "kind": "action", "mediaType": "image/gif", "actionKey": "jump", "stateKey": "jump", "label": "跳跃", "expectedFrameCount": 5, "width": 576, "height": 624, "representativeFrame": 0, "loop": true },
+    { "path": "previews/05-blocked.gif", "kind": "action", "mediaType": "image/gif", "actionKey": "blocked", "stateKey": "blocked", "label": "遇到阻塞", "expectedFrameCount": 8, "width": 576, "height": 624, "representativeFrame": 0, "loop": true },
+    { "path": "previews/06-needs-input.gif", "kind": "action", "mediaType": "image/gif", "actionKey": "needs-input", "stateKey": "needs-input", "label": "等待输入", "expectedFrameCount": 6, "width": 576, "height": 624, "representativeFrame": 0, "loop": true },
+    { "path": "previews/07-running.gif", "kind": "action", "mediaType": "image/gif", "actionKey": "running", "stateKey": "running", "label": "正在工作", "expectedFrameCount": 6, "width": 576, "height": 624, "representativeFrame": 0, "loop": true },
+    { "path": "previews/08-ready.gif", "kind": "action", "mediaType": "image/gif", "actionKey": "ready", "stateKey": "ready", "label": "完成待看", "expectedFrameCount": 6, "width": 576, "height": 624, "representativeFrame": 0, "loop": true },
+    { "path": "previews/10-gaze-clockwise.gif", "kind": "direction", "mediaType": "image/gif", "actionKey": "gaze-clockwise", "stateKey": "gaze-clockwise", "label": "16 向转身", "expectedFrameCount": 16, "width": 576, "height": 684, "representativeFrame": 0, "loop": true },
+    { "path": "previews/showcase.gif", "kind": "showcase", "mediaType": "image/gif", "actionKey": "showcase", "stateKey": "showcase", "label": "动态九宫格", "expectedFrameCount": 8, "width": 1152, "height": 1248, "representativeFrame": 0, "loop": true }
   ],
   "recommendedThemeIds": [
     "aemeath.star-voyage"

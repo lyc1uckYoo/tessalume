@@ -19,6 +19,12 @@ public sealed partial class PetPackageLoader
         PetPackageContract.SpritesheetRole,
         PetPackageContract.PreviewRole,
     };
+    private static readonly HashSet<string> AllowedPreviewKinds = new(StringComparer.Ordinal)
+    {
+        PetPackageContract.ActionPreviewKind,
+        PetPackageContract.DirectionPreviewKind,
+        PetPackageContract.ShowcasePreviewKind,
+    };
 
     public async Task<PetLoadResult> LoadAsync(
         string packageDirectory,
@@ -134,6 +140,26 @@ public sealed partial class PetPackageLoader
         ValidateFileRoles(catalog, filesByPath, validation);
         ValidatePreviews(catalog, filesByPath, validation);
 
+        var previewInfos = new Dictionary<string, PetGifInfo>(StringComparer.OrdinalIgnoreCase);
+        foreach (var preview in catalog.Previews)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (!resolvedFiles.TryGetValue(preview.Path, out var previewPath))
+            {
+                continue;
+            }
+            try
+            {
+                var info = await PetGifReader.ReadAsync(previewPath, cancellationToken);
+                ValidateGifPreview(preview, info, validation);
+                previewInfos[preview.Path] = info;
+            }
+            catch (InvalidDataException exception)
+            {
+                validation.AddError("preview.gif.invalid", exception.Message, preview.Path);
+            }
+        }
+
         var manifestPath = Path.Combine(root, PetPackageContract.ManifestFileName);
         var manifest = await ReadJsonAsync<PetManifest>(
             manifestPath,
@@ -179,7 +205,8 @@ public sealed partial class PetPackageLoader
                 catalog,
                 manifest,
                 resolvedFiles,
-                spritesheetInfo),
+                spritesheetInfo,
+                previewInfos),
             validation);
     }
 
@@ -287,6 +314,10 @@ public sealed partial class PetPackageLoader
             {
                 Path = preview.Path ?? string.Empty,
                 Kind = preview.Kind ?? string.Empty,
+                MediaType = preview.MediaType ?? string.Empty,
+                ActionKey = preview.ActionKey ?? string.Empty,
+                Label = preview.Label ?? string.Empty,
+                StateKey = preview.StateKey ?? string.Empty,
             });
         }
         var recommendedThemeIds = (catalog.RecommendedThemeIds ?? [])
@@ -521,6 +552,7 @@ public sealed partial class PetPackageLoader
         PetValidationResult validation)
     {
         var previewPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var actionKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var preview in catalog.Previews)
         {
             if (!PetPathSafety.IsSafeRelativePath(preview.Path) ||
@@ -530,18 +562,57 @@ public sealed partial class PetPackageLoader
                 validation.AddError("catalog.preview.path.invalid", "宠物预览路径无效或重复。", preview.Path);
                 continue;
             }
-            if (string.IsNullOrWhiteSpace(preview.Kind))
+            if (!AllowedPreviewKinds.Contains(preview.Kind))
             {
-                validation.AddError("catalog.preview.kind.missing", "宠物预览类型不能为空。", preview.Path);
+                validation.AddError("catalog.preview.kind.invalid", "宠物动态预览类型无效。", preview.Path);
+            }
+            if (!string.Equals(preview.MediaType, PetPackageContract.GifMediaType, StringComparison.Ordinal))
+            {
+                validation.AddError("catalog.preview.media-type.invalid", "宠物动态预览必须声明 image/gif。", preview.Path);
+            }
+            if (!PreviewActionKeyRegex().IsMatch(preview.ActionKey) ||
+                !actionKeys.Add(preview.ActionKey))
+            {
+                validation.AddError("catalog.preview.action-key.invalid", "宠物动作 key 无效或重复。", preview.Path);
+            }
+            if (!string.Equals(preview.StateKey, preview.ActionKey, StringComparison.Ordinal))
+            {
+                validation.AddError("catalog.preview.state-key.mismatch", "兼容状态 key 必须与动作 key 一致。", preview.Path);
+            }
+            if (string.IsNullOrWhiteSpace(preview.Label))
+            {
+                validation.AddError("catalog.preview.label.missing", "宠物动作标签不能为空。", preview.Path);
+            }
+            if (preview.ExpectedFrameCount is < 2 or > PetPackageContract.MaximumPreviewFrames)
+            {
+                validation.AddError("catalog.preview.frame-count.invalid", "宠物动态预览声明帧数无效。", preview.Path);
+            }
+            if (preview.Width is <= 0 or > PetPackageContract.MaximumPreviewWidth ||
+                preview.Height is <= 0 or > PetPackageContract.MaximumPreviewHeight)
+            {
+                validation.AddError("catalog.preview.dimensions.invalid", "宠物动态预览声明尺寸越界。", preview.Path);
+            }
+            if (preview.RepresentativeFrame < 0 ||
+                preview.RepresentativeFrame >= preview.ExpectedFrameCount)
+            {
+                validation.AddError("catalog.preview.representative-frame.invalid", "宠物代表帧索引越界。", preview.Path);
+            }
+            if (!preview.Loop)
+            {
+                validation.AddError("catalog.preview.loop.invalid", "内置宠物动态预览必须循环播放。", preview.Path);
             }
             if (!filesByPath.TryGetValue(preview.Path, out var file) ||
                 file.Role != PetPackageContract.PreviewRole)
             {
                 validation.AddError("catalog.preview.file.invalid", "每个预览必须对应 role=preview 的已声明文件。", preview.Path);
             }
-            if (!string.Equals(Path.GetExtension(preview.Path), ".png", StringComparison.OrdinalIgnoreCase))
+            else if (file.Size > PetPackageContract.MaximumPreviewFileBytes)
             {
-                validation.AddError("catalog.preview.extension.invalid", "内置宠物预览必须是 PNG。", preview.Path);
+                validation.AddError("catalog.preview.file.too-large", "GIF 预览超过 8 MiB 安全限制。", preview.Path);
+            }
+            if (!string.Equals(Path.GetExtension(preview.Path), ".gif", StringComparison.OrdinalIgnoreCase))
+            {
+                validation.AddError("catalog.preview.extension.invalid", "内置宠物动态预览必须是 GIF。", preview.Path);
             }
         }
         foreach (var file in catalog.Files.Where(file => file.Role == PetPackageContract.PreviewRole))
@@ -554,6 +625,36 @@ public sealed partial class PetPackageLoader
         if (catalog.Previews.Count == 0)
         {
             validation.AddError("catalog.previews.empty", "宠物包至少需要一个产品预览。");
+        }
+    }
+
+    private static void ValidateGifPreview(
+        PetPreviewMetadata preview,
+        PetGifInfo info,
+        PetValidationResult validation)
+    {
+        if (info.Width != preview.Width || info.Height != preview.Height)
+        {
+            validation.AddError(
+                "preview.gif.dimensions.mismatch",
+                $"GIF 实际尺寸必须是 catalog 声明的 {preview.Width}×{preview.Height}。",
+                preview.Path);
+        }
+        if (info.FrameCount != preview.ExpectedFrameCount)
+        {
+            validation.AddError(
+                "preview.gif.frame-count.mismatch",
+                $"GIF 实际帧数必须是 catalog 声明的 {preview.ExpectedFrameCount}。",
+                preview.Path);
+        }
+        if (info.FrameDelaysMilliseconds.Any(delay =>
+                delay < PetPackageContract.MinimumPreviewDelayMilliseconds ||
+                delay > PetPackageContract.MaximumPreviewDelayMilliseconds))
+        {
+            validation.AddError(
+                "preview.gif.delay.invalid",
+                $"GIF 帧延时必须介于 {PetPackageContract.MinimumPreviewDelayMilliseconds}–{PetPackageContract.MaximumPreviewDelayMilliseconds} ms。",
+                preview.Path);
         }
     }
 
@@ -623,4 +724,7 @@ public sealed partial class PetPackageLoader
 
     [GeneratedRegex("^[a-z0-9][a-z0-9.-]{2,127}$", RegexOptions.CultureInvariant)]
     private static partial Regex ThemeIdRegex();
+
+    [GeneratedRegex("^[a-z0-9][a-z0-9-]{1,63}$", RegexOptions.CultureInvariant)]
+    private static partial Regex PreviewActionKeyRegex();
 }

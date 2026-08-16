@@ -172,19 +172,127 @@ function Test-SafePetRelativePath([string]$Path) {
         @($segments | Where-Object { [string]::IsNullOrWhiteSpace($_) -or $_ -in @('.', '..') }).Count -eq 0
 }
 
-function Get-PetPngMetadata([string]$Path) {
-    $bytes = [IO.File]::ReadAllBytes($Path)
-    $signature = [byte[]](0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a)
-    $hasValidSignature = $bytes.Length -ge 26
-    for ($index = 0; $hasValidSignature -and $index -lt $signature.Length; $index++) {
-        $hasValidSignature = $bytes[$index] -eq $signature[$index]
+function Read-PetGifByte([IO.BinaryReader]$Reader, [IO.Stream]$Stream, [string]$Path) {
+    if ($Stream.Position -ge $Stream.Length) {
+        throw "Built-in pet GIF ended unexpectedly: $Path"
     }
-    if (-not $hasValidSignature) {
-        throw "Built-in pet preview is not a valid PNG: $Path"
+    return $Reader.ReadByte()
+}
+
+function Skip-PetGifBytes([IO.Stream]$Stream, [long]$Count, [string]$Path) {
+    if ($Count -lt 0 -or $Stream.Position -gt $Stream.Length - $Count) {
+        throw "Built-in pet GIF contains an out-of-bounds block: $Path"
     }
-    $width = ([int]$bytes[16] -shl 24) -bor ([int]$bytes[17] -shl 16) -bor ([int]$bytes[18] -shl 8) -bor [int]$bytes[19]
-    $height = ([int]$bytes[20] -shl 24) -bor ([int]$bytes[21] -shl 16) -bor ([int]$bytes[22] -shl 8) -bor [int]$bytes[23]
-    return [pscustomobject]@{ Width = $width; Height = $height; ColorType = [int]$bytes[25] }
+    $Stream.Position += $Count
+}
+
+function Skip-PetGifSubBlocks([IO.BinaryReader]$Reader, [IO.Stream]$Stream, [string]$Path) {
+    while ($true) {
+        $length = Read-PetGifByte $Reader $Stream $Path
+        if ($length -eq 0) { return }
+        Skip-PetGifBytes $Stream $length $Path
+    }
+}
+
+function Get-PetGifMetadata([string]$Path) {
+    $stream = [IO.File]::Open($Path, [IO.FileMode]::Open, [IO.FileAccess]::Read, [IO.FileShare]::Read)
+    $reader = [IO.BinaryReader]::new($stream, [Text.Encoding]::ASCII, $true)
+    try {
+        if ($stream.Length -le 0 -or $stream.Length -gt 8MB) {
+            throw "Built-in pet GIF is empty or exceeds 8 MiB: $Path"
+        }
+        $signature = [Text.Encoding]::ASCII.GetString($reader.ReadBytes(6))
+        if ($signature -cnotin @('GIF87a', 'GIF89a')) {
+            throw "Built-in pet preview is not a valid GIF87a/GIF89a file: $Path"
+        }
+        $width = [int]$reader.ReadUInt16()
+        $height = [int]$reader.ReadUInt16()
+        if ($width -le 0 -or $height -le 0 -or $width -gt 1280 -or $height -gt 1280) {
+            throw "Built-in pet GIF dimensions exceed the 1280x1280 boundary: $Path"
+        }
+        $packed = Read-PetGifByte $reader $stream $Path
+        Skip-PetGifBytes $stream 2 $Path
+        if (($packed -band 0x80) -ne 0) {
+            Skip-PetGifBytes $stream (3 * (1 -shl (($packed -band 0x07) + 1))) $Path
+        }
+
+        $frameCount = 0
+        $frameDelays = [Collections.Generic.List[int]]::new()
+        $pendingDelay = 100
+        $foundTrailer = $false
+        while ($stream.Position -lt $stream.Length) {
+            $introducer = Read-PetGifByte $reader $stream $Path
+            if ($introducer -eq 0x21) {
+                $label = Read-PetGifByte $reader $stream $Path
+                if ($label -eq 0xf9) {
+                    if ((Read-PetGifByte $reader $stream $Path) -ne 4) {
+                        throw "Built-in pet GIF has an invalid graphics-control block: $Path"
+                    }
+                    Skip-PetGifBytes $stream 1 $Path
+                    $delayUnits = [int]$reader.ReadUInt16()
+                    Skip-PetGifBytes $stream 1 $Path
+                    if ((Read-PetGifByte $reader $stream $Path) -ne 0) {
+                        throw "Built-in pet GIF has an invalid graphics-control terminator: $Path"
+                    }
+                    $pendingDelay = if ($delayUnits -eq 0) { 100 } else { $delayUnits * 10 }
+                }
+                else {
+                    Skip-PetGifSubBlocks $reader $stream $Path
+                }
+                continue
+            }
+            if ($introducer -eq 0x2c) {
+                $left = [int]$reader.ReadUInt16()
+                $top = [int]$reader.ReadUInt16()
+                $frameWidth = [int]$reader.ReadUInt16()
+                $frameHeight = [int]$reader.ReadUInt16()
+                $imagePacked = Read-PetGifByte $reader $stream $Path
+                if ($frameWidth -le 0 -or $frameHeight -le 0 -or
+                    $left + $frameWidth -gt $width -or $top + $frameHeight -gt $height) {
+                    throw "Built-in pet GIF frame escapes its logical canvas: $Path"
+                }
+                if (($imagePacked -band 0x80) -ne 0) {
+                    Skip-PetGifBytes $stream (3 * (1 -shl (($imagePacked -band 0x07) + 1))) $Path
+                }
+                $minimumCodeSize = Read-PetGifByte $reader $stream $Path
+                if ($minimumCodeSize -lt 2 -or $minimumCodeSize -gt 8) {
+                    throw "Built-in pet GIF has an invalid LZW code size: $Path"
+                }
+                Skip-PetGifSubBlocks $reader $stream $Path
+                $frameCount++
+                $frameDelays.Add($pendingDelay)
+                $pendingDelay = 100
+                if ($frameCount -gt 24) {
+                    throw "Built-in pet GIF exceeds the 24-frame boundary: $Path"
+                }
+                continue
+            }
+            if ($introducer -eq 0x3b) {
+                $foundTrailer = $true
+                if ($stream.Position -ne $stream.Length) {
+                    throw "Built-in pet GIF contains trailing bytes: $Path"
+                }
+                break
+            }
+            throw "Built-in pet GIF contains an unsupported data block: $Path"
+        }
+        if (-not $foundTrailer -or $frameCount -lt 2) {
+            throw "Built-in pet GIF must have a trailer and at least two frames: $Path"
+        }
+        if (@($frameDelays | Where-Object { $_ -lt 20 -or $_ -gt 2000 }).Count -gt 0) {
+            throw "Built-in pet GIF frame delays must stay between 20 and 2000 ms: $Path"
+        }
+        return [pscustomobject]@{
+            Width = $width
+            Height = $height
+            FrameCount = $frameCount
+            FrameDelays = @($frameDelays)
+        }
+    }
+    finally {
+        $reader.Dispose()
+        $stream.Dispose()
+    }
 }
 
 function Get-PetWebPMetadata([string]$Path) {
@@ -266,12 +374,17 @@ function Assert-BuiltInPetPackages([string]$PetsRoot, [string[]]$ExpectedPackage
         [pscustomobject]@{ Key = 'gaze-lower'; Row = 10; Frames = 8 }
     )
     $expectedPreviews = @(
-        [pscustomobject]@{ Path = 'previews/idle.png'; Kind = 'primary'; StateKey = 'idle'; Width = 192; Height = 208; ColorType = 6 },
-        [pscustomobject]@{ Path = 'previews/running.png'; Kind = 'state'; StateKey = 'running'; Width = 192; Height = 208; ColorType = 6 },
-        [pscustomobject]@{ Path = 'previews/needs-input.png'; Kind = 'state'; StateKey = 'needs-input'; Width = 192; Height = 208; ColorType = 6 },
-        [pscustomobject]@{ Path = 'previews/ready.png'; Kind = 'state'; StateKey = 'ready'; Width = 192; Height = 208; ColorType = 6 },
-        [pscustomobject]@{ Path = 'previews/blocked.png'; Kind = 'state'; StateKey = 'blocked'; Width = 192; Height = 208; ColorType = 6 },
-        [pscustomobject]@{ Path = 'previews/showcase-grid.png'; Kind = 'showcase'; StateKey = 'showcase'; Width = 1152; Height = 1248; ColorType = 2 }
+        [pscustomobject]@{ Path = 'previews/00-idle.gif'; Kind = 'action'; ActionKey = 'idle'; Label = '待机'; Width = 576; Height = 624; Frames = 6 },
+        [pscustomobject]@{ Path = 'previews/01-move-right.gif'; Kind = 'action'; ActionKey = 'move-right'; Label = '向右移动'; Width = 576; Height = 624; Frames = 8 },
+        [pscustomobject]@{ Path = 'previews/02-move-left.gif'; Kind = 'action'; ActionKey = 'move-left'; Label = '向左移动'; Width = 576; Height = 624; Frames = 8 },
+        [pscustomobject]@{ Path = 'previews/03-wave-touch.gif'; Kind = 'action'; ActionKey = 'wave-touch'; Label = '挥手互动'; Width = 576; Height = 624; Frames = 4 },
+        [pscustomobject]@{ Path = 'previews/04-jump.gif'; Kind = 'action'; ActionKey = 'jump'; Label = '跳跃'; Width = 576; Height = 624; Frames = 5 },
+        [pscustomobject]@{ Path = 'previews/05-blocked.gif'; Kind = 'action'; ActionKey = 'blocked'; Label = '遇到阻塞'; Width = 576; Height = 624; Frames = 8 },
+        [pscustomobject]@{ Path = 'previews/06-needs-input.gif'; Kind = 'action'; ActionKey = 'needs-input'; Label = '等待输入'; Width = 576; Height = 624; Frames = 6 },
+        [pscustomobject]@{ Path = 'previews/07-running.gif'; Kind = 'action'; ActionKey = 'running'; Label = '正在工作'; Width = 576; Height = 624; Frames = 6 },
+        [pscustomobject]@{ Path = 'previews/08-ready.gif'; Kind = 'action'; ActionKey = 'ready'; Label = '完成待看'; Width = 576; Height = 624; Frames = 6 },
+        [pscustomobject]@{ Path = 'previews/10-gaze-clockwise.gif'; Kind = 'direction'; ActionKey = 'gaze-clockwise'; Label = '16 向转身'; Width = 576; Height = 684; Frames = 16 },
+        [pscustomobject]@{ Path = 'previews/showcase.gif'; Kind = 'showcase'; ActionKey = 'showcase'; Label = '动态九宫格'; Width = 1152; Height = 1248; Frames = 8 }
     )
     $packages = @()
     foreach ($expectedName in $expectedNames) {
@@ -289,7 +402,7 @@ function Assert-BuiltInPetPackages([string]$PetsRoot, [string[]]$ExpectedPackage
         $catalog = Get-Content -Raw -Encoding UTF8 -LiteralPath $catalogPath | ConvertFrom-Json
         $manifest = Get-Content -Raw -Encoding UTF8 -LiteralPath $manifestPath | ConvertFrom-Json
         $parsedVersion = $null
-        if ([int]$catalog.schemaVersion -ne 1 -or
+        if ([int]$catalog.schemaVersion -ne 2 -or
             [string]$catalog.id -cne $expectedName -or
             [string]$catalog.id -cne [string]$manifest.id -or
             [string]$catalog.displayName -cne [string]$manifest.displayName -or
@@ -331,8 +444,8 @@ function Assert-BuiltInPetPackages([string]$PetsRoot, [string[]]$ExpectedPackage
         }
 
         $files = @($catalog.files)
-        if ($files.Count -ne 8) {
-            throw "Built-in pet package '$expectedName' must declare exactly two runtime files and six previews."
+        if ($files.Count -ne 13) {
+            throw "Built-in pet package '$expectedName' must declare exactly two runtime files and eleven animated previews."
         }
         $filesByPath = [Collections.Generic.Dictionary[string, object]]::new([StringComparer]::OrdinalIgnoreCase)
         $packagePrefix = $package.FullName.TrimEnd([IO.Path]::DirectorySeparatorChar) + [IO.Path]::DirectorySeparatorChar
@@ -352,7 +465,7 @@ function Assert-BuiltInPetPackages([string]$PetsRoot, [string[]]$ExpectedPackage
                 $role -ceq 'codex-spritesheet' -and
                 ($relativePath -cne 'spritesheet.webp' -or [long]$file.size -gt 32MB) -or
                 $role -ceq 'preview' -and
-                ($relativePath -cnotin $expectedPreviews.Path -or [long]$file.size -gt 2MB)) {
+                ($relativePath -cnotin $expectedPreviews.Path -or [long]$file.size -gt 8MB)) {
                 throw "Built-in pet package '$expectedName' violates its file-role boundary: '$relativePath'."
             }
 
@@ -375,12 +488,12 @@ function Assert-BuiltInPetPackages([string]$PetsRoot, [string[]]$ExpectedPackage
         if ($manifestFiles.Count -ne 1 -or [string]$manifestFiles[0].path -cne 'pet.json' -or
             $spritesheetFiles.Count -ne 1 -or [string]$spritesheetFiles[0].path -cne 'spritesheet.webp' -or
             $previewFiles.Count -ne $expectedPreviews.Count) {
-            throw "Built-in pet package '$expectedName' must have one manifest, one spritesheet, and six bounded previews."
+            throw "Built-in pet package '$expectedName' must have one manifest, one spritesheet, and eleven bounded GIF previews."
         }
 
         $previews = @($catalog.previews)
         if ($previews.Count -ne $expectedPreviews.Count) {
-            throw "Built-in pet package '$expectedName' must declare five state previews and one product preview."
+            throw "Built-in pet package '$expectedName' must declare all eleven animated preview entries."
         }
         $seenPreviews = [Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
         foreach ($expectedPreview in $expectedPreviews) {
@@ -388,16 +501,23 @@ function Assert-BuiltInPetPackages([string]$PetsRoot, [string[]]$ExpectedPackage
             if ($matches.Count -ne 1 -or
                 -not $seenPreviews.Add([string]$matches[0].path) -or
                 [string]$matches[0].kind -cne $expectedPreview.Kind -or
-                [string]$matches[0].stateKey -cne $expectedPreview.StateKey -or
-                [string]::IsNullOrWhiteSpace([string]$matches[0].label) -or
+                [string]$matches[0].mediaType -cne 'image/gif' -or
+                [string]$matches[0].actionKey -cne $expectedPreview.ActionKey -or
+                [string]$matches[0].stateKey -cne $expectedPreview.ActionKey -or
+                [string]$matches[0].label -cne $expectedPreview.Label -or
+                [int]$matches[0].expectedFrameCount -ne $expectedPreview.Frames -or
+                [int]$matches[0].width -ne $expectedPreview.Width -or
+                [int]$matches[0].height -ne $expectedPreview.Height -or
+                [int]$matches[0].representativeFrame -ne 0 -or
+                [bool]$matches[0].loop -ne $true -or
                 -not $filesByPath.ContainsKey($expectedPreview.Path) -or
                 [string]$filesByPath[$expectedPreview.Path].role -cne 'preview') {
                 throw "Built-in pet package '$expectedName' has invalid preview metadata: '$($expectedPreview.Path)'."
             }
-            $png = Get-PetPngMetadata (Join-Path $package.FullName ($expectedPreview.Path -replace '/', [IO.Path]::DirectorySeparatorChar))
-            if ($png.Width -ne $expectedPreview.Width -or $png.Height -ne $expectedPreview.Height -or
-                $png.ColorType -ne $expectedPreview.ColorType) {
-                throw "Built-in pet package '$expectedName' has an invalid preview image boundary: '$($expectedPreview.Path)'."
+            $gif = Get-PetGifMetadata (Join-Path $package.FullName ($expectedPreview.Path -replace '/', [IO.Path]::DirectorySeparatorChar))
+            if ($gif.Width -ne $expectedPreview.Width -or $gif.Height -ne $expectedPreview.Height -or
+                $gif.FrameCount -ne $expectedPreview.Frames) {
+                throw "Built-in pet package '$expectedName' has an invalid animated preview boundary: '$($expectedPreview.Path)'."
             }
         }
 

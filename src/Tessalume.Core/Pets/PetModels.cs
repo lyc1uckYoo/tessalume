@@ -4,12 +4,23 @@ namespace Tessalume.Core.Pets;
 
 public static class PetPackageContract
 {
-    public const int CatalogSchemaVersion = 1;
+    public const int CatalogSchemaVersion = 2;
     public const string CatalogFileName = "catalog.json";
     public const string ManifestFileName = "pet.json";
     public const string ManifestRole = "codex-manifest";
     public const string SpritesheetRole = "codex-spritesheet";
     public const string PreviewRole = "preview";
+    public const string GifMediaType = "image/gif";
+    public const string ActionPreviewKind = "action";
+    public const string DirectionPreviewKind = "direction";
+    public const string ShowcasePreviewKind = "showcase";
+
+    public const int MaximumPreviewWidth = 1280;
+    public const int MaximumPreviewHeight = 1280;
+    public const int MaximumPreviewFrames = 24;
+    public const long MaximumPreviewFileBytes = 8L * 1024 * 1024;
+    public const int MinimumPreviewDelayMilliseconds = 20;
+    public const int MaximumPreviewDelayMilliseconds = 2000;
 
     public const int SpriteVersionNumber = 2;
     public const int AtlasWidth = 1536;
@@ -184,14 +195,41 @@ public sealed record PetPreviewMetadata
     [JsonPropertyName("kind")]
     public string Kind { get; init; } = string.Empty;
 
+    [JsonPropertyName("mediaType")]
+    public string MediaType { get; init; } = string.Empty;
+
+    [JsonPropertyName("actionKey")]
+    public string ActionKey { get; init; } = string.Empty;
+
     [JsonPropertyName("label")]
     public string? Label { get; init; }
 
     [JsonPropertyName("stateKey")]
     public string? StateKey { get; init; }
+
+    [JsonPropertyName("expectedFrameCount")]
+    public int ExpectedFrameCount { get; init; }
+
+    [JsonPropertyName("width")]
+    public int Width { get; init; }
+
+    [JsonPropertyName("height")]
+    public int Height { get; init; }
+
+    [JsonPropertyName("representativeFrame")]
+    public int RepresentativeFrame { get; init; }
+
+    [JsonPropertyName("loop")]
+    public bool Loop { get; init; }
 }
 
 public sealed record PetWebPInfo(int Width, int Height, bool HasAlpha, string Encoding);
+
+public sealed record PetGifInfo(
+    int Width,
+    int Height,
+    int FrameCount,
+    IReadOnlyList<int> FrameDelaysMilliseconds);
 
 public sealed record PetPackage(
     string RootDirectory,
@@ -200,15 +238,17 @@ public sealed record PetPackage(
     PetCatalog Catalog,
     PetManifest Manifest,
     IReadOnlyDictionary<string, string> ResolvedFiles,
-    PetWebPInfo SpritesheetInfo)
+    PetWebPInfo SpritesheetInfo,
+    IReadOnlyDictionary<string, PetGifInfo> PreviewInfos)
 {
     public IEnumerable<PetCatalogFile> InstallFiles =>
         Catalog.Files.Where(file =>
             string.Equals(file.Role, PetPackageContract.ManifestRole, StringComparison.Ordinal) ||
             string.Equals(file.Role, PetPackageContract.SpritesheetRole, StringComparison.Ordinal));
 
-    public IEnumerable<(PetPreviewMetadata Metadata, string FullPath)> PreviewFiles =>
-        Catalog.Previews.Select(preview => (preview, ResolvedFiles[preview.Path]));
+    public IEnumerable<(PetPreviewMetadata Metadata, string FullPath, PetGifInfo GifInfo)> PreviewFiles =>
+        Catalog.Previews.Select(preview =>
+            (preview, ResolvedFiles[preview.Path], PreviewInfos[preview.Path]));
 }
 
 public sealed record PetLoadResult(PetPackage? Package, PetValidationResult Validation);
