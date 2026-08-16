@@ -306,9 +306,14 @@ internal sealed class PetApplicationService : IDisposable
             InstallLocation = _options.CodexPetsRoot,
             PreviewFrames = package.PreviewFiles
                 .Select(preview => new PetPreviewFrame(
-                    preview.Metadata.StateKey ?? Path.GetFileNameWithoutExtension(preview.FullPath),
-                    preview.Metadata.Label ?? preview.Metadata.StateKey ?? "状态预览",
-                    preview.FullPath))
+                    preview.Metadata.ActionKey,
+                    preview.Metadata.Label ?? preview.Metadata.ActionKey,
+                    preview.FullPath,
+                    preview.Metadata.Kind,
+                    preview.GifInfo.FrameCount,
+                    preview.GifInfo.Width,
+                    preview.GifInfo.Height,
+                    preview.Metadata.RepresentativeFrame))
                 .ToArray(),
         };
     }

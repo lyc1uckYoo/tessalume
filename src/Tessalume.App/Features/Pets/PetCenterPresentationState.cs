@@ -29,7 +29,12 @@ internal enum PetCenterAction
 internal sealed record PetPreviewFrame(
     string Key,
     string Label,
-    string? FilePath);
+    string? FilePath,
+    string Kind = "action",
+    int ExpectedFrameCount = 2,
+    int SourceWidth = 1,
+    int SourceHeight = 1,
+    int RepresentativeFrame = 0);
 
 internal sealed record PetCenterPresentationState
 {
