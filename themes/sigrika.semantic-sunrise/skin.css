@@ -369,14 +369,14 @@ html.sgk-theme.electron-dark aside [data-app-action-sidebar-thread-row] {
 
 .sgk-hero-kicker {
   color:var(--sgk-teal);
-  font:750 8px/1 var(--sgk-mono);
-  letter-spacing:.17em;
+  font:750 clamp(10px,.72vw,11px)/1.2 var(--sgk-mono);
+  letter-spacing:.14em;
 }
 
 .sgk-hero-kicker i {
-  width:11px;
-  height:8px;
-  margin-right:8px;
+  width:13px;
+  height:10px;
+  margin-right:10px;
   display:inline-block;
   vertical-align:middle;
   clip-path:polygon(0 50%,34% 0,100% 18%,75% 100%,23% 84%);
@@ -405,11 +405,13 @@ html.sgk-theme.electron-dark .sgk-hero-copy h1 em {
 }
 
 .sgk-hero-copy>p {
-  max-width:510px;
+  max-width:540px;
   margin:0;
   color:var(--sgk-text-2);
-  font-size:clamp(13px,.82vw,16px);
-  line-height:1.58;
+  font-size:clamp(15px,.95vw,17px);
+  font-weight:600;
+  line-height:1.68;
+  letter-spacing:.025em;
 }
 
 .sgk-semantic-engine {
@@ -476,7 +478,7 @@ html.sgk-theme.electron-dark .sgk-hero-copy h1 em {
 
 .sgk-semantic-label {
   position:absolute;
-  top:29px;
+  top:27px;
   display:flex;
   flex-direction:column;
   color:var(--sgk-text-2);
@@ -485,15 +487,15 @@ html.sgk-theme.electron-dark .sgk-hero-copy h1 em {
 }
 
 .sgk-semantic-label b {
-  font:800 8px/1 var(--sgk-serif);
+  font:800 10px/1 var(--sgk-serif);
   letter-spacing:.08em;
 }
 
 .sgk-semantic-label small {
   margin-top:2px;
   color:var(--sgk-text-3);
-  font:700 4.5px/1 var(--sgk-mono);
-  letter-spacing:.08em;
+  font:750 6.5px/1 var(--sgk-mono);
+  letter-spacing:.06em;
 }
 
 .sgk-label-expect {
@@ -529,17 +531,18 @@ html.sgk-theme.electron-dark .sgk-hero-copy h1 em {
 
 .sgk-hero-note small {
   color:var(--sgk-gold);
-  font:700 8px/1 var(--sgk-mono);
-  letter-spacing:.15em;
+  font:750 10px/1.2 var(--sgk-mono);
+  letter-spacing:.12em;
 }
 
 .sgk-hero-note strong {
-  margin-top:7px;
-  padding-left:12px;
+  margin-top:8px;
+  padding-left:13px;
   display:block;
   color:var(--sgk-text);
   border-left:3px solid var(--sgk-aqua);
-  font:750 13px/1.2 var(--sgk-serif);
+  font:750 clamp(14px,.9vw,16px)/1.3 var(--sgk-serif);
+  letter-spacing:.025em;
 }
 
 /* 05 Identity skin */

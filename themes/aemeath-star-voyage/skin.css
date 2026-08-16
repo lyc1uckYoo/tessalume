@@ -377,15 +377,15 @@ html.ae3-theme aside [data-app-action-sidebar-thread-row][aria-current="page"],h
 .ae3-kicker {
   display:flex;
   align-items:center;
-  gap:9px;
+  gap:10px;
   color:var(--ae3-pink);
-  font:700 8px/1 "Cascadia Code",Consolas,monospace;
-  letter-spacing:.17em;
+  font:750 clamp(10px,.72vw,11px)/1.2 "Cascadia Code",Consolas,monospace;
+  letter-spacing:.14em;
 }
 
 .ae3-kicker i {
-  width:11px;
-  height:11px;
+  width:12px;
+  height:12px;
   border:1px solid var(--ae3-cyan);
   border-radius:50%;
   background:radial-gradient(circle,var(--ae3-solid) 0 24%,var(--ae3-cyan) 28% 44%,var(--ae3-pink) 47%);
@@ -443,12 +443,12 @@ html.ae3-theme.electron-dark .ae3-hero-copy h1.ae3-dark-only em {
 
 .ae3-hero-copy>p {
   margin:0;
-  max-width:390px;
+  max-width:430px;
   color:var(--ae3-text2);
-  font-size:13px;
-  font-weight:550;
-  line-height:1.65;
-  letter-spacing:.04em;
+  font-size:clamp(14px,1vw,16px);
+  font-weight:600;
+  line-height:1.68;
+  letter-spacing:.025em;
   text-shadow:0 1px 7px var(--ae3-solid),0 0 14px var(--ae3-solid);
 }
 
@@ -597,21 +597,24 @@ html.ae3-theme.electron-dark .ae3-route-track {
 
 .ae3-mode {
   display:flex;
-  gap:12px;
+  gap:14px;
   align-items:center;
-  margin-top:11px;
+  margin-top:13px;
 }
 
 .ae3-mode small {
   color:var(--ae3-pink);
-  font:700 9px/1 "Microsoft YaHei UI",sans-serif;
-  letter-spacing:.17em;
+  font:750 11px/1.25 "Microsoft YaHei UI",sans-serif;
+  letter-spacing:.12em;
 }
 
 .ae3-mode strong {
-  padding-left:11px;
+  padding-left:13px;
   border-left:2px solid var(--ae3-cyan);
-  font-size:12px;
+  font-size:clamp(13px,.9vw,15px);
+  font-weight:700;
+  line-height:1.4;
+  letter-spacing:.025em;
   color:var(--ae3-text);
 }
 

@@ -373,15 +373,15 @@ html.xyl-theme aside [data-app-action-sidebar-thread-row][aria-current="page"],h
 .xyl-kicker {
   display:flex;
   align-items:center;
-  gap:9px;
+  gap:10px;
   color:var(--xyl-blue);
-  font:700 8px/1 var(--xyl-mono);
-  letter-spacing:.17em;
+  font:750 clamp(10px,.72vw,11px)/1.2 var(--xyl-mono);
+  letter-spacing:.14em;
 }
 
 .xyl-kicker i {
-  width:10px;
-  height:10px;
+  width:12px;
+  height:12px;
   border:1px solid var(--xyl-cyan);
   border-radius:50%;
   background:linear-gradient(90deg,var(--xyl-blue) 50%,transparent 51%);
@@ -390,36 +390,39 @@ html.xyl-theme aside [data-app-action-sidebar-thread-row][aria-current="page"],h
 }
 
 .xyl-hero-copy h1 {
-  margin:22px 0 10px;
-  font:800 clamp(38px,4vw,61px)/1.02 var(--xyl-serif);
-  letter-spacing:.04em;
+  margin:21px 0 12px;
+  font:820 clamp(40px,4.15vw,65px)/1.02 var(--xyl-serif);
+  letter-spacing:.03em;
   text-shadow:0 3px 21px color-mix(in srgb,var(--xyl-solid) 87%,transparent);
 }
 
 .xyl-hero-copy>p {
   margin:0;
-  max-width:430px;
+  max-width:470px;
   color:var(--xyl-text-2);
-  font-size:13px;
-  letter-spacing:.05em;
+  font-size:clamp(14px,.95vw,16px);
+  font-weight:600;
+  line-height:1.68;
+  letter-spacing:.025em;
 }
 
 .xyl-oracle-note {
   display:flex;
-  gap:12px;
+  gap:14px;
   align-items:center;
 }
 
 .xyl-oracle-note small {
   color:var(--xyl-gold);
-  font:700 9px/1 var(--xyl-serif);
-  letter-spacing:.18em;
+  font:750 11px/1.25 var(--xyl-serif);
+  letter-spacing:.12em;
 }
 
 .xyl-oracle-note strong {
-  padding-left:11px;
+  padding-left:13px;
   border-left:2px solid var(--xyl-blue);
-  font:700 12px/1 var(--xyl-serif);
+  font:750 clamp(14px,.9vw,15px)/1.4 var(--xyl-serif);
+  letter-spacing:.025em;
   color:var(--xyl-text);
 }
 
@@ -1676,12 +1679,6 @@ html.xyl-theme.electron-dark .xyl-plume-resonance {
 
 /* 12 Theme-only media behavior */
 /* 12 主题专属响应式与动效降级：尺寸适配与减少动效。 */
-@media(max-width:920px) {
-  .xyl-hero-copy h1 {
-    font-size:34px;
-  }
-}
-
 @media(prefers-reduced-motion:reduce) {
   .xyl-kicker i,
   .xyl-identity>i,

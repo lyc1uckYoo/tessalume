@@ -527,10 +527,6 @@ html.dny-theme:not(.electron-dark) aside [data-app-action-sidebar-thread-row][ar
 
 /* 04 Home skin */
 /* 04 首页皮肤：首页横幅、主标题、路线装饰与快捷卡片。 */
-html.dny-theme.electron-dark .dny-mode-note {
-  margin-top:8px;
-}
-
 .dny-hero-copy {
   color:var(--dny-text);
 }
@@ -540,20 +536,20 @@ html.dny-theme.electron-dark .dny-mode-note {
   align-items:center;
   gap:9px;
   width:max-content;
-  padding:7px 12px;
+  padding:8px 14px;
   border:1px solid var(--dny-line-strong);
   border-radius:999px;
   background:color-mix(in srgb,var(--dny-solid) 76%,transparent);
   box-shadow:var(--dny-shadow);
-  font:700 8px/1 var(--dny-font-mono);
-  letter-spacing:.16em;
+  font:750 clamp(10px,.72vw,11px)/1.2 var(--dny-font-mono);
+  letter-spacing:.13em;
   color:var(--dny-deep);
   backdrop-filter:blur(10px);
 }
 
 .dny-kicker i {
-  width:7px;
-  height:7px;
+  width:8px;
+  height:8px;
   border-radius:50%;
   background:var(--dny-primary);
   box-shadow:0 0 12px var(--dny-primary);
@@ -561,8 +557,8 @@ html.dny-theme.electron-dark .dny-mode-note {
 }
 
 .dny-hero-copy h1 {
-  margin:22px 0 9px;
-  font:800 clamp(35px,4vw,58px)/1.03 var(--dny-font-display);
+  margin:21px 0 11px;
+  font:820 clamp(39px,4.1vw,63px)/1.03 var(--dny-font-display);
   letter-spacing:-.055em;
   text-shadow:0 3px 20px color-mix(in srgb,var(--dny-solid) 80%,transparent);
 }
@@ -581,9 +577,12 @@ html.dny-theme.electron-dark .dny-mode-note {
 
 .dny-hero-copy>p {
   margin:0;
+  max-width:470px;
   color:var(--dny-text-2);
-  font-size:13px;
-  letter-spacing:.03em;
+  font-size:clamp(14px,.95vw,16px);
+  font-weight:600;
+  line-height:1.65;
+  letter-spacing:.025em;
 }
 
 html.dny-theme .dny-home>div:first-child>div:first-child>div:first-child {
@@ -602,8 +601,8 @@ html.dny-theme .dny-home>div:first-child>div:first-child>div:first-child::after 
 }
 
 html.dny-theme.electron-dark .dny-hero-copy h1 {
-  margin:18px 0 8px;
-  font-size:clamp(33px,3.7vw,53px);
+  margin:19px 0 10px;
+  font-size:clamp(37px,3.9vw,59px);
   line-height:1.04;
 }
 
@@ -844,27 +843,92 @@ html.dny-theme.electron-dark .dny-domain-track {
 }
 
 .dny-mode-note {
+  --dny-mode-turn:0deg;
+  position:relative;
   display:flex;
   flex-direction:column;
-  width:310px;
-  margin-top:9px;
-  padding:10px 13px;
-  border-left:3px solid var(--dny-primary);
-  border-radius:3px 13px 13px 3px;
-  background:color-mix(in srgb,var(--dny-solid) 72%,transparent);
-  backdrop-filter:blur(10px);
+  justify-content:center;
+  width:min(366px,100%);
+  min-height:60px;
+  margin-top:16px;
+  padding:10px 48px 10px 58px;
+  overflow:hidden;
+  border:1px solid color-mix(in srgb,var(--dny-primary) 54%,var(--dny-line-strong));
+  border-radius:18px 5px 18px 5px;
+  background:linear-gradient(100deg,color-mix(in srgb,var(--dny-primary) 13%,var(--dny-solid)) 0%,color-mix(in srgb,var(--dny-solid) 82%,transparent) 58%,color-mix(in srgb,var(--dny-secondary) 13%,var(--dny-solid)) 100%);
+  box-shadow:0 12px 30px color-mix(in srgb,var(--dny-deep) 18%,transparent),inset 0 1px rgba(255,255,255,.56);
+  backdrop-filter:blur(14px) saturate(1.12);
+}
+
+.dny-mode-note::before {
+  content:"";
+  position:absolute;
+  left:16px;
+  top:50%;
+  width:27px;
+  height:27px;
+  border:1px solid color-mix(in srgb,var(--dny-secondary) 72%,#fff);
+  border-radius:50%;
+  background:radial-gradient(circle at 31% 27%,#fff 0 9%,color-mix(in srgb,var(--dny-primary) 62%,#fff) 20%,color-mix(in srgb,var(--dny-secondary) 44%,transparent) 58%,transparent 72%);
+  box-shadow:0 0 0 4px color-mix(in srgb,var(--dny-solid) 48%,transparent),0 0 18px var(--dny-glow);
+  animation:dny-mode-core 3.4s ease-in-out infinite;
+}
+
+.dny-mode-note::after {
+  content:"";
+  position:absolute;
+  right:16px;
+  top:50%;
+  width:18px;
+  height:18px;
+  border:1px solid color-mix(in srgb,var(--dny-primary) 62%,var(--dny-secondary));
+  border-radius:50%;
+  background:conic-gradient(from 25deg,var(--dny-primary),transparent 22% 43%,var(--dny-secondary) 48% 70%,transparent 75%);
+  box-shadow:0 0 12px var(--dny-glow);
+  animation:dny-mode-endpoint 5.2s linear infinite;
 }
 
 .dny-mode-note small {
-  font:700 7px/1 var(--dny-font-mono);
-  letter-spacing:.15em;
+  display:flex;
+  align-items:center;
+  gap:9px;
+  font:750 10px/1.2 var(--dny-font-mono);
+  letter-spacing:.12em;
   color:var(--dny-text-3);
 }
 
+.dny-mode-note small::after {
+  content:"";
+  width:34px;
+  height:1px;
+  background:linear-gradient(90deg,var(--dny-primary),transparent);
+}
+
 .dny-mode-note b {
-  margin-top:5px;
-  font-size:12px;
+  margin-top:6px;
+  font-size:clamp(14px,.9vw,15px);
+  font-weight:750;
+  line-height:1.3;
+  letter-spacing:.04em;
   color:var(--dny-text);
+}
+
+html.dny-theme.electron-dark .dny-mode-note {
+  --dny-mode-turn:45deg;
+  border-color:rgba(118,145,255,.58);
+  border-radius:5px 18px 5px 18px;
+  background:linear-gradient(100deg,rgba(93,124,255,.17),rgba(7,11,27,.80) 55%,rgba(228,83,165,.13));
+  box-shadow:0 14px 34px rgba(0,0,0,.46),inset 0 0 24px rgba(93,124,255,.07);
+}
+
+html.dny-theme.electron-dark .dny-mode-note::before {
+  border-radius:5px;
+  background:conic-gradient(from 45deg,#8ca8ff,rgba(93,124,255,.12) 22% 45%,#ef58b5 50% 66%,rgba(5,8,21,.32) 72%);
+  box-shadow:0 0 0 4px rgba(5,8,21,.55),0 0 18px rgba(93,124,255,.48),0 0 26px rgba(228,83,165,.22);
+}
+
+html.dny-theme.electron-dark .dny-mode-note::after {
+  border-radius:3px;
 }
 
 .dny-task-index,.dny-mode-seal,.dny-orbit-watermark {
@@ -2577,6 +2641,8 @@ html.dny-theme:not(.electron-dark) .composer-surface-chrome:focus-within {
   .dny-sync::before,
   .dny-mode-seal::before,
   .dny-mode-seal::after,
+  .dny-mode-note::before,
+  .dny-mode-note::after,
   .dny-orbit-watermark {
     animation:none!important;
   }
@@ -2601,6 +2667,34 @@ html.dny-theme:not(.electron-dark) .composer-surface-chrome:focus-within {
   50% {
     opacity:1;
     transform:scale(1.12);
+  }
+}
+
+@keyframes dny-mode-core {
+  0%,100% {
+    opacity:.68;
+    transform:translateY(-50%) rotate(var(--dny-mode-turn)) scale(.9);
+  }
+
+  50% {
+    opacity:1;
+    transform:translateY(-50%) rotate(var(--dny-mode-turn)) scale(1.08);
+  }
+}
+
+@keyframes dny-mode-endpoint {
+  0% {
+    opacity:.58;
+    transform:translateY(-50%) rotate(0deg);
+  }
+
+  50% {
+    opacity:1;
+  }
+
+  100% {
+    opacity:.58;
+    transform:translateY(-50%) rotate(360deg);
   }
 }
 

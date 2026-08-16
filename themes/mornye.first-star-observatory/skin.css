@@ -490,7 +490,7 @@ html.mny-theme.electron-dark aside :is([class*="badge"],[data-sidebar-count]) {
 
 .mny-hero-copy {
   color:var(--mny-text);
-  text-shadow:0 1px 18px color-mix(in srgb,var(--mny-solid) 24%,transparent);
+  text-shadow:0 1px 18px color-mix(in srgb,var(--mny-solid) 42%,transparent);
 }
 
 .mny-theme.electron-dark .mny-hero-copy {
@@ -498,13 +498,26 @@ html.mny-theme.electron-dark aside :is([class*="badge"],[data-sidebar-count]) {
 }
 
 .mny-hero-kicker {
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  width:max-content;
+  padding:7px 11px;
+  border:1px solid color-mix(in srgb,var(--mny-violet) 48%,var(--mny-line));
+  border-radius:12px 3px 12px 3px;
+  background:color-mix(in srgb,var(--mny-solid) 82%,transparent);
+  box-shadow:0 7px 20px rgba(32,43,82,.14),inset 0 1px rgba(255,255,255,.72);
   color:var(--mny-violet);
-  font:700 8px/1 var(--mny-mono);
-  letter-spacing:.17em;
+  font:750 clamp(10px,.72vw,11px)/1.2 var(--mny-mono);
+  letter-spacing:.13em;
+  backdrop-filter:blur(10px);
 }
 
 .mny-theme.electron-dark .mny-hero-kicker {
   color:var(--mny-gold);
+  border-color:color-mix(in srgb,var(--mny-gold) 52%,var(--mny-line));
+  background:rgba(8,12,27,.72);
+  box-shadow:0 8px 22px rgba(0,0,0,.34),inset 0 1px rgba(255,255,255,.07);
 }
 
 .mny-hero-kicker>i {
@@ -542,10 +555,20 @@ html.mny-theme.electron-dark aside :is([class*="badge"],[data-sidebar-count]) {
   letter-spacing:.045em;
 }
 
+html.mny-theme:not(.electron-dark) .mny-hero-copy h1 {
+  color:#070c18;
+  text-shadow:0 1px 0 rgba(255,255,255,.96),0 0 11px rgba(255,255,255,.94),0 4px 20px rgba(238,245,255,.82);
+}
+
 .mny-hero-copy h1 em {
   color:var(--mny-violet);
   font-style:normal;
   text-shadow:0 0 24px color-mix(in srgb,var(--mny-lilac) 28%,transparent);
+}
+
+html.mny-theme:not(.electron-dark) .mny-hero-copy h1 em {
+  color:#4b35a2;
+  text-shadow:0 1px 0 rgba(255,255,255,.94),0 0 10px rgba(255,255,255,.94),0 4px 18px rgba(29,38,78,.16);
 }
 
 .mny-theme.electron-dark .mny-hero-copy h1 em {
@@ -554,17 +577,53 @@ html.mny-theme.electron-dark aside :is([class*="badge"],[data-sidebar-count]) {
 }
 
 .mny-hero-copy>p {
-  max-width:510px;
+  width:fit-content;
+  max-width:520px;
   margin:0;
   color:var(--mny-text-2);
-  font-size:clamp(13px,.82vw,16px);
-  line-height:1.62;
+  font-size:clamp(15px,.98vw,17px);
+  font-weight:650;
+  line-height:1.68;
+  letter-spacing:.02em;
+}
+
+html.mny-theme:not(.electron-dark) .mny-hero-copy>p {
+  margin-left:-10px;
+  padding:6px 11px;
+  border-left:3px solid #4b35a2;
+  border-radius:3px 13px 13px 3px;
+  color:#172037;
+  background:linear-gradient(90deg,rgba(255,255,255,.9),rgba(248,251,255,.74) 76%,rgba(248,251,255,.46));
+  box-shadow:0 8px 22px rgba(34,48,91,.13),inset 0 1px rgba(255,255,255,.88);
+  text-shadow:0 1px rgba(255,255,255,.96);
+  backdrop-filter:blur(10px);
+}
+
+.mny-theme.electron-dark .mny-hero-copy>p {
+  margin-left:-10px;
+  padding:6px 11px;
+  border-left:3px solid var(--mny-gold);
+  border-radius:3px 13px 13px 3px;
+  background:linear-gradient(90deg,rgba(7,11,25,.82),rgba(13,19,39,.58),transparent);
+  box-shadow:0 8px 24px rgba(0,0,0,.3);
 }
 
 .mny-first-star-engine {
   position:relative;
   isolation:isolate;
   overflow:visible;
+  box-sizing:border-box;
+  border:1px solid color-mix(in srgb,var(--mny-violet) 36%,var(--mny-line));
+  border-radius:14px 3px 14px 3px;
+  background:linear-gradient(90deg,rgba(252,254,255,.78),rgba(244,247,255,.66) 58%,rgba(252,249,244,.56));
+  box-shadow:0 9px 24px rgba(34,48,91,.13),inset 3px 0 color-mix(in srgb,var(--mny-cyan) 64%,transparent);
+  backdrop-filter:blur(9px);
+}
+
+.mny-theme.electron-dark .mny-first-star-engine {
+  border-color:color-mix(in srgb,var(--mny-gold) 42%,var(--mny-line));
+  background:linear-gradient(90deg,rgba(8,12,27,.76),rgba(15,19,39,.62) 62%,rgba(39,28,33,.5));
+  box-shadow:0 10px 26px rgba(0,0,0,.34),inset 3px 0 color-mix(in srgb,var(--mny-gold) 66%,transparent);
 }
 
 .mny-first-star-map {
@@ -689,7 +748,7 @@ html.mny-theme.electron-dark aside :is([class*="badge"],[data-sidebar-count]) {
 
 .mny-first-star-label {
   position:absolute;
-  top:27px;
+  top:25px;
   display:flex;
   flex-direction:column;
   align-items:center;
@@ -701,31 +760,59 @@ html.mny-theme.electron-dark aside :is([class*="badge"],[data-sidebar-count]) {
 
 .mny-first-star-label>b {
   color:var(--mny-text);
-  font:800 8px/1 var(--mny-serif);
-  letter-spacing:.1em;
+  font:800 10px/1 var(--mny-serif);
+  letter-spacing:.08em;
+  text-shadow:0 1px 5px var(--mny-solid);
 }
 
 .mny-first-star-label>small {
   margin-top:2px;
   color:var(--mny-text-3);
-  font:700 4px/1 var(--mny-mono);
-  letter-spacing:.08em;
+  font:750 6px/1 var(--mny-mono);
+  letter-spacing:.06em;
+  text-shadow:0 1px 5px var(--mny-solid);
 }
 
 .mny-first-star-label-origin { left:7%; }
 .mny-first-star-label-pivot { left:50%; }
 .mny-first-star-label-terminal { left:93%; }
 
+.mny-hero-note {
+  display:inline-flex;
+  align-items:center;
+  gap:12px;
+  width:max-content;
+  max-width:100%;
+  min-height:44px;
+  padding:7px 14px;
+  box-sizing:border-box;
+  border:1px solid color-mix(in srgb,var(--mny-gold) 46%,var(--mny-line));
+  border-radius:4px 16px 4px 16px;
+  background:linear-gradient(100deg,rgba(255,255,255,.86),rgba(244,248,255,.72) 68%,rgba(252,247,239,.58));
+  box-shadow:0 9px 24px rgba(34,48,91,.14),inset 3px 0 var(--mny-cyan);
+  backdrop-filter:blur(10px);
+}
+
+.mny-theme.electron-dark .mny-hero-note {
+  border-color:color-mix(in srgb,var(--mny-wool) 56%,var(--mny-line));
+  background:linear-gradient(100deg,rgba(8,12,27,.82),rgba(17,21,41,.66) 68%,rgba(48,31,33,.56));
+  box-shadow:0 10px 26px rgba(0,0,0,.36),inset 3px 0 var(--mny-gold);
+}
+
 .mny-hero-note small {
   color:var(--mny-gold);
-  font:700 9px/1 var(--mny-serif);
-  letter-spacing:.16em;
+  font:750 11px/1.2 var(--mny-serif);
+  letter-spacing:.12em;
+  white-space:nowrap;
 }
 
 .mny-hero-note strong {
+  padding-left:12px;
   border-left:2px solid var(--mny-cyan);
   color:var(--mny-text);
-  font:700 13px/1.2 var(--mny-serif);
+  font:750 clamp(14px,.9vw,15px)/1.3 var(--mny-serif);
+  letter-spacing:.025em;
+  white-space:nowrap;
 }
 
 .mny-theme.electron-dark .mny-hero-note strong {

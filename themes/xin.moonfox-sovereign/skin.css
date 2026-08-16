@@ -452,8 +452,8 @@ html.xmf-theme:not(.electron-dark) [data-tessalume-surface="sidebar"] .xmf-secti
 }
 
 .xmf-kicker i {
-  width:10px;
-  height:10px;
+  width:12px;
+  height:12px;
   border:1px solid var(--xmf-cyan);
   border-radius:50%;
   background:linear-gradient(90deg,var(--xmf-blue) 50%,transparent 51%);
@@ -645,21 +645,21 @@ html.xmf-theme.electron-dark .xmf-phases::after {
 
 .xmf-hero-copy>p {
   margin:0;
-  max-width:500px;
+  max-width:520px;
   color:var(--xmf-text-2);
-  font-size:clamp(13px,.82vw,16px);
-  letter-spacing:.05em;
-  line-height:1.55;
+  font-size:clamp(15px,.95vw,17px);
+  font-weight:600;
+  letter-spacing:.025em;
+  line-height:1.68;
 }
 
 .xmf-kicker {
   display:flex;
   align-items:center;
-  gap:9px;
+  gap:10px;
   color:var(--xmf-blue);
-  font:700 8px/1 var(--xmf-mono);
-  letter-spacing:.17em;
-  font-size:clamp(8px,.48vw,10px);
+  font:750 clamp(10px,.72vw,11px)/1.2 var(--xmf-mono);
+  letter-spacing:.14em;
 }
 
 .xmf-phases {
@@ -676,24 +676,23 @@ html.xmf-theme.electron-dark .xmf-phases::after {
 
 .xmf-oracle-note {
   display:flex;
-  gap:12px;
+  gap:14px;
   align-items:center;
   margin-top:18px;
 }
 
 .xmf-oracle-note small {
   color:var(--xmf-gold);
-  font:700 9px/1 var(--xmf-serif);
-  letter-spacing:.18em;
-  font-size:10px;
+  font:750 11px/1.25 var(--xmf-serif);
+  letter-spacing:.12em;
 }
 
 .xmf-oracle-note strong {
-  padding-left:11px;
+  padding-left:13px;
   border-left:2px solid var(--xmf-blue);
-  font:700 12px/1 var(--xmf-serif);
+  font:750 clamp(14px,.9vw,15px)/1.4 var(--xmf-serif);
   color:var(--xmf-text);
-  font-size:13px;
+  letter-spacing:.025em;
 }
 
 .xmf-dark-only {
@@ -1847,10 +1846,6 @@ html.xmf-theme.electron-dark .composer-surface-chrome {
 
   .xmf-identity>div {
     display:none;
-  }
-
-  .xmf-hero-copy h1 {
-    font-size:clamp(34px,6vw,44px);
   }
 
   .xmf-phases {

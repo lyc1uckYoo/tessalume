@@ -290,15 +290,15 @@ html.qxo-theme aside [data-app-action-sidebar-thread-row][aria-current="page"],h
 .qxo-kicker {
   display:flex;
   align-items:center;
-  gap:9px;
+  gap:10px;
   color:var(--qxo-red);
-  font:700 8px/1 var(--qxo-mono);
-  letter-spacing:.18em;
+  font:750 clamp(10px,.72vw,11px)/1.2 var(--qxo-mono);
+  letter-spacing:.14em;
 }
 
 .qxo-kicker i {
-  width:9px;
-  height:9px;
+  width:11px;
+  height:11px;
   border:1px solid var(--qxo-red);
   border-radius:50%;
   box-shadow:0 0 12px var(--qxo-red);
@@ -314,22 +314,27 @@ html.qxo-theme aside [data-app-action-sidebar-thread-row][aria-current="page"],h
 
 .qxo-hero-copy>p {
   margin:0;
-  max-width:430px;
+  max-width:470px;
   color:var(--qxo-text-2);
-  font-size:13px;
-  letter-spacing:.03em;
+  font-size:clamp(14px,.95vw,16px);
+  font-weight:600;
+  line-height:1.68;
+  letter-spacing:.025em;
 }
 
 .qxo-cue small {
   color:var(--qxo-text-3);
-  font:700 7px/1 var(--qxo-mono);
-  letter-spacing:.14em;
+  font:750 10px/1.2 var(--qxo-mono);
+  letter-spacing:.12em;
 }
 
 .qxo-cue strong {
-  padding-left:11px;
+  padding-left:13px;
   border-left:2px solid var(--qxo-red);
-  font-size:11px;
+  font-size:clamp(14px,.9vw,15px);
+  font-weight:700;
+  line-height:1.4;
+  letter-spacing:.025em;
   color:var(--qxo-text);
 }
 
@@ -374,9 +379,9 @@ html.qxo-theme aside [data-app-action-sidebar-thread-row][aria-current="page"],h
 }
 
 .qxo-hero-copy h1 {
-  margin:22px 0 10px;
-  font:800 clamp(36px,4vw,59px)/1.02 var(--qxo-display);
-  letter-spacing:-.045em;
+  margin:21px 0 12px;
+  font:820 clamp(40px,4.15vw,65px)/1.02 var(--qxo-display);
+  letter-spacing:-.04em;
   text-shadow:0 4px 24px color-mix(in srgb,var(--qxo-solid) 86%,transparent);
 }
 
@@ -598,7 +603,7 @@ html.qxo-theme.electron-dark .qxo-score-form-dark {
 
 .qxo-cue {
   display:flex;
-  gap:12px;
+  gap:14px;
   align-items:center;
   margin-top:22px!important;
 }
@@ -2184,16 +2189,6 @@ html.qxo-theme.electron-dark .composer-surface-chrome :is(textarea,input)::place
 @media(max-width:920px) {
   .qxo-identity {
     transform:none;
-  }
-
-  .qxo-identity>div {
-    display:none;
-  }
-}
-
-@media(max-width:900px) {
-  .qxo-hero-copy h1 {
-    font-size:34px;
   }
 
   .qxo-identity>div {

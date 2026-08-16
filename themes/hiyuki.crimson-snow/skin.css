@@ -366,15 +366,15 @@ html.hy3-theme aside [data-app-action-sidebar-thread-row][aria-current="page"],h
 .hy3-kicker {
   display:flex;
   align-items:center;
-  gap:9px;
+  gap:10px;
   color:var(--hy3-pink);
-  font:700 8px/1 "Cascadia Code",Consolas,monospace;
-  letter-spacing:.17em;
+  font:750 clamp(10px,.72vw,11px)/1.2 "Cascadia Code",Consolas,monospace;
+  letter-spacing:.14em;
 }
 
 .hy3-kicker i {
-  width:11px;
-  height:11px;
+  width:12px;
+  height:12px;
   border:1px solid var(--hy3-cyan);
   border-radius:50%;
   background:radial-gradient(circle,var(--hy3-solid) 0 24%,var(--hy3-cyan) 28% 44%,var(--hy3-pink) 47%);
@@ -383,9 +383,9 @@ html.hy3-theme aside [data-app-action-sidebar-thread-row][aria-current="page"],h
 }
 
 .hy3-hero-copy h1 {
-  margin:22px 0 11px;
-  font:800 clamp(38px,4vw,61px)/1.02 "Microsoft YaHei UI","Segoe UI",sans-serif;
-  letter-spacing:.025em;
+  margin:21px 0 12px;
+  font:820 clamp(40px,4.15vw,65px)/1.02 "Microsoft YaHei UI","Segoe UI",sans-serif;
+  letter-spacing:.015em;
   text-shadow:0 3px 24px color-mix(in srgb,var(--hy3-solid) 92%,transparent);
 }
 
@@ -399,11 +399,12 @@ html.hy3-theme aside [data-app-action-sidebar-thread-row][aria-current="page"],h
 
 .hy3-hero-copy>p {
   margin:0;
-  max-width:430px;
+  max-width:470px;
   color:var(--hy3-text2);
-  font-size:13px;
-  line-height:1.65;
-  letter-spacing:.04em;
+  font-size:clamp(14px,.95vw,16px);
+  font-weight:600;
+  line-height:1.68;
+  letter-spacing:.025em;
 }
 
 .hy3-atlas {
@@ -542,20 +543,23 @@ html.hy3-theme.electron-dark .hy3-atlas-track {
 
 .hy3-mode {
   display:flex;
-  gap:12px;
+  gap:14px;
   align-items:center;
 }
 
 .hy3-mode small {
   color:var(--hy3-pink);
-  font:700 9px/1 "Microsoft YaHei UI",sans-serif;
-  letter-spacing:.17em;
+  font:750 11px/1.25 "Microsoft YaHei UI",sans-serif;
+  letter-spacing:.12em;
 }
 
 .hy3-mode strong {
-  padding-left:11px;
+  padding-left:13px;
   border-left:2px solid var(--hy3-cyan);
-  font-size:12px;
+  font-size:clamp(14px,.9vw,15px);
+  font-weight:700;
+  line-height:1.4;
+  letter-spacing:.025em;
   color:var(--hy3-text);
 }
 
@@ -573,6 +577,16 @@ html.hy3-theme.electron-dark .hy3-atlas-track {
 
 .electron-dark .hy3-dark-only {
   display:initial;
+}
+
+html.hy3-theme:not(.electron-dark) .hy3-hero-copy h1.hy3-light-only,
+html.hy3-theme.electron-dark .hy3-hero-copy h1.hy3-dark-only {
+  display:block;
+}
+
+html.hy3-theme:not(.electron-dark) .hy3-hero-copy h1.hy3-dark-only,
+html.hy3-theme.electron-dark .hy3-hero-copy h1.hy3-light-only {
+  display:none;
 }
 
 /* 05 Identity skin */
@@ -1709,12 +1723,6 @@ html.hy3-theme.electron-dark .composer-surface-chrome {
 
 /* 12 Theme-only media behavior */
 /* 12 主题专属响应式与动效降级：尺寸适配与减少动效。 */
-@media(max-width:1050px) {
-  .hy3-hero-copy h1 {
-    font-size:37px;
-  }
-}
-
 @media(prefers-reduced-motion:reduce) {
   .hy3-theme * {
     animation-duration:.001ms!important;

@@ -324,15 +324,15 @@ html.sui-theme aside [data-app-action-sidebar-thread-row][aria-current="page"],h
 .sui-kicker {
   display:flex;
   align-items:center;
-  gap:9px;
+  gap:10px;
   color:var(--sui-jade);
-  font:700 8px/1 var(--sui-mono);
-  letter-spacing:.16em;
+  font:750 clamp(10px,.72vw,11px)/1.2 var(--sui-mono);
+  letter-spacing:.13em;
 }
 
 .sui-kicker i {
-  width:9px;
-  height:9px;
+  width:11px;
+  height:11px;
   border:1px solid var(--sui-jade);
   border-radius:50%;
   box-shadow:0 0 12px var(--sui-jade);
@@ -340,9 +340,9 @@ html.sui-theme aside [data-app-action-sidebar-thread-row][aria-current="page"],h
 }
 
 .sui-hero-copy h1 {
-  margin:22px 0 10px;
-  font:800 clamp(38px,4vw,61px)/1.02 var(--sui-serif);
-  letter-spacing:.04em;
+  margin:21px 0 12px;
+  font:820 clamp(40px,4.15vw,65px)/1.02 var(--sui-serif);
+  letter-spacing:.03em;
   text-shadow:0 3px 20px color-mix(in srgb,var(--sui-solid) 87%,transparent);
 }
 
@@ -360,10 +360,12 @@ html.sui-theme aside [data-app-action-sidebar-thread-row][aria-current="page"],h
 
 .sui-hero-copy>p {
   margin:0;
-  max-width:430px;
+  max-width:470px;
   color:var(--sui-text-2);
-  font-size:13px;
-  letter-spacing:.05em;
+  font-size:clamp(14px,.95vw,16px);
+  font-weight:600;
+  line-height:1.68;
+  letter-spacing:.025em;
 }
 
 .sui-river {
@@ -582,21 +584,22 @@ html.sui-theme.electron-dark .sui-river-form-dark {
 
 .sui-verse {
   display:flex;
-  gap:12px;
+  gap:14px;
   align-items:center;
   margin-top:14px;
 }
 
 .sui-verse small {
   color:var(--sui-gold);
-  font:700 9px/1 var(--sui-serif);
-  letter-spacing:.18em;
+  font:750 11px/1.25 var(--sui-serif);
+  letter-spacing:.12em;
 }
 
 .sui-verse strong {
-  padding-left:11px;
+  padding-left:13px;
   border-left:2px solid var(--sui-jade);
-  font:700 12px/1 var(--sui-serif);
+  font:750 clamp(14px,.9vw,15px)/1.4 var(--sui-serif);
+  letter-spacing:.035em;
   color:var(--sui-text);
 }
 
@@ -1855,10 +1858,6 @@ html.sui-theme.electron-dark .composer-surface-chrome {
 
   .sui-identity>div {
     display:none;
-  }
-
-  .sui-hero-copy h1 {
-    font-size:34px;
   }
 
 }

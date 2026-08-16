@@ -333,8 +333,8 @@ html.cthy-theme.electron-dark aside :is(button,a) {
 
 .cthy-kicker {
   color:var(--cthy-blue);
-  font:700 8px/1 var(--cthy-mono);
-  letter-spacing:.17em;
+  font:750 clamp(10px,.72vw,11px)/1.25 var(--cthy-mono);
+  letter-spacing:.13em;
 }
 
 .cthy-kicker i {
@@ -373,11 +373,14 @@ html.cthy-theme.electron-dark aside :is(button,a) {
 }
 
 .cthy-hero-copy>p {
-  max-width:510px;
+  max-width:540px;
   margin:0;
   color:var(--cthy-text-2);
-  font-size:clamp(13px,.82vw,16px);
-  line-height:1.6;
+  font-family:var(--cthy-display);
+  font-size:clamp(15px,.95vw,17px);
+  font-weight:600;
+  line-height:1.7;
+  letter-spacing:.025em;
 }
 
 .cthy-gale-crown {
@@ -487,14 +490,15 @@ html.cthy-theme.electron-dark .cthy-home-form-dark {
 
 .cthy-form-note small {
   color:var(--cthy-gold);
-  font:700 9px/1 var(--cthy-mono);
-  letter-spacing:.15em;
+  font:750 11px/1.25 var(--cthy-mono);
+  letter-spacing:.12em;
 }
 
 .cthy-form-note strong {
   color:var(--cthy-text);
   border-left:2px solid var(--cthy-blue);
-  font:700 13px/1 var(--cthy-serif);
+  font:750 clamp(14px,.9vw,16px)/1.35 var(--cthy-serif);
+  letter-spacing:.035em;
 }
 
 /* 05 Identity skin */
