@@ -27,7 +27,7 @@ Tessalume 内置 12 套支持亮色与暗色的完整角色主题，本次新增
 |---|---|
 | **主题画廊** | 管理完整角色主题，查看亮暗预览、主题信息和使用状态，快速收藏、导入与切换。 |
 | **图像工作台** | 分别调整首页横幅、左栏图片和聊天背景；亮暗模式独立保存图片、构图、滤镜、遮罩和可读性参数。 |
-| **体验方案** | 把主题、亮暗模式、图片参数、动效强度、字号与界面密度保存成一套方案，一键恢复喜欢的工作环境。 |
+| **显示偏好** | 为每个主题分别调整动效强度、正文字号与界面密度，让日常阅读更舒适。 |
 | **创作项目中心** | 用 Codex 创建主题，并在 Tessalume 中完成项目体检、运行验收、问题修复提示和最终导出。 |
 | **兼容与恢复** | 页面变化可通过小型兼容补丁修复；完整更新支持 SHA-256、启动健康检查和上一版本恢复。 |
 
@@ -38,7 +38,7 @@ Tessalume 内置 12 套支持亮色与暗色的完整角色主题，本次新增
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset=".github/assets/screenshots/tessalume-personalization-dark.png">
   <source media="(prefers-color-scheme: light)" srcset=".github/assets/screenshots/tessalume-personalization-light.png">
-  <img alt="Tessalume 2.0 显示与体验方案" src=".github/assets/screenshots/tessalume-personalization-light.png">
+  <img alt="Tessalume 2.0 显示偏好" src=".github/assets/screenshots/tessalume-personalization-light.png">
 </picture>
 
 ## 让 Codex 帮你制作自己的皮肤
