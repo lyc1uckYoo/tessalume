@@ -80,6 +80,19 @@ internal sealed record ThemeProjectItemViewModel
 
     public string AssetText => $"{Snapshot.AssetCount} 个素材";
 
+    public string ArtworkContractText
+    {
+        get
+        {
+            var checks = Snapshot.Health.Checks
+                .Where(check => check.Group == ThemeProjectHealthGroup.Artwork)
+                .ToArray();
+            if (checks.Any(check => check.Severity == ThemeProjectHealthSeverity.Error)) return "需要修复";
+            if (checks.Any(check => check.Severity == ThemeProjectHealthSeverity.Warning)) return "有建议";
+            return "六槽独立";
+        }
+    }
+
     public string ModifiedText => Snapshot.LastModifiedAt == DateTimeOffset.MinValue
         ? "修改时间未知"
         : $"更新于 {Snapshot.LastModifiedAt.ToLocalTime():MM-dd HH:mm}";
@@ -134,6 +147,7 @@ internal sealed record ThemeHealthGroupViewModel
         ThemeProjectHealthGroup.Manifest => "主题清单",
         ThemeProjectHealthGroup.EntryPoints => "入口文件",
         ThemeProjectHealthGroup.Assets => "标准素材",
+        ThemeProjectHealthGroup.Artwork => "六槽图像推荐值",
         ThemeProjectHealthGroup.Previews => "亮暗预览",
         ThemeProjectHealthGroup.Template => "Template 1.0",
         ThemeProjectHealthGroup.Css => "CSS 样式",

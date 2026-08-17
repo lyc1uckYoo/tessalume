@@ -4,6 +4,7 @@ internal enum CreatorWorkflowStageId
 {
     CharacterResearch,
     AssetProduction,
+    ArtworkRecommendations,
     ContractValidation,
     VisualAcceptance,
     Release,

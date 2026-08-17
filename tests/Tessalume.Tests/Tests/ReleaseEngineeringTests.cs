@@ -36,7 +36,7 @@ internal static partial class TestSuite
                releaseCandidateScript.Contains("Complete release build failed", StringComparison.Ordinal),
             "The release build must create a checksum and propagate complete-build failures.");
         Ensure(File.Exists(securityPath) && File.Exists(issueTemplatePath) && File.Exists(changelogPath) &&
-               changelog.Contains("## 2.1.1", StringComparison.Ordinal) &&
+               changelog.Contains("## 2.1.0", StringComparison.Ordinal) &&
                license.Contains("MIT License", StringComparison.Ordinal) &&
                license.Contains("Permission is hereby granted", StringComparison.Ordinal),
             "Public testing requires an MIT license, security guidance, a structured bug form, and a public changelog.");
@@ -101,7 +101,10 @@ internal static partial class TestSuite
         Ensure(ci.Contains("一键构建EXE.ps1", StringComparison.Ordinal) &&
                ci.Contains("-NoLaunch", StringComparison.Ordinal) &&
                ci.Contains("-FullValidation", StringComparison.Ordinal) &&
-               ci.Contains("actions/upload-artifact@v4", StringComparison.Ordinal),
+               ci.Contains("actions/checkout@v7", StringComparison.Ordinal) &&
+               ci.Contains("actions/setup-dotnet@v6", StringComparison.Ordinal) &&
+               ci.Contains("actions/setup-python@v7", StringComparison.Ordinal) &&
+               ci.Contains("actions/upload-artifact@v7", StringComparison.Ordinal),
             "CI must execute the same complete release build used locally and retain its verified artifacts.");
         Ensure(release.Contains("tags:", StringComparison.Ordinal) &&
                release.Contains("'v*.*.*'", StringComparison.Ordinal) &&
@@ -109,12 +112,19 @@ internal static partial class TestSuite
                release.Contains("does not match project version", StringComparison.Ordinal) &&
                release.Contains("Get-ReleaseNotes.ps1", StringComparison.Ordinal) &&
                release.Contains("gh release create", StringComparison.Ordinal) &&
-               release.Contains("--latest", StringComparison.Ordinal),
+               release.Contains("--latest", StringComparison.Ordinal) &&
+               release.Contains("actions/checkout@v7", StringComparison.Ordinal) &&
+               release.Contains("actions/setup-dotnet@v6", StringComparison.Ordinal) &&
+               release.Contains("actions/setup-python@v7", StringComparison.Ordinal) &&
+               release.Contains("actions/upload-artifact@v7", StringComparison.Ordinal),
             "Application tags must validate the project version and changelog before publishing a latest GitHub Release.");
         Ensure(compatibility.Contains("'compat-v*.*.*'", StringComparison.Ordinal) &&
                compatibility.Contains("New-CompatibilityPack.ps1", StringComparison.Ordinal) &&
                compatibility.Contains("--latest=false", StringComparison.Ordinal) &&
-               compatibility.Contains("Tessalume-Compatibility.zip", StringComparison.Ordinal),
+               compatibility.Contains("Tessalume-Compatibility.zip", StringComparison.Ordinal) &&
+               compatibility.Contains("actions/checkout@v7", StringComparison.Ordinal) &&
+               compatibility.Contains("actions/setup-dotnet@v6", StringComparison.Ordinal) &&
+               compatibility.Contains("actions/upload-artifact@v7", StringComparison.Ordinal),
             "Compatibility tags must publish only the bounded small package and must never replace the latest app release.");
         Ensure(packScript.Contains("minimumAppVersion", StringComparison.Ordinal) &&
                packScript.Contains("Tessalume.App.csproj", StringComparison.Ordinal) &&
@@ -122,6 +132,75 @@ internal static partial class TestSuite
                compatibilityReadme.Contains("New-CompatibilityPack.ps1 -Version 3.0.4", StringComparison.Ordinal) &&
                notesScript.Contains("CHANGELOG.md does not contain", StringComparison.Ordinal),
             "Release scripts must derive compatibility requirements from source, reject version drift, and reject missing release notes.");
+    }
+
+    static async Task ReleaseNotesExtractionWorksAcrossPowerShellHostsAsync()
+    {
+        var repositoryRoot = FindRepositoryRoot();
+        var scriptPath = Path.Combine(repositoryRoot, "tools", "Get-ReleaseNotes.ps1");
+        var outputRoot = Path.Combine(
+            Path.GetTempPath(),
+            $"tessalume-release-notes-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(outputRoot);
+        try
+        {
+            var hosts = new[]
+            {
+                Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.System),
+                    "WindowsPowerShell",
+                    "v1.0",
+                    "powershell.exe"),
+                "pwsh",
+            };
+            foreach (var host in hosts)
+            {
+                var hostName = Path.GetFileNameWithoutExtension(host);
+                var outputPath = Path.Combine(outputRoot, $"{hostName}.md");
+                var startInfo = new System.Diagnostics.ProcessStartInfo(host)
+                {
+                    WorkingDirectory = repositoryRoot,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                };
+                foreach (var argument in new[]
+                         {
+                             "-NoProfile",
+                             "-NonInteractive",
+                             "-ExecutionPolicy",
+                             "Bypass",
+                             "-File",
+                             scriptPath,
+                             "-Version",
+                             "2.1.0",
+                             "-OutputPath",
+                             outputPath,
+                         })
+                {
+                    startInfo.ArgumentList.Add(argument);
+                }
+
+                using var process = System.Diagnostics.Process.Start(startInfo)
+                    ?? throw new InvalidOperationException($"Could not start {hostName}.");
+                var standardOutput = await process.StandardOutput.ReadToEndAsync();
+                var standardError = await process.StandardError.ReadToEndAsync();
+                await process.WaitForExitAsync();
+                var notes = File.Exists(outputPath)
+                    ? await File.ReadAllTextAsync(outputPath)
+                    : string.Empty;
+                Ensure(process.ExitCode == 0 &&
+                       notes.Contains("图像工作台升级到 3.0", StringComparison.Ordinal) &&
+                       !notes.Contains("## 2.0.2", StringComparison.Ordinal),
+                    $"{hostName} must extract only the requested release notes. " +
+                    $"{standardOutput} {standardError}".Trim());
+            }
+        }
+        finally
+        {
+            if (Directory.Exists(outputRoot)) Directory.Delete(outputRoot, recursive: true);
+        }
     }
 
     static async Task CompatibilityPackBuildIsDeterministicAsync()

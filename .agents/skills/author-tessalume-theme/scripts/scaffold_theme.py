@@ -56,7 +56,9 @@ def main() -> int:
     print("Template version: 1.0")
     print("Complete character research and the eleven-slot art matrix before accepting assets.")
     print("Replace every placeholder, data-theme-draft marker, sample component and keyframe.")
-    print("Complete all six original-asset recommendations in artwork-defaults.json; keep crop/effects/image motion out of CSS.")
+    print("Complete all six same-named original-asset recommendations in artwork-defaults.json.")
+    print("Keep crop/effects/veils/image motion out of CSS; bump defaultsVersion when recommendations change.")
+    print("Never read or write user personalization state while authoring a theme.")
     print("Complete the flagship visual-coverage checklist; keep skin.css free of shared geometry.")
     if (args.repo_root.resolve() / "TESSALUME_CREATOR_WORKSPACE.md").is_file():
         print("Run geometry and contract checks, then import this theme folder in Tessalume.")

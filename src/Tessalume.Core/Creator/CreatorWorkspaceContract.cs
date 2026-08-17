@@ -29,7 +29,7 @@ public static class CreatorWorkspaceContract
 {
     public const string MarkerFileName = "TESSALUME_CREATOR_WORKSPACE.json";
     public const string LegacyMarkerFileName = "TESSALUME_CREATOR_WORKSPACE.md";
-    public const string CurrentWorkspaceVersion = "1.0";
+    public const string CurrentWorkspaceVersion = "2.0";
     public const string CurrentTemplateVersion = "1.0";
 
     private static readonly JsonSerializerOptions JsonOptions = new()
@@ -108,7 +108,7 @@ public static class CreatorWorkspaceContract
                 CreatorWorkspaceContractState.Current,
                 marker.WorkspaceVersion,
                 marker.TemplateVersion,
-                "工作区工具链和 Template 版本均为最新。");
+                "创作工具链 2.0、六槽图像契约和 Template 1.0 几何均为最新。");
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or JsonException)
         {

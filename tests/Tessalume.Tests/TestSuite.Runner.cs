@@ -431,7 +431,7 @@ internal static partial class TestSuite
             ("portable Codex creator workspace is self-contained", PortableCreatorWorkspaceIsSelfContainedAsync),
             ("creator prompt composer builds a durable contract prompt", CreatorPromptComposerBuildsDurableContractPromptAsync),
             ("creator repair prompt is scoped to project health", CreatorRepairPromptUsesOnlyBoundedProjectHealthAsync),
-            ("creator workflow builds a five-stage release gate", CreatorWorkflowEvaluatorBuildsFiveStageReleaseGateAsync),
+            ("creator workflow builds a six-stage artwork release gate", CreatorWorkflowEvaluatorBuildsSixStageReleaseGateAsync),
             ("creator guidance provides one contextual next action", CreatorGuidanceProvidesOneContextualNextActionAsync),
             ("creator workspace history is normalized and bounded", CreatorWorkspaceHistoryIsNormalizedAsync),
             ("creator workspace contract upgrade preserves projects", CreatorWorkspaceContractUpgradePreservesProjectsAsync),
@@ -470,6 +470,7 @@ internal static partial class TestSuite
             ("build script launches the published executable by default", BuildScriptLaunchesPublishedExecutableAsync),
             ("release artifacts and feedback paths are documented", ReleaseReadinessAssetsAreDocumentedAsync),
             ("GitHub automation separates application and compatibility releases", GitHubAutomationSeparatesApplicationAndCompatibilityReleasesAsync),
+            ("release notes extract across PowerShell hosts", ReleaseNotesExtractionWorksAcrossPowerShellHostsAsync),
             ("compatibility release packages are reproducible", CompatibilityPackBuildIsDeterministicAsync),
             ("UI preferences migrate through schema five", UiPreferencesMigrateFromUnversionedSchemaAsync),
         };
@@ -491,6 +492,7 @@ internal static partial class TestSuite
             nameof(BuildScriptLaunchesPublishedExecutableAsync),
             nameof(ReleaseReadinessAssetsAreDocumentedAsync),
             nameof(GitHubAutomationSeparatesApplicationAndCompatibilityReleasesAsync),
+            nameof(ReleaseNotesExtractionWorksAcrossPowerShellHostsAsync),
             nameof(CompatibilityPackBuildIsDeterministicAsync),
         };
         var selectedTests = buildProfile

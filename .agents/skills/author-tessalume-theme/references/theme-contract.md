@@ -19,7 +19,8 @@ The Studio runtime owns:
 The theme package owns:
 
 - manifest metadata and declared local assets;
-- light/dark color variables and artwork selection;
+- light/dark color variables and the six original artwork assets plus their
+  versioned recommendations; the shared runtime performs final asset selection;
 - the original hero/sidebar/chat assets and a versioned `artwork-defaults.json`
   recommendation for all three regions in light and dark mode;
 - markup inside `#tessalume-theme-root`;
@@ -39,6 +40,11 @@ effects plus any optional relative motion. Tessalume resolves that recommendatio
 with sparse user overrides and paints one final result. Decorative borders,
 symbols and character animation belong on separate identity layers so user
 correction never changes text, controls or card surfaces.
+
+`defaultsVersion` versions the theme recommendation, not user data. Increment it
+when any shipped six-slot placement, effect, veil, responsive variant or motion
+changes. Never derive a recommendation by reading a user's sparse overrides,
+and never modify personalization state from a theme authoring workflow.
 
 ## Artwork motion invariant
 
@@ -153,6 +159,9 @@ also be transparent, but their state text and boundaries remain legible.
   against `theme-artwork-defaults-v1.schema.json`, match the manifest theme id,
   and define all six hero/sidebar/chat light/dark slots using their original
   manifest asset keys
+- legacy imported themes may still receive an application fallback at runtime,
+  but Creator toolchain 2.0 must not export a Template 1.0 project without an
+  exact six-slot contract or while CSS owns any adjustable image value
 - every `var(--tessalume-asset-<name>)` reference in CSS must map to a manifest asset
   key `<name>`; when preserving legacy CSS, keep its old asset keys as aliases
   or deliberately rename every CSS reference

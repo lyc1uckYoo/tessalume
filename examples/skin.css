@@ -15,9 +15,6 @@ html.example-theme {
   --example-line:rgba(80,94,138,.24);
   --example-line-strong:rgba(98,111,232,.48);
   --example-shadow:0 18px 48px rgba(41,51,86,.18);
-  --example-hero:var(--tessalume-asset-hero-light);
-  --example-sidebar-art:var(--tessalume-asset-sidebar-light);
-  --example-chat-art:var(--tessalume-asset-chat-light);
   --example-memory-art:var(--tessalume-asset-memory-light);
   --example-display:"Microsoft YaHei UI","Segoe UI",sans-serif;
   --example-serif:"STKaiti","KaiTi",serif;
@@ -40,9 +37,6 @@ html.example-theme.electron-dark {
   --example-line:rgba(113,130,205,.28);
   --example-line-strong:rgba(132,145,255,.54);
   --example-shadow:0 20px 58px rgba(0,0,0,.58);
-  --example-hero:var(--tessalume-asset-hero-dark);
-  --example-sidebar-art:var(--tessalume-asset-sidebar-dark);
-  --example-chat-art:var(--tessalume-asset-chat-dark);
   --example-memory-art:var(--tessalume-asset-memory-dark);
   color-scheme:dark;
 }
@@ -71,6 +65,7 @@ html.example-theme.electron-dark .example-light-only {
 
 /* 02 App and native planes */
 /* 02 应用与原生平面：应用底色、窗口栏与原生页面承载层。 */
+/* hero/sidebar/chat 原图、构图、图像效果和遮罩由 artwork-defaults.json + 共享运行时绘制。 */
 html.example-theme,.example-theme body,.example-theme #root {
   background:var(--example-bg)!important;
   color:var(--example-text)!important;
@@ -114,7 +109,6 @@ html.example-theme aside.app-shell-left-panel::after {
   z-index:0;
   inset:0;
   pointer-events:none;
-  background:var(--example-sidebar-art) 80% -92px/202% auto no-repeat;
 }
 
 html.example-theme.example-is-task main.example-main {
@@ -125,20 +119,12 @@ html.example-theme.electron-dark.example-is-task main.example-main {
   background:linear-gradient(145deg,var(--example-bg),var(--example-bg-2))!important;
 }
 
-html.example-theme.example-is-task main.example-main::before {
-  background:var(--example-chat-art) center/cover no-repeat;
-}
-
-html.example-theme.example-is-task main.example-main::after {
-  background:linear-gradient(90deg,color-mix(in srgb,var(--example-solid) 44%,transparent),color-mix(in srgb,var(--example-solid) 5%,transparent));
-}
-
 html.example-theme.example-is-settings .example-settings-surface {
   background:transparent!important;
 }
 
 /* 03 Sidebar skin */
-/* 03 左栏皮肤：左栏背景、项目行、会话行与分组标题。 */
+/* 03 左栏皮肤：只设计导航平面、项目行、会话行与分组标题，不在 CSS 中绘制左栏图片或遮罩。 */
 html.example-theme aside [data-app-action-sidebar-project-row] {
   --phase:var(--example-accent);
   border:1px solid color-mix(in srgb,var(--phase) 45%,var(--example-line))!important;
@@ -172,19 +158,15 @@ html.example-theme aside :is([data-sidebar-section-heading],[class*="sectionHead
 }
 
 /* 04 Home skin */
-/* 04 首页皮肤：首页横幅、主标题、路线装饰与快捷卡片。 */
+/* 04 首页皮肤：只设计主标题、角色装饰与快捷卡片；首页原图与最终构图由共享运行时负责。 */
 .example-theme .example-home>div:first-child>div:first-child>div:first-child::before {
   content:"";
-  background:var(--example-hero) center/cover no-repeat!important;
-  transform:scale(1.008);
-  animation:example-hero-breathe 18s ease-in-out infinite alternate;
 }
 
 .example-theme .example-home>div:first-child>div:first-child>div:first-child::after {
   content:"";
   border:1px solid color-mix(in srgb,var(--example-gold) 44%,transparent);
   border-radius:20px 2px 20px 2px;
-  background:linear-gradient(90deg,color-mix(in srgb,var(--example-solid) 78%,transparent),color-mix(in srgb,var(--example-solid) 24%,transparent) 40%,transparent 62%);
 }
 
 .example-home .group\/home-suggestions button {
@@ -507,6 +489,7 @@ html.example-theme .example-window-bar {
 
 /* 09 Message and output frames */
 /* 09 消息与输出框架：任务标题、消息气泡、聊天背景与环境信息。 */
+/* 聊天原图与可读性遮罩只来自 artwork-defaults.json；消息填充保持透明但保留角色边框。 */
 .example-task-header {
   border:1px solid var(--example-line-strong)!important;
   border-radius:18px 3px 18px 3px!important;
@@ -706,16 +689,6 @@ html.example-theme .composer-surface-chrome :is(button[aria-label*="发送"],but
 @keyframes example-orbit {
   to {
     transform:rotate(360deg);
-  }
-}
-
-@keyframes example-hero-breathe {
-  from {
-    transform:scale(1) translate3d(0,0,0);
-  }
-
-  to {
-    transform:scale(1.008) translate3d(-3px,-2px,0);
   }
 }
 

@@ -8,3 +8,8 @@ The machine-readable workspace and Template versions are stored in
 `TESSALUME_CREATOR_WORKSPACE.json`. Tessalume may update managed tools and
 guides after preserving a local backup, but never overwrites projects under
 `themes/`.
+
+Creator toolchain 2.0 keeps the six adjustable hero/sidebar/chat source images
+untouched. Their versioned recommended composition, effects, veils, and relative
+motion live only in `artwork-defaults.json`; skin CSS remains character identity
+and decoration only.

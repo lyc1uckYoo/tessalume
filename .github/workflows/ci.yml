@@ -19,15 +19,15 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Check out source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install .NET SDK
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
 
       - name: Install Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: '3.12'
 
@@ -43,7 +43,7 @@ jobs:
           .\一键构建EXE.ps1 -Configuration Release -Runtime win-x64 -NoLaunch -FullValidation
 
       - name: Upload verified portable build
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Tessalume-windows-x64-${{ github.sha }}
           path: |

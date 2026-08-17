@@ -9,9 +9,11 @@
                     <Grid>
                         <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
                         <TextBlock Text="给 Codex 的专属创作提示词" Foreground="{DynamicResource Accent}" FontSize="10.5" FontWeight="Bold" />
-                        <TextBlock x:Name="CreatorPromptStatusText" Grid.Column="1" Text="已包含角色确认与最终校验" Foreground="{DynamicResource Teal}" FontSize="10.5" Margin="12,0,0,0" TextTrimming="CharacterEllipsis" />
+                        <TextBlock x:Name="CreatorPromptStatusText" Grid.Column="1" Text="已包含角色确认、六槽单一来源与最终校验" Foreground="{DynamicResource Teal}" FontSize="10.5" Margin="12,0,0,0" TextTrimming="CharacterEllipsis" />
                     </Grid>
-                    <TextBlock x:Name="CreatorPromptText" TextWrapping="Wrap" Foreground="{DynamicResource PrimaryText}" FontSize="11.5" LineHeight="20" MaxHeight="100" Margin="0,7,0,0" />
+                    <ScrollViewer MaxHeight="160" Margin="0,7,0,0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" CanContentScroll="False">
+                        <TextBlock x:Name="CreatorPromptText" TextWrapping="Wrap" Foreground="{DynamicResource PrimaryText}" FontSize="11.5" LineHeight="20" Padding="0,0,10,0" />
+                    </ScrollViewer>
                 </StackPanel>
                 <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
                     <Button x:Name="TogglePromptEditorButton" Style="{DynamicResource QuietActionButton}" Content="编辑创作需求" MinWidth="116" Height="38" Padding="15,0" FontSize="11" Click="ToggleEditor_Click" />

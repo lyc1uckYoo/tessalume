@@ -11,6 +11,7 @@ public sealed partial class ThemeProjectScanner(ThemePackageLoader loader)
         ThemeProjectHealthGroup.Manifest,
         ThemeProjectHealthGroup.EntryPoints,
         ThemeProjectHealthGroup.Assets,
+        ThemeProjectHealthGroup.Artwork,
         ThemeProjectHealthGroup.Previews,
         ThemeProjectHealthGroup.Template,
         ThemeProjectHealthGroup.Css,
@@ -27,6 +28,11 @@ public sealed partial class ThemeProjectScanner(ThemePackageLoader loader)
     private static readonly HashSet<string> OptionalTemplateV1Assets = new(StringComparer.OrdinalIgnoreCase)
     {
         "task-left-dark", "task-right-secondary-dark", "task-right-primary-dark",
+    };
+
+    private static readonly HashSet<string> RuntimeArtworkAssetNames = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "hero-light", "hero-dark", "sidebar-light", "sidebar-dark", "chat-light", "chat-dark",
     };
 
     private static readonly string[] DraftTokens =

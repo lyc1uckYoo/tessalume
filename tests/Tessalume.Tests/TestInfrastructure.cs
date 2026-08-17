@@ -137,6 +137,12 @@ internal sealed class CreatorThemeFixture : IDisposable
         var css = new StringBuilder(":root {\n");
         foreach (var name in AssetNames)
         {
+            if (name.StartsWith("hero-", StringComparison.OrdinalIgnoreCase) ||
+                name.StartsWith("sidebar-", StringComparison.OrdinalIgnoreCase) ||
+                name.StartsWith("chat-", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
             css.Append("  --fixture-")
                 .Append(name)
                 .Append(": var(--tessalume-asset-")

@@ -102,7 +102,8 @@ checklist in working notes, not in the publishable theme package.
 
 - Style `aside.app-shell-left-panel` itself in light and dark mode, not only its
   child rows.
-- Use pseudo/layered scene treatment to control art, veil and edge lighting.
+- Let the shared runtime own the sidebar artwork and veil layer. Use separate
+  theme decoration layers for edge lighting, symbols and navigation treatment.
 - Verify project rows, thread rows, active/hover states, section headings and
   icons against both artworks.
 - Preserve a large, visible character without using an opaque wash to hide it.
@@ -168,6 +169,8 @@ Before building, search for and remove:
 - duplicated selectors or declarations appended outside sections 01-13.
 - missing or invalid artwork defaults, or any adjustable image crop/effect/veil
   or image motion still hidden on the three CSS artwork layers.
+- any direct CSS reference to `hero-*`, `sidebar-*` or `chat-*`, or a changed
+  shipped recommendation whose `defaultsVersion` was not incremented.
 
 The contract validator catches objective remnants. Qualitative checks still
 require human judgment. Runtime screenshots are optional unless the user asks

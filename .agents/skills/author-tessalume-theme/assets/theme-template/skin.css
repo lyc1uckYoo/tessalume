@@ -65,6 +65,7 @@ html.__NS__-theme.electron-dark .__NS__-light-only {
 
 /* 02 App and native planes */
 /* 02 应用与原生平面：应用底色、窗口栏与原生页面承载层。 */
+/* hero/sidebar/chat 原图、构图、图像效果和遮罩由 artwork-defaults.json + 共享运行时绘制。 */
 html.__NS__-theme,.__NS__-theme body,.__NS__-theme #root {
   background:var(--__NS__-bg)!important;
   color:var(--__NS__-text)!important;
@@ -123,7 +124,7 @@ html.__NS__-theme.__NS__-is-settings .__NS__-settings-surface {
 }
 
 /* 03 Sidebar skin */
-/* 03 左栏皮肤：左栏背景、项目行、会话行与分组标题。 */
+/* 03 左栏皮肤：只设计导航平面、项目行、会话行与分组标题，不在 CSS 中绘制左栏图片或遮罩。 */
 html.__NS__-theme aside [data-app-action-sidebar-project-row] {
   --phase:var(--__NS__-accent);
   border:1px solid color-mix(in srgb,var(--phase) 45%,var(--__NS__-line))!important;
@@ -157,7 +158,7 @@ html.__NS__-theme aside :is([data-sidebar-section-heading],[class*="sectionHeadi
 }
 
 /* 04 Home skin */
-/* 04 首页皮肤：首页横幅、主标题、路线装饰与快捷卡片。 */
+/* 04 首页皮肤：只设计主标题、角色装饰与快捷卡片；首页原图与最终构图由共享运行时负责。 */
 .__NS__-theme .__NS__-home>div:first-child>div:first-child>div:first-child::before {
   content:"";
 }
@@ -488,6 +489,7 @@ html.__NS__-theme .__NS__-window-bar {
 
 /* 09 Message and output frames */
 /* 09 消息与输出框架：任务标题、消息气泡、聊天背景与环境信息。 */
+/* 聊天原图与可读性遮罩只来自 artwork-defaults.json；消息填充保持透明但保留角色边框。 */
 .__NS__-task-header {
   border:1px solid var(--__NS__-line-strong)!important;
   border-radius:18px 3px 18px 3px!important;

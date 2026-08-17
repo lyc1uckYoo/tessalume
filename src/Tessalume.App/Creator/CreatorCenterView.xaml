@@ -25,7 +25,7 @@
                 <TextBlock Text="告诉 Tessalume 你想做谁，剩下的每一步都会根据项目状态自动提醒。" Foreground="{DynamicResource MutedText}" FontSize="12" Margin="1,6,0,0" />
             </StackPanel>
             <Border Grid.Column="1" Background="{DynamicResource AccentSoft}" BorderBrush="{DynamicResource Accent}" BorderThickness="1" CornerRadius="11" Padding="11,6" VerticalAlignment="Center">
-                <StackPanel Orientation="Horizontal"><Ellipse Width="6" Height="6" Fill="{DynamicResource Positive}" Margin="0,0,7,0" /><TextBlock Text="CREATOR STUDIO 2.0" Foreground="{DynamicResource Accent}" FontSize="10" FontWeight="SemiBold" /></StackPanel>
+                <StackPanel Orientation="Horizontal"><Ellipse Width="6" Height="6" Fill="{DynamicResource Positive}" Margin="0,0,7,0" /><TextBlock Text="CREATOR TOOLCHAIN 2.0" Foreground="{DynamicResource Accent}" FontSize="10" FontWeight="SemiBold" /></StackPanel>
             </Border>
         </Grid>
 

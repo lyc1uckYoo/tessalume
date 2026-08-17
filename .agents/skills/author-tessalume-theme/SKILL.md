@@ -1,6 +1,6 @@
 ---
 name: author-tessalume-theme
-description: Create and validate brand-new Tessalume character themes from zero with Flagship Template 1.0. Use whenever working under themes/, changing the Template 1.0 starter, authoring theme artwork or motion, or preparing Tessalume theme builds and visual QA. Enforces character research, eleven finished assets, complete light/dark visual coverage, character-specific components, frozen shared geometry, and runtime verification.
+description: Create, migrate, and validate Tessalume character themes with Flagship Template 1.0 and the versioned six-slot artwork contract. Use whenever working under themes/, changing the Template 1.0 starter, authoring or repairing theme artwork/motion, or preparing Tessalume theme builds and visual QA. Enforces eleven finished assets, original-image preservation, artwork-defaults.json as the only adjustable-image source, character-specific components, frozen shared geometry, and runtime verification.
 ---
 
 # Author Tessalume themes
@@ -53,8 +53,11 @@ current task.
 3. Create the package only with `scripts/scaffold_theme.py`. Never copy another
    published theme. Declare `templateVersion: "1.0"` and keep the canonical
    roles, parts, priorities and frozen geometry unchanged. Complete all six
-   original-asset recommendations in `artwork-defaults.json`; if the image
-   itself needs ambient motion, encode only relative placement deltas there.
+   original-asset recommendations in `artwork-defaults.json`. Each slot must
+   reference its same-named manifest source asset. Keep those files untouched,
+   and increment `defaultsVersion` whenever a published recommendation changes.
+   If the image itself needs ambient motion, encode only relative placement
+   deltas there. Never write or read user personalization state while authoring.
 4. Generate or prepare all eleven final assets at production quality. After
    every image, complete the fixed identity checklist in
    `flagship-completeness.md` and reject any failed item. Use the
@@ -80,9 +83,11 @@ current task.
    recommendation only when readability or composition requires it. The same
    runtime owns optional image-layer motion and accessibility reduction.
 9. Keep `skin.css` in canonical 01-13 order. Modify only copy, color, texture,
-   symbols and theme-owned decoration animation. Never put the three adjustable
-   images, crop/effects or veils back into CSS, restore image-layer keyframes,
-   append a late override dump, or edit the frozen geometry block.
+   symbols and theme-owned decoration animation. Do not reference any of the
+   six hero/sidebar/chat assets from CSS. Never put their crop/effects/veils
+   back into CSS, restore image-layer keyframes, append a late override dump,
+   or edit the frozen geometry block. Task-card and memory artwork remain
+   theme-owned because they are not workbench-adjustable surfaces.
 10. Before building, run both blocking checks:
 
    ```powershell

@@ -64,7 +64,8 @@ internal static partial class TestSuite
         {
             BuiltInAssetInstaller.CreateCreatorWorkspace(workspace);
             var contract = CreatorWorkspaceContract.Inspect(workspace);
-            Ensure(contract.State == CreatorWorkspaceContractState.Current && !contract.CanUpgrade,
+            Ensure(CreatorWorkspaceContract.CurrentWorkspaceVersion == "2.0" &&
+                   contract.State == CreatorWorkspaceContractState.Current && !contract.CanUpgrade,
                 "A newly exported creator workspace must advertise the current contract.");
 
             var userProject = Path.Combine(workspace, "themes", "user.theme");
@@ -79,7 +80,7 @@ internal static partial class TestSuite
                 """
                 {
                   "schemaVersion": 1,
-                  "workspaceVersion": "0.9",
+                  "workspaceVersion": "1.0",
                   "templateVersion": "1.0"
                 }
                 """);
@@ -194,6 +195,19 @@ internal static partial class TestSuite
                 .All(group => template.Health.Checks.Any(check => check.Group == group)),
             "Creator health must include every project report group.");
 
+        using (var cssConflictFixture = await CreatorThemeFixture.CreateAsync())
+        {
+            await File.AppendAllTextAsync(
+                Path.Combine(cssConflictFixture.Root, "skin.css"),
+                "\n:root { --bad-hero: var(--tessalume-asset-hero-light); }" +
+                "\nhtml.fixture-theme aside.app-shell-left-panel::after { background-position: 20% 40%; }\n");
+            var cssConflict = await scanner.ScanProjectAsync(cssConflictFixture.Root);
+            Ensure(!cssConflict.Health.CanExport &&
+                   cssConflict.Health.Checks.Any(check => check.Code == "creator.artwork.css.asset-reference") &&
+                   cssConflict.Health.Checks.Any(check => check.Code == "creator.artwork.css.sidebar"),
+                "Creator health must block direct adjustable-artwork references and CSS-owned final placement.");
+        }
+
         var starter = await scanner.ScanProjectAsync(Path.Combine(FindRepositoryRoot(), "examples"));
         Ensure(!starter.Health.CanExport &&
                starter.Health.Checks.Any(check => check.Code == "creator.draft.unresolved"),
@@ -277,7 +291,9 @@ internal static partial class TestSuite
             Ensure(viewModel.Projects.Count == 1 &&
                    viewModel.SelectedProject?.ThemeId == "fixture.creator-theme" &&
                    viewModel.SelectedProject.CanExport &&
-                   viewModel.HealthGroups.Count == 8,
+                   viewModel.HealthGroups.Count == 9 &&
+                   viewModel.WorkflowStages.Count == 6 &&
+                   viewModel.WorkflowStages[^1].StatusText == "待处理",
                 "The creator center must discover projects and expose the complete grouped health report.");
             Ensure(viewModel.CanUpgradeWorkspace &&
                    viewModel.WorkspaceVersionTone == "upgrade",

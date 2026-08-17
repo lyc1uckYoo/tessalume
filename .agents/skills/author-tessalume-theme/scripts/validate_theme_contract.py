@@ -54,6 +54,9 @@ DRAFT_TOKENS = (
 )
 ARTWORK_REGIONS = ("hero", "sidebar", "chat")
 ARTWORK_MODES = ("light", "dark")
+RUNTIME_ARTWORK_ASSETS = {
+    f"{region}-{mode}" for region in ARTWORK_REGIONS for mode in ARTWORK_MODES
+}
 CSS_LENGTH_RE = re.compile(
     r"^(?:auto|cover|contain|(?:[1-9][0-9]*(?:\.[0-9]+)?|0\.0*[1-9][0-9]*)(?:%|px))$"
 )
@@ -508,6 +511,12 @@ def validate_theme(
     else:
         namespace = namespace_match.group(1)
         asset_refs = set(ASSET_VARIABLE_RE.findall(css))
+        direct_artwork_refs = asset_refs & RUNTIME_ARTWORK_ASSETS
+        if direct_artwork_refs:
+            errors.append(
+                f"{label}: skin.css directly references runtime-owned adjustable artwork: "
+                f"{', '.join(sorted(direct_artwork_refs))}"
+            )
         for region in ARTWORK_REGIONS:
             for mode in ARTWORK_MODES:
                 slot_value = ((artwork_defaults.get("slots") or {}).get(region) or {}).get(mode) or {}

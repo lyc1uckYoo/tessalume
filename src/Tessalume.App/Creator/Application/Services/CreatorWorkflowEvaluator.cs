@@ -19,6 +19,7 @@ internal sealed class CreatorWorkflowEvaluator : ICreatorWorkflowEvaluator
         ArgumentNullException.ThrowIfNull(project);
         var characterReady = !string.IsNullOrWhiteSpace(project.CharacterName);
         var assetsReady = project.AssetCount >= 11 && !HasError(project, ThemeProjectHealthGroup.Assets);
+        var artworkReady = !HasError(project, ThemeProjectHealthGroup.Artwork);
         var contractReady = !HasError(project, ContractGroups);
         var acceptanceReady = project.SupportsLight && project.SupportsDark &&
             !HasError(project, ThemeProjectHealthGroup.Previews);
@@ -36,6 +37,13 @@ internal sealed class CreatorWorkflowEvaluator : ICreatorWorkflowEvaluator
                 ResolveState(assetsReady, HasWarning(project, ThemeProjectHealthGroup.Assets)),
                 "素材生成",
                 assetsReady ? $"标准素材已准备 · {project.AssetCount} 个" : $"当前识别到 {project.AssetCount} 个素材，模板需要至少 11 个。"),
+            new CreatorWorkflowStage(
+                CreatorWorkflowStageId.ArtworkRecommendations,
+                ResolveState(artworkReady, HasWarning(project, ThemeProjectHealthGroup.Artwork)),
+                "六槽图像推荐值",
+                artworkReady
+                    ? "六张原图、亮暗构图和效果由 artwork-defaults.json 单一管理。"
+                    : "需要补齐六槽推荐值，或从 skin.css 移除重复的图片裁切与效果。"),
             new CreatorWorkflowStage(
                 CreatorWorkflowStageId.ContractValidation,
                 ResolveState(contractReady, HasWarning(project, ContractGroups)),
@@ -57,6 +65,7 @@ internal sealed class CreatorWorkflowEvaluator : ICreatorWorkflowEvaluator
         {
             new CreatorReleaseChecklistItem("character", "角色信息完整", "清单包含明确的角色身份。", characterReady, true),
             new CreatorReleaseChecklistItem("assets", "11 个标准素材位", $"当前素材：{project.AssetCount} 个。", assetsReady, true),
+            new CreatorReleaseChecklistItem("artwork", "六槽图像单一来源", "首页横幅、左栏和聊天背景均引用原图；构图、效果与相对动效只存在于 artwork-defaults.json。", artworkReady, true),
             new CreatorReleaseChecklistItem("contract", "Template 1.0 契约", "清单、入口、脚本与资源引用通过检查。", contractReady, true),
             new CreatorReleaseChecklistItem("modes", "亮暗模式覆盖", "亮色、暗色和对应预览均可验收。", acceptanceReady, true),
             new CreatorReleaseChecklistItem("health", "无阻断错误", $"错误 {project.Health.ErrorCount} 项，建议 {project.Health.WarningCount} 项。", releaseReady, true),

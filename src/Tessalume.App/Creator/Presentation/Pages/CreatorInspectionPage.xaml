@@ -13,7 +13,7 @@
                     <Button Grid.Column="1" Style="{DynamicResource SecondaryActionButton}" Content="重新体检" IsEnabled="{Binding CanRevalidateSelectedProject}" Click="RevalidateProject_Click" />
                     <Button x:Name="RepairPromptButton" Grid.Column="3" Style="{DynamicResource PrimaryActionButton}" Content="{Binding SelectedProject.RepairPromptButtonText}" IsEnabled="{Binding SelectedProject.CanCopyRepairPrompt}" Click="CopyRepairPrompt_Click" AutomationProperties.Name="复制当前主题修复提示词" Visibility="Collapsed" />
                 </Grid>
-                <Border Background="{DynamicResource InfoSurface}" BorderBrush="{DynamicResource InfoBorder}" BorderThickness="1" CornerRadius="11" Padding="12,9" Margin="0,13,0,4"><TextBlock Text="错误会阻止应用和导出；建议项不会阻断，但会影响最终视觉完整度。点击“定位”可直接打开相关文件。" Foreground="{DynamicResource MutedText}" FontSize="10" TextWrapping="Wrap" /></Border>
+                <Border Background="{DynamicResource InfoSurface}" BorderBrush="{DynamicResource InfoBorder}" BorderThickness="1" CornerRadius="11" Padding="12,9" Margin="0,13,0,4"><TextBlock Text="错误会阻止应用和导出；体检会单独检查六槽原图推荐值，并阻止 CSS 重新写死裁切、滤镜、透明度、遮罩或图片动效。点击“定位”可直接打开相关文件。" Foreground="{DynamicResource MutedText}" FontSize="10" TextWrapping="Wrap" /></Border>
                 <ItemsControl ItemsSource="{Binding HealthGroups}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>

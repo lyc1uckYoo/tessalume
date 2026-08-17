@@ -58,7 +58,7 @@ internal static partial class TestSuite
             defaults.Defaults,
             originalOverrides).Settings;
 
-        var testAdjustment = new ThemeArtworkAdjustment
+        var preciseSidebarAdjustment = new ThemeArtworkAdjustment
         {
             CompositionMode = ThemeArtworkCompositionMode.Custom,
             Placement = new ThemeArtworkPlacementSpec
@@ -77,11 +77,26 @@ internal static partial class TestSuite
             HueRotation = 27,
             Blur = 1.5,
         };
+        var responsiveAdjustment = preciseSidebarAdjustment with
+        {
+            Placement = new ThemeArtworkPlacementSpec
+            {
+                SizeMode = ThemeArtworkSizeMode.Cover,
+                PositionX = ThemeArtworkPositionValue.Percent(61d),
+                PositionY = ThemeArtworkPositionValue.Pixels(-37d),
+                Geometry = new ThemeArtworkGeometry
+                {
+                    Scale = 1.25d,
+                    OriginX = ThemeArtworkPositionValue.Percent(61d),
+                    OriginY = ThemeArtworkPositionValue.Pixels(-37d),
+                },
+            },
+        };
         var testMode = new ThemeVisualModeSettings
         {
-            Hero = testAdjustment,
-            Sidebar = testAdjustment,
-            Chat = testAdjustment,
+            Hero = responsiveAdjustment,
+            Sidebar = preciseSidebarAdjustment,
+            Chat = responsiveAdjustment,
         };
         var testSettings = new ThemeVisualSettings { Light = testMode, Dark = testMode };
         var repositoryRoot = FindRepositoryRoot();
@@ -113,7 +128,10 @@ internal static partial class TestSuite
                         opacity: read('--tessalume-visual-sidebar-dark-opacity'),
                         translate: read('--tessalume-visual-chat-light-translate'),
                         scale: read('--tessalume-visual-chat-dark-scale'),
-                        size: read('--tessalume-visual-chat-light-background-size'),
+                        sidebarSize: read('--tessalume-visual-sidebar-light-background-size'),
+                        sidebarSurfaceWidth: document.querySelector('[data-tessalume-surface="sidebar"]')
+                          ?.getBoundingClientRect().width || 0,
+                        chatSize: read('--tessalume-visual-chat-light-background-size'),
                         position: read('--tessalume-visual-chat-dark-background-position'),
                         supportsSize: CSS.supports('background-size', '217% auto'),
                         supportsPosition: CSS.supports('background-position', '61% -37px')
@@ -139,6 +157,18 @@ internal static partial class TestSuite
             }
         }
 
+        var sidebarSizeIsExact = probe is { } sidebarProbe &&
+            TryReadPixelPair(sidebarProbe.GetProperty("sidebarSize").GetString(), out var sidebarWidth, out var sidebarHeight) &&
+            sidebarHeight > 0d &&
+            sidebarProbe.GetProperty("sidebarSurfaceWidth").GetDouble() is > 0d and var sidebarSurfaceWidth &&
+            Math.Abs(sidebarWidth / sidebarSurfaceWidth - 2.17d) < .001d;
+        var chatSizeIsResponsive = probe is { } chatProbe &&
+            TryReadPixelPair(chatProbe.GetProperty("chatSize").GetString(), out var chatWidth, out var chatHeight) &&
+            chatWidth > 0d && chatHeight > 0d;
+        var chatPositionIsFolded = probe is { } positionProbe &&
+            TryReadPixelPair(positionProbe.GetProperty("position").GetString(), out _, out var chatTop) &&
+            Math.Abs(chatTop + 37d) < .001d;
+
         if (probe is not { } value ||
             !value.GetProperty("filter").GetString()!.Contains("grayscale(0.14)", StringComparison.Ordinal) ||
             !value.GetProperty("filter").GetString()!.Contains("hue-rotate(27deg)", StringComparison.Ordinal) ||
@@ -146,8 +176,9 @@ internal static partial class TestSuite
             value.GetProperty("opacity").GetString() != "0.83" ||
             value.GetProperty("translate").GetString() != "0px 0px" ||
             value.GetProperty("scale").GetString() != "1" ||
-            value.GetProperty("size").GetString() != "217% auto" ||
-            value.GetProperty("position").GetString() != "61% -37px" ||
+            !sidebarSizeIsExact ||
+            !chatSizeIsResponsive ||
+            !chatPositionIsFolded ||
             !value.GetProperty("supportsSize").GetBoolean() ||
             !value.GetProperty("supportsPosition").GetBoolean())
         {
@@ -158,6 +189,30 @@ internal static partial class TestSuite
         Console.WriteLine(value.GetRawText());
         Console.WriteLine("Original visual settings restored.");
         return 0;
+    }
+
+    private static bool TryReadPixelPair(string? value, out double first, out double second)
+    {
+        first = 0d;
+        second = 0d;
+        var parts = (value ?? string.Empty).Split(
+            ' ',
+            StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        return parts.Length == 2 &&
+            TryReadPixels(parts[0], out first) &&
+            TryReadPixels(parts[1], out second);
+    }
+
+    private static bool TryReadPixels(string value, out double pixels)
+    {
+        pixels = 0d;
+        return value.EndsWith("px", StringComparison.Ordinal) &&
+            double.TryParse(
+                value[..^2],
+                System.Globalization.NumberStyles.Float,
+                System.Globalization.CultureInfo.InvariantCulture,
+                out pixels) &&
+            double.IsFinite(pixels);
     }
 
     static async Task<int> ProbeRuntimeAsync(int port)

@@ -28,10 +28,15 @@ def main() -> int:
     example_root = repo_root / "examples"
     example_root.mkdir(parents=True, exist_ok=True)
 
-    for name in ("manifest.json", "theme.js", "skin.css"):
+    for name in ("manifest.json", "artwork-defaults.json", "theme.js", "skin.css"):
         text = (template_root / name).read_text(encoding="utf-8")
         for token, value in TOKENS.items():
             text = text.replace(token, value)
+        if name == "artwork-defaults.json":
+            text = text.replace(
+                "../../schemas/theme-artwork-defaults-v1.schema.json",
+                "../schemas/theme-artwork-defaults-v1.schema.json",
+            )
         (example_root / name).write_text(text, encoding="utf-8", newline="\n")
 
     source_assets = template_root / "assets"

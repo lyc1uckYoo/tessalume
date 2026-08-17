@@ -1,4 +1,4 @@
 interface:
   display_name: "Tessalume Flagship Theme Author"
-  short_description: "Create complete flagship character themes from zero"
-  default_prompt: "Use $author-tessalume-theme to create a brand-new Tessalume Flagship Template 1.0 character theme from zero with researched identity, eleven finished assets, complete light/dark surface coverage, character-specific components, blocking validation, build, and runtime QA."
+  short_description: "Author complete themes with versioned artwork defaults"
+  default_prompt: "Use $author-tessalume-theme to create or repair a Tessalume Flagship Template 1.0 character theme with eleven finished assets, versioned six-slot artwork defaults, CSS ownership isolation, blocking validation, build, and runtime QA."

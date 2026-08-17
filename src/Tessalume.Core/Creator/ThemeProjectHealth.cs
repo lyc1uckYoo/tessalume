@@ -13,6 +13,7 @@ public enum ThemeProjectHealthGroup
     Manifest,
     EntryPoints,
     Assets,
+    Artwork,
     Previews,
     Template,
     Css,

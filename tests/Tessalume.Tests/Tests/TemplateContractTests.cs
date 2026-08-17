@@ -155,6 +155,7 @@ internal static partial class TestSuite
             "Compatibility",
             "theme-template-v1.css"));
         var templateManifest = await File.ReadAllTextAsync(Path.Combine(templateRoot, "manifest.json"));
+        var templateArtworkDefaults = await File.ReadAllTextAsync(Path.Combine(templateRoot, "artwork-defaults.json"));
         var validator = await File.ReadAllTextAsync(
             Path.Combine(skillRoot, "scripts", "validate_theme_contract.py"));
         var geometrySync = await File.ReadAllTextAsync(
@@ -170,11 +171,15 @@ internal static partial class TestSuite
         Ensure(templateManifest.Contains("\"version\": \"1.0\"", StringComparison.Ordinal) &&
                templateManifest.Contains("\"style\": \"shared\"", StringComparison.Ordinal) &&
                templateManifest.Contains("\"qualityGate\": \"flagship-complete-1\"", StringComparison.Ordinal) &&
+               templateManifest.Contains("\"artworkDefaults\": \"artwork-defaults.json\"", StringComparison.Ordinal) &&
+               templateArtworkDefaults.Contains("\"defaultsVersion\": \"1.0.0\"", StringComparison.Ordinal) &&
+               templateArtworkDefaults.Split("\"mode\": \"none\"", StringSplitOptions.None).Length - 1 == 6 &&
                templateManifest.Contains("assets/placeholder.svg", StringComparison.Ordinal),
             "The reusable template must be valid before custom artwork is added.");
         Ensure(validator.Contains("REQUIRED_SLOTS", StringComparison.Ordinal) &&
                validator.Contains("DRAFT_TOKENS", StringComparison.Ordinal) &&
                validator.Contains("flagship visual coverage missing", StringComparison.Ordinal) &&
+               validator.Contains("directly references runtime-owned adjustable artwork", StringComparison.Ordinal) &&
                templateCss.Contains("aside.app-shell-left-panel::after", StringComparison.Ordinal) &&
                templateCss.Contains("-task-title", StringComparison.Ordinal) &&
                templateCss.Contains("thread-summary-panel-item-button", StringComparison.Ordinal) &&
@@ -182,6 +187,7 @@ internal static partial class TestSuite
                validator.Contains("skin.css", StringComparison.Ordinal) &&
                geometrySync.Contains("--check", StringComparison.Ordinal) &&
                exampleSync.Contains("repo_root / \"examples\"", StringComparison.Ordinal) &&
+               exampleSync.Contains("artwork-defaults.json", StringComparison.Ordinal) &&
                !Directory.Exists(Path.Combine(repositoryRoot, "examples", "advanced-theme")),
             "The authoring skill must validate shared structure and skin isolation.");
 
@@ -252,6 +258,16 @@ internal static partial class TestSuite
                    !css.Contains("height:502px!important", StringComparison.Ordinal) &&
                    !css.Contains("flex:0 0 526px!important", StringComparison.Ordinal),
                 $"{Path.GetFileName(root)} has duplicated runtime-owned Template 1.0 structure.");
+            if (Path.GetFileName(root).Equals("examples", StringComparison.OrdinalIgnoreCase))
+            {
+                var manifest = await File.ReadAllTextAsync(Path.Combine(root, "manifest.json"));
+                Ensure(File.Exists(Path.Combine(root, "artwork-defaults.json")) &&
+                       manifest.Contains("\"artworkDefaults\": \"artwork-defaults.json\"", StringComparison.Ordinal) &&
+                       !css.Contains("--tessalume-asset-hero-", StringComparison.Ordinal) &&
+                       !css.Contains("--tessalume-asset-sidebar-", StringComparison.Ordinal) &&
+                       !css.Contains("--tessalume-asset-chat-", StringComparison.Ordinal),
+                    "The app-distributed manual template must use the same six-slot artwork contract as the Skill scaffold.");
+            }
         }
     }
 

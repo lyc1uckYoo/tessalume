@@ -4,12 +4,15 @@ param(
     [ValidatePattern('^\d+\.\d+\.\d+(?:\.\d+)?$')]
     [string]$Version,
 
-    [string]$ChangelogPath = (Join-Path $PSScriptRoot '..\CHANGELOG.md'),
+    [string]$ChangelogPath,
 
     [string]$OutputPath
 )
 
 $ErrorActionPreference = 'Stop'
+if ([string]::IsNullOrWhiteSpace($ChangelogPath)) {
+    $ChangelogPath = Join-Path $PSScriptRoot '..\CHANGELOG.md'
+}
 $changelog = [IO.Path]::GetFullPath($ChangelogPath)
 if (-not [IO.File]::Exists($changelog)) {
     throw "Changelog not found: $changelog"

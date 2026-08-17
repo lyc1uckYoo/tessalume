@@ -102,7 +102,8 @@ public sealed partial class ThemeProjectScanner
             return group is ThemeProjectHealthGroup.Manifest or
                 ThemeProjectHealthGroup.Template or
                 ThemeProjectHealthGroup.EntryPoints or
-                ThemeProjectHealthGroup.Assets
+                ThemeProjectHealthGroup.Assets or
+                ThemeProjectHealthGroup.Artwork
                 ? Path.Combine(root, ThemePackageLoader.ManifestFileName)
                 : null;
         }
@@ -123,6 +124,7 @@ public sealed partial class ThemeProjectScanner
         if (code.StartsWith("manifest", StringComparison.Ordinal)) return ThemeProjectHealthGroup.Manifest;
         if (code.StartsWith("entry", StringComparison.Ordinal)) return ThemeProjectHealthGroup.EntryPoints;
         if (code.StartsWith("asset", StringComparison.Ordinal)) return ThemeProjectHealthGroup.Assets;
+        if (code.StartsWith("artwork", StringComparison.Ordinal)) return ThemeProjectHealthGroup.Artwork;
         if (code.StartsWith("preview", StringComparison.Ordinal)) return ThemeProjectHealthGroup.Previews;
         if (code.StartsWith("css", StringComparison.Ordinal)) return ThemeProjectHealthGroup.Css;
         if (code.StartsWith("script", StringComparison.Ordinal)) return ThemeProjectHealthGroup.Script;
@@ -134,6 +136,7 @@ public sealed partial class ThemeProjectScanner
         ThemeProjectHealthGroup.Manifest => "主题清单需要修复",
         ThemeProjectHealthGroup.EntryPoints => "入口文件需要修复",
         ThemeProjectHealthGroup.Assets => "主题素材需要修复",
+        ThemeProjectHealthGroup.Artwork => "图像推荐值需要修复",
         ThemeProjectHealthGroup.Previews => "主题预览需要修复",
         ThemeProjectHealthGroup.Template => "模板声明需要修复",
         ThemeProjectHealthGroup.Css => "主题样式需要修复",
@@ -154,6 +157,7 @@ public sealed partial class ThemeProjectScanner
             ThemeProjectHealthGroup.Css => "修正 CSS 后重新校验。",
             ThemeProjectHealthGroup.Script => "修正 theme.js 后重新校验。",
             ThemeProjectHealthGroup.Assets or ThemeProjectHealthGroup.Previews => "核对文件格式、大小和清单路径。",
+            ThemeProjectHealthGroup.Artwork => "将六槽原图、构图、效果和相对动效写入 artwork-defaults.json，并从 CSS 删除重复定义。",
             _ => "根据错误说明修正对应文件后重新校验。",
         };
     }
@@ -177,6 +181,7 @@ public sealed partial class ThemeProjectScanner
         ThemeProjectHealthGroup.Manifest => "主题清单",
         ThemeProjectHealthGroup.EntryPoints => "入口文件",
         ThemeProjectHealthGroup.Assets => "标准素材",
+        ThemeProjectHealthGroup.Artwork => "六槽图像推荐值",
         ThemeProjectHealthGroup.Previews => "亮暗预览",
         ThemeProjectHealthGroup.Template => "Template 1.0",
         ThemeProjectHealthGroup.Css => "CSS",

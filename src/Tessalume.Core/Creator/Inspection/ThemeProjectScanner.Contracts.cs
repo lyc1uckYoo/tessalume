@@ -173,6 +173,7 @@ public sealed partial class ThemeProjectScanner
             }
 
             AddDraftChecks(css, cssPath, ThemeProjectHealthGroup.Css, checks);
+            AddArtworkCssOwnershipChecks(css, cssPath, checks);
 
             var referencedAssets = AssetVariableRegex().Matches(css)
                 .Select(match => match.Groups[1].Value)
@@ -194,7 +195,7 @@ public sealed partial class ThemeProjectScanner
             }
 
             var unusedAssets = manifest.Assets.Keys
-                .Where(name => !referencedAssets.Contains(name))
+                .Where(name => !referencedAssets.Contains(name) && !RuntimeArtworkAssetNames.Contains(name))
                 .Order(StringComparer.OrdinalIgnoreCase)
                 .ToArray();
             if (unusedAssets.Length > 0)
@@ -361,7 +362,7 @@ public sealed partial class ThemeProjectScanner
         string message,
         string filePath,
         string suggestedAction) => checks.Add(new ThemeProjectHealthCheck(
-        ThemeProjectHealthGroup.EntryPoints,
+        ThemeProjectHealthGroup.Artwork,
         code,
         title,
         message,

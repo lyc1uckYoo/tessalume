@@ -55,7 +55,12 @@ internal static class CreatorRepairPromptComposer
         }
 
         builder.AppendLine();
-        builder.AppendLine("修复时保留原主题的角色素材、专属 DOM、纹样和动效，不得改动 Template 1.0 冻结几何块。首页横幅、左栏图片、聊天背景的亮暗六槽推荐构图与图像效果必须写入 artwork-defaults.json，并由共享运行时消费；不要把可调裁切、滤镜、透明度或图片遮罩硬编码回 skin.css。图片层呼吸或漂移只能写成相对最终静态构图的 motion delta，禁止在 skin.css 用 transform 动画形成第二坐标系；独立装饰动效继续保留。完成后运行工作区契约校验，并同时检查亮色、暗色以及实际 Codex 页面；然后让我回到 Tessalume 重新体检。");
+        builder.AppendLine("修复边界：");
+        builder.AppendLine("- 保留原主题的角色素材、专属 DOM、纹样、卡片和独立装饰动效，不得改动 Template 1.0 冻结几何。");
+        builder.AppendLine("- 首页横幅、左栏图片、聊天背景的亮暗六槽必须引用 manifest 中同名原图；推荐构图、滤镜、透明度、叠色、渐变遮罩、暗角、混合模式和可读性保护只能写入 artwork-defaults.json。");
+        builder.AppendLine("- skin.css 不得直接引用六张可调原图，也不得在对应图层写 background-size/position、filter、opacity、transform、混合模式、遮罩或图片动画。图片层呼吸/漂移只能使用相对最终构图的 motion delta。");
+        builder.AppendLine("- 修改主题推荐值时递增 defaultsVersion；不得写入用户个性化配置，也不得用当前用户覆盖替代主题默认值。");
+        builder.AppendLine("- 完成后运行 Skill 的几何与契约校验，检查亮暗模式和实际 Codex 页面，然后让我回到 Tessalume 重新体检。");
         return builder.ToString().TrimEnd();
     }
 

@@ -127,6 +127,8 @@ Template 1.0 的几何和公共表面现在只存在于运行时共享的
 5. 在 `artwork-defaults.json` 完成六槽推荐构图和效果；只在 `skin.css` 编辑
    角色皮肤与独立装饰动效。图片本身若需呼吸/漂移，只能在 defaults 中写相对
    motion delta；保持 01-13 顺序和冻结几何。
+   每次修改准备发布的推荐值都要递增 `defaultsVersion`，且不得读取或写入用户
+   个性化覆盖。
 6. 运行 `sync_template_geometry.py --check` 与 `validate_theme_contract.py`，任何草稿
    遗留或视觉覆盖缺失都必须在构建前解决。
 7. 在应用源码仓库中执行根目录 `一键构建EXE.ps1`，不手工同步便携版；如果根目录

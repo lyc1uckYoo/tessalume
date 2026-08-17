@@ -1,7 +1,7 @@
 {
-  "$schema": "../../schemas/theme-artwork-defaults-v1.schema.json",
+  "$schema": "../schemas/theme-artwork-defaults-v1.schema.json",
   "schemaVersion": 1,
-  "themeId": "__THEME_ID__",
+  "themeId": "example.template-v1",
   "defaultsVersion": "1.0.0",
   "slots": {
     "hero": {

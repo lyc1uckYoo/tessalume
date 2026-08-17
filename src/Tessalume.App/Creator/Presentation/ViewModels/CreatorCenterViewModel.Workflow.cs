@@ -60,6 +60,14 @@ internal sealed partial class CreatorCenterViewModel
 
     private CreatorWorkflowStage ApplyAcceptanceToStage(CreatorWorkflowStage stage)
     {
+        if (stage.Id == CreatorWorkflowStageId.Release && !_acceptance.Passed)
+        {
+            return stage with
+            {
+                State = CreatorWorkflowStageState.Blocked,
+                Description = "先完成运行验收，再进入最终导出清单。",
+            };
+        }
         if (stage.Id != CreatorWorkflowStageId.VisualAcceptance) return stage;
         if (!_acceptance.HasRun)
         {
