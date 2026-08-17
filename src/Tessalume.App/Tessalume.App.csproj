@@ -13,7 +13,7 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <Description>Open-source visual theme studio for Codex desktop</Description>
     <Authors>$(AssemblyName) Contributors</Authors>
-    <Version>2.0.2</Version>
+    <Version>2.1.0</Version>
     <BuiltInThemesRoot Condition="'$(BuiltInThemesRoot)' == ''">..\..\themes</BuiltInThemesRoot>
     <BuiltInPetsRoot Condition="'$(BuiltInPetsRoot)' == ''">..\..\pets</BuiltInPetsRoot>
   </PropertyGroup>

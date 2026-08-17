@@ -36,7 +36,7 @@ internal static partial class TestSuite
                releaseCandidateScript.Contains("Complete release build failed", StringComparison.Ordinal),
             "The release build must create a checksum and propagate complete-build failures.");
         Ensure(File.Exists(securityPath) && File.Exists(issueTemplatePath) && File.Exists(changelogPath) &&
-               changelog.Contains("## 2.0.0", StringComparison.Ordinal) &&
+               changelog.Contains("## 2.1.0", StringComparison.Ordinal) &&
                license.Contains("MIT License", StringComparison.Ordinal) &&
                license.Contains("Permission is hereby granted", StringComparison.Ordinal),
             "Public testing requires an MIT license, security guidance, a structured bug form, and a public changelog.");
@@ -46,14 +46,16 @@ internal static partial class TestSuite
                readme.Contains("把 Codex Desktop 变成属于你的主题工作空间", StringComparison.Ordinal) &&
                readme.Contains("一个软件，完成整套主题体验", StringComparison.Ordinal) &&
                readme.Contains("个性化不再需要手改 CSS", StringComparison.Ordinal) &&
+               readme.Contains("Codex 宠物", StringComparison.Ordinal) &&
                readme.Contains("让 Codex 帮你制作自己的皮肤", StringComparison.Ordinal) &&
                readme.Contains("更新不会重置你的主题和设置", StringComparison.Ordinal) &&
                readme.Contains("tessalume-personalization-light.png", StringComparison.Ordinal) &&
+               readme.Contains("tessalume-pets-light.png", StringComparison.Ordinal) &&
                readme.Contains("tessalume-creator.png", StringComparison.Ordinal) &&
                !readme.Contains("## Tessalume 1.4.1", StringComparison.Ordinal) &&
                readme.Split('\n').Length <= 160 &&
                readme.Contains("[MIT License](LICENSE)", StringComparison.Ordinal) &&
-               security.Contains("最新的 `2.0.x`", StringComparison.Ordinal) &&
+               security.Contains("最新的 `2.1.x`", StringComparison.Ordinal) &&
                security.Contains("备份 ZIP", StringComparison.Ordinal),
             "The public README must stay product-focused while exposing download, safety, feedback, and licensing.");
         foreach (var screenshot in new[]
@@ -62,11 +64,13 @@ internal static partial class TestSuite
                      "tessalume-dark.png",
                      "tessalume-personalization-light.png",
                      "tessalume-personalization-dark.png",
+                     "tessalume-pets-light.png",
+                     "tessalume-pets-dark.png",
                      "tessalume-creator.png",
                  })
         {
             Ensure(File.Exists(Path.Combine(publicScreenshots, screenshot)),
-                $"The 2.0 public product screenshot is missing: {screenshot}.");
+                $"The 2.1 public product screenshot is missing: {screenshot}.");
         }
     }
 

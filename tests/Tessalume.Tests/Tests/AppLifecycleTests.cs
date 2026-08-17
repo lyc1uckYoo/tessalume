@@ -107,6 +107,109 @@ internal static partial class TestSuite
                },
             "Schema-two preferences must migrate non-default Zoom/Offset into an explicit legacy override.");
 
+        const string versionFiveProductUpgradeJson = """
+            {
+              "SchemaVersion": 5,
+              "DarkMode": true,
+              "OnboardingCompleted": true,
+              "AutomaticUpdateChecks": false,
+              "FavoriteThemeIds": ["kept.theme"],
+              "ThemeVisualSettings": {
+                "kept.theme": {
+                  "Light": {
+                    "Hero": {
+                      "CustomImagePath": "personalization/images/hero-light.png",
+                      "Brightness": 87,
+                      "Zoom": 132,
+                      "OffsetX": -24,
+                      "OffsetY": 11
+                    }
+                  },
+                  "Dark": {
+                    "Chat": {
+                      "CustomImagePath": "personalization/images/chat-dark.png",
+                      "Opacity": 83,
+                      "Vignette": 26
+                    }
+                  },
+                  "Display": {
+                    "MotionIntensity": "reduced",
+                    "TextScale": "large",
+                    "Density": "spacious"
+                  }
+                }
+              },
+              "ArtworkPresets": [{ "Name": "已废弃图像方案" }],
+              "ExperiencePresets": [{ "Name": "已废弃体验方案", "ThemeId": "kept.theme" }],
+              "ThemeLibrarySort": "recent",
+              "RecentThemeUsage": [{
+                "ThemeId": "kept.theme",
+                "LastUsedAt": "2026-08-15T12:00:00+08:00",
+                "UseCount": 9
+              }],
+              "CreatorPromptDrafts": {
+                "$new-theme": {
+                  "WorkName": "鸣潮",
+                  "CharacterName": "守岸人",
+                  "VisualDirection": "黑海岸星海"
+                }
+              },
+              "RecentCreatorWorkspaces": [{
+                "DirectoryPath": "C:\\Tessalume-Creator",
+                "DisplayName": "保留的创作工作区",
+                "LastOpenedAt": "2026-08-15T13:00:00+08:00"
+              }]
+            }
+            """;
+        var versionFivePreferences = UiPreferencesMigration.Deserialize(
+            versionFiveProductUpgradeJson,
+            options,
+            out var versionFiveMigrated);
+        var versionFiveOverride = versionFivePreferences.ThemeVisualOverrides["kept.theme"];
+        var versionFiveSavedJson = JsonSerializer.Serialize(
+            UiPreferencesMigration.PrepareForSave(versionFivePreferences),
+            options);
+        Ensure(versionFiveMigrated &&
+               versionFivePreferences.SchemaVersion == UiPreferences.CurrentSchemaVersion &&
+               versionFivePreferences.DarkMode &&
+               versionFivePreferences.OnboardingCompleted &&
+               !versionFivePreferences.AutomaticUpdateChecks &&
+               versionFivePreferences.QuickSwitchVisible &&
+               versionFivePreferences.FavoriteThemeIds.SequenceEqual(["kept.theme"]) &&
+               versionFiveOverride.Light?.Hero is
+               {
+                   ImageSourceMode: ThemeArtworkImageSourceMode.Custom,
+                   CustomImagePath: "personalization/images/hero-light.png",
+                   CompositionMode: ThemeArtworkCompositionMode.Legacy,
+                   LegacyZoom: 132,
+                   LegacyOffsetX: -24,
+                   LegacyOffsetY: 11,
+                   Brightness: 87,
+               } &&
+               versionFiveOverride.Dark?.Chat is
+               {
+                   ImageSourceMode: ThemeArtworkImageSourceMode.Custom,
+                   CustomImagePath: "personalization/images/chat-dark.png",
+                   Opacity: 83,
+                   Vignette: 26,
+               } &&
+               versionFiveOverride.Display is
+               {
+                   MotionIntensity: "reduced",
+                   TextScale: "large",
+                   Density: "spacious",
+               } &&
+               versionFivePreferences.ThemeLibrarySort == ThemeLibraryState.RecentSort &&
+               versionFivePreferences.RecentThemeUsage is
+               [{ ThemeId: "kept.theme", UseCount: 9 }] &&
+               versionFivePreferences.CreatorPromptDrafts[CreatorPromptDraftStore.NewThemeKey] is
+               { WorkName: "鸣潮", CharacterName: "守岸人" } &&
+               versionFivePreferences.RecentCreatorWorkspaces is
+               [{ DisplayName: "保留的创作工作区" }] &&
+               !versionFiveSavedJson.Contains("\"ArtworkPresets\"", StringComparison.Ordinal) &&
+               !versionFiveSavedJson.Contains("\"ExperiencePresets\"", StringComparison.Ordinal),
+            "The 2.0.2 schema-five upgrade must preserve user-owned state while removing obsolete preset fields.");
+
         const string versionSixWithArtworkPresetsJson = """
             {
               "SchemaVersion": 6,
@@ -275,6 +378,29 @@ internal static partial class TestSuite
                 Ensure(migratedDocument.RootElement.GetProperty("SchemaVersion").GetInt32() ==
                        UiPreferences.CurrentSchemaVersion,
                     "The schema-two migration must persist the current schema without waiting for another setting change.");
+            }
+
+            File.Delete(snapshotPath);
+            File.WriteAllText(preferencesPath, versionFiveProductUpgradeJson);
+            using (var store = new UiPreferencesStore(storeRoot))
+            {
+                var upgraded = store.Load();
+                Ensure(upgraded.ThemeVisualOverrides["kept.theme"].Light?.Hero?.CustomImagePath ==
+                       "personalization/images/hero-light.png" &&
+                       upgraded.ThemeVisualOverrides["kept.theme"].Dark?.Chat?.CustomImagePath ==
+                       "personalization/images/chat-dark.png",
+                    "The persisted 2.0.2 upgrade must preserve both light and dark local image references.");
+            }
+            Ensure(File.Exists(snapshotPath) &&
+                   File.ReadAllText(snapshotPath) == versionFiveProductUpgradeJson,
+                "The 2.0.2 schema-five upgrade must preserve the exact original preferences file.");
+            using (var migratedDocument = JsonDocument.Parse(File.ReadAllText(preferencesPath)))
+            {
+                Ensure(migratedDocument.RootElement.GetProperty("SchemaVersion").GetInt32() ==
+                       UiPreferences.CurrentSchemaVersion &&
+                       !migratedDocument.RootElement.TryGetProperty("ArtworkPresets", out _) &&
+                       !migratedDocument.RootElement.TryGetProperty("ExperiencePresets", out _),
+                    "The 2.0.2 preferences file must atomically converge on the schema-seven product model.");
             }
 
             File.Delete(snapshotPath);

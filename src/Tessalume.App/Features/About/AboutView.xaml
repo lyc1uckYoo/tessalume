@@ -34,17 +34,17 @@
             </Grid>
         </Border>
 
-        <TextBlock x:Name="ReleaseHighlightsLabel" Text="2.0 版本亮点" Style="{DynamicResource SectionEyebrowText}" Margin="2,22,0,0" />
+        <TextBlock x:Name="ReleaseHighlightsLabel" Text="2.1 版本亮点" Style="{DynamicResource SectionEyebrowText}" Margin="2,22,0,0" />
         <Grid x:Name="ReleaseHighlightsGrid" Margin="0,10,0,0">
             <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="12" /><ColumnDefinition Width="*" /><ColumnDefinition Width="12" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
             <Border Style="{DynamicResource InsetCard}" Background="{DynamicResource AccentSoft}" BorderBrush="{DynamicResource InfoBorder}" Padding="16">
-                <StackPanel><TextBlock Text="◇" Foreground="{DynamicResource Accent}" FontSize="20" FontWeight="SemiBold" /><TextBlock Text="兼容规则独立更新" Foreground="{DynamicResource PrimaryText}" FontSize="12" FontWeight="SemiBold" Margin="0,9,0,0" /><TextBlock Text="页面识别集中管理，小型官方补丁可独立校验、安装和回退。" Foreground="{DynamicResource MutedText}" FontSize="10" TextWrapping="Wrap" LineHeight="15" Margin="0,5,0,0" /></StackPanel>
+                <StackPanel><TextBlock Text="◇" Foreground="{DynamicResource Accent}" FontSize="20" FontWeight="SemiBold" /><TextBlock Text="图像工作台 3.0" Foreground="{DynamicResource PrimaryText}" FontSize="12" FontWeight="SemiBold" Margin="0,9,0,0" /><TextBlock Text="主题推荐值、原图与个人覆盖彻底分层，六个亮暗槽位都能按真实页面尺寸编辑。" Foreground="{DynamicResource MutedText}" FontSize="10" TextWrapping="Wrap" LineHeight="15" Margin="0,5,0,0" /></StackPanel>
             </Border>
             <Border Grid.Column="2" Style="{DynamicResource InsetCard}" Background="{DynamicResource SkySoft}" BorderBrush="{DynamicResource InfoBorder}" Padding="16">
-                <StackPanel><TextBlock Text="↻" Foreground="{DynamicResource Sky}" FontSize="19" FontWeight="SemiBold" /><TextBlock Text="更新失败自动恢复" Foreground="{DynamicResource PrimaryText}" FontSize="12" FontWeight="SemiBold" Margin="0,9,0,0" /><TextBlock Text="新版先完成启动健康确认，并保留可手动恢复的上一版本。" Foreground="{DynamicResource MutedText}" FontSize="10" TextWrapping="Wrap" LineHeight="15" Margin="0,5,0,0" /></StackPanel>
+                <StackPanel><TextBlock Text="✦" Foreground="{DynamicResource Sky}" FontSize="19" FontWeight="SemiBold" /><TextBlock Text="Codex 宠物中心" Foreground="{DynamicResource PrimaryText}" FontSize="12" FontWeight="SemiBold" Margin="0,9,0,0" /><TextBlock Text="预览全部动态动作，安全安装、修复、备份和卸载当前用户的官方 Pets 资产。" Foreground="{DynamicResource MutedText}" FontSize="10" TextWrapping="Wrap" LineHeight="15" Margin="0,5,0,0" /></StackPanel>
             </Border>
             <Border Grid.Column="4" Style="{DynamicResource InsetCard}" Background="{DynamicResource TealSoft}" BorderBrush="{DynamicResource InfoBorder}" Padding="16">
-                <StackPanel><TextBlock Text="✓" Foreground="{DynamicResource Teal}" FontSize="19" FontWeight="SemiBold" /><TextBlock Text="创作中心 2.0" Foreground="{DynamicResource PrimaryText}" FontSize="12" FontWeight="SemiBold" Margin="0,9,0,0" /><TextBlock Text="五阶段流程、修复提示和亮暗关键表面批量验收形成完整发布门禁。" Foreground="{DynamicResource MutedText}" FontSize="10" TextWrapping="Wrap" LineHeight="15" Margin="0,5,0,0" /></StackPanel>
+                <StackPanel><TextBlock Text="✓" Foreground="{DynamicResource Teal}" FontSize="19" FontWeight="SemiBold" /><TextBlock Text="兼容与数据升级" Foreground="{DynamicResource PrimaryText}" FontSize="12" FontWeight="SemiBold" Margin="0,9,0,0" /><TextBlock Text="适配新版 Codex 页面结构，并在迁移前保存旧配置快照，保留主题与个人图片。" Foreground="{DynamicResource MutedText}" FontSize="10" TextWrapping="Wrap" LineHeight="15" Margin="0,5,0,0" /></StackPanel>
             </Border>
         </Grid>
 
