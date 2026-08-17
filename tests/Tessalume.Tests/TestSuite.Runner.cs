@@ -315,6 +315,20 @@ internal static partial class TestSuite
         }
 
         if (args is [
+                "--pet-center-v5-snapshots",
+                var petV5Light1600Path,
+                var petV5Dark1366Path,
+                var petV5Light1266Path,
+                var petV5Compact900Path])
+        {
+            return await RenderPetCenterV5SnapshotsAsync(
+                petV5Light1600Path,
+                petV5Dark1366Path,
+                petV5Light1266Path,
+                petV5Compact900Path);
+        }
+
+        if (args is [
                 "--pet-center-v4-snapshots",
                 var petV4Light1600Path,
                 var petV4Dark1366Path,

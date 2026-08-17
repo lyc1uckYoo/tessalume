@@ -11,7 +11,6 @@ namespace Tessalume.App;
 public partial class MainWindow
 {
     private readonly PetApplicationServiceOptions? _petOptions;
-    private readonly IPetCommandClipboard _petClipboard;
     private readonly CancellationTokenSource _petCancellation = new();
     private PetApplicationService? _petApplicationService;
     private PetCenterPresentationState? _petCenterState;
@@ -29,7 +28,6 @@ public partial class MainWindow
         PetCenterPage.Render(_petCenterState);
         PetCenterPage.RefreshRequested += PetCenterPage_RefreshRequested;
         PetCenterPage.PrimaryActionRequested += PetCenterPage_PrimaryActionRequested;
-        PetCenterPage.CopyCommandRequested += PetCenterPage_CopyCommandRequested;
         PetCenterPage.OpenCodexRequested += PetCenterPage_OpenCodexRequested;
         PetCenterPage.RecommendedThemeRequested += PetCenterPage_RecommendedThemeRequested;
         PetCenterPage.ApplyRecommendedThemeRequested += PetCenterPage_ApplyRecommendedThemeRequested;
@@ -264,19 +262,6 @@ public partial class MainWindow
         finally
         {
             _petOperationInProgress = false;
-        }
-    }
-
-    private void PetCenterPage_CopyCommandRequested(object? sender, EventArgs e)
-    {
-        try
-        {
-            _petClipboard.Copy(PetApplicationService.WakeCommand);
-            ShowToast("已复制 /pet；请粘贴到 Codex，由你决定何时发送。");
-        }
-        catch (Exception exception) when (exception is ExternalException or InvalidOperationException)
-        {
-            ShowProductMessage("无法复制命令", exception.Message, ProductDialogKind.Warning);
         }
     }
 

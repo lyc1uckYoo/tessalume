@@ -110,7 +110,6 @@ internal static partial class TestSuite
                  {
                      "AutomationProperties.Name=\"飞行雪绒动态动作预览\"",
                      "AutomationProperties.Name=\"宠物主操作\"",
-                     "AutomationProperties.Name=\"复制斜杠 pet 命令\"",
                      "AutomationProperties.Name=\"确认已在 Codex 完成宠物选择\"",
                      "AutomationProperties.Name=\"卸载 Tessalume 管理的宠物文件\"",
                      "AutomationProperties.Name=\"恢复最近的宠物备份\"",
@@ -121,21 +120,11 @@ internal static partial class TestSuite
                 $"The pet center is missing accessibility metadata {marker}.");
         }
 
-        foreach (var sharedStyle in new[]
-                 {
-                     "Style=\"{DynamicResource PageTitleText}\"",
-                     "Style=\"{DynamicResource PageDescriptionText}\"",
-                 })
-        {
-            Ensure(petXaml.Contains(sharedStyle, StringComparison.Ordinal),
-                $"A reusable pet view must resolve the shell-owned shared style at runtime: {sharedStyle}");
-        }
-
         foreach (var guidance in new[]
                  {
-                     "Pets → Refresh 并选择飞行雪绒 → 输入 /pet",
+                     "Settings → Pets → Refresh → 选择飞行雪绒 → 输入 /pet",
                      "仅管理当前用户 .codex\\pets",
-                     "配套主题：",
+                     "配套主题",
                      "爱弥斯 · 星海远航",
                  })
         {
@@ -143,26 +132,33 @@ internal static partial class TestSuite
                 $"The newcomer guidance or privacy boundary is missing: {guidance}");
         }
 
-        Ensure(petViewSource.Contains("CopyCommandRequested?.Invoke", StringComparison.Ordinal) &&
-               !petViewSource.Contains("Clipboard.", StringComparison.Ordinal) &&
+        Ensure(!petXaml.Contains("复制 /pet", StringComparison.Ordinal) &&
+               !petViewSource.Contains("CopyCommand", StringComparison.Ordinal) &&
+               !petShellSource.Contains("CopyCommand", StringComparison.Ordinal) &&
+               !petShellSource.Contains("无法复制命令", StringComparison.Ordinal) &&
+               !mainWindowSource.Contains("IPetCommandClipboard", StringComparison.Ordinal) &&
                !petViewSource.Contains("Process.Start", StringComparison.Ordinal),
-            "The reusable view must expose copy/open intents without touching the clipboard or launching Codex itself.");
+            "The pet center must not expose a copy command or a pet-specific clipboard bridge.");
         Ensure(petXaml.Contains("x:Key=\"PetToolButton\"", StringComparison.Ordinal) &&
-               petXaml.Contains("x:Key=\"PetSecondaryButton\"", StringComparison.Ordinal) &&
+               petXaml.Contains("x:Key=\"PetSelectionButton\"", StringComparison.Ordinal) &&
                petXaml.Contains("x:Key=\"PetAccentToolButton\"", StringComparison.Ordinal) &&
                petXaml.Contains("x:Key=\"PetDangerToolButton\"", StringComparison.Ordinal) &&
                petXaml.Contains("x:Key=\"PetPrimaryButton\"", StringComparison.Ordinal) &&
-               petXaml.Contains("<Setter Property=\"Height\" Value=\"36\"", StringComparison.Ordinal) &&
-               petXaml.Contains("<Setter Property=\"MaxWidth\" Value=\"220\"", StringComparison.Ordinal) &&
-               petXaml.Contains("<Setter TargetName=\"ToolSurface\" Property=\"Opacity\" Value=\"0.58\"", StringComparison.Ordinal) &&
+               petXaml.Contains("<Setter Property=\"Width\" Value=\"148\"", StringComparison.Ordinal) &&
+               petXaml.Contains("<Setter Property=\"Height\" Value=\"39\"", StringComparison.Ordinal) &&
+               petXaml.Contains("<Setter TargetName=\"ToolSurface\" Property=\"Opacity\" Value=\"0.48\"", StringComparison.Ordinal) &&
                petXaml.Contains("Height=\"{Binding ActualHeight, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ScrollViewer}}}\"", StringComparison.Ordinal) &&
-               petXaml.Contains("MaxHeight=\"690\"", StringComparison.Ordinal) &&
-               petXaml.Contains("Text=\"预览动作\"", StringComparison.Ordinal) &&
+               petXaml.Contains("MaxHeight=\"720\"", StringComparison.Ordinal) &&
+               petXaml.Contains("Text=\"动作预览\"", StringComparison.Ordinal) &&
+               petXaml.Contains("x:Name=\"PetHeaderIcon\"", StringComparison.Ordinal) &&
+               petXaml.Contains("x:Name=\"HeaderStatusBadge\"", StringComparison.Ordinal) &&
+               petXaml.Contains("Background=\"{DynamicResource PersonalizationCanvasGradient}\"", StringComparison.Ordinal) &&
+               petXaml.Contains("Background=\"{DynamicResource PersonalizationMotionGradient}\"", StringComparison.Ordinal) &&
                !petXaml.Contains("只解码当前选择", StringComparison.Ordinal) &&
-               !petXaml.Contains("TextTrimming=\"CharacterEllipsis\"", StringComparison.Ordinal) &&
                petViewSource.Contains("FormatLicenseSummary", StringComparison.Ordinal) &&
+               petViewSource.Contains("FormatInstallLocation", StringComparison.Ordinal) &&
                petViewSource.Contains("保留所有权利", StringComparison.Ordinal),
-            "Pet controls must share one clear button system and metadata must remain fully readable in Chinese.");
+            "The pet console must reuse Tessalume surfaces, present a connected product header, and share one clear button system.");
         Ensure(petViewSource.Contains("e.NewSize.Width < 720", StringComparison.Ordinal) &&
                petViewSource.Contains("e.NewSize.Width < 1100", StringComparison.Ordinal) &&
                petViewSource.Contains("new GridLength(2, GridUnitType.Star)", StringComparison.Ordinal) &&
@@ -375,7 +371,6 @@ internal static partial class TestSuite
         Directory.CreateDirectory(dataDirectory);
         var corruptPreviewPath = Path.Combine(dataDirectory, "corrupt-preview.gif");
         File.WriteAllBytes(corruptPreviewPath, [0x47]);
-        var clipboard = new RecordingPetClipboard();
         var petOptions = new PetApplicationServiceOptions(
             Path.Combine(root, "codex-pets"),
             Path.Combine(root, "pet-backups"),
@@ -455,16 +450,15 @@ internal static partial class TestSuite
 
                 window = new MainWindow(
                     new PortableLayout(root, themesDirectory, dataDirectory),
-                    petOptions,
-                    clipboard);
+                    petOptions);
                 InvokeMainWindowMethod(window, "EnsureMainUiInitialized");
                 InvokeMainWindowMethod(window, "NavigateTo", AppRoute.Pets);
                 CompleteInfoPageTransition(window);
                 view = window.PetCenterPage;
 
-                // The product shell owns real clipboard, installer, and process actions. This test
-                // deliberately removes those subscriptions and verifies only the view's intent events.
-                ClearPetCenterEventHandlers(view, preserveCopyCommand: true);
+                // The product shell owns installer and process actions. This test deliberately
+                // removes those subscriptions and verifies only the view's intent events.
+                ClearPetCenterEventHandlers(view);
                 PetCenterAction? requestedAction = null;
                 view.PrimaryActionRequested += (_, action) => requestedAction = action;
                 view.Render(invalidManagementState);
@@ -508,27 +502,19 @@ internal static partial class TestSuite
                        Equals(view.RestoreBackupButton.ToolTip, "测试备份 · 可恢复") &&
                        view.ProductVersionText.Text == "1.0.0" &&
                        view.ProtocolText.Text.Contains("9 种动作", StringComparison.Ordinal) &&
-                       view.InstallLocationText.Text.Contains(root, StringComparison.OrdinalIgnoreCase),
+                       view.InstallLocationText.Text.Contains('…') &&
+                       view.InstallLocationText.ToolTip is string installLocationToolTip &&
+                       installLocationToolTip.Contains(root, StringComparison.OrdinalIgnoreCase),
                     "Rendering must present one truthful status, one primary action, compact metadata, and visible management tools.");
 
                 requestedAction = null;
-                var copyRequests = 0;
-                view.CopyCommandRequested += (_, _) => copyRequests++;
                 view.PrimaryActionButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-                var copyButton = FindPetButton(view, "复制 /pet");
-                copyButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-                Ensure(requestedAction == PetCenterAction.Update &&
-                       copyRequests == 1 &&
-                       clipboard.CopyCount == 1 &&
-                       clipboard.LastText == PetApplicationService.WakeCommand,
-                    "Pet actions must emit intents and copy exactly /pet through the injected clipboard boundary.");
-                Ensure(AutomationProperties.GetName(copyButton) == "复制斜杠 pet 命令" &&
-                       copyButton.Focusable &&
-                       view.PrimaryActionButton.Focusable &&
-                       copyButton.IsTabStop &&
+                Ensure(requestedAction == PetCenterAction.Update,
+                    "The pet primary action must continue to emit its existing state-machine intent.");
+                Ensure(view.PrimaryActionButton.Focusable &&
                        view.PrimaryActionButton.IsTabStop &&
                        AutomationProperties.GetName(view.PetPreviewImage) == "飞行雪绒动态动作预览",
-                    "Primary, copy, and preview controls must remain keyboard and UI Automation reachable.");
+                    "Primary and preview controls must remain keyboard and UI Automation reachable.");
 
                 var awaitingState = state with
                 {
@@ -586,7 +572,6 @@ internal static partial class TestSuite
                         view.PreviewStage,
                         view.InstallationStatusTitle,
                         view.PrimaryActionButton,
-                        view.CopyCommandButton,
                         view.AcknowledgeSelectionButton,
                         view.ActivationGuidePanel,
                         view.ActionSelector,
@@ -605,9 +590,9 @@ internal static partial class TestSuite
                            Grid.GetColumn(view.ControlPanelHost) == 2 &&
                            Grid.GetRow(view.ControlPanelHost) == 0 &&
                            Grid.GetRowSpan(view.ControlPanelHost) == 1 &&
-                           Grid.GetRow(view.ActionSelector) == 4 &&
-                           view.PreviewStage.ActualWidth >= view.WorkspaceGrid.ActualWidth * 0.32 &&
-                           view.WorkspaceSurface.ActualHeight <= 690.5 &&
+                            Grid.GetRow(view.ActionSelector) == 1 &&
+                            view.PreviewStage.ActualWidth >= view.WorkspaceGrid.ActualWidth * 0.32 &&
+                            view.WorkspaceSurface.ActualHeight <= 650.5 &&
                            host.ScrollableWidth <= 0.5 &&
                            host.ScrollableHeight <= 0.5 &&
                            host.ComputedVerticalScrollBarVisibility == Visibility.Collapsed &&
@@ -618,14 +603,14 @@ internal static partial class TestSuite
                            visibleEssentials.All(element => IsInsidePetViewport(element, host)),
                         $"The {profile.Name} pet console must keep preview, 11 actions, metadata, theme, and management controls in one viewport without scrolling.");
                 }
-                Ensure(copyButton.ActualWidth > 0 &&
-                       copyButton.ActualHeight >= 30 &&
-                       view.PrimaryActionButton.ActualWidth is >= 120 and <= 220 &&
-                       view.PrimaryActionButton.ActualHeight is >= 34 and <= 36 &&
-                       view.RefreshButton.ActualHeight >= 29 &&
-                       view.RestoreBackupButton.ActualHeight >= 29 &&
-                       view.UninstallButton.ActualHeight >= 29,
-                    "The one-screen console must use a compact primary action and consistent always-visible tools.");
+                Ensure(view.PrimaryActionButton.ActualWidth is >= 140 and <= 155 &&
+                       view.PrimaryActionButton.ActualHeight is >= 38 and <= 40 &&
+                       view.AcknowledgeSelectionButton.ActualWidth is >= 115 and <= 135 &&
+                       view.AcknowledgeSelectionButton.ActualHeight is >= 38 and <= 40 &&
+                       view.RefreshButton.ActualHeight is >= 35 and <= 38 &&
+                       view.RestoreBackupButton.ActualHeight is >= 35 and <= 38 &&
+                       view.UninstallButton.ActualHeight is >= 35 and <= 38,
+                    "The one-screen console must use a coordinated primary/confirmation group and consistent always-visible tools.");
 
                 var highDpiBitmap = new RenderTargetBitmap(
                     (int)Math.Ceiling(view.ActualWidth * 2),
@@ -943,15 +928,12 @@ internal static partial class TestSuite
         return count;
     }
 
-    private static void ClearPetCenterEventHandlers(
-        PetCenterView view,
-        bool preserveCopyCommand = false)
+    private static void ClearPetCenterEventHandlers(PetCenterView view)
     {
         foreach (var name in new[]
                  {
                      "RefreshRequested",
                      "PrimaryActionRequested",
-                     "CopyCommandRequested",
                      "OpenCodexRequested",
                      "RecommendedThemeRequested",
                      "ApplyRecommendedThemeRequested",
@@ -960,11 +942,6 @@ internal static partial class TestSuite
                      "SelectionAcknowledgementRequested",
                  })
         {
-            if (preserveCopyCommand && name == "CopyCommandRequested")
-            {
-                continue;
-            }
-
             typeof(PetCenterView).GetField(
                     name,
                     BindingFlags.Instance | BindingFlags.NonPublic)
@@ -1065,19 +1042,6 @@ internal static partial class TestSuite
         }
 
         task.GetAwaiter().GetResult();
-    }
-
-    private sealed class RecordingPetClipboard : IPetCommandClipboard
-    {
-        public int CopyCount { get; private set; }
-
-        public string? LastText { get; private set; }
-
-        public void Copy(string text)
-        {
-            CopyCount++;
-            LastText = text;
-        }
     }
 
     private sealed class FixedPetMotionPreference(bool isReducedMotion) : IPetMotionPreference

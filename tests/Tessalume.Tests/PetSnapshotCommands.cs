@@ -34,6 +34,19 @@ internal static partial class TestSuite
             new(compact900SnapshotPath, false, new Size(900, 720), "idle", "compact 900x720"),
         ]);
 
+    static Task<int> RenderPetCenterV5SnapshotsAsync(
+        string light1600SnapshotPath,
+        string dark1366SnapshotPath,
+        string light1266SnapshotPath,
+        string compact900SnapshotPath) =>
+        RenderPetCenterSnapshotSetAsync(
+        [
+            new(light1600SnapshotPath, false, new Size(1600, 900), "idle", "V5 light 1600x900"),
+            new(dark1366SnapshotPath, true, new Size(1366, 768), "showcase", "V5 dark 1366x768"),
+            new(light1266SnapshotPath, false, new Size(1266, 813), "idle", "V5 light 1266x813"),
+            new(compact900SnapshotPath, false, new Size(900, 720), "idle", "V5 compact 900x720"),
+        ]);
+
     private static Task<int> RenderPetCenterSnapshotSetAsync(
         IReadOnlyList<PetCenterSnapshotProfile> profiles)
     {
@@ -98,8 +111,7 @@ internal static partial class TestSuite
                 {
                     window = new MainWindow(
                         new PortableLayout(portableRoot, themes, data),
-                        petOptions,
-                        new RecordingPetClipboard());
+                        petOptions);
                     InvokeMainWindowMethod(window, "EnsureMainUiInitialized");
                     ClearPetCenterEventHandlers(window.PetCenterPage);
                     InvokeMainWindowMethod(window, "NavigateTo", AppRoute.Pets);
@@ -207,7 +219,6 @@ internal static partial class TestSuite
             window.PetCenterPage.PreviewStage,
             window.PetCenterPage.InstallationStatusTitle,
             window.PetCenterPage.PrimaryActionButton,
-            window.PetCenterPage.CopyCommandButton,
             window.PetCenterPage.AcknowledgeSelectionButton,
             window.PetCenterPage.ActivationGuidePanel,
             window.PetCenterPage.ActionSelector,

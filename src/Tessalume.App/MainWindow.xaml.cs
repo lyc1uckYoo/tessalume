@@ -107,12 +107,10 @@ public partial class MainWindow : Window, IAsyncDisposable
 
     internal MainWindow(
         PortableLayout? layout = null,
-        PetApplicationServiceOptions? petOptions = null,
-        IPetCommandClipboard? petClipboard = null)
+        PetApplicationServiceOptions? petOptions = null)
     {
         _layout = layout ?? PortableLayout.Create();
         _petOptions = petOptions;
-        _petClipboard = petClipboard ?? new SystemPetCommandClipboard();
         _personalImageStore = new PersonalImageStore(_layout.DataDirectory);
         _stateStore = new StudioStateStore(_layout.DataDirectory);
         _preferencesStore = new UiPreferencesStore(_layout.DataDirectory);

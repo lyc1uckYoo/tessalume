@@ -23,6 +23,7 @@
             <Setter Property="FontSize" Value="10.5" />
             <Setter Property="FontWeight" Value="Normal" />
             <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FocusVisualStyle" Value="{DynamicResource KeyboardFocusVisual}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ToggleButton">
@@ -47,11 +48,8 @@
                                 <Setter Property="Foreground" Value="{DynamicResource Accent}" />
                                 <Setter Property="FontWeight" Value="SemiBold" />
                             </Trigger>
-                            <Trigger Property="IsKeyboardFocused" Value="True">
-                                <Setter TargetName="ChipSurface" Property="BorderBrush" Value="{DynamicResource Accent}" />
-                            </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="ChipSurface" Property="Opacity" Value="0.78" />
+                                <Setter TargetName="ChipSurface" Property="Opacity" Value="0.76" />
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter TargetName="ChipSurface" Property="Opacity" Value="0.42" />
@@ -61,17 +59,19 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
         <Style x:Key="PetToolButton" TargetType="Button">
-            <Setter Property="Height" Value="30" />
-            <Setter Property="MinWidth" Value="58" />
-            <Setter Property="Padding" Value="9,0" />
+            <Setter Property="Height" Value="36" />
+            <Setter Property="MinWidth" Value="64" />
+            <Setter Property="Padding" Value="12,0" />
             <Setter Property="Foreground" Value="{DynamicResource PrimaryText}" />
             <Setter Property="Background" Value="{DynamicResource SurfaceAlt}" />
             <Setter Property="BorderBrush" Value="{DynamicResource Border}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="FontSize" Value="10.5" />
+            <Setter Property="FontSize" Value="11" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FocusVisualStyle" Value="{DynamicResource KeyboardFocusVisual}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
@@ -79,7 +79,7 @@
                                 Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="8"
+                                CornerRadius="10"
                                 SnapsToDevicePixels="True">
                             <ContentPresenter Margin="{TemplateBinding Padding}"
                                               HorizontalAlignment="Center"
@@ -87,28 +87,28 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ToolSurface" Property="Background" Value="{DynamicResource HoverSurface}" />
-                                <Setter TargetName="ToolSurface" Property="BorderBrush" Value="{DynamicResource Accent}" />
+                                <Setter TargetName="ToolSurface" Property="Opacity" Value="0.88" />
                             </Trigger>
                             <Trigger Property="IsKeyboardFocused" Value="True">
-                                <Setter TargetName="ToolSurface" Property="BorderBrush" Value="{DynamicResource Accent}" />
+                                <Setter TargetName="ToolSurface" Property="BorderThickness" Value="2" />
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="ToolSurface" Property="Opacity" Value="0.78" />
+                                <Setter TargetName="ToolSurface" Property="Opacity" Value="0.72" />
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="ToolSurface" Property="Opacity" Value="0.58" />
+                                <Setter TargetName="ToolSurface" Property="Opacity" Value="0.48" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
-        <Style x:Key="PetSecondaryButton" TargetType="Button" BasedOn="{StaticResource PetToolButton}">
-            <Setter Property="Height" Value="34" />
-            <Setter Property="Background" Value="{DynamicResource SkySoft}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource Sky}" />
-            <Setter Property="Foreground" Value="{DynamicResource Sky}" />
+        <Style x:Key="PetSelectionButton" TargetType="Button" BasedOn="{StaticResource PetToolButton}">
+            <Setter Property="Width" Value="126" />
+            <Setter Property="Height" Value="39" />
+            <Setter Property="Background" Value="{DynamicResource AccentSoft}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
+            <Setter Property="Foreground" Value="{DynamicResource Accent}" />
         </Style>
         <Style x:Key="PetAccentToolButton" TargetType="Button" BasedOn="{StaticResource PetToolButton}">
             <Setter Property="Background" Value="{DynamicResource AccentSoft}" />
@@ -121,396 +121,257 @@
             <Setter Property="Foreground" Value="{DynamicResource Danger}" />
         </Style>
         <Style x:Key="PetPrimaryButton" TargetType="Button">
-            <Setter Property="Height" Value="36" />
-            <Setter Property="MinWidth" Value="132" />
-            <Setter Property="MaxWidth" Value="220" />
-            <Setter Property="Padding" Value="15,0" />
+            <Setter Property="Width" Value="148" />
+            <Setter Property="Height" Value="39" />
+            <Setter Property="Padding" Value="16,0" />
             <Setter Property="HorizontalAlignment" Value="Left" />
             <Setter Property="Foreground" Value="White" />
             <Setter Property="Background" Value="{DynamicResource PrimaryActionGradient}" />
-            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
+            <Setter Property="BorderThickness" Value="1" />
             <Setter Property="FontSize" Value="11" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FocusVisualStyle" Value="{DynamicResource KeyboardFocusVisual}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Border x:Name="PrimarySurface"
                                 Background="{TemplateBinding Background}"
-                                CornerRadius="9"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="10"
                                 SnapsToDevicePixels="True">
-                            <ContentPresenter Margin="{TemplateBinding Padding}"
-                                              HorizontalAlignment="Center"
-                                              VerticalAlignment="Center" />
+                            <Grid>
+                                <Border x:Name="PrimaryGlow" Background="#14FFFFFF" CornerRadius="10" Opacity="0" />
+                                <ContentPresenter Margin="{TemplateBinding Padding}"
+                                                  HorizontalAlignment="Center"
+                                                  VerticalAlignment="Center" />
+                            </Grid>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="PrimarySurface" Property="Opacity" Value="0.90" />
+                                <Setter TargetName="PrimaryGlow" Property="Opacity" Value="1" />
                             </Trigger>
                             <Trigger Property="IsKeyboardFocused" Value="True">
-                                <Setter TargetName="PrimarySurface" Property="Opacity" Value="0.88" />
+                                <Setter TargetName="PrimarySurface" Property="BorderThickness" Value="2" />
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="PrimarySurface" Property="Opacity" Value="0.76" />
+                                <Setter TargetName="PrimarySurface" Property="Opacity" Value="0.78" />
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="PrimarySurface" Property="Opacity" Value="0.46" />
+                                <Setter TargetName="PrimarySurface" Property="Opacity" Value="0.44" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
+        <Style x:Key="PetSectionLabel" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource Accent}" />
+            <Setter Property="FontSize" Value="9.5" />
+            <Setter Property="FontWeight" Value="Bold" />
+        </Style>
     </UserControl.Resources>
 
     <Grid x:Name="RootPanel" VerticalAlignment="Stretch">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
-        <StackPanel x:Name="PageHeader">
-            <TextBlock Text="Codex 宠物"
-                       Style="{DynamicResource PageTitleText}"
-                       FontSize="24" />
-            <TextBlock Text="预览并管理安装到 Codex 的角色伙伴。"
-                       Style="{DynamicResource PageDescriptionText}"
-                       FontSize="11"
-                       Margin="1,2,0,0"
-                       TextWrapping="Wrap" />
-        </StackPanel>
-
-        <Border x:Name="WorkspaceSurface"
-                Grid.Row="1"
-                MinHeight="0"
-                MaxHeight="690"
-                Margin="0,8,0,0"
+        <Border x:Name="PetConsoleShell"
+                MaxHeight="720"
                 Padding="12"
                 VerticalAlignment="Top"
-                Background="{DynamicResource SurfaceElevated}"
-                BorderBrush="{DynamicResource HomeToolbarBorder}"
+                Background="{DynamicResource PersonalizationCanvasGradient}"
+                BorderBrush="{DynamicResource PersonalizationCanvasBorder}"
                 BorderThickness="1"
-                CornerRadius="20"
-                Effect="{DynamicResource HomeCardShadow}"
-                SizeChanged="WorkspaceSurface_SizeChanged">
-            <Grid x:Name="WorkspaceGrid">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition x:Name="WorkspaceLeftColumn" Width="3*" />
-                    <ColumnDefinition x:Name="WorkspaceGapColumn" Width="24" />
-                    <ColumnDefinition x:Name="WorkspaceRightColumn" Width="2*" />
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
+                CornerRadius="22"
+                Effect="{DynamicResource PersonalizationCardShadow}"
+                SnapsToDevicePixels="True">
+            <Grid ClipToBounds="True">
+                <Ellipse Width="230" Height="230" Margin="0,-155,-90,0" HorizontalAlignment="Right" VerticalAlignment="Top" Fill="{DynamicResource Accent}" Opacity="0.055" IsHitTestVisible="False" />
+                <Ellipse Width="180" Height="180" Margin="-105,0,0,-120" HorizontalAlignment="Left" VerticalAlignment="Bottom" Fill="{DynamicResource Teal}" Opacity="0.045" IsHitTestVisible="False" />
 
-                <Border x:Name="PreviewStage"
-                        Grid.Column="0"
-                        Grid.Row="0"
-                        MinHeight="0"
-                        Padding="12"
-                        Background="{DynamicResource SurfaceAlt}"
-                        CornerRadius="17"
-                        ClipToBounds="True">
-                    <Grid>
-                        <Ellipse Width="360" Height="360"
-                                 Margin="0,-170,-130,0"
-                                 HorizontalAlignment="Right"
-                                 VerticalAlignment="Top"
-                                 Fill="{DynamicResource Accent}"
-                                 Opacity="0.10" />
-                        <Ellipse Width="260" Height="260"
-                                 Margin="-135,0,0,-125"
-                                 HorizontalAlignment="Left"
-                                 VerticalAlignment="Bottom"
-                                 Fill="{DynamicResource Sky}"
-                                 Opacity="0.08" />
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="*" />
-                            </Grid.RowDefinitions>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <StackPanel>
-                                    <TextBlock x:Name="PreviewStateText"
-                                               Text="待机"
-                                               Foreground="{DynamicResource PrimaryText}"
-                                               FontSize="14"
-                                               FontWeight="SemiBold" />
-                                </StackPanel>
-                                <TextBlock x:Name="PlaybackStatusText"
-                                           Grid.Column="1"
-                                           Text="正在准备…"
-                                           Foreground="{DynamicResource MutedText}"
-                                           FontSize="10"
-                                           VerticalAlignment="Center"
-                                           TextAlignment="Right" />
-                            </Grid>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
 
-                            <Border x:Name="PreviewImageHost"
-                                    Grid.Row="1"
-                                    MinHeight="0"
-                                    Margin="0,8,0,0"
-                                    Padding="4"
-                                    VerticalAlignment="Center"
-                                    Background="#0A0E1F"
-                                    CornerRadius="15"
-                                    ClipToBounds="True">
+                    <Grid x:Name="PageHeader" Margin="2,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="42" />
+                            <ColumnDefinition Width="10" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Border x:Name="PetHeaderIcon" Width="40" Height="40" Background="{DynamicResource PrimaryGradient}" CornerRadius="13" VerticalAlignment="Center">
+                            <Path Width="22" Height="22" Data="M 7,10 C 4,10 3,7 4.5,5.5 C 6,4 8.5,5 9,7.2 M 15,7.2 C 15.5,5 18,4 19.5,5.5 C 21,7 20,10 17,10 M 7,12 C 7,8 17,8 17,12 C 20,13 20,18 16.5,19.5 C 14,20.6 13,19 12,19 C 11,19 10,20.6 7.5,19.5 C 4,18 4,13 7,12 Z" Stroke="White" StrokeThickness="1.7" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Fill="Transparent" Stretch="Uniform" />
+                        </Border>
+                        <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                            <TextBlock Text="TESSALUME · CODEX COMPANION" Style="{StaticResource PetSectionLabel}" FontSize="9" />
+                            <TextBlock Text="Codex 宠物" Foreground="{DynamicResource PrimaryText}" FontSize="21" FontWeight="Bold" Margin="0,1,0,0" />
+                            <TextBlock Text="预览并管理安装到 Codex 的角色伙伴。" Foreground="{DynamicResource MutedText}" FontSize="10.5" Margin="0,1,0,0" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <Border x:Name="HeaderStatusBadge" Grid.Column="3" Padding="10,6" Margin="10,0,0,0" VerticalAlignment="Center" Background="{DynamicResource AccentSoft}" BorderBrush="{DynamicResource InfoBorder}" BorderThickness="1" CornerRadius="10">
+                            <StackPanel Orientation="Horizontal">
+                                <Grid Width="10" Height="10" Margin="0,0,7,0" VerticalAlignment="Center">
+                                    <Ellipse x:Name="InstallationStatusHalo" Fill="{DynamicResource Accent}" Opacity="0.17" />
+                                    <Ellipse x:Name="InstallationStatusDot" Width="6" Height="6" Fill="{DynamicResource Accent}" />
+                                </Grid>
+                                <TextBlock x:Name="InstallationStatusTitle" Text="正在检查" Foreground="{DynamicResource PrimaryText}" FontSize="10.5" FontWeight="SemiBold" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <Border x:Name="WorkspaceSurface" Grid.Row="1" MinHeight="0" MaxHeight="650" Margin="0,10,0,0" Padding="0" VerticalAlignment="Top" Background="Transparent" SizeChanged="WorkspaceSurface_SizeChanged">
+                        <Grid x:Name="WorkspaceGrid">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition x:Name="WorkspaceLeftColumn" Width="3*" />
+                                <ColumnDefinition x:Name="WorkspaceGapColumn" Width="18" />
+                                <ColumnDefinition x:Name="WorkspaceRightColumn" Width="2*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions><RowDefinition Height="*" /></Grid.RowDefinitions>
+
+                            <Border x:Name="PreviewStage" Grid.Column="0" Grid.Row="0" MinHeight="0" Padding="12" Background="{DynamicResource PersonalizationMotionGradient}" BorderBrush="{DynamicResource PersonalizationMotionBorder}" BorderThickness="1" CornerRadius="17" ClipToBounds="True">
                                 <Grid>
-                                    <TextBlock x:Name="PreviewFallbackText"
-                                               Text="❄"
-                                               Foreground="{DynamicResource Accent}"
-                                           FontSize="48"
-                                               Opacity="0.38"
-                                               HorizontalAlignment="Center"
-                                               VerticalAlignment="Center" />
-                                    <Image x:Name="PetPreviewImage"
-                                           MaxWidth="560"
-                                           MaxHeight="520"
-                                           Stretch="Uniform"
-                                           RenderOptions.BitmapScalingMode="HighQuality"
-                                           AutomationProperties.Name="飞行雪绒动态动作预览" />
+                                    <Ellipse Width="330" Height="330" Margin="0,-185,-115,0" HorizontalAlignment="Right" VerticalAlignment="Top" Fill="{DynamicResource Accent}" Opacity="0.09" />
+                                    <Ellipse Width="240" Height="240" Margin="-130,0,0,-130" HorizontalAlignment="Left" VerticalAlignment="Bottom" Fill="{DynamicResource Sky}" Opacity="0.07" />
+                                    <Grid>
+                                        <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                                            <StackPanel>
+                                                <TextBlock Text="动态预览" Style="{StaticResource PetSectionLabel}" />
+                                                <TextBlock x:Name="PreviewStateText" Text="待机" Foreground="{DynamicResource PrimaryText}" FontSize="14" FontWeight="SemiBold" Margin="0,2,0,0" />
+                                            </StackPanel>
+                                            <Border Grid.Column="1" Padding="8,4" VerticalAlignment="Center" Background="{DynamicResource HomeToolbarSurface}" BorderBrush="{DynamicResource HomeToolbarBorder}" BorderThickness="1" CornerRadius="9">
+                                                <TextBlock x:Name="PlaybackStatusText" Text="正在准备…" Foreground="{DynamicResource MutedText}" FontSize="9.5" TextAlignment="Right" />
+                                            </Border>
+                                        </Grid>
+                                        <Border x:Name="PreviewImageHost" Grid.Row="1" MinHeight="0" Margin="0,8,0,0" Padding="4" VerticalAlignment="Center" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource HomeToolbarBorder}" BorderThickness="1" CornerRadius="15" ClipToBounds="True">
+                                            <Grid>
+                                                <TextBlock x:Name="PreviewFallbackText" Text="❄" Foreground="{DynamicResource Accent}" FontSize="48" Opacity="0.38" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                <Image x:Name="PetPreviewImage" MaxWidth="560" MaxHeight="520" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality" AutomationProperties.Name="飞行雪绒动态动作预览" />
+                                            </Grid>
+                                        </Border>
+                                    </Grid>
+                                </Grid>
+                            </Border>
+
+                            <Border x:Name="ControlPanelHost" Grid.Column="2" Grid.Row="0" MinHeight="0" Padding="12" Background="{DynamicResource SurfaceElevated}" BorderBrush="{DynamicResource HomeToolbarBorder}" BorderThickness="1" CornerRadius="17">
+                                <Grid x:Name="ControlPanel">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <Border Padding="0,0,0,8" BorderBrush="{DynamicResource HomeToolbarBorder}" BorderThickness="0,0,0,1">
+                                        <StackPanel>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                                                <StackPanel>
+                                                    <TextBlock Text="飞行雪绒" Foreground="{DynamicResource PrimaryText}" FontSize="18" FontWeight="Bold" />
+                                                    <TextBlock Text="爱弥斯的电子幽灵伙伴，陪你工作与互动。" Foreground="{DynamicResource MutedText}" FontSize="10.5" LineHeight="15" TextWrapping="Wrap" Margin="0,2,8,0" />
+                                                </StackPanel>
+                                                <Border Grid.Column="1" Padding="8,4" VerticalAlignment="Top" Background="{DynamicResource TealSoft}" CornerRadius="8">
+                                                    <TextBlock Text="内置伙伴" Foreground="{DynamicResource Teal}" FontSize="9.5" FontWeight="SemiBold" />
+                                                </Border>
+                                            </Grid>
+                                            <Grid Margin="0,6,0,0">
+                                                <Grid.ColumnDefinitions><ColumnDefinition Width="48" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                                <TextBlock Text="状态说明" Style="{StaticResource PetSectionLabel}" VerticalAlignment="Top" Margin="0,2,0,0" />
+                                                <TextBlock x:Name="InstallationStatusDetail" Grid.Column="1" Text="正在校验本地宠物文件…" Foreground="{DynamicResource MutedText}" FontSize="10" LineHeight="15" TextWrapping="Wrap" />
+                                            </Grid>
+                                            <WrapPanel x:Name="PrimaryActionGroup" Margin="0,7,0,0">
+                                                <Button x:Name="PrimaryActionButton" Style="{StaticResource PetPrimaryButton}" Content="正在检查…" IsEnabled="False" Click="PrimaryAction_Click" AutomationProperties.Name="宠物主操作" />
+                                                <Button x:Name="AcknowledgeSelectionButton" Margin="8,0,0,0" Style="{StaticResource PetSelectionButton}" Content="我已完成选择" Visibility="Collapsed" Click="AcknowledgeSelection_Click" AutomationProperties.Name="确认已在 Codex 完成宠物选择" />
+                                            </WrapPanel>
+                                            <Border x:Name="ActivationGuidePanel" Margin="0,6,0,0" Padding="8,5" Background="{DynamicResource InfoSurface}" BorderBrush="{DynamicResource InfoBorder}" BorderThickness="1" CornerRadius="9" Visibility="Collapsed">
+                                                <TextBlock Text="Settings → Pets → Refresh → 选择飞行雪绒 → 输入 /pet" Foreground="{DynamicResource PrimaryText}" FontSize="9.8" TextWrapping="Wrap" />
+                                            </Border>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <StackPanel x:Name="ActionSelector" Grid.Row="1" Margin="0,7,0,0">
+                                        <TextBlock Text="动作预览" Style="{StaticResource PetSectionLabel}" Margin="0,0,0,4" />
+                                        <Grid>
+                                            <Grid.ColumnDefinitions><ColumnDefinition Width="34" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                            <TextBlock Text="日常" Foreground="{DynamicResource SubtleText}" FontSize="10" VerticalAlignment="Center" />
+                                            <WrapPanel x:Name="DailyActionsPanel" Grid.Column="1">
+                                                <ToggleButton x:Name="IdlePreviewButton" Style="{StaticResource PetPreviewChip}" Content="待机" Tag="idle" Click="PreviewState_Click" AutomationProperties.Name="预览待机动作" />
+                                                <ToggleButton x:Name="MoveRightPreviewButton" Style="{StaticResource PetPreviewChip}" Content="向右移动" Tag="move-right" Click="PreviewState_Click" AutomationProperties.Name="预览向右移动动作" />
+                                                <ToggleButton x:Name="MoveLeftPreviewButton" Style="{StaticResource PetPreviewChip}" Content="向左移动" Tag="move-left" Click="PreviewState_Click" AutomationProperties.Name="预览向左移动动作" />
+                                                <ToggleButton x:Name="WavePreviewButton" Style="{StaticResource PetPreviewChip}" Content="挥手互动" Tag="wave-touch" Click="PreviewState_Click" AutomationProperties.Name="预览挥手互动动作" />
+                                                <ToggleButton x:Name="JumpPreviewButton" Style="{StaticResource PetPreviewChip}" Content="跳跃" Tag="jump" Click="PreviewState_Click" AutomationProperties.Name="预览跳跃动作" />
+                                            </WrapPanel>
+                                        </Grid>
+                                        <Grid Margin="0,1,0,0">
+                                            <Grid.ColumnDefinitions><ColumnDefinition Width="34" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                            <TextBlock Text="任务" Foreground="{DynamicResource SubtleText}" FontSize="10" VerticalAlignment="Center" />
+                                            <WrapPanel x:Name="TaskActionsPanel" Grid.Column="1">
+                                                <ToggleButton x:Name="BlockedPreviewButton" Style="{StaticResource PetPreviewChip}" Content="遇到阻塞" Tag="blocked" Click="PreviewState_Click" AutomationProperties.Name="预览遇到阻塞动作" />
+                                                <ToggleButton x:Name="NeedsInputPreviewButton" Style="{StaticResource PetPreviewChip}" Content="等待输入" Tag="needs-input" Click="PreviewState_Click" AutomationProperties.Name="预览等待输入动作" />
+                                                <ToggleButton x:Name="RunningPreviewButton" Style="{StaticResource PetPreviewChip}" Content="正在工作" Tag="running" Click="PreviewState_Click" AutomationProperties.Name="预览正在工作动作" />
+                                                <ToggleButton x:Name="ReadyPreviewButton" Style="{StaticResource PetPreviewChip}" Content="完成待看" Tag="ready" Click="PreviewState_Click" AutomationProperties.Name="预览完成待看动作" />
+                                            </WrapPanel>
+                                        </Grid>
+                                        <Grid Margin="0,1,0,0">
+                                            <Grid.ColumnDefinitions><ColumnDefinition Width="34" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                            <TextBlock Text="视角" Foreground="{DynamicResource SubtleText}" FontSize="10" VerticalAlignment="Center" />
+                                            <WrapPanel x:Name="ViewActionsPanel" Grid.Column="1">
+                                                <ToggleButton x:Name="GazePreviewButton" Style="{StaticResource PetPreviewChip}" Content="16 向转身" Tag="gaze-clockwise" Click="PreviewState_Click" AutomationProperties.Name="预览十六向转身" />
+                                                <ToggleButton x:Name="ShowcasePreviewButton" Style="{StaticResource PetPreviewChip}" Content="动态九宫格" Tag="showcase" Click="PreviewState_Click" AutomationProperties.Name="预览动态九宫格" />
+                                            </WrapPanel>
+                                        </Grid>
+                                        <Border Height="1" Margin="0,3,0,0" Background="{DynamicResource HomeToolbarBorder}" />
+                                    </StackPanel>
+
+                                    <Grid Grid.Row="2" Margin="0,6,0,0">
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                                        <StackPanel VerticalAlignment="Center">
+                                            <TextBlock Text="配套主题" Style="{StaticResource PetSectionLabel}" />
+                                            <TextBlock Text="爱弥斯 · 星海远航" Foreground="{DynamicResource PrimaryText}" FontSize="10.5" FontWeight="SemiBold" Margin="0,2,6,0" />
+                                        </StackPanel>
+                                        <Button Grid.Column="1" Margin="6,0,0,0" Style="{StaticResource PetToolButton}" Content="查看" Click="OpenTheme_Click" />
+                                        <Button Grid.Column="2" Margin="6,0,0,0" Style="{StaticResource PetAccentToolButton}" Content="应用" Click="ApplyTheme_Click" />
+                                    </Grid>
+
+                                    <Border Grid.Row="3" Margin="0,6,0,0" Padding="0,6,0,0" BorderBrush="{DynamicResource HomeToolbarBorder}" BorderThickness="0,1,0,0">
+                                        <StackPanel>
+                                            <TextBlock Text="产品信息" Style="{StaticResource PetSectionLabel}" />
+                                            <Grid Margin="0,4,0,0">
+                                                <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="10" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                                <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="5" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                                                <StackPanel>
+                                                    <TextBlock Text="版本" Foreground="{DynamicResource SubtleText}" FontSize="9.5" />
+                                                    <TextBlock x:Name="ProductVersionText" Text="—" Foreground="{DynamicResource PrimaryText}" FontSize="10.5" FontWeight="SemiBold" Margin="0,1,0,0" />
+                                                </StackPanel>
+                                                <StackPanel Grid.Column="2">
+                                                    <TextBlock Text="运行协议" Foreground="{DynamicResource SubtleText}" FontSize="9.5" />
+                                                    <TextBlock x:Name="ProtocolText" Text="—" Foreground="{DynamicResource PrimaryText}" FontSize="10" TextWrapping="Wrap" Margin="0,1,0,0" />
+                                                </StackPanel>
+                                                <StackPanel Grid.Row="2">
+                                                    <TextBlock Text="作者许可" Foreground="{DynamicResource SubtleText}" FontSize="9.5" />
+                                                    <TextBlock x:Name="AuthorLicenseText" Text="—" Foreground="{DynamicResource PrimaryText}" FontSize="10" TextWrapping="Wrap" Margin="0,1,0,0" />
+                                                </StackPanel>
+                                                <StackPanel Grid.Row="2" Grid.Column="2">
+                                                    <TextBlock Text="管理范围" Foreground="{DynamicResource SubtleText}" FontSize="9.5" />
+                                                    <TextBlock x:Name="InstallLocationText" Text="仅管理当前用户 .codex\pets" Foreground="{DynamicResource PrimaryText}" FontSize="10" TextTrimming="CharacterEllipsis" ToolTip="当前用户 .codex\pets" Margin="0,1,0,0" />
+                                                </StackPanel>
+                                            </Grid>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <StackPanel Grid.Row="4" Margin="0,6,0,0">
+                                        <TextBlock Text="管理工具" Style="{StaticResource PetSectionLabel}" />
+                                        <WrapPanel x:Name="ManagementToolsPanel" Margin="0,4,0,0">
+                                            <Button x:Name="RefreshButton" Margin="0,0,6,0" Style="{StaticResource PetToolButton}" Content="↻  重新检查" Click="Refresh_Click" AutomationProperties.Name="重新检查宠物状态" />
+                                            <Button x:Name="RestoreBackupButton" Margin="0,0,6,0" Style="{StaticResource PetAccentToolButton}" Content="↶  恢复备份" IsEnabled="False" Click="RestoreBackup_Click" AutomationProperties.Name="恢复最近的宠物备份" />
+                                            <Button x:Name="UninstallButton" Style="{StaticResource PetDangerToolButton}" Content="移除受管文件" IsEnabled="False" Click="Uninstall_Click" AutomationProperties.Name="卸载 Tessalume 管理的宠物文件" />
+                                        </WrapPanel>
+                                    </StackPanel>
                                 </Grid>
                             </Border>
                         </Grid>
-                    </Grid>
-                </Border>
-
-                <Border x:Name="ControlPanelHost"
-                        Grid.Column="2"
-                        Grid.Row="0"
-                        MinHeight="0"
-                        Padding="14,0,0,0"
-                        BorderBrush="{DynamicResource HomeToolbarBorder}"
-                        BorderThickness="1,0,0,0">
-                    <Grid x:Name="ControlPanel">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-
-                        <StackPanel>
-                            <TextBlock Text="飞行雪绒"
-                                       Foreground="{DynamicResource PrimaryText}"
-                                       FontSize="20"
-                                       FontWeight="Bold" />
-                            <TextBlock Text="爱弥斯的电子幽灵伙伴，陪你工作与互动。"
-                                       Foreground="{DynamicResource MutedText}"
-                                       FontSize="10.5"
-                                       LineHeight="15"
-                                       TextWrapping="Wrap"
-                                       Margin="0,2,0,0" />
-                        </StackPanel>
-
-                        <Grid Grid.Row="1" Margin="0,8,0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="14" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <Grid Width="10" Height="10" VerticalAlignment="Top" Margin="0,3,0,0">
-                                <Ellipse x:Name="InstallationStatusHalo" Fill="{DynamicResource Accent}" Opacity="0.16" />
-                                <Ellipse x:Name="InstallationStatusDot" Width="6" Height="6" Fill="{DynamicResource Accent}" />
-                            </Grid>
-                            <StackPanel Grid.Column="1">
-                                <TextBlock x:Name="InstallationStatusTitle"
-                                           Text="正在检查"
-                                           Foreground="{DynamicResource PrimaryText}"
-                                           FontSize="11.5"
-                                           FontWeight="SemiBold" />
-                                <TextBlock x:Name="InstallationStatusDetail"
-                                           Text="正在校验本地宠物文件…"
-                                           Foreground="{DynamicResource MutedText}"
-                                           FontSize="10"
-                                           LineHeight="15"
-                                           TextWrapping="Wrap"
-                                           Margin="0,2,0,0" />
-                            </StackPanel>
-                        </Grid>
-
-                        <WrapPanel Grid.Row="2" Margin="14,8,0,0">
-                            <Button x:Name="PrimaryActionButton"
-                                    Style="{StaticResource PetPrimaryButton}"
-                                    Content="正在检查…"
-                                    IsEnabled="False"
-                                    Click="PrimaryAction_Click"
-                                    AutomationProperties.Name="宠物主操作" />
-                            <Button x:Name="CopyCommandButton"
-                                    Margin="6,1,0,0"
-                                    Style="{StaticResource PetSecondaryButton}"
-                                    Content="复制 /pet"
-                                    Click="CopyCommand_Click"
-                                    ToolTip="只复制命令，不会自动发送"
-                                    AutomationProperties.Name="复制斜杠 pet 命令" />
-                            <Button x:Name="AcknowledgeSelectionButton"
-                                    Height="34"
-                                    Margin="6,1,0,0"
-                                    Style="{StaticResource PetToolButton}"
-                                    Content="我已完成选择"
-                                    Visibility="Collapsed"
-                                    Click="AcknowledgeSelection_Click"
-                                    AutomationProperties.Name="确认已在 Codex 完成宠物选择" />
-                        </WrapPanel>
-
-                        <Border x:Name="ActivationGuidePanel"
-                                Grid.Row="3"
-                                Margin="14,6,0,0"
-                                Padding="8,5"
-                                Background="{DynamicResource InfoSurface}"
-                                CornerRadius="11"
-                                Visibility="Collapsed">
-                            <TextBlock Text="Pets → Refresh 并选择飞行雪绒 → 输入 /pet"
-                                       Foreground="{DynamicResource PrimaryText}"
-                                       FontSize="10"
-                                       TextWrapping="Wrap" />
-                        </Border>
-
-                        <StackPanel x:Name="ActionSelector"
-                                    Grid.Row="4"
-                                    Margin="14,7,0,0">
-                            <TextBlock Text="预览动作"
-                                       Foreground="{DynamicResource PrimaryText}"
-                                       FontSize="10.5"
-                                       FontWeight="SemiBold"
-                                       Margin="0,0,0,4" />
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="34" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Text="日常"
-                                           Foreground="{DynamicResource SubtleText}"
-                                           FontSize="10"
-                                           VerticalAlignment="Center" />
-                                <WrapPanel x:Name="DailyActionsPanel" Grid.Column="1">
-                                    <ToggleButton x:Name="IdlePreviewButton" Style="{StaticResource PetPreviewChip}" Content="待机" Tag="idle" Click="PreviewState_Click" AutomationProperties.Name="预览待机动作" />
-                                    <ToggleButton x:Name="MoveRightPreviewButton" Style="{StaticResource PetPreviewChip}" Content="向右移动" Tag="move-right" Click="PreviewState_Click" AutomationProperties.Name="预览向右移动动作" />
-                                    <ToggleButton x:Name="MoveLeftPreviewButton" Style="{StaticResource PetPreviewChip}" Content="向左移动" Tag="move-left" Click="PreviewState_Click" AutomationProperties.Name="预览向左移动动作" />
-                                    <ToggleButton x:Name="WavePreviewButton" Style="{StaticResource PetPreviewChip}" Content="挥手互动" Tag="wave-touch" Click="PreviewState_Click" AutomationProperties.Name="预览挥手互动动作" />
-                                    <ToggleButton x:Name="JumpPreviewButton" Style="{StaticResource PetPreviewChip}" Content="跳跃" Tag="jump" Click="PreviewState_Click" AutomationProperties.Name="预览跳跃动作" />
-                                </WrapPanel>
-                            </Grid>
-                            <Grid Margin="0,1,0,0">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="34" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Text="任务"
-                                           Foreground="{DynamicResource SubtleText}"
-                                           FontSize="10"
-                                           VerticalAlignment="Center" />
-                                <WrapPanel x:Name="TaskActionsPanel" Grid.Column="1">
-                                    <ToggleButton x:Name="BlockedPreviewButton" Style="{StaticResource PetPreviewChip}" Content="遇到阻塞" Tag="blocked" Click="PreviewState_Click" AutomationProperties.Name="预览遇到阻塞动作" />
-                                    <ToggleButton x:Name="NeedsInputPreviewButton" Style="{StaticResource PetPreviewChip}" Content="等待输入" Tag="needs-input" Click="PreviewState_Click" AutomationProperties.Name="预览等待输入动作" />
-                                    <ToggleButton x:Name="RunningPreviewButton" Style="{StaticResource PetPreviewChip}" Content="正在工作" Tag="running" Click="PreviewState_Click" AutomationProperties.Name="预览正在工作动作" />
-                                    <ToggleButton x:Name="ReadyPreviewButton" Style="{StaticResource PetPreviewChip}" Content="完成待看" Tag="ready" Click="PreviewState_Click" AutomationProperties.Name="预览完成待看动作" />
-                                </WrapPanel>
-                            </Grid>
-                            <Grid Margin="0,1,0,0">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="34" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Text="视角"
-                                           Foreground="{DynamicResource SubtleText}"
-                                           FontSize="10"
-                                           VerticalAlignment="Center" />
-                                <WrapPanel x:Name="ViewActionsPanel" Grid.Column="1">
-                                    <ToggleButton x:Name="GazePreviewButton" Style="{StaticResource PetPreviewChip}" Content="16 向转身" Tag="gaze-clockwise" Click="PreviewState_Click" AutomationProperties.Name="预览十六向转身" />
-                                    <ToggleButton x:Name="ShowcasePreviewButton" Style="{StaticResource PetPreviewChip}" Content="动态九宫格" Tag="showcase" Click="PreviewState_Click" AutomationProperties.Name="预览动态九宫格" />
-                                </WrapPanel>
-                            </Grid>
-                        </StackPanel>
-
-                        <Grid Grid.Row="5" Margin="14,6,0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock VerticalAlignment="Center" TextWrapping="Wrap" FontSize="10">
-                                <Run Text="配套主题：" Foreground="{DynamicResource SubtleText}" />
-                                <Run Text="爱弥斯 · 星海远航" Foreground="{DynamicResource PrimaryText}" FontWeight="SemiBold" />
-                            </TextBlock>
-                            <Button Grid.Column="1"
-                                    Margin="6,0,0,0"
-                                    Style="{StaticResource PetToolButton}"
-                                    Content="查看"
-                                    Click="OpenTheme_Click" />
-                            <Button Grid.Column="2"
-                                    Margin="5,0,0,0"
-                                    Style="{StaticResource PetAccentToolButton}"
-                                    Content="应用"
-                                    Click="ApplyTheme_Click" />
-                        </Grid>
-
-                        <Border Grid.Row="6"
-                                Margin="14,7,0,0"
-                                Padding="9,6"
-                                Background="{DynamicResource SurfaceAlt}"
-                                CornerRadius="10">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="58" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                </Grid.RowDefinitions>
-                                <TextBlock Text="版本" Foreground="{DynamicResource SubtleText}" FontSize="9.5" VerticalAlignment="Center" Margin="0,0,0,2" />
-                                <TextBlock x:Name="ProductVersionText" Grid.Column="1" Text="—" Foreground="{DynamicResource PrimaryText}" FontSize="10" FontWeight="SemiBold" Margin="0,0,0,2" />
-                                <TextBlock Grid.Row="1" Text="运行协议" Foreground="{DynamicResource SubtleText}" FontSize="9.5" VerticalAlignment="Top" Margin="0,0,0,2" />
-                                <TextBlock x:Name="ProtocolText" Grid.Row="1" Grid.Column="1" Text="—" Foreground="{DynamicResource PrimaryText}" FontSize="10" TextWrapping="Wrap" Margin="0,0,0,2" />
-                                <TextBlock Grid.Row="2" Text="作者许可" Foreground="{DynamicResource SubtleText}" FontSize="9.5" VerticalAlignment="Top" Margin="0,0,0,2" />
-                                <TextBlock x:Name="AuthorLicenseText" Grid.Row="2" Grid.Column="1" Text="—" Foreground="{DynamicResource PrimaryText}" FontSize="10" TextWrapping="Wrap" Margin="0,0,0,2" />
-                                <TextBlock Grid.Row="3" Text="管理范围" Foreground="{DynamicResource SubtleText}" FontSize="9.5" VerticalAlignment="Top" />
-                                <TextBlock x:Name="InstallLocationText" Grid.Row="3" Grid.Column="1" Text="仅管理当前用户 .codex\pets" Foreground="{DynamicResource PrimaryText}" FontSize="10" TextWrapping="Wrap" />
-                            </Grid>
-                        </Border>
-
-                        <Grid Grid.Row="7" Margin="14,6,0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="58" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="管理工具"
-                                       Foreground="{DynamicResource SubtleText}"
-                                       FontSize="9.5"
-                                       VerticalAlignment="Center" />
-                            <WrapPanel x:Name="ManagementToolsPanel" Grid.Column="1">
-                                <Button x:Name="RefreshButton"
-                                        Margin="0,0,5,0"
-                                        Style="{StaticResource PetToolButton}"
-                                        Content="↻  重新检查"
-                                        Click="Refresh_Click"
-                                        AutomationProperties.Name="重新检查宠物状态" />
-                                <Button x:Name="RestoreBackupButton"
-                                        Margin="0,0,5,0"
-                                        Style="{StaticResource PetAccentToolButton}"
-                                        Content="↶  恢复备份"
-                                        IsEnabled="False"
-                                        Click="RestoreBackup_Click"
-                                        AutomationProperties.Name="恢复最近的宠物备份" />
-                                <Button x:Name="UninstallButton"
-                                        Style="{StaticResource PetDangerToolButton}"
-                                        Content="移除受管文件"
-                                        IsEnabled="False"
-                                        Click="Uninstall_Click"
-                                        AutomationProperties.Name="卸载 Tessalume 管理的宠物文件" />
-                            </WrapPanel>
-                        </Grid>
-                    </Grid>
-                </Border>
+                    </Border>
+                </Grid>
             </Grid>
         </Border>
     </Grid>

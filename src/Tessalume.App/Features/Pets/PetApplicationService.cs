@@ -8,7 +8,6 @@ internal sealed class PetApplicationService : IDisposable
 {
     public const string BuiltInPetId = "flying-snowfluff";
     public const string RecommendedThemeId = "aemeath.star-voyage";
-    public const string WakeCommand = "/pet";
 
     private readonly PortableLayout _layout;
     private readonly PetApplicationServiceOptions _options;

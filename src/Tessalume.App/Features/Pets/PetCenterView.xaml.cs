@@ -25,8 +25,6 @@ public partial class PetCenterView : UserControl, IDisposable
 
     internal event EventHandler<PetCenterAction>? PrimaryActionRequested;
 
-    internal event EventHandler? CopyCommandRequested;
-
     internal event EventHandler? OpenCodexRequested;
 
     internal event EventHandler? RecommendedThemeRequested;
@@ -49,11 +47,10 @@ public partial class PetCenterView : UserControl, IDisposable
         ProductVersionText.Text = state.ProductVersion;
         ProtocolText.Text = state.ProtocolSummary;
         AuthorLicenseText.Text = $"{state.Author} · {FormatLicenseSummary(state.LicenseSummary)}";
-        InstallLocationText.Text = $"仅管理 {state.InstallLocation}";
-        InstallLocationText.ToolTip = state.InstallLocation;
+        InstallLocationText.Text = FormatInstallLocation(state.InstallLocation);
+        InstallLocationText.ToolTip = $"仅管理 {state.InstallLocation}";
         PrimaryActionButton.Content = state.PrimaryActionText;
         PrimaryActionButton.IsEnabled = state.PrimaryActionEnabled && !state.IsBusy;
-        CopyCommandButton.IsEnabled = !state.IsBusy;
         RefreshButton.IsEnabled = !state.IsBusy;
         UninstallButton.IsEnabled = state.CanUninstall && !state.IsBusy;
         RestoreBackupButton.IsEnabled = state.CanRestoreBackup && !state.IsBusy;
@@ -80,6 +77,20 @@ public partial class PetCenterView : UserControl, IDisposable
                 "保留所有权利",
             var value => value,
         };
+
+    private static string FormatInstallLocation(string installLocation)
+    {
+        const int maximumVisibleCharacters = 34;
+        var fullText = $"仅管理 {installLocation}";
+        if (fullText.Length <= maximumVisibleCharacters)
+        {
+            return fullText;
+        }
+
+        const int visiblePrefixLength = 17;
+        const int visibleSuffixLength = 14;
+        return $"{fullText[..visiblePrefixLength]}…{fullText[^visibleSuffixLength..]}";
+    }
 
     internal void SetPageActive(bool active)
     {
@@ -147,9 +158,6 @@ public partial class PetCenterView : UserControl, IDisposable
     private void Refresh_Click(object sender, RoutedEventArgs e) =>
         RefreshRequested?.Invoke(this, EventArgs.Empty);
 
-    private void CopyCommand_Click(object sender, RoutedEventArgs e) =>
-        CopyCommandRequested?.Invoke(this, EventArgs.Empty);
-
     private void OpenCodex_Click(object sender, RoutedEventArgs e) =>
         OpenCodexRequested?.Invoke(this, EventArgs.Empty);
 
@@ -207,13 +215,13 @@ public partial class PetCenterView : UserControl, IDisposable
         Grid.SetRow(ControlPanelHost, 0);
         Grid.SetRowSpan(ControlPanelHost, 1);
         ControlPanelHost.Margin = new Thickness(0);
-        ControlPanelHost.Padding = new Thickness(narrow ? 10 : medium ? 12 : 14, 0, 0, 0);
-        ControlPanelHost.BorderThickness = new Thickness(1, 0, 0, 0);
+        ControlPanelHost.Padding = new Thickness(narrow ? 9 : medium ? 10 : 12);
+        ControlPanelHost.BorderThickness = new Thickness(1);
         ControlPanelHost.MinHeight = 0;
         WorkspaceSurface.MinHeight = 0;
-        WorkspaceSurface.MaxHeight = 690;
-        WorkspaceSurface.Margin = new Thickness(0, 8, 0, 0);
-        WorkspaceSurface.Padding = new Thickness(narrow ? 9 : medium ? 10 : 12);
+        WorkspaceSurface.MaxHeight = 650;
+        WorkspaceSurface.Margin = new Thickness(0, 10, 0, 0);
+        WorkspaceSurface.Padding = new Thickness(0);
         PreviewStage.MinHeight = 0;
         PreviewStage.Padding = new Thickness(narrow ? 9 : medium ? 10 : 12);
         UpdatePreviewStageBounds();
