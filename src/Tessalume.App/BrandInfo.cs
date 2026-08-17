@@ -11,7 +11,7 @@ public static class BrandInfo
     public const string RepositoryOwner = "lyc1uckYoo";
     public const string RepositoryName = "tessalume";
     public static string Version { get; } =
-        typeof(BrandInfo).Assembly.GetName().Version?.ToString(3) ?? "2.1.1";
+        typeof(BrandInfo).Assembly.GetName().Version?.ToString(3) ?? "2.1.0";
     public static string VersionLabel { get; } = "v" + Version;
     public static string WindowTitle { get; } = ProductName + " · " + ChineseName;
     public static string QuickSwitchTitle { get; } = ProductName + " 浮窗";

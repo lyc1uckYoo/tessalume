@@ -4,7 +4,7 @@
 
 Tessalume 是一款开源、便携、以本机为中心的 Windows 主题与伴侣工作室。它可以统一管理 Codex 的完整角色主题、三大图像区域、阅读体验与官方 Pets 资产，也能让你直接借助 Codex 创建、体检和导出自己的主题。
 
-![Release](https://img.shields.io/badge/release-2.1.1-6C5CE7?style=flat-square)
+![Release](https://img.shields.io/badge/release-2.1.0-6C5CE7?style=flat-square)
 ![Platform](https://img.shields.io/badge/platform-Windows%20x64-2563EB?style=flat-square)
 ![Local first](https://img.shields.io/badge/data-local%20first-0F9D87?style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT-F59E0B?style=flat-square)
@@ -58,11 +58,11 @@ Tessalume 不会启动独立桌宠进程，不读取 Codex 对话、账号或日
 
 ## 让 Codex 帮你制作自己的皮肤
 
-创作项目中心把主题制作拆成 **工作区与项目 → 创作流程 → 项目体检 → 运行验收 → 发布清单** 五个阶段。你可以在 Codex 中打开准备好的工作区，然后直接描述作品和角色：
+创作项目中心提供 **开始 → 制作 → 修复 → 验收 → 导出** 五个清晰页面；其中制作流程继续细分为角色研究、素材生成、六槽图像推荐值、契约校验、亮暗验收和导出发布六个阶段。你可以在 Codex 中打开准备好的工作区，然后直接描述作品和角色：
 
 > 请使用 `$author-tessalume-theme` 为《鸣潮》的椿制作一套 Tessalume 主题；先完成角色研究和 11 张素材计划，等我确认后再生成、校验并交付可导入的主题。
 
-Tessalume 会检查结构、素材、Template 1.0 契约、亮暗模式和响应式布局；错误、警告或未完成验收会阻止导出分享包，并能生成只针对当前问题的 Codex 修复提示词。
+Tessalume 会检查结构、素材、Template 1.0 契约、六槽图像推荐值、CSS 单一职责、亮暗模式和响应式布局；错误或未完成验收会阻止导出分享包，并能生成只针对当前问题的 Codex 修复提示词。
 
 ![Tessalume 创作项目中心](.github/assets/screenshots/tessalume-creator.png)
 
