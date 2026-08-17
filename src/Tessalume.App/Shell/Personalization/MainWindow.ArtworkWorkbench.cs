@@ -212,9 +212,19 @@ public partial class MainWindow
 
     private async Task<int?> ResolveArtworkDebugPortAsync(CancellationToken cancellationToken)
     {
+        if (_activePort is { } activePort)
+        {
+            if (await _launcher.IsDebugPortReadyAsync(activePort, cancellationToken))
+            {
+                return activePort;
+            }
+
+            _activePort = null;
+        }
+
         var state = await _stateStore.LoadAsync(cancellationToken);
         var discovered = await _launcher.FindRunningDebugPortAsync(
-            [state?.PreferredDebugPort, _activePort, state?.Port],
+            [state?.PreferredDebugPort, state?.Port],
             cancellationToken);
         if (discovered is > 0 and <= 65535) _activePort = discovered;
         return discovered;

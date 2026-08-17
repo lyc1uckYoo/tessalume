@@ -36,7 +36,7 @@ internal static partial class TestSuite
                releaseCandidateScript.Contains("Complete release build failed", StringComparison.Ordinal),
             "The release build must create a checksum and propagate complete-build failures.");
         Ensure(File.Exists(securityPath) && File.Exists(issueTemplatePath) && File.Exists(changelogPath) &&
-               changelog.Contains("## 2.1.0", StringComparison.Ordinal) &&
+               changelog.Contains("## 2.1.1", StringComparison.Ordinal) &&
                license.Contains("MIT License", StringComparison.Ordinal) &&
                license.Contains("Permission is hereby granted", StringComparison.Ordinal),
             "Public testing requires an MIT license, security guidance, a structured bug form, and a public changelog.");

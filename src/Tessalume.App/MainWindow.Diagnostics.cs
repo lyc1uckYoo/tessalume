@@ -33,6 +33,7 @@ public partial class MainWindow
                 PreferredDebugPort = e.PreferredPort,
                 UpdatedAt = DateTimeOffset.Now,
             });
+            _activePort = null;
             ShowToast(e.PreferredPort is { } port
                 ? $"已优先使用本机端口 {port}"
                 : "已恢复自动发现 Codex 连接");

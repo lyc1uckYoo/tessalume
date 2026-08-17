@@ -64,25 +64,50 @@ internal static partial class TestSuite
                 listener = new System.Net.Sockets.TcpListener(IPAddress.Loopback, 0);
                 listener.Start();
             }
+            System.Net.Sockets.TcpListener? slowListener = null;
+            CancellationTokenSource? slowCancellation = null;
+            Task slowResponseTask = Task.CompletedTask;
             try
             {
                 var probePort = ((IPEndPoint)listener.LocalEndpoint).Port;
                 var responseTask = ServeCodexDiscoveryResponseAsync(listener, probePort);
+                slowListener = StartSlowManagedDebugEndpoint(probePort);
+                slowCancellation = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                slowResponseTask = slowListener is null
+                    ? Task.CompletedTask
+                    : HoldDebugEndpointOpenAsync(slowListener, slowCancellation.Token);
                 using var discovery = new LoopbackCdpDiscovery();
                 var launcher = new CodexPackageLauncher(discovery);
+                var stopwatch = System.Diagnostics.Stopwatch.StartNew();
                 var detectedPort = await launcher.FindRunningDebugPortAsync([probePort]);
+                stopwatch.Stop();
                 await responseTask;
-                Ensure(detectedPort == probePort,
-                    "A valid Codex CDP page on Codex++ port 9229 or a user-preferred loopback port must be attached before managed launch ports.");
+                Ensure(
+                    detectedPort == probePort && stopwatch.Elapsed < TimeSpan.FromMilliseconds(800),
+                    "A known healthy Codex port must return immediately without waiting for slow managed-range probes.");
             }
             finally
             {
+                slowCancellation?.Cancel();
+                slowListener?.Stop();
+                await slowResponseTask;
+                slowCancellation?.Dispose();
                 listener.Stop();
             }
 
             var repositoryRoot = FindRepositoryRoot();
             var appRoot = Path.Combine(repositoryRoot, "src", "Tessalume.App");
             var mainSource = await ReadMainWindowSourceAsync(appRoot);
+            var resolverStart = mainSource.IndexOf(
+                "private async Task<int?> ResolveThemeRuntimePortAsync",
+                StringComparison.Ordinal);
+            var resolverEnd = mainSource.IndexOf(
+                "private async Task<CreatorRuntimeActionResult>",
+                resolverStart,
+                StringComparison.Ordinal);
+            var resolverSource = resolverStart >= 0 && resolverEnd > resolverStart
+                ? mainSource[resolverStart..resolverEnd]
+                : string.Empty;
             var diagnosticsSource = await File.ReadAllTextAsync(Path.Combine(
                 appRoot,
                 "Features",
@@ -99,6 +124,13 @@ internal static partial class TestSuite
                    mainSource.Contains("FindRunningDebugPortAsync", StringComparison.Ordinal) &&
                    diagnosticsSource.Contains("CodexVersionChanged", StringComparison.Ordinal),
                 "Theme application must preflight version changes and preserve actionable failure state.");
+            Ensure(
+                resolverSource.Contains("_activePort is", StringComparison.Ordinal) &&
+                resolverSource.IndexOf("_activePort is", StringComparison.Ordinal) <
+                resolverSource.IndexOf("_stateStore.LoadAsync", StringComparison.Ordinal) &&
+                resolverSource.IndexOf("IsDebugPortReadyAsync", StringComparison.Ordinal) <
+                resolverSource.IndexOf("FindRunningDebugPortAsync", StringComparison.Ordinal),
+                "Theme switching must validate the cached active port before loading state or scanning fallback ports.");
             Ensure(xaml.Contains("DiagnosticCodexVersionText", StringComparison.Ordinal) &&
                    xaml.Contains("DiagnosticLastFailureText", StringComparison.Ordinal) &&
                    xaml.Contains("兼容性健康", StringComparison.Ordinal),
@@ -107,6 +139,45 @@ internal static partial class TestSuite
         finally
         {
             if (Directory.Exists(data)) Directory.Delete(data, recursive: true);
+        }
+    }
+
+    private static System.Net.Sockets.TcpListener? StartSlowManagedDebugEndpoint(int excludedPort)
+    {
+        for (var port = CodexDebugPortPolicy.ManagedPortEnd;
+             port >= CodexDebugPortPolicy.ManagedPortStart;
+             port--)
+        {
+            if (port == excludedPort) continue;
+            var listener = new System.Net.Sockets.TcpListener(IPAddress.Loopback, port);
+            try
+            {
+                listener.Start();
+                return listener;
+            }
+            catch (System.Net.Sockets.SocketException)
+            {
+                listener.Stop();
+            }
+        }
+
+        return null;
+    }
+
+    private static async Task HoldDebugEndpointOpenAsync(
+        System.Net.Sockets.TcpListener listener,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            using var client = await listener.AcceptTcpClientAsync(cancellationToken);
+            await Task.Delay(TimeSpan.FromSeconds(4), cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+        }
+        catch (System.Net.Sockets.SocketException) when (cancellationToken.IsCancellationRequested)
+        {
         }
     }
 

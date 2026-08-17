@@ -117,16 +117,91 @@ public sealed class CodexPackageLauncher(LoopbackCdpDiscovery discovery)
         IEnumerable<int?>? preferredPorts = null,
         CancellationToken cancellationToken = default)
     {
-        var candidates = CodexDebugPortPolicy.BuildProbeOrder(
-            (preferredPorts ?? []).ToArray());
-        var probes = candidates.Select(async port =>
-            (Port: port, Ready: await IsDebugPortReadyAsync(port, cancellationToken)));
-        var results = await Task.WhenAll(probes);
-        return results.Where(result => result.Ready).Select(result => (int?)result.Port).FirstOrDefault();
+        var checkedPorts = new HashSet<int>();
+        foreach (var port in preferredPorts ?? [])
+        {
+            if (port is not { } value ||
+                !CodexDebugPortPolicy.IsValid(value) ||
+                !checkedPorts.Add(value))
+            {
+                continue;
+            }
+
+            if (await IsDebugPortReadyAsync(value, cancellationToken))
+            {
+                return value;
+            }
+        }
+
+        if (checkedPorts.Add(CodexDebugPortPolicy.CodexPlusPlusPort) &&
+            await IsDebugPortReadyAsync(
+                CodexDebugPortPolicy.CodexPlusPlusPort,
+                cancellationToken))
+        {
+            return CodexDebugPortPolicy.CodexPlusPlusPort;
+        }
+
+        var managedPorts = Enumerable
+            .Range(
+                CodexDebugPortPolicy.ManagedPortStart,
+                CodexDebugPortPolicy.ManagedPortEnd - CodexDebugPortPolicy.ManagedPortStart + 1)
+            .Where(checkedPorts.Add)
+            .ToArray();
+        return await FindFirstReadyPortAsync(managedPorts, cancellationToken);
     }
 
     public Task<int?> FindRunningDebugPortAsync(CancellationToken cancellationToken) =>
         FindRunningDebugPortAsync(null, cancellationToken);
+
+    private async Task<int?> FindFirstReadyPortAsync(
+        IReadOnlyCollection<int> ports,
+        CancellationToken cancellationToken)
+    {
+        if (ports.Count == 0) return null;
+
+        using var probeCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        var probes = ports
+            .Select(port => ProbePortAsync(port, probeCancellation.Token))
+            .ToList();
+        while (probes.Count > 0)
+        {
+            var completed = await Task.WhenAny(probes);
+            probes.Remove(completed);
+            var result = await completed;
+            cancellationToken.ThrowIfCancellationRequested();
+            if (!result.Ready) continue;
+
+            probeCancellation.Cancel();
+            await ObserveCancelledProbesAsync(probes, cancellationToken);
+            return result.Port;
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+        return null;
+    }
+
+    private async Task<(int Port, bool Ready)> ProbePortAsync(
+        int port,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return (port, await IsDebugPortReadyAsync(port, cancellationToken));
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            return (port, false);
+        }
+    }
+
+    private static async Task ObserveCancelledProbesAsync(
+        IReadOnlyCollection<Task<(int Port, bool Ready)>> probes,
+        CancellationToken callerCancellation)
+    {
+        if (probes.Count == 0) return;
+        await Task.WhenAll(probes);
+        callerCancellation.ThrowIfCancellationRequested();
+    }
 
     private static async Task<string> FindAppUserModelIdAsync(CancellationToken cancellationToken)
         => (await FindPackageInfoAsync(cancellationToken)).AppUserModelId;

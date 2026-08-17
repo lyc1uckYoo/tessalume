@@ -230,6 +230,16 @@ public partial class MainWindow
         bool allowCodexStart,
         CancellationToken cancellationToken)
     {
+        if (_activePort is { } activePort)
+        {
+            if (await _launcher.IsDebugPortReadyAsync(activePort, cancellationToken))
+            {
+                return activePort;
+            }
+
+            _activePort = null;
+        }
+
         var state = await _stateStore.LoadAsync(cancellationToken);
         var port = await _launcher.FindRunningDebugPortAsync(
             [state?.PreferredDebugPort, state?.Port],

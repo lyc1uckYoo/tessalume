@@ -4,7 +4,7 @@
 
 Tessalume 是一款开源、便携、以本机为中心的 Windows 主题与伴侣工作室。它可以统一管理 Codex 的完整角色主题、三大图像区域、阅读体验与官方 Pets 资产，也能让你直接借助 Codex 创建、体检和导出自己的主题。
 
-![Release](https://img.shields.io/badge/release-2.1.0-6C5CE7?style=flat-square)
+![Release](https://img.shields.io/badge/release-2.1.1-6C5CE7?style=flat-square)
 ![Platform](https://img.shields.io/badge/platform-Windows%20x64-2563EB?style=flat-square)
 ![Local first](https://img.shields.io/badge/data-local%20first-0F9D87?style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT-F59E0B?style=flat-square)
