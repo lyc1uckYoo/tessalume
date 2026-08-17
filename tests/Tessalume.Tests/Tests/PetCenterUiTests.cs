@@ -627,10 +627,13 @@ internal static partial class TestSuite
                 view.PreviewPlayer.Select("showcase");
                 view.PreviewPlayer.SetActive(true);
                 AwaitWithDispatcher(view.PreviewPlayer.WaitForCurrentLoadAsync());
-                Ensure(view.PreviewPlayer.IsAnimating &&
-                       view.PreviewPlayer.DecodedFrameCount == 8 &&
+                Ensure((view.PreviewPlayer.IsReducedMotion
+                            ? !view.PreviewPlayer.IsAnimating &&
+                              view.PreviewPlayer.DecodedFrameCount == 1
+                            : view.PreviewPlayer.IsAnimating &&
+                              view.PreviewPlayer.DecodedFrameCount == 8) &&
                        view.PreviewPlayer.EstimatedDecodedBytes <= 24L * 1024 * 1024,
-                    "The dynamic nine-panel showcase must decode eight bounded frames and animate.");
+                    "The dynamic nine-panel showcase must respect the system motion preference while staying bounded.");
                 view.Visibility = Visibility.Collapsed;
                 InvokePetVisibilityChanged(view);
                 Ensure(!view.PreviewPlayer.IsAnimating &&
@@ -646,8 +649,12 @@ internal static partial class TestSuite
                 InvokePetVisibilityChanged(view);
                 view.PreviewPlayer.SetActive(true);
                 AwaitWithDispatcher(view.PreviewPlayer.WaitForCurrentLoadAsync());
-                Ensure(view.PreviewPlayer.IsAnimating,
-                    "A later visible route activation should resume the bounded preview.");
+                Ensure(view.PreviewPlayer.IsReducedMotion
+                        ? !view.PreviewPlayer.IsAnimating &&
+                          view.PreviewPlayer.DecodedFrameCount == 1
+                        : view.PreviewPlayer.IsAnimating &&
+                          view.PreviewPlayer.DecodedFrameCount == 8,
+                    "A later visible route activation should resume the preview according to the system motion preference.");
                 view.SetPageActive(false);
                 Ensure(!view.PreviewPlayer.IsAnimating &&
                        view.PreviewPlayer.DecodedFrameCount == 0,
@@ -721,27 +728,82 @@ internal static partial class TestSuite
             var toggle = FindPetPreviewToggle(view, label);
             toggle.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
             AwaitWithDispatcher(view.PreviewPlayer.WaitForCurrentLoadAsync());
+            var reducedMotion = view.PreviewPlayer.IsReducedMotion;
             Ensure(view.PreviewPlayer.CurrentKey == key &&
                    view.PreviewStateText.Text == label &&
-                   view.PreviewPlayer.DecodedFrameCount == frameCount &&
+                   view.PreviewPlayer.DecodedFrameCount == (reducedMotion ? 1 : frameCount) &&
                    view.PreviewPlayer.EstimatedDecodedBytes is > 0 and <= 24L * 1024 * 1024 &&
-                   view.PreviewPlayer.IsAnimating &&
+                   view.PreviewPlayer.IsAnimating == !reducedMotion &&
                    view.PetPreviewImage.Source is BitmapSource
                    {
                        PixelWidth: > 0 and <= 720,
                        PixelHeight: > 0 and <= 720,
-                   },
-                $"Animated preview '{label}' must decode its catalog frame count within the runtime bounds " +
+                   } &&
+                   (!reducedMotion ||
+                    view.PreviewPlayer.PlaybackDescription.Contains("减少动态", StringComparison.Ordinal)),
+                $"Animated preview '{label}' must follow the system motion preference within the runtime bounds " +
                 $"(key={view.PreviewPlayer.CurrentKey}, frames={view.PreviewPlayer.DecodedFrameCount}, " +
                 $"bytes={view.PreviewPlayer.EstimatedDecodedBytes}, animating={view.PreviewPlayer.IsAnimating}, " +
                 $"source={view.PetPreviewImage.Source?.GetType().Name ?? "null"}, " +
                 $"playback={view.PreviewPlayer.PlaybackDescription}).");
             var sourceBefore = view.PetPreviewImage.Source;
             var frameBefore = view.PreviewPlayer.CurrentFrameIndex;
-            WaitForPetFrameAdvance(view.PreviewPlayer, view.PetPreviewImage, sourceBefore, frameBefore);
-            Ensure(!ReferenceEquals(sourceBefore, view.PetPreviewImage.Source) ||
-                   view.PreviewPlayer.CurrentFrameIndex != frameBefore,
-                $"Animated preview '{label}' must visibly advance to a different decoded frame.");
+            if (reducedMotion)
+            {
+                AwaitWithDispatcher(Task.Delay(180));
+                Ensure(ReferenceEquals(sourceBefore, view.PetPreviewImage.Source) &&
+                       view.PreviewPlayer.CurrentFrameIndex == frameBefore,
+                    $"Reduced-motion preview '{label}' must remain on its representative frame.");
+            }
+            else
+            {
+                WaitForPetFrameAdvance(
+                    view.PreviewPlayer,
+                    view.PetPreviewImage,
+                    sourceBefore,
+                    frameBefore);
+                Ensure(!ReferenceEquals(sourceBefore, view.PetPreviewImage.Source) ||
+                       view.PreviewPlayer.CurrentFrameIndex != frameBefore,
+                    $"Animated preview '{label}' must visibly advance to a different decoded frame.");
+            }
+        }
+
+        VerifyFullMotionAnimatedPreviews(previews, expected);
+    }
+
+    private static void VerifyFullMotionAnimatedPreviews(
+        IReadOnlyList<PetPreviewFrame> previews,
+        IReadOnlyList<(string Key, string Label, int Frames)> expected)
+    {
+        var image = new Image();
+        var label = new TextBlock();
+        using var player = new PetPreviewPlayer(
+            image,
+            label,
+            new FixedPetMotionPreference(isReducedMotion: false));
+        player.Configure(previews);
+        player.SetDisplayBounds(560, 500);
+        player.SetActive(true);
+
+        foreach (var (key, expectedLabel, frameCount) in expected)
+        {
+            player.Select(key);
+            AwaitWithDispatcher(player.WaitForCurrentLoadAsync());
+            Ensure(player.CurrentKey == key &&
+                   label.Text == expectedLabel &&
+                   !player.IsReducedMotion &&
+                   player.DecodedFrameCount == frameCount &&
+                   player.EstimatedDecodedBytes is > 0 and <= 24L * 1024 * 1024 &&
+                   player.IsAnimating &&
+                   image.Source is BitmapSource
+                   {
+                       PixelWidth: > 0 and <= 720,
+                       PixelHeight: > 0 and <= 720,
+                   },
+                $"Full-motion preview '{expectedLabel}' must decode and animate all {frameCount} catalog frames.");
+            var sourceBefore = image.Source;
+            var frameBefore = player.CurrentFrameIndex;
+            WaitForPetFrameAdvance(player, image, sourceBefore, frameBefore);
         }
     }
 
