@@ -231,11 +231,9 @@ public partial class MainWindow
         CancellationToken cancellationToken)
     {
         var state = await _stateStore.LoadAsync(cancellationToken);
-        var port = state?.Port ?? 0;
-        if (port <= 0 || !await _launcher.IsDebugPortReadyAsync(port, cancellationToken))
-        {
-            port = await _launcher.FindRunningDebugPortAsync(cancellationToken) ?? 0;
-        }
+        var port = await _launcher.FindRunningDebugPortAsync(
+            [state?.PreferredDebugPort, state?.Port],
+            cancellationToken) ?? 0;
 
         if (port > 0) return port;
         if (!allowCodexStart) return null;

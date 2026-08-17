@@ -1,3 +1,4 @@
+using Tessalume.App.Features.Diagnostics;
 using Tessalume.App.Features.Personalization.ArtworkWorkbench.Domain;
 using Tessalume.App.Features.Personalization.ArtworkWorkbench.Presentation;
 
@@ -869,6 +870,7 @@ internal static partial class TestSuite
 
     static async Task DiagnosticsRecoveryIsAvailableAsync()
     {
+        VerifyDiagnosticsPortPreferenceInteraction();
         var repositoryRoot = FindRepositoryRoot();
         var appRoot = Path.Combine(repositoryRoot, "src", "Tessalume.App");
         var xaml = await ReadMainWindowXamlAsync(appRoot);
@@ -906,6 +908,8 @@ internal static partial class TestSuite
 
         foreach (var marker in new[]
                  {
+                     "x:Name=\"PreferredDebugPortTextBox\"",
+                     "Content=\"保存并检查\"",
                      "Content=\"打开日志目录\"",
                      "Content=\"恢复内置主题\"",
                  })
@@ -916,9 +920,12 @@ internal static partial class TestSuite
 
         Ensure(mainSource.Contains("RefreshDiagnosticsAsync", StringComparison.Ordinal) &&
                mainSource.Contains("DiagnosticsPage_RestoreBuiltInThemesRequested", StringComparison.Ordinal) &&
+               mainSource.Contains("DiagnosticsPage_DebugPortPreferenceSaveRequested", StringComparison.Ordinal) &&
                !mainSource.Contains("CopyDiagnosticReport_Click", StringComparison.Ordinal) &&
                !diagnosticsViewXaml.Contains("复制诊断报告", StringComparison.Ordinal) &&
                diagnosticsViewSource.Contains("RestoreBuiltInThemesRequested", StringComparison.Ordinal) &&
+               diagnosticsViewSource.Contains("CodexDebugPortPolicy.IsValid", StringComparison.Ordinal) &&
+               diagnosticsServiceSource.Contains("state?.PreferredDebugPort", StringComparison.Ordinal) &&
                diagnosticsServiceSource.Contains("InspectAsync", StringComparison.Ordinal),
             "The diagnostics page must retain local status and recovery without clipboard report actions.");
         var diagnosticsHandlerStart = diagnosticsSource.IndexOf("private async void Diagnostics_Click", StringComparison.Ordinal);
@@ -956,6 +963,82 @@ internal static partial class TestSuite
                installerSource.Contains("File.Delete(path)", StringComparison.Ordinal) &&
                installerSource.Contains("EnsureInstalled(layout)", StringComparison.Ordinal),
             "Built-in recovery must clear the deletion marker and reinstall embedded themes.");
+    }
+
+    private static void VerifyDiagnosticsPortPreferenceInteraction()
+    {
+        Exception? failure = null;
+        var thread = new Thread(() =>
+        {
+            try
+            {
+                var view = new DiagnosticsView();
+                var requestedPorts = new List<int?>();
+                view.DebugPortPreferenceSaveRequested += (_, args) =>
+                    requestedPorts.Add(args.PreferredPort);
+
+                view.PreferredDebugPortTextBox.Text = "9229";
+                view.SaveDebugPortPreferenceButton.RaiseEvent(
+                    new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+                Ensure(requestedPorts.SequenceEqual([CodexDebugPortPolicy.CodexPlusPlusPort]),
+                    "The diagnostics port editor must submit Codex++ port 9229 as a persisted preference.");
+
+                view.PreferredDebugPortTextBox.Text = "80";
+                view.SaveDebugPortPreferenceButton.RaiseEvent(
+                    new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+                Ensure(requestedPorts.Count == 1 &&
+                       view.DiagnosticPortPreferenceText.Text.Contains("1024–65535", StringComparison.Ordinal),
+                    "Unsafe or malformed manual debug ports must be rejected before persistence.");
+
+                view.PreferredDebugPortTextBox.Text = string.Empty;
+                view.SaveDebugPortPreferenceButton.RaiseEvent(
+                    new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+                Ensure(requestedPorts.Count == 2 && requestedPorts[1] is null,
+                    "Clearing the diagnostics port editor must restore automatic discovery.");
+
+                view.Render(new DiagnosticsSnapshot(
+                    "C:\\Tessalume",
+                    "C:\\Tessalume\\themes",
+                    true,
+                    CodexDebugPortPolicy.CodexPlusPlusPort,
+                    true,
+                    null,
+                    12,
+                    12,
+                    true,
+                    "测试主题",
+                    new CompatibilityHealthSnapshot(
+                        "26.810.7004.0",
+                        ThemeRuntime.ContractVersion,
+                        "3.0.4",
+                        true,
+                        false,
+                        false,
+                        false,
+                        DateTimeOffset.Now,
+                        ThemeRuntimeFailureStage.None,
+                        null,
+                        null),
+                    DateTimeOffset.Now));
+                Ensure(view.DiagnosticPortText.Text == "9229 · Codex++" &&
+                       view.DiagnosticPortPreferenceText.Text.Contains("已自动连接 Codex++", StringComparison.Ordinal),
+                    "A live Codex++ endpoint must be identified clearly without requiring a manual override.");
+            }
+            catch (Exception exception)
+            {
+                failure = exception;
+            }
+        });
+        thread.SetApartmentState(ApartmentState.STA);
+        thread.Start();
+        thread.Join();
+
+        if (failure is not null)
+        {
+            throw new InvalidOperationException(
+                "The diagnostics debug-port preference interaction failed.",
+                failure);
+        }
     }
 
 }

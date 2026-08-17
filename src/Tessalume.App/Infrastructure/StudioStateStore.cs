@@ -7,11 +7,13 @@ namespace Tessalume.App.Infrastructure;
 
 internal sealed record StudioState
 {
-    public const int CurrentSchemaVersion = 3;
+    public const int CurrentSchemaVersion = 4;
 
     public int SchemaVersion { get; init; } = CurrentSchemaVersion;
 
     public int Port { get; init; }
+
+    public int? PreferredDebugPort { get; init; }
 
     public string ThemeId { get; init; } = string.Empty;
 

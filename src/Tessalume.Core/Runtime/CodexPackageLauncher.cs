@@ -45,7 +45,9 @@ public sealed class CodexPackageLauncher(LoopbackCdpDiscovery discovery)
 
     public static int FindFreePort()
     {
-        for (var port = 9340; port <= 9399; port++)
+        for (var port = CodexDebugPortPolicy.ManagedPortStart;
+             port <= CodexDebugPortPolicy.ManagedPortEnd;
+             port++)
         {
             TcpListener? listener = null;
             try
@@ -63,7 +65,9 @@ public sealed class CodexPackageLauncher(LoopbackCdpDiscovery discovery)
             }
         }
 
-        throw new InvalidOperationException("本机 9340-9399 端口范围内没有可用端口。");
+        throw new InvalidOperationException(
+            $"本机 {CodexDebugPortPolicy.ManagedPortStart}-{CodexDebugPortPolicy.ManagedPortEnd} " +
+            "端口范围内没有可用端口。");
     }
 
     public static async Task CloseCodexAsync(CancellationToken cancellationToken = default)
@@ -109,13 +113,20 @@ public sealed class CodexPackageLauncher(LoopbackCdpDiscovery discovery)
     public async Task<bool> IsDebugPortReadyAsync(int port, CancellationToken cancellationToken = default) =>
         (await discovery.DiscoverAsync(port, cancellationToken)).Count > 0;
 
-    public async Task<int?> FindRunningDebugPortAsync(CancellationToken cancellationToken = default)
+    public async Task<int?> FindRunningDebugPortAsync(
+        IEnumerable<int?>? preferredPorts = null,
+        CancellationToken cancellationToken = default)
     {
-        var probes = Enumerable.Range(9340, 60).Select(async port =>
+        var candidates = CodexDebugPortPolicy.BuildProbeOrder(
+            (preferredPorts ?? []).ToArray());
+        var probes = candidates.Select(async port =>
             (Port: port, Ready: await IsDebugPortReadyAsync(port, cancellationToken)));
         var results = await Task.WhenAll(probes);
         return results.Where(result => result.Ready).Select(result => (int?)result.Port).FirstOrDefault();
     }
+
+    public Task<int?> FindRunningDebugPortAsync(CancellationToken cancellationToken) =>
+        FindRunningDebugPortAsync(null, cancellationToken);
 
     private static async Task<string> FindAppUserModelIdAsync(CancellationToken cancellationToken)
         => (await FindPackageInfoAsync(cancellationToken)).AppUserModelId;

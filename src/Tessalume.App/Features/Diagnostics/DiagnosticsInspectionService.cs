@@ -20,9 +20,11 @@ internal sealed class DiagnosticsInspectionService(
             state,
             compatibilityPacks.Resolve(),
             cancellationToken);
-        var port = activePort ?? state?.Port;
-        var portReady = port is not null &&
-            await launcher.IsDebugPortReadyAsync(port.Value, cancellationToken);
+        var port = await launcher.FindRunningDebugPortAsync(
+            [state?.PreferredDebugPort, activePort, state?.Port],
+            cancellationToken);
+        var portReady = port is not null;
+        var codexRunning = CodexPackageLauncher.IsCodexRunning() || portReady;
         var activeTheme = state?.Enabled == true
             ? themes.FirstOrDefault(theme =>
                 string.Equals(theme.ThemeId, state.ThemeId, StringComparison.OrdinalIgnoreCase))?.Name
@@ -31,9 +33,10 @@ internal sealed class DiagnosticsInspectionService(
         return new DiagnosticsSnapshot(
             layout.RootDirectory,
             layout.ThemesDirectory,
-            CodexPackageLauncher.IsCodexRunning(),
+            codexRunning,
             port,
             portReady,
+            state?.PreferredDebugPort,
             themes.Count,
             themes.Count(theme => theme.IsValid),
             state?.Enabled == true,

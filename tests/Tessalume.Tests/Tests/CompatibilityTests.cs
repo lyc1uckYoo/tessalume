@@ -11,6 +11,7 @@ internal static partial class TestSuite
             await store.SaveAsync(new StudioState
             {
                 Port = 9340,
+                PreferredDebugPort = CodexDebugPortPolicy.CodexPlusPlusPort,
                 ThemeId = "sample.theme",
                 Enabled = true,
                 LastSuccessfulApplyAt = failureAt.AddMinutes(-2),
@@ -24,11 +25,60 @@ internal static partial class TestSuite
                 ?? throw new InvalidOperationException("Compatibility state did not reload.");
             var json = await File.ReadAllTextAsync(Path.Combine(data, "state.json"));
             Ensure(restored.SchemaVersion == StudioState.CurrentSchemaVersion &&
+                   restored.PreferredDebugPort == CodexDebugPortPolicy.CodexPlusPlusPort &&
                    restored.RuntimeContractVersion == ThemeRuntime.ContractVersion &&
                    restored.LastFailureStage == ThemeRuntimeFailureStage.ThemeScriptFailed &&
                    restored.CodexVersionAtLastApply == "1.2.3.4" &&
                    json.Contains("\"ThemeScriptFailed\"", StringComparison.Ordinal),
                 "Compatibility baselines and failure stages must survive a restart in readable state JSON.");
+
+            var automaticPorts = CodexDebugPortPolicy.BuildProbeOrder();
+            var preferredPorts = CodexDebugPortPolicy.BuildProbeOrder(
+                6123,
+                9340,
+                CodexDebugPortPolicy.CodexPlusPlusPort,
+                6123,
+                80);
+            Ensure(
+                automaticPorts[0] == CodexDebugPortPolicy.CodexPlusPlusPort &&
+                automaticPorts[1] == CodexDebugPortPolicy.ManagedPortStart &&
+                automaticPorts[^1] == CodexDebugPortPolicy.ManagedPortEnd &&
+                automaticPorts.Count == 61,
+                "Automatic Codex discovery must probe Codex++ port 9229 before Tessalume's managed range.");
+            Ensure(
+                preferredPorts.Take(3).SequenceEqual(
+                    [6123, 9340, CodexDebugPortPolicy.CodexPlusPlusPort]) &&
+                preferredPorts.Distinct().Count() == preferredPorts.Count &&
+                !preferredPorts.Contains(80),
+                "Explicit and last-known ports must lead the bounded probe order without duplicates or unsafe ports.");
+
+            var listener = new System.Net.Sockets.TcpListener(
+                IPAddress.Loopback,
+                CodexDebugPortPolicy.CodexPlusPlusPort);
+            try
+            {
+                listener.Start();
+            }
+            catch (System.Net.Sockets.SocketException)
+            {
+                listener = new System.Net.Sockets.TcpListener(IPAddress.Loopback, 0);
+                listener.Start();
+            }
+            try
+            {
+                var probePort = ((IPEndPoint)listener.LocalEndpoint).Port;
+                var responseTask = ServeCodexDiscoveryResponseAsync(listener, probePort);
+                using var discovery = new LoopbackCdpDiscovery();
+                var launcher = new CodexPackageLauncher(discovery);
+                var detectedPort = await launcher.FindRunningDebugPortAsync([probePort]);
+                await responseTask;
+                Ensure(detectedPort == probePort,
+                    "A valid Codex CDP page on Codex++ port 9229 or a user-preferred loopback port must be attached before managed launch ports.");
+            }
+            finally
+            {
+                listener.Stop();
+            }
 
             var repositoryRoot = FindRepositoryRoot();
             var appRoot = Path.Combine(repositoryRoot, "src", "Tessalume.App");
@@ -45,6 +95,8 @@ internal static partial class TestSuite
                 "DiagnosticsView.xaml"));
             Ensure(mainSource.Contains("_runtime.PreflightAsync", StringComparison.Ordinal) &&
                    mainSource.Contains("RecordCompatibilityFailureAsync", StringComparison.Ordinal) &&
+                   mainSource.Contains("state?.PreferredDebugPort", StringComparison.Ordinal) &&
+                   mainSource.Contains("FindRunningDebugPortAsync", StringComparison.Ordinal) &&
                    diagnosticsSource.Contains("CodexVersionChanged", StringComparison.Ordinal),
                 "Theme application must preflight version changes and preserve actionable failure state.");
             Ensure(xaml.Contains("DiagnosticCodexVersionText", StringComparison.Ordinal) &&
@@ -56,6 +108,36 @@ internal static partial class TestSuite
         {
             if (Directory.Exists(data)) Directory.Delete(data, recursive: true);
         }
+    }
+
+    private static async Task ServeCodexDiscoveryResponseAsync(
+        System.Net.Sockets.TcpListener listener,
+        int port)
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        using var client = await listener.AcceptTcpClientAsync(timeout.Token);
+        await using var stream = client.GetStream();
+        using var reader = new StreamReader(
+            stream,
+            Encoding.ASCII,
+            detectEncodingFromByteOrderMarks: false,
+            leaveOpen: true);
+        while (!string.IsNullOrEmpty(await reader.ReadLineAsync(timeout.Token)))
+        {
+        }
+
+        var body =
+            $"[{{\"id\":\"codex-page\",\"type\":\"page\",\"url\":\"app://codex/\"," +
+            $"\"webSocketDebuggerUrl\":\"ws://127.0.0.1:{port}/devtools/page/codex-page\"}}]";
+        var bodyBytes = Encoding.UTF8.GetBytes(body);
+        var headers = Encoding.ASCII.GetBytes(
+            "HTTP/1.1 200 OK\r\n" +
+            "Content-Type: application/json; charset=utf-8\r\n" +
+            $"Content-Length: {bodyBytes.Length}\r\n" +
+            "Connection: close\r\n\r\n");
+        await stream.WriteAsync(headers, timeout.Token);
+        await stream.WriteAsync(bodyBytes, timeout.Token);
+        await stream.FlushAsync(timeout.Token);
     }
 
     static async Task CompatibilityPacksInstallValidateAndRollBackAsync()

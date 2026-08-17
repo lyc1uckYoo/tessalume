@@ -19,6 +19,8 @@ public partial class DiagnosticsView : UserControl
 
     internal event RoutedEventHandler? RestoreBuiltInThemesRequested;
 
+    internal event EventHandler<DebugPortPreferenceRequestedEventArgs>? DebugPortPreferenceSaveRequested;
+
     internal void SetLoading(bool isLoading)
     {
         DiagnosticLoadingPanel.Visibility = isLoading ? Visibility.Visible : Visibility.Collapsed;
@@ -44,7 +46,9 @@ public partial class DiagnosticsView : UserControl
         DiagnosticPortText.Text = snapshot.Port is null
             ? "未分配"
             : snapshot.PortReady
-                ? $"{snapshot.Port} · 正常"
+                ? snapshot.Port == CodexDebugPortPolicy.CodexPlusPlusPort
+                    ? $"{snapshot.Port} · Codex++"
+                    : $"{snapshot.Port} · 正常"
                 : $"{snapshot.Port} · 未连接";
         DiagnosticThemesText.Text = snapshot.InvalidThemes == 0
             ? $"{snapshot.ValidThemes} 个有效"
@@ -59,6 +63,9 @@ public partial class DiagnosticsView : UserControl
         DiagnosticLoopbackText.Text = snapshot.PortReady
             ? $"127.0.0.1:{snapshot.Port} · 可用"
             : "当前不可用";
+        PreferredDebugPortTextBox.Text = snapshot.PreferredDebugPort?.ToString(
+            CultureInfo.InvariantCulture) ?? string.Empty;
+        RenderPortPreference(snapshot);
         DiagnosticThemeStateText.Text = snapshot.ThemeEnabled ? "沉浸式主题已启用" : "Codex 默认外观";
         DiagnosticCurrentThemeText.Text = $"当前主题：{snapshot.ActiveThemeName ?? "无"}";
         DiagnosticValidationText.Text = $"{snapshot.ValidThemes} 个通过 · {snapshot.InvalidThemes} 个异常";
@@ -84,6 +91,41 @@ public partial class DiagnosticsView : UserControl
         DiagnosticCompatibilityDetailText.Text = GetCompatibilityDetail(compatibility);
         RenderHealth(snapshot);
         DiagnosticUpdatedText.Text = $"刚刚更新 · {snapshot.CheckedAt.ToLocalTime():HH:mm:ss}";
+    }
+
+    internal void SetPortPreferenceSaving(bool isSaving)
+    {
+        SaveDebugPortPreferenceButton.IsEnabled = !isSaving;
+        PreferredDebugPortTextBox.IsEnabled = !isSaving;
+        if (isSaving)
+        {
+            DiagnosticPortPreferenceText.Text = "正在保存并重新检查本机连接…";
+            SetTone(DiagnosticPortPreferenceText, "MutedText");
+        }
+    }
+
+    private void RenderPortPreference(DiagnosticsSnapshot snapshot)
+    {
+        if (snapshot.PreferredDebugPort is not { } preferredPort)
+        {
+            DiagnosticPortPreferenceText.Text = snapshot.Port == CodexDebugPortPolicy.CodexPlusPlusPort
+                ? "已自动连接 Codex++；无需修改端口。"
+                : "当前使用自动发现；留空保存可恢复此模式。";
+            SetTone(DiagnosticPortPreferenceText, snapshot.PortReady ? "Positive" : "SubtleText");
+            return;
+        }
+
+        if (snapshot.Port == preferredPort)
+        {
+            DiagnosticPortPreferenceText.Text = $"优先端口 {preferredPort} 已连接。";
+            SetTone(DiagnosticPortPreferenceText, "Positive");
+            return;
+        }
+
+        DiagnosticPortPreferenceText.Text = snapshot.PortReady
+            ? $"优先端口 {preferredPort} 暂不可用，当前已自动连接 {snapshot.Port}。"
+            : $"优先端口 {preferredPort} 暂不可用；启动对应宿主后重新检查。";
+        SetTone(DiagnosticPortPreferenceText, "Amber");
     }
 
     private void RenderHealth(DiagnosticsSnapshot snapshot)
@@ -179,4 +221,37 @@ public partial class DiagnosticsView : UserControl
 
     private void RestoreBuiltInThemes_Click(object sender, RoutedEventArgs e) =>
         RestoreBuiltInThemesRequested?.Invoke(this, e);
+
+    private void SaveDebugPortPreference_Click(object sender, RoutedEventArgs e)
+    {
+        var text = PreferredDebugPortTextBox.Text.Trim();
+        int? preferredPort = null;
+        if (text.Length > 0)
+        {
+            if (!int.TryParse(
+                    text,
+                    NumberStyles.None,
+                    CultureInfo.InvariantCulture,
+                    out var parsedPort) ||
+                !CodexDebugPortPolicy.IsValid(parsedPort))
+            {
+                DiagnosticPortPreferenceText.Text = "请输入 1024–65535，或留空使用自动发现。";
+                SetTone(DiagnosticPortPreferenceText, "Danger");
+                PreferredDebugPortTextBox.Focus();
+                PreferredDebugPortTextBox.SelectAll();
+                return;
+            }
+
+            preferredPort = parsedPort;
+        }
+
+        DebugPortPreferenceSaveRequested?.Invoke(
+            this,
+            new DebugPortPreferenceRequestedEventArgs(preferredPort));
+    }
+}
+
+internal sealed class DebugPortPreferenceRequestedEventArgs(int? preferredPort) : EventArgs
+{
+    public int? PreferredPort { get; } = preferredPort;
 }

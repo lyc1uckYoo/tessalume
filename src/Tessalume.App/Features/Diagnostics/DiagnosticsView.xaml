@@ -56,6 +56,31 @@
             <Border Grid.Column="4" Style="{DynamicResource InsetCard}" Background="{DynamicResource TealSoft}" BorderBrush="{DynamicResource InfoBorder}" Padding="16"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="34" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions><Border Width="28" Height="28" CornerRadius="9" Background="{DynamicResource Surface}"><Path Width="14" Height="14" Data="M 4,4 L 10,4 L 10,10 L 4,10 Z M 14,4 L 20,4 L 20,10 L 14,10 Z M 4,14 L 10,14 L 10,20 L 4,20 Z M 14,14 L 20,14 L 20,20 L 14,20 Z" Stroke="{DynamicResource Teal}" StrokeThickness="1.6" Fill="Transparent" Stretch="Uniform" /></Border><StackPanel Grid.Column="1" Margin="8,0,0,0"><TextBlock Text="主题包" Style="{DynamicResource MetricLabelText}" /><TextBlock x:Name="DiagnosticThemesText" Text="正在检查…" Style="{DynamicResource MetricValueText}" FontSize="15" Margin="0,4,0,0" /></StackPanel></Grid></Border>
         </Grid>
 
+        <Border Style="{DynamicResource ProductCard}" Margin="0,14,0,0" Padding="16,14">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="42" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Border Width="32" Height="32" CornerRadius="10" Background="{DynamicResource AccentSoft}" VerticalAlignment="Top">
+                    <Path Width="15" Height="15" Data="M 7,4 L 17,4 C 18.7,4 20,5.3 20,7 L 20,17 C 20,18.7 18.7,20 17,20 L 7,20 C 5.3,20 4,18.7 4,17 L 4,7 C 4,5.3 5.3,4 7,4 Z M 8,9 L 8,15 M 12,7 L 12,17 M 16,10 L 16,14" Stroke="{DynamicResource Accent}" StrokeThickness="1.7" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Fill="Transparent" Stretch="Uniform" />
+                </Border>
+                <StackPanel Grid.Column="1" Margin="8,0,22,0" VerticalAlignment="Center">
+                    <TextBlock Text="Codex 连接偏好" Foreground="{DynamicResource PrimaryText}" FontSize="12.5" FontWeight="SemiBold" />
+                    <TextBlock Text="默认会自动识别 Codex++ 的 9229 与 Tessalume 原生端口；使用其他宿主时可填写优先端口。" Foreground="{DynamicResource MutedText}" FontSize="10" TextWrapping="Wrap" Margin="0,4,0,0" />
+                    <TextBlock x:Name="DiagnosticPortPreferenceText" Text="留空即自动发现" Foreground="{DynamicResource SubtleText}" FontSize="10" TextWrapping="Wrap" Margin="0,5,0,0" />
+                </StackPanel>
+                <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                    <TextBlock Text="优先端口（可选）" Foreground="{DynamicResource MutedText}" FontSize="9.5" FontWeight="SemiBold" />
+                    <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                        <TextBox x:Name="PreferredDebugPortTextBox" Width="96" Height="36" MaxLength="5" Padding="10,0" VerticalContentAlignment="Center" TextAlignment="Center" FontFamily="Consolas" FontSize="11.5" Foreground="{DynamicResource PrimaryText}" Background="{DynamicResource SettingsControlSurface}" BorderBrush="{DynamicResource SettingsControlBorder}" CaretBrush="{DynamicResource Accent}" ToolTip="留空使用自动发现；可填写 1024–65535" AutomationProperties.Name="Codex 优先调试端口" />
+                        <Button x:Name="SaveDebugPortPreferenceButton" Style="{DynamicResource SecondaryActionButton}" Height="36" Content="保存并检查" Margin="8,0,0,0" Click="SaveDebugPortPreference_Click" AutomationProperties.Name="保存 Codex 连接偏好并重新检查" />
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+        </Border>
+
         <Border Style="{DynamicResource ProductCard}" Margin="0,14,0,0" Padding="18">
             <StackPanel>
                 <Grid>

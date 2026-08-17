@@ -11,6 +11,7 @@ internal sealed record DiagnosticsSnapshot(
     bool CodexRunning,
     int? Port,
     bool PortReady,
+    int? PreferredDebugPort,
     int TotalThemes,
     int ValidThemes,
     bool ThemeEnabled,

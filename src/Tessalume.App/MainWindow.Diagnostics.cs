@@ -20,6 +20,38 @@ public partial class MainWindow
     private async void DiagnosticsPage_RefreshRequested(object sender, RoutedEventArgs e) =>
         await RefreshDiagnosticsAsync();
 
+    private async void DiagnosticsPage_DebugPortPreferenceSaveRequested(
+        object? sender,
+        DebugPortPreferenceRequestedEventArgs e)
+    {
+        DiagnosticsPage.SetPortPreferenceSaving(true);
+        try
+        {
+            var state = await _stateStore.LoadAsync() ?? new StudioState();
+            await _stateStore.SaveAsync(state with
+            {
+                PreferredDebugPort = e.PreferredPort,
+                UpdatedAt = DateTimeOffset.Now,
+            });
+            ShowToast(e.PreferredPort is { } port
+                ? $"已优先使用本机端口 {port}"
+                : "已恢复自动发现 Codex 连接");
+            await RefreshDiagnosticsAsync();
+        }
+        catch (Exception exception) when (
+            exception is IOException or UnauthorizedAccessException or InvalidOperationException)
+        {
+            ShowProductMessage(
+                "无法保存连接偏好",
+                exception.Message,
+                ProductDialogKind.Error);
+        }
+        finally
+        {
+            DiagnosticsPage.SetPortPreferenceSaving(false);
+        }
+    }
+
     private async Task RefreshDiagnosticsAsync()
     {
         if (_diagnosticsRefreshInProgress) return;

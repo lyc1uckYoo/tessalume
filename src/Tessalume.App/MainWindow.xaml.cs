@@ -178,6 +178,8 @@ public partial class MainWindow : Window, IAsyncDisposable
         InitializePetCenterFeature();
         InitializeArtworkWorkbench();
         DiagnosticsPage.RefreshRequested += DiagnosticsPage_RefreshRequested;
+        DiagnosticsPage.DebugPortPreferenceSaveRequested +=
+            DiagnosticsPage_DebugPortPreferenceSaveRequested;
         DiagnosticsPage.OpenLogDirectoryRequested += DiagnosticsPage_OpenLogDirectoryRequested;
         DiagnosticsPage.RestoreBuiltInThemesRequested += DiagnosticsPage_RestoreBuiltInThemesRequested;
         AboutPage.OpenRootDirectoryRequested += AboutPage_OpenRootDirectoryRequested;
