@@ -16,7 +16,7 @@ The ZIP still contains only `compatibility-pack.json`, assembled `theme-runtime-
 `compatibility-profile-v3.json`. Build it with:
 
 ```powershell
-.\tools\New-CompatibilityPack.ps1 -Version 3.0.3
+.\tools\New-CompatibilityPack.ps1 -Version 3.0.4
 ```
 
 Compatibility releases must be created with GitHub's “latest” flag disabled so they never replace

@@ -158,8 +158,8 @@ internal static partial class TestSuite
                 new Version(1, 4, 1),
                 ThemeRuntime.ContractVersion);
             var baseline = store.Resolve();
-            Ensure(baseline.IsBuiltIn && baseline.PackVersion == new Version(3, 0, 3),
-                "Contract 3 pack 3.0.2 must be rejected after upgrading to contract 4 and the embedded 3.0.3 baseline.");
+            Ensure(baseline.IsBuiltIn && baseline.PackVersion == new Version(3, 0, 4),
+                "Contract 3 pack 3.0.2 must be rejected after upgrading to contract 4 and the embedded 3.0.4 baseline.");
             using (var repairedState = JsonDocument.Parse(await File.ReadAllBytesAsync(
                        Path.Combine(data, "compatibility", "state.json"))))
             {
@@ -246,11 +246,11 @@ internal static partial class TestSuite
             Directory.CreateDirectory(stalePackDirectory);
             ZipFile.ExtractToDirectory(staleArchive, stalePackDirectory);
 
-            var firstArchive = await CreateCompatibilityArchiveAsync(root, sourceAssets, new Version(3, 0, 4));
+            var firstArchive = await CreateCompatibilityArchiveAsync(root, sourceAssets, new Version(3, 0, 5));
             var firstHash = Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(firstArchive)));
             var firstInstall = await store.InstallAsync(firstArchive, firstHash);
             Ensure(firstInstall.Changed && !firstInstall.ActivePack.IsBuiltIn &&
-                   firstInstall.ActivePack.PackVersion == new Version(3, 0, 4),
+                   firstInstall.ActivePack.PackVersion == new Version(3, 0, 5),
                 "A fully verified official compatibility pack must become active without replacing the executable.");
 
             await File.WriteAllTextAsync(
@@ -258,7 +258,7 @@ internal static partial class TestSuite
                 """
                 {
                   "schemaVersion": 1,
-                  "activePackVersion": "3.0.4",
+                  "activePackVersion": "3.0.5",
                   "previousPackVersion": "3.0.1"
                 }
                 """);
@@ -267,18 +267,18 @@ internal static partial class TestSuite
                 "Rollback must prefer the embedded baseline over an older previous pack.");
 
             firstInstall = await store.InstallAsync(firstArchive, firstHash);
-            Ensure(firstInstall.Changed && firstInstall.ActivePack.PackVersion == new Version(3, 0, 4),
+            Ensure(firstInstall.Changed && firstInstall.ActivePack.PackVersion == new Version(3, 0, 5),
                 "A newer verified pack must remain installable after falling back to the embedded baseline.");
 
-            var secondArchive = await CreateCompatibilityArchiveAsync(root, sourceAssets, new Version(3, 0, 5));
+            var secondArchive = await CreateCompatibilityArchiveAsync(root, sourceAssets, new Version(3, 0, 6));
             var secondHash = Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(secondArchive)));
             var secondInstall = await store.InstallAsync(secondArchive, secondHash);
-            Ensure(secondInstall.ActivePack.PackVersion == new Version(3, 0, 5) &&
-                   secondInstall.PreviousPack.PackVersion == new Version(3, 0, 4),
+            Ensure(secondInstall.ActivePack.PackVersion == new Version(3, 0, 6) &&
+                   secondInstall.PreviousPack.PackVersion == new Version(3, 0, 5),
                 "Installing a newer compatibility pack must preserve the last known-good pack for rollback.");
 
             var rolledBack = store.Rollback();
-            Ensure(!rolledBack.IsBuiltIn && rolledBack.PackVersion == new Version(3, 0, 4),
+            Ensure(!rolledBack.IsBuiltIn && rolledBack.PackVersion == new Version(3, 0, 5),
                 "A failed active compatibility pack must roll back atomically to the previous verified pack.");
 
             await File.AppendAllTextAsync(rolledBack.RuntimeAssets.RuntimePath, "\n// corrupted by fixture");

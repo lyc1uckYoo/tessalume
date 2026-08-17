@@ -257,8 +257,14 @@ internal static partial class TestSuite
                payload.Contains("data-tessalume-right-rail", StringComparison.Ordinal),
             "The runtime must expose geometry-based left and right task rail capacity.");
         Ensure(payload.Contains("settings-surface", StringComparison.Ordinal) &&
-               payload.Contains("is-settings", StringComparison.Ordinal),
-            "The runtime must expose a stable semantic state for settings surfaces.");
+               payload.Contains("is-settings", StringComparison.Ordinal) &&
+               payload.Contains("settingsScrollChild?.parentElement", StringComparison.Ordinal) &&
+               payload.Contains("markSurface(settingsSurface, \"settings\")", StringComparison.Ordinal) &&
+               sharedTemplate.Contains(
+                   "tessalume-is-settings [data-tessalume-surface=\"settings\"]",
+                   StringComparison.Ordinal) &&
+               sharedTemplate.Contains("background-color:transparent!important;", StringComparison.Ordinal),
+            "Settings recognition must follow the stable scroll viewport and reveal the active chat artwork through only its native carrier.");
         Ensure(payload.Contains("new ResizeObserver", StringComparison.Ordinal),
             "Adaptive task rails must react to workspace and composer resizing.");
         Ensure(payload.Contains("syncStageGeometry", StringComparison.Ordinal) &&
@@ -283,12 +289,24 @@ internal static partial class TestSuite
                 .EnumerateArray()
                 .Select(selector => selector.GetString())
                 .ToArray();
+            var settingsScrollSelectors = profileDocument.RootElement
+                .GetProperty("selectors")
+                .GetProperty("settingsScrollChild")
+                .EnumerateArray()
+                .Select(selector => selector.GetString())
+                .ToArray();
             Ensure(mainSelectors.Length >= 4 &&
                    mainSelectors[0] == "main[data-app-shell-main-surface=\"default\"]" &&
                    mainSelectors[1] == "main[class*=\"MainContentSurface\"]" &&
                    mainSelectors[2] == "main.main-surface" &&
                    mainSelectors[3] == "main",
                 "The compatibility profile must keep visible semantic main selectors ahead of generic fallbacks.");
+            Ensure(settingsScrollSelectors.Length >= 2 &&
+                   settingsScrollSelectors[0] ==
+                       ":scope > .scrollbar-stable.flex-1.overflow-y-auto.p-panel" &&
+                   settingsScrollSelectors[1] ==
+                       ".scrollbar-stable.flex-1.overflow-y-auto.p-panel",
+                "Settings discovery must support both the legacy direct child and Codex's current nested scroll viewport.");
         }
         var acceptanceProbe = await File.ReadAllTextAsync(Path.Combine(
             repositoryRoot,

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "profileVersion": "3.0.3",
+  "profileVersion": "3.0.4",
   "runtimeContractVersion": 4,
   "selectors": {
     "main": [
@@ -42,7 +42,8 @@
       ".main-surface.flex.h-full.min-h-0.flex-col"
     ],
     "settingsScrollChild": [
-      ":scope > .scrollbar-stable.flex-1.overflow-y-auto.p-panel"
+      ":scope > .scrollbar-stable.flex-1.overflow-y-auto.p-panel",
+      ".scrollbar-stable.flex-1.overflow-y-auto.p-panel"
     ],
     "windowBar": [
       ".group\\/application-menu-top-bar"

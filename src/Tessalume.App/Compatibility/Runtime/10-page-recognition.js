@@ -190,7 +190,7 @@
     };
     const findSettingsSurface = (main = findMain()) => {
       if (!main) return null;
-      return queryAll(
+      const configuredSurface = queryAll(
         main,
         "settingsSurface",
         [".main-surface.flex.h-full.min-h-0.flex-col"],
@@ -198,13 +198,26 @@
         surface,
         "settingsScrollChild",
         [":scope > .scrollbar-stable.flex-1.overflow-y-auto.p-panel"],
-      )) || null;
+      ));
+      if (configuredSurface) return configuredSurface;
+
+      // Codex 26.810 removed the legacy main-surface token from the settings
+      // carrier but retained its dedicated panel scroll viewport. Resolve the
+      // carrier from that stable child instead of binding route recognition to
+      // utility classes on the replaceable outer element.
+      const settingsScrollChild = queryFirst(
+        main,
+        "settingsScrollChild",
+        [".scrollbar-stable.flex-1.overflow-y-auto.p-panel"],
+      );
+      return settingsScrollChild?.parentElement || null;
     };
     const syncRouteState = () => {
       const home = findHome();
       const isHome = Boolean(home);
       const settingsSurface = findSettingsSurface();
       mark(settingsSurface, roleClass("settings-surface"));
+      markSurface(settingsSurface, "settings");
       html.classList.toggle(roleClass("is-home"), isHome);
       html.classList.toggle(roleClass("is-task"), !isHome);
       html.classList.toggle(roleClass("is-settings"), Boolean(settingsSurface));

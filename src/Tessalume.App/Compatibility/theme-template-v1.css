@@ -102,6 +102,16 @@ html.tessalume-theme-active.tessalume-is-task [data-tessalume-surface="main"]::a
 html.tessalume-theme-active.tessalume-is-task [data-tessalume-surface="main"]::before { z-index:-2; }
 html.tessalume-theme-active.tessalume-is-task [data-tessalume-surface="main"]::after { z-index:-1; }
 
+/* Settings reuse the task artwork canvas, but Codex paints an opaque native
+   carrier above it. Keep only the semantically discovered settings carrier
+   transparent so the current light/dark chat artwork remains visible without
+   weakening cards, controls, or unrelated native surfaces. */
+html.tessalume-theme-active.tessalume-is-settings [data-tessalume-surface="settings"] {
+  background:transparent!important;
+  background-color:transparent!important;
+  background-image:none!important;
+}
+
 html.tessalume-theme-active [data-tessalume-surface="chat-paper"] {
   position:relative!important;
   isolation:isolate;
