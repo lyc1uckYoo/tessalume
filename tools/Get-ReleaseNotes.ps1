@@ -28,7 +28,9 @@ if (-not $match.Success) {
 }
 
 $notes = $match.Groups['body'].Value.Trim()
-if ([string]::IsNullOrWhiteSpace($notes) -or $notes -match '^[-*]\s*暂无[。.]?$') {
+$emptyPlaceholder = [string]::Concat([char]0x6682, [char]0x65E0)
+$emptyPlaceholderPattern = '^[-*]\s*' + [Regex]::Escape($emptyPlaceholder) + '(?:\u3002|\.)?$'
+if ([string]::IsNullOrWhiteSpace($notes) -or $notes -match $emptyPlaceholderPattern) {
     throw "CHANGELOG.md section $Version does not contain release notes."
 }
 

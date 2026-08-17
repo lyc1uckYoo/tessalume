@@ -130,7 +130,8 @@ internal static partial class TestSuite
                packScript.Contains("Tessalume.App.csproj", StringComparison.Ordinal) &&
                packScript.Contains("does not match source profileVersion", StringComparison.Ordinal) &&
                compatibilityReadme.Contains("New-CompatibilityPack.ps1 -Version 3.0.4", StringComparison.Ordinal) &&
-               notesScript.Contains("CHANGELOG.md does not contain", StringComparison.Ordinal),
+               notesScript.Contains("CHANGELOG.md does not contain", StringComparison.Ordinal) &&
+               notesScript.All(character => character <= 0x7f),
             "Release scripts must derive compatibility requirements from source, reject version drift, and reject missing release notes.");
     }
 
