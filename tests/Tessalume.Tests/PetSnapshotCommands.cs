@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Threading;
 using Tessalume.App.Features.Navigation;
 using Tessalume.App.Features.Pets;
@@ -10,7 +11,31 @@ internal static partial class TestSuite
     static Task<int> RenderPetCenterSnapshotsAsync(
         string lightSnapshotPath,
         string darkSnapshotPath,
-        string? compactSnapshotPath = null)
+        string? compactSnapshotPath = null) =>
+        RenderPetCenterSnapshotSetAsync(
+        [
+            new(lightSnapshotPath, false, new Size(1600, 900), "idle", "light 1600x900"),
+            new(darkSnapshotPath, true, new Size(1600, 900), "showcase", "dark 1600x900"),
+            .. compactSnapshotPath is null
+                ? Array.Empty<PetCenterSnapshotProfile>()
+                : [new(compactSnapshotPath, false, new Size(900, 720), "idle", "compact 900x720")],
+        ]);
+
+    static Task<int> RenderPetCenterV4SnapshotsAsync(
+        string light1600SnapshotPath,
+        string dark1366SnapshotPath,
+        string light1266SnapshotPath,
+        string compact900SnapshotPath) =>
+        RenderPetCenterSnapshotSetAsync(
+        [
+            new(light1600SnapshotPath, false, new Size(1600, 900), "idle", "light 1600x900"),
+            new(dark1366SnapshotPath, true, new Size(1366, 768), "showcase", "dark 1366x768"),
+            new(light1266SnapshotPath, false, new Size(1266, 813), "idle", "light 1266x813"),
+            new(compact900SnapshotPath, false, new Size(900, 720), "idle", "compact 900x720"),
+        ]);
+
+    private static Task<int> RenderPetCenterSnapshotSetAsync(
+        IReadOnlyList<PetCenterSnapshotProfile> profiles)
     {
         var portableRoot = Path.Combine(
             Path.GetTempPath(),
@@ -104,29 +129,15 @@ internal static partial class TestSuite
                         PreviewFrames = productFrames,
                     };
 
-                    await RenderPetCenterSnapshotProfileAsync(
-                        window,
-                        state,
-                        lightSnapshotPath,
-                        darkMode: false,
-                        new Size(1600, 900),
-                        "idle");
-                    await RenderPetCenterSnapshotProfileAsync(
-                        window,
-                        state,
-                        darkSnapshotPath,
-                        darkMode: true,
-                        new Size(1600, 900),
-                        "showcase");
-                    if (!string.IsNullOrWhiteSpace(compactSnapshotPath))
+                    foreach (var profile in profiles)
                     {
                         await RenderPetCenterSnapshotProfileAsync(
                             window,
                             state,
-                            compactSnapshotPath,
-                            darkMode: false,
-                            new Size(900, 720),
-                            "idle");
+                            profile.Path,
+                            profile.DarkMode,
+                            profile.Size,
+                            profile.PreviewKey);
                     }
                 }
                 catch (Exception exception)
@@ -156,12 +167,10 @@ internal static partial class TestSuite
                 return Task.FromResult(1);
             }
 
-            Console.WriteLine($"Pet Center light snapshot: {Path.GetFullPath(lightSnapshotPath)}");
-            Console.WriteLine($"Pet Center dark snapshot: {Path.GetFullPath(darkSnapshotPath)}");
-            if (!string.IsNullOrWhiteSpace(compactSnapshotPath))
+            foreach (var profile in profiles)
             {
                 Console.WriteLine(
-                    $"Pet Center compact snapshot: {Path.GetFullPath(compactSnapshotPath)}");
+                    $"Pet Center {profile.Label} snapshot: {Path.GetFullPath(profile.Path)}");
             }
             return Task.FromResult(0);
         }
@@ -189,6 +198,43 @@ internal static partial class TestSuite
         ArrangeMainSurface(window, size);
         window.InfoScroll.ScrollToTop();
         ArrangeMainSurface(window, size);
+        var previewButtons = window.PetCenterPage.DailyActionsPanel.Children.OfType<ToggleButton>()
+            .Concat(window.PetCenterPage.TaskActionsPanel.Children.OfType<ToggleButton>())
+            .Concat(window.PetCenterPage.ViewActionsPanel.Children.OfType<ToggleButton>())
+            .ToArray();
+        var requiredElements = new FrameworkElement[]
+        {
+            window.PetCenterPage.PreviewStage,
+            window.PetCenterPage.InstallationStatusTitle,
+            window.PetCenterPage.PrimaryActionButton,
+            window.PetCenterPage.CopyCommandButton,
+            window.PetCenterPage.AcknowledgeSelectionButton,
+            window.PetCenterPage.ActivationGuidePanel,
+            window.PetCenterPage.ActionSelector,
+            FindPetButton(window.PetCenterPage, "查看"),
+            FindPetButton(window.PetCenterPage, "应用"),
+            window.PetCenterPage.ProductVersionText,
+            window.PetCenterPage.ProtocolText,
+            window.PetCenterPage.AuthorLicenseText,
+            window.PetCenterPage.InstallLocationText,
+            window.PetCenterPage.RefreshButton,
+            window.PetCenterPage.RestoreBackupButton,
+            window.PetCenterPage.UninstallButton,
+        };
+        Ensure(window.InfoScroll.ScrollableWidth <= 0.5 &&
+               window.InfoScroll.ScrollableHeight <= 0.5 &&
+               window.InfoScroll.ComputedVerticalScrollBarVisibility == Visibility.Collapsed &&
+               previewButtons.Length == 11 &&
+               previewButtons.All(button => IsInsidePetViewport(button, window.InfoScroll)) &&
+               requiredElements.All(element => IsInsidePetViewport(element, window.InfoScroll)),
+            $"The real {size.Width:0}x{size.Height:0} WPF pet console must fit every preview and operation without main-content scrolling.");
         SaveWindowContent(window, snapshotPath);
     }
+
+    private sealed record PetCenterSnapshotProfile(
+        string Path,
+        bool DarkMode,
+        Size Size,
+        string PreviewKey,
+        string Label);
 }

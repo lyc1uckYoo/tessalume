@@ -125,7 +125,6 @@ internal static partial class TestSuite
                  {
                      "Style=\"{DynamicResource PageTitleText}\"",
                      "Style=\"{DynamicResource PageDescriptionText}\"",
-                     "Style=\"{DynamicResource PrimaryActionButton}\"",
                  })
         {
             Ensure(petXaml.Contains(sharedStyle, StringComparison.Ordinal),
@@ -152,14 +151,26 @@ internal static partial class TestSuite
                petXaml.Contains("x:Key=\"PetSecondaryButton\"", StringComparison.Ordinal) &&
                petXaml.Contains("x:Key=\"PetAccentToolButton\"", StringComparison.Ordinal) &&
                petXaml.Contains("x:Key=\"PetDangerToolButton\"", StringComparison.Ordinal) &&
-               petXaml.Contains("<Setter Property=\"Height\" Value=\"34\"", StringComparison.Ordinal) &&
+               petXaml.Contains("x:Key=\"PetPrimaryButton\"", StringComparison.Ordinal) &&
+               petXaml.Contains("<Setter Property=\"Height\" Value=\"36\"", StringComparison.Ordinal) &&
+               petXaml.Contains("<Setter Property=\"MaxWidth\" Value=\"220\"", StringComparison.Ordinal) &&
                petXaml.Contains("<Setter TargetName=\"ToolSurface\" Property=\"Opacity\" Value=\"0.58\"", StringComparison.Ordinal) &&
+               petXaml.Contains("Height=\"{Binding ActualHeight, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ScrollViewer}}}\"", StringComparison.Ordinal) &&
+               petXaml.Contains("MaxHeight=\"690\"", StringComparison.Ordinal) &&
                petXaml.Contains("Text=\"预览动作\"", StringComparison.Ordinal) &&
                !petXaml.Contains("只解码当前选择", StringComparison.Ordinal) &&
                !petXaml.Contains("TextTrimming=\"CharacterEllipsis\"", StringComparison.Ordinal) &&
                petViewSource.Contains("FormatLicenseSummary", StringComparison.Ordinal) &&
                petViewSource.Contains("保留所有权利", StringComparison.Ordinal),
             "Pet controls must share one clear button system and metadata must remain fully readable in Chinese.");
+        Ensure(petViewSource.Contains("e.NewSize.Width < 720", StringComparison.Ordinal) &&
+               petViewSource.Contains("e.NewSize.Width < 1100", StringComparison.Ordinal) &&
+               petViewSource.Contains("new GridLength(2, GridUnitType.Star)", StringComparison.Ordinal) &&
+               petViewSource.Contains("new GridLength(3, GridUnitType.Star)", StringComparison.Ordinal) &&
+               petViewSource.Contains("WorkspaceSurface_SizeChanged", StringComparison.Ordinal) &&
+               petViewSource.Contains("UpdatePreviewStageBounds", StringComparison.Ordinal) &&
+               !petViewSource.Contains("Grid.SetRow(ControlPanelHost, 1)", StringComparison.Ordinal),
+            "Pet layout must remain a height-bound two-column console from narrow through wide desktop viewports.");
         Ensure(decoderSource.Contains("GifBitmapDecoder", StringComparison.Ordinal) &&
                decoderSource.Contains("MaximumRetainedDecodedBytes = 24L * 1024 * 1024", StringComparison.Ordinal) &&
                decoderSource.Contains("CalculateTargetSize", StringComparison.Ordinal) &&
@@ -195,6 +206,18 @@ internal static partial class TestSuite
                petServiceSource.Contains("有效格", StringComparison.Ordinal) &&
                snapshotSource.Contains(
                    "new Size(1600, 900)",
+                   StringComparison.Ordinal) &&
+               snapshotSource.Contains(
+                   "new Size(1366, 768)",
+                   StringComparison.Ordinal) &&
+               snapshotSource.Contains(
+                   "new Size(1266, 813)",
+                   StringComparison.Ordinal) &&
+               snapshotSource.Contains(
+                   "new Size(900, 720)",
+                   StringComparison.Ordinal) &&
+               snapshotSource.Contains(
+                   "ComputedVerticalScrollBarVisibility == Visibility.Collapsed",
                    StringComparison.Ordinal) &&
                snapshotSource.Contains(
                    "\"showcase\"",
@@ -542,44 +565,67 @@ internal static partial class TestSuite
                     Background = Brushes.Transparent,
                 };
 
-                ArrangePetCenter(host, 1040, 760);
-                var previewWideOrigin = view.PreviewStage
-                    .TransformToAncestor(view.WorkspaceGrid)
-                    .Transform(new Point());
-                Ensure(Grid.GetColumn(view.PreviewStage) == 0 &&
-                       Grid.GetRow(view.PreviewStage) == 0 &&
-                       Grid.GetColumn(view.ControlPanelHost) == 2 &&
-                       Grid.GetRow(view.ControlPanelHost) == 0 &&
-                       Grid.GetRowSpan(view.ControlPanelHost) == 1 &&
-                       Grid.GetRow(view.ActionSelector) == 4 &&
-                       previewWideOrigin.X >= 0 &&
-                       view.PreviewStage.ActualWidth >= view.WorkspaceGrid.ActualWidth * 0.54 &&
-                       host.ScrollableWidth <= 0.5,
-                    "The wide workspace must devote most width to the live stage and use the remaining column for one complete control surface.");
-
-                ArrangePetCenter(host, 680, 720);
-                Ensure(Grid.GetColumn(view.PreviewStage) == 0 &&
-                       Grid.GetRow(view.PreviewStage) == 0 &&
-                       Grid.GetColumn(view.ControlPanelHost) == 0 &&
-                       Grid.GetRow(view.ControlPanelHost) == 1 &&
-                       Grid.GetRow(view.ActionSelector) == 4 &&
-                       host.ScrollableWidth <= 0.5 &&
-                       view.ActualWidth <= host.ViewportWidth + 0.5,
-                    "The compact workspace must show the live stage first, then status/actions, and wrap every selector without horizontal overflow.");
-                var primaryActionOrigin = view.PrimaryActionButton
-                    .TransformToAncestor(host)
-                    .Transform(new Point());
+                var viewportProfiles = new (string Name, double Width, double Height)[]
+                {
+                    ("1600x900 content", 1310, 853),
+                    ("1366x768 content", 1076, 721),
+                    ("1266x813 content", 976, 766),
+                    ("900x720 content", 610, 673),
+                };
+                foreach (var profile in viewportProfiles)
+                {
+                    ArrangePetCenter(host, profile.Width, profile.Height);
+                    var previewButtons = view.DailyActionsPanel.Children.OfType<ToggleButton>()
+                        .Concat(view.TaskActionsPanel.Children.OfType<ToggleButton>())
+                        .Concat(view.ViewActionsPanel.Children.OfType<ToggleButton>())
+                        .ToArray();
+                    var themeViewButton = FindPetButton(view, "查看");
+                    var themeApplyButton = FindPetButton(view, "应用");
+                    var visibleEssentials = new FrameworkElement[]
+                    {
+                        view.PreviewStage,
+                        view.InstallationStatusTitle,
+                        view.PrimaryActionButton,
+                        view.CopyCommandButton,
+                        view.AcknowledgeSelectionButton,
+                        view.ActivationGuidePanel,
+                        view.ActionSelector,
+                        themeViewButton,
+                        themeApplyButton,
+                        view.ProductVersionText,
+                        view.ProtocolText,
+                        view.AuthorLicenseText,
+                        view.InstallLocationText,
+                        view.RefreshButton,
+                        view.RestoreBackupButton,
+                        view.UninstallButton,
+                    };
+                    Ensure(Grid.GetColumn(view.PreviewStage) == 0 &&
+                           Grid.GetRow(view.PreviewStage) == 0 &&
+                           Grid.GetColumn(view.ControlPanelHost) == 2 &&
+                           Grid.GetRow(view.ControlPanelHost) == 0 &&
+                           Grid.GetRowSpan(view.ControlPanelHost) == 1 &&
+                           Grid.GetRow(view.ActionSelector) == 4 &&
+                           view.PreviewStage.ActualWidth >= view.WorkspaceGrid.ActualWidth * 0.32 &&
+                           view.WorkspaceSurface.ActualHeight <= 690.5 &&
+                           host.ScrollableWidth <= 0.5 &&
+                           host.ScrollableHeight <= 0.5 &&
+                           host.ComputedVerticalScrollBarVisibility == Visibility.Collapsed &&
+                           view.ActualWidth <= host.ViewportWidth + 0.5 &&
+                           view.ActualHeight <= host.ViewportHeight + 0.5 &&
+                           previewButtons.Length == 11 &&
+                           previewButtons.All(button => button.ActualWidth > 0 && button.ActualHeight >= 24) &&
+                           visibleEssentials.All(element => IsInsidePetViewport(element, host)),
+                        $"The {profile.Name} pet console must keep preview, 11 actions, metadata, theme, and management controls in one viewport without scrolling.");
+                }
                 Ensure(copyButton.ActualWidth > 0 &&
-                       copyButton.ActualHeight >= 34 &&
-                       view.PrimaryActionButton.ActualWidth > 0 &&
-                       view.PrimaryActionButton.ActualHeight >= 40 &&
-                       view.RefreshButton.ActualHeight >= 32 &&
-                       view.RestoreBackupButton.ActualHeight >= 32 &&
-                       view.UninstallButton.ActualHeight >= 32 &&
-                       primaryActionOrigin.Y >= 0 &&
-                       primaryActionOrigin.Y + view.PrimaryActionButton.ActualHeight <=
-                       host.ViewportHeight + 0.5,
-                    "All pet actions must retain consistent hit targets and the single primary action must stay in the first compact viewport.");
+                       copyButton.ActualHeight >= 30 &&
+                       view.PrimaryActionButton.ActualWidth is >= 120 and <= 220 &&
+                       view.PrimaryActionButton.ActualHeight is >= 34 and <= 36 &&
+                       view.RefreshButton.ActualHeight >= 29 &&
+                       view.RestoreBackupButton.ActualHeight >= 29 &&
+                       view.UninstallButton.ActualHeight >= 29,
+                    "The one-screen console must use a compact primary action and consistent always-visible tools.");
 
                 var highDpiBitmap = new RenderTargetBitmap(
                     (int)Math.Ceiling(view.ActualWidth * 2),
@@ -793,6 +839,10 @@ internal static partial class TestSuite
     {
         host.Width = width;
         host.Height = height;
+        if (host.Content is FrameworkElement content)
+        {
+            content.SetCurrentValue(FrameworkElement.HeightProperty, height);
+        }
         var size = new Size(width, height);
         for (var pass = 0; pass < 3; pass++)
         {
@@ -800,6 +850,22 @@ internal static partial class TestSuite
             host.Arrange(new Rect(size));
             host.UpdateLayout();
         }
+    }
+
+    private static bool IsInsidePetViewport(FrameworkElement element, ScrollViewer host)
+    {
+        if (element.Visibility != Visibility.Visible ||
+            element.ActualWidth <= 0 ||
+            element.ActualHeight <= 0)
+        {
+            return false;
+        }
+
+        var origin = element.TransformToAncestor(host).Transform(new Point());
+        return origin.X >= -0.5 &&
+               origin.Y >= -0.5 &&
+               origin.X + element.ActualWidth <= host.ViewportWidth + 0.5 &&
+               origin.Y + element.ActualHeight <= host.ViewportHeight + 0.5;
     }
 
     private static Button FindPetButton(DependencyObject root, string content)

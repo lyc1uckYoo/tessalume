@@ -185,59 +185,69 @@ public partial class PetCenterView : UserControl, IDisposable
 
     private void PetCenterView_SizeChanged(object sender, SizeChangedEventArgs e)
     {
-        var compact = e.NewSize.Width > 0 && e.NewSize.Width < 900;
-        if (compact)
+        if (!double.IsFinite(e.NewSize.Width) || e.NewSize.Width <= 0)
         {
-            WorkspaceLeftColumn.Width = new GridLength(1, GridUnitType.Star);
-            WorkspaceGapColumn.Width = new GridLength(0);
-            WorkspaceRightColumn.Width = new GridLength(0);
-            Grid.SetColumn(PreviewStage, 0);
-            Grid.SetRow(PreviewStage, 0);
-            Grid.SetColumn(ControlPanelHost, 0);
-            Grid.SetRow(ControlPanelHost, 1);
-            Grid.SetRowSpan(ControlPanelHost, 1);
-            ControlPanelHost.Margin = new Thickness(0, 12, 0, 0);
-            ControlPanelHost.Padding = new Thickness(0, 12, 0, 0);
-            ControlPanelHost.BorderThickness = new Thickness(0, 1, 0, 0);
-            ControlPanelHost.MinHeight = 0;
-            ActionSelector.Margin = new Thickness(20, 15, 0, 0);
-            WorkspaceSurface.MinHeight = 0;
-            WorkspaceSurface.Margin = new Thickness(0, 12, 0, 0);
-            WorkspaceSurface.Padding = new Thickness(12);
-            PreviewStage.MinHeight = 300;
-            PreviewStage.Padding = new Thickness(14);
-            PreviewImageHost.MinHeight = 0;
-            PreviewImageHost.Height = 232;
-            PetPreviewImage.MaxWidth = 360;
-            PetPreviewImage.MaxHeight = 220;
-            _previewPlayer.SetDisplayBounds(Math.Max(240, e.NewSize.Width - 72), 220);
+            return;
         }
-        else
+
+        var narrow = e.NewSize.Width < 720;
+        var medium = !narrow && e.NewSize.Width < 1100;
+        WorkspaceLeftColumn.Width = narrow
+            ? new GridLength(2, GridUnitType.Star)
+            : medium
+                ? new GridLength(1.05, GridUnitType.Star)
+                : new GridLength(1.15, GridUnitType.Star);
+        WorkspaceGapColumn.Width = new GridLength(narrow ? 12 : medium ? 14 : 18);
+        WorkspaceRightColumn.Width = narrow
+            ? new GridLength(3, GridUnitType.Star)
+            : new GridLength(1, GridUnitType.Star);
+        Grid.SetColumn(PreviewStage, 0);
+        Grid.SetRow(PreviewStage, 0);
+        Grid.SetColumn(ControlPanelHost, 2);
+        Grid.SetRow(ControlPanelHost, 0);
+        Grid.SetRowSpan(ControlPanelHost, 1);
+        ControlPanelHost.Margin = new Thickness(0);
+        ControlPanelHost.Padding = new Thickness(narrow ? 10 : medium ? 12 : 14, 0, 0, 0);
+        ControlPanelHost.BorderThickness = new Thickness(1, 0, 0, 0);
+        ControlPanelHost.MinHeight = 0;
+        WorkspaceSurface.MinHeight = 0;
+        WorkspaceSurface.MaxHeight = 690;
+        WorkspaceSurface.Margin = new Thickness(0, 8, 0, 0);
+        WorkspaceSurface.Padding = new Thickness(narrow ? 9 : medium ? 10 : 12);
+        PreviewStage.MinHeight = 0;
+        PreviewStage.Padding = new Thickness(narrow ? 9 : medium ? 10 : 12);
+        UpdatePreviewStageBounds();
+    }
+
+    private void WorkspaceSurface_SizeChanged(object sender, SizeChangedEventArgs e) =>
+        UpdatePreviewStageBounds();
+
+    private void UpdatePreviewStageBounds()
+    {
+        if (_disposed)
         {
-            WorkspaceLeftColumn.Width = new GridLength(3, GridUnitType.Star);
-            WorkspaceGapColumn.Width = new GridLength(24);
-            WorkspaceRightColumn.Width = new GridLength(2, GridUnitType.Star);
-            Grid.SetColumn(PreviewStage, 0);
-            Grid.SetRow(PreviewStage, 0);
-            Grid.SetColumn(ControlPanelHost, 2);
-            Grid.SetRow(ControlPanelHost, 0);
-            Grid.SetRowSpan(ControlPanelHost, 1);
-            ControlPanelHost.Margin = new Thickness(0);
-            ControlPanelHost.Padding = new Thickness(22, 0, 0, 0);
-            ControlPanelHost.BorderThickness = new Thickness(1, 0, 0, 0);
-            ControlPanelHost.MinHeight = 0;
-            ActionSelector.Margin = new Thickness(20, 17, 0, 0);
-            WorkspaceSurface.MinHeight = 680;
-            WorkspaceSurface.Margin = new Thickness(0, 18, 0, 0);
-            WorkspaceSurface.Padding = new Thickness(22);
-            PreviewStage.MinHeight = 650;
-            PreviewStage.Padding = new Thickness(18);
-            PreviewImageHost.MinHeight = 520;
-            PreviewImageHost.Height = double.NaN;
-            PetPreviewImage.MaxWidth = 620;
-            PetPreviewImage.MaxHeight = 560;
-            _previewPlayer.SetDisplayBounds(Math.Max(420, e.NewSize.Width * 0.58 - 80), 560);
+            return;
         }
+
+        var stageWidth = PreviewStage.ActualWidth > 0
+            ? PreviewStage.ActualWidth
+            : Math.Max(200, WorkspaceSurface.ActualWidth * 0.45);
+        var surfaceHeight = WorkspaceSurface.ActualHeight > 0
+            ? WorkspaceSurface.ActualHeight
+            : 600;
+        var hostWidth = Math.Max(170, stageWidth - PreviewStage.Padding.Left -
+            PreviewStage.Padding.Right - 8);
+        var heightBudget = Math.Max(200, surfaceHeight - WorkspaceSurface.Padding.Top -
+            WorkspaceSurface.Padding.Bottom - PreviewStage.Padding.Top -
+            PreviewStage.Padding.Bottom - 42);
+        var hostHeight = Math.Clamp(Math.Min(heightBudget, hostWidth * 1.08), 190, 580);
+        PreviewImageHost.MinHeight = 0;
+        PreviewImageHost.Height = hostHeight;
+        PetPreviewImage.MaxWidth = Math.Max(150, hostWidth - 8);
+        PetPreviewImage.MaxHeight = Math.Max(170, hostHeight - 8);
+        _previewPlayer.SetDisplayBounds(
+            Math.Max(150, hostWidth - 8),
+            Math.Max(170, hostHeight - 8));
     }
 
     public void Dispose()
