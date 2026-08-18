@@ -9,6 +9,7 @@ public partial class MainWindow
     {
         _currentRoute = AppRoute.ThemeLibrary;
         SetArtworkConnectionMonitoring(false);
+        _petGalleryService?.SetWatching(false);
         PetCenterPage.SetPageActive(false);
         ThemeLibraryPage.Visibility = Visibility.Visible;
         InfoPage.Visibility = Visibility.Collapsed;
@@ -31,6 +32,7 @@ public partial class MainWindow
             _ => 940,
         };
         SetArtworkConnectionMonitoring(route == AppRoute.ArtworkStudio);
+        _petGalleryService?.SetWatching(route == AppRoute.Pets);
         var isPersonalization = route is AppRoute.ArtworkStudio or AppRoute.DisplayPreferences;
         ThemeLibraryPage.Visibility = Visibility.Collapsed;
         InfoPage.Visibility = Visibility.Visible;

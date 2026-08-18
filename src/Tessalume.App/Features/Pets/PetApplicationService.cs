@@ -14,6 +14,7 @@ internal sealed class PetApplicationService : IDisposable
     private readonly PetPackageLoader _loader = new();
     private readonly PetInstaller _installer;
     private readonly object _lifetimeGate = new();
+    private PetGalleryEntry? _selectedEntry;
     private PetPackage? _lastPackage;
     private TaskCompletionSource? _operationsDrained;
     private int _activeOperations;
@@ -40,6 +41,22 @@ internal sealed class PetApplicationService : IDisposable
     }
 
     public string CodexPetsRoot => _options.CodexPetsRoot;
+
+    public string CurrentPetId => _selectedEntry?.PetId ?? _lastPackage?.Manifest.Id ?? BuiltInPetId;
+
+    public string CurrentPetDisplayName =>
+        _selectedEntry?.DisplayName ?? _lastPackage?.Manifest.DisplayName ?? "飞行雪绒";
+
+    public string CurrentRecommendedThemeId =>
+        _selectedEntry?.RecommendedThemeId ?? RecommendedThemeId;
+
+    public void SelectEntry(PetGalleryEntry entry)
+    {
+        ArgumentNullException.ThrowIfNull(entry);
+        ThrowIfDisposed();
+        _selectedEntry = entry;
+        _lastPackage = entry.Package;
+    }
 
     public Task<PetCenterPresentationState> RefreshAsync(
         CancellationToken cancellationToken = default) =>
@@ -114,7 +131,13 @@ internal sealed class PetApplicationService : IDisposable
     private async Task<PetCenterPresentationState> RefreshCoreAsync(
         CancellationToken cancellationToken)
     {
-        var package = await LoadBuiltInPackageAsync(cancellationToken);
+        if (_selectedEntry is { IsDevelopment: true } developmentEntry)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            return CreateDevelopmentState(developmentEntry);
+        }
+
+        var package = await LoadSelectedPackageAsync(cancellationToken);
         var snapshot = await _installer.InspectAsync(package, cancellationToken);
         return await BuildPresentationStateAsync(package, snapshot, cancellationToken);
     }
@@ -123,7 +146,7 @@ internal sealed class PetApplicationService : IDisposable
         PetInstallIntent intent,
         CancellationToken cancellationToken)
     {
-        var package = await LoadBuiltInPackageAsync(cancellationToken);
+        var package = await LoadSelectedPackageAsync(cancellationToken);
         var result = await _installer.InstallAsync(package, intent, cancellationToken);
         return await BuildPresentationStateAsync(package, result.Snapshot, cancellationToken);
     }
@@ -132,7 +155,7 @@ internal sealed class PetApplicationService : IDisposable
         PetUninstallIntent intent,
         CancellationToken cancellationToken)
     {
-        var package = await LoadBuiltInPackageAsync(cancellationToken);
+        var package = await LoadSelectedPackageAsync(cancellationToken);
         var result = await _installer.UninstallAsync(package, intent, cancellationToken);
         return await BuildPresentationStateAsync(package, result.Snapshot, cancellationToken);
     }
@@ -140,7 +163,7 @@ internal sealed class PetApplicationService : IDisposable
     private async Task<PetCenterPresentationState> AcknowledgeCodexSelectionCoreAsync(
         CancellationToken cancellationToken)
     {
-        var package = await LoadBuiltInPackageAsync(cancellationToken);
+        var package = await LoadSelectedPackageAsync(cancellationToken);
         var snapshot = await _installer.MarkCodexSelectionAcknowledgedAsync(
             package,
             cancellationToken);
@@ -150,10 +173,10 @@ internal sealed class PetApplicationService : IDisposable
     private async Task<PetCenterPresentationState> RestoreLatestBackupCoreAsync(
         CancellationToken cancellationToken)
     {
-        var package = await LoadBuiltInPackageAsync(cancellationToken);
+        var package = await LoadSelectedPackageAsync(cancellationToken);
         var backups = await _installer.GetBackupsAsync(package.Manifest.Id, cancellationToken);
         var latest = backups.Count == 0
-            ? throw new InvalidOperationException("没有可恢复的飞行雪绒备份。")
+            ? throw new InvalidOperationException($"没有可恢复的{package.Manifest.DisplayName}备份。")
             : backups[0];
         await _installer.RestoreBackupAsync(latest.BackupId, confirmed: true, cancellationToken);
         var snapshot = await _installer.InspectAsync(package, cancellationToken);
@@ -163,7 +186,7 @@ internal sealed class PetApplicationService : IDisposable
     private async Task<PetCenterPresentationState> RecoverManagementStateCoreAsync(
         CancellationToken cancellationToken)
     {
-        var package = await LoadBuiltInPackageAsync(cancellationToken);
+        var package = await LoadSelectedPackageAsync(cancellationToken);
         await _installer.RecoverManagementStateAsync(
             confirmed: true,
             cancellationToken);
@@ -182,14 +205,14 @@ internal sealed class PetApplicationService : IDisposable
         CancellationToken cancellationToken)
     {
         return await _installer.TryMarkCompanionSuggestionShownAsync(
-            BuiltInPetId,
+            CurrentPetId,
             cancellationToken);
     }
 
     public PetCenterPresentationState CreateLoadingState(
         PetCenterPresentationState? previous = null,
         string detail = "正在校验本地宠物文件与安装状态…") =>
-        (previous ?? CreatePackageOnlyState(_lastPackage)) with
+        (previous ?? CreateCurrentSourceState()) with
         {
             Status = PetCenterStatus.Loading,
             StatusTitle = "正在检查",
@@ -216,7 +239,7 @@ internal sealed class PetApplicationService : IDisposable
     public PetCenterPresentationState CreateErrorState(Exception exception)
     {
         ArgumentNullException.ThrowIfNull(exception);
-        return CreatePackageOnlyState(_lastPackage) with
+        return CreateCurrentSourceState() with
         {
             Status = PetCenterStatus.Error,
             StatusTitle = "无法完成检查",
@@ -227,12 +250,18 @@ internal sealed class PetApplicationService : IDisposable
         };
     }
 
-    private async Task<PetPackage> LoadBuiltInPackageAsync(CancellationToken cancellationToken)
+    private async Task<PetPackage> LoadSelectedPackageAsync(CancellationToken cancellationToken)
     {
         ThrowIfDisposed();
         cancellationToken.ThrowIfCancellationRequested();
+        if (_selectedEntry is { IsDevelopment: true })
+        {
+            throw new InvalidOperationException("开发预览不会连接正式宠物安装器。");
+        }
+
         BuiltInAssetInstaller.EnsurePetsInstalled(_layout);
-        var packageRoot = Path.Combine(_layout.PetsDirectory, BuiltInPetId);
+        var packageRoot = _selectedEntry?.Package?.RootDirectory ??
+            Path.Combine(_layout.PetsDirectory, BuiltInPetId);
         var result = await _loader.LoadAsync(packageRoot, cancellationToken);
         if (result.Package is null || !result.Validation.IsValid)
         {
@@ -242,8 +271,8 @@ internal sealed class PetApplicationService : IDisposable
                 .Take(3)
                 .ToArray();
             throw new InvalidDataException(messages.Length == 0
-                ? "内置飞行雪绒宠物包不可用。"
-                : $"内置飞行雪绒宠物包校验失败：{string.Join("；", messages)}");
+                ? "所选正式宠物包不可用。"
+                : $"所选正式宠物包校验失败：{string.Join("；", messages)}");
         }
 
         _lastPackage = result.Package;
@@ -256,7 +285,7 @@ internal sealed class PetApplicationService : IDisposable
         CancellationToken cancellationToken)
     {
         var backups = await _installer.GetBackupsAsync(package.Manifest.Id, cancellationToken);
-        var primary = GetPrimaryAction(snapshot);
+        var primary = GetPrimaryAction(snapshot, package.Manifest.DisplayName);
         var latestBackup = backups.Count == 0 ? null : backups[0];
         return CreatePackageOnlyState(package) with
         {
@@ -295,6 +324,10 @@ internal sealed class PetApplicationService : IDisposable
             .Sum(state => state.Frames);
         return new PetCenterPresentationState
         {
+            PetId = package.Manifest.Id,
+            DisplayName = package.Manifest.DisplayName,
+            Description = package.Manifest.Description,
+            SourceBadge = "官方宠物",
             ProductVersion = catalog.ProductVersion,
             ProtocolSummary =
                 $"图集协议 v{catalog.Protocol.SpriteVersionNumber} · " +
@@ -303,27 +336,84 @@ internal sealed class PetApplicationService : IDisposable
             Author = catalog.Author.Name,
             LicenseSummary = catalog.License.Name ?? catalog.License.Spdx ?? catalog.License.Kind,
             InstallLocation = _options.CodexPetsRoot,
-            PreviewFrames = package.PreviewFiles
-                .Select(preview => new PetPreviewFrame(
-                    preview.Metadata.ActionKey,
-                    preview.Metadata.Label ?? preview.Metadata.ActionKey,
-                    preview.FullPath,
-                    preview.Metadata.Kind,
-                    preview.GifInfo.FrameCount,
-                    preview.GifInfo.Width,
-                    preview.GifInfo.Height,
-                    preview.Metadata.RepresentativeFrame))
-                .ToArray(),
+            RecommendedThemeId = catalog.RecommendedThemeIds.Count == 0
+                ? string.Empty
+                : catalog.RecommendedThemeIds[0],
+            RecommendedThemeName = GetRecommendedThemeName(catalog.RecommendedThemeIds),
+            HasRecommendedTheme = catalog.RecommendedThemeIds.Count > 0,
+            PreviewFrames = _selectedEntry is { IsDevelopment: false } selected &&
+                string.Equals(selected.PetId, package.Manifest.Id, StringComparison.Ordinal)
+                    ? selected.PreviewFrames
+                    : package.PreviewFiles
+                        .Select(preview => new PetPreviewFrame(
+                            preview.Metadata.ActionKey,
+                            preview.Metadata.Label ?? preview.Metadata.ActionKey,
+                            preview.FullPath,
+                            preview.Metadata.Kind,
+                            preview.GifInfo.FrameCount,
+                            preview.GifInfo.Width,
+                            preview.GifInfo.Height,
+                            preview.Metadata.RepresentativeFrame,
+                            package.Catalog.Files.First(file => string.Equals(
+                                file.Path,
+                                preview.Metadata.Path,
+                                StringComparison.OrdinalIgnoreCase)).Sha256))
+                        .ToArray(),
         };
     }
 
+    private PetCenterPresentationState CreateCurrentSourceState() =>
+        _selectedEntry is { IsDevelopment: true } development
+            ? CreateDevelopmentState(development)
+            : CreatePackageOnlyState(_lastPackage ?? _selectedEntry?.Package);
+
+    private static PetCenterPresentationState CreateDevelopmentState(PetGalleryEntry entry) =>
+        new()
+        {
+            PetId = entry.PetId,
+            DisplayName = entry.DisplayName,
+            Description = entry.Description,
+            SourceBadge = entry.SourceBadge,
+            IsDevelopmentPreview = true,
+            ShowPrimaryAction = false,
+            ShowInstallationManagement = false,
+            Status = PetCenterStatus.DevelopmentPreview,
+            StatusTitle = entry.UsesLastGoodPreview ? "等待新候选稳定" : "实时监看中",
+            StatusDetail = entry.HealthMessage,
+            ProductVersion = $"{entry.Version} · 草稿",
+            ProtocolSummary = entry.ProtocolSummary,
+            Author = entry.Author,
+            LicenseSummary = entry.LicenseSummary,
+            InstallLocation = entry.RootDirectory,
+            LocationLabel = "项目位置",
+            PrimaryAction = PetCenterAction.Refresh,
+            PrimaryActionText = "刷新预览",
+            PrimaryActionEnabled = false,
+            RecommendedThemeId = entry.RecommendedThemeId,
+            RecommendedThemeName = entry.RecommendedThemeName,
+            HasRecommendedTheme = !string.IsNullOrWhiteSpace(entry.RecommendedThemeId),
+            PreviewFrames = entry.PreviewFrames,
+        };
+
+    private static string GetRecommendedThemeName(IReadOnlyList<string> themeIds)
+    {
+        if (themeIds.Count == 0)
+        {
+            return string.Empty;
+        }
+        return string.Equals(themeIds[0], RecommendedThemeId, StringComparison.OrdinalIgnoreCase)
+            ? "爱弥斯 · 星海远航"
+            : themeIds[0];
+    }
+
     private static (PetCenterAction Action, string Label) GetPrimaryAction(
-        PetInstallationSnapshot snapshot) => !snapshot.StateIsValid
+        PetInstallationSnapshot snapshot,
+        string displayName) => !snapshot.StateIsValid
             ? (PetCenterAction.RecoverState, "归档并重建管理状态")
             : snapshot.Status switch
             {
                 PetInstallationStatus.NotInstalled =>
-                    (PetCenterAction.Install, "安装飞行雪绒"),
+                    (PetCenterAction.Install, $"安装{displayName}"),
                 PetInstallationStatus.Installed =>
                     (PetCenterAction.OpenCodex, "打开 Codex"),
                 PetInstallationStatus.InstalledAwaitingCodexSelection =>

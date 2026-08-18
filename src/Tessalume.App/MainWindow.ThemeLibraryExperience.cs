@@ -114,7 +114,7 @@ public partial class MainWindow
     {
         CloseThemeDetailPanel();
         NavigateTo(Features.Navigation.AppRoute.Pets);
-        await RefreshPetCenterAsync();
+        await OpenRecommendedCompanionPetAsync();
     }
 
     private void CloseThemeDetailPanel()

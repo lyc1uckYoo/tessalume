@@ -11,21 +11,33 @@ namespace Tessalume.App;
 public partial class MainWindow
 {
     private readonly PetApplicationServiceOptions? _petOptions;
+    private readonly PetGalleryServiceOptions? _petGalleryOptions;
     private readonly CancellationTokenSource _petCancellation = new();
     private PetApplicationService? _petApplicationService;
+    private PetGalleryService? _petGalleryService;
+    private PetGallerySnapshot? _petGallerySnapshot;
+    private PetGalleryEntry? _selectedPetEntry;
     private PetCenterPresentationState? _petCenterState;
     private bool _petOperationInProgress;
 
     private PetApplicationService PetService => _petApplicationService
-        ?? throw new InvalidOperationException("Codex 宠物中心尚未初始化。");
+        ?? throw new InvalidOperationException("Codex 宠物画廊尚未初始化。");
+
+    private PetGalleryService PetGalleryService => _petGalleryService
+        ?? throw new InvalidOperationException("Codex 宠物画廊尚未初始化。");
 
     private void InitializePetCenterFeature()
     {
         _petApplicationService = new PetApplicationService(
             _layout,
             _petOptions ?? PetApplicationServiceOptions.ForCurrentUser(_layout.DataDirectory));
-        _petCenterState = PetService.CreateLoadingState();
-        PetCenterPage.Render(_petCenterState);
+        _petGalleryService = new PetGalleryService(_layout, _petGalleryOptions);
+        _petGalleryService.DevelopmentProjectsChanged +=
+            PetGalleryService_DevelopmentProjectsChanged;
+        PetCenterPage.ShowGalleryLoading();
+        PetCenterPage.PetRequested += PetCenterPage_PetRequested;
+        PetCenterPage.GalleryRefreshRequested += PetCenterPage_GalleryRefreshRequested;
+        PetCenterPage.BackToGalleryRequested += PetCenterPage_BackToGalleryRequested;
         PetCenterPage.RefreshRequested += PetCenterPage_RefreshRequested;
         PetCenterPage.PrimaryActionRequested += PetCenterPage_PrimaryActionRequested;
         PetCenterPage.OpenCodexRequested += PetCenterPage_OpenCodexRequested;
@@ -40,7 +52,142 @@ public partial class MainWindow
     private async void Pets_Click(object sender, RoutedEventArgs e)
     {
         NavigateTo(Features.Navigation.AppRoute.Pets);
+        PetCenterPage.ShowGallery();
+        await RefreshPetGalleryAsync(showGallery: true);
+    }
+
+    private async void PetCenterPage_PetRequested(object? sender, PetGalleryEntry entry)
+    {
+        await OpenPetGalleryEntryAsync(entry);
+    }
+
+    private async Task OpenPetGalleryEntryAsync(PetGalleryEntry entry)
+    {
+        if (_petOperationInProgress || !entry.CanOpen)
+        {
+            return;
+        }
+
+        _selectedPetEntry = entry;
+        PetService.SelectEntry(entry);
+        _petCenterState = null;
+        RenderPetState(PetService.CreateLoadingState(
+            detail: entry.IsDevelopment
+                ? "正在读取 Codex 最新生成的动作候选…"
+                : "正在校验正式宠物包与安装状态…"));
         await RefreshPetCenterAsync();
+    }
+
+    private async Task OpenRecommendedCompanionPetAsync()
+    {
+        PetCenterPage.ShowGallery();
+        await RefreshPetGalleryAsync(showGallery: true);
+        var officialEntry = _petGallerySnapshot?.OfficialEntries.FirstOrDefault(entry =>
+            string.Equals(
+                entry.PetId,
+                PetApplicationService.BuiltInPetId,
+                StringComparison.OrdinalIgnoreCase));
+        if (officialEntry is not null)
+        {
+            await OpenPetGalleryEntryAsync(officialEntry);
+        }
+    }
+
+    private async void PetCenterPage_GalleryRefreshRequested(object? sender, EventArgs e) =>
+        await RefreshPetGalleryAsync(showGallery: true);
+
+    private void PetCenterPage_BackToGalleryRequested(object? sender, EventArgs e)
+    {
+        _selectedPetEntry = null;
+        _petCenterState = null;
+        SetStatus("宠物画廊：选择一个角色伙伴查看完整动作");
+        InfoScroll.ScrollToTop();
+    }
+
+    private async Task RefreshPetGalleryAsync(bool showGallery)
+    {
+        if (_petOperationInProgress)
+        {
+            return;
+        }
+
+        _petOperationInProgress = true;
+        if (showGallery)
+        {
+            PetCenterPage.ShowGalleryLoading();
+        }
+        try
+        {
+            var snapshot = await Task.Run(
+                () => PetGalleryService.ScanAsync(_petCancellation.Token),
+                CancellationToken.None);
+            _petGallerySnapshot = snapshot;
+            if (showGallery)
+            {
+                PetCenterPage.RenderGallery(snapshot);
+                InfoScroll.ScrollToTop();
+            }
+            else
+            {
+                PetCenterPage.UpdateGalleryData(snapshot);
+            }
+            SetStatus($"宠物画廊：{snapshot.Entries.Count} 个角色伙伴");
+        }
+        catch (OperationCanceledException) when (_petCancellation.IsCancellationRequested)
+        {
+        }
+        catch (Exception exception) when (
+            exception is IOException or UnauthorizedAccessException or InvalidDataException or
+            InvalidOperationException or ArgumentException or NotSupportedException)
+        {
+            LocalLog.Write("Pet gallery refresh failed.", exception);
+            ShowProductMessage(
+                "无法刷新宠物画廊",
+                exception.Message,
+                ProductDialogKind.Error);
+        }
+        finally
+        {
+            _petOperationInProgress = false;
+        }
+    }
+
+    private void PetGalleryService_DevelopmentProjectsChanged(object? sender, EventArgs e)
+    {
+        if (_petCancellation.IsCancellationRequested || Dispatcher.HasShutdownStarted)
+        {
+            return;
+        }
+        _ = Dispatcher.InvokeAsync(RefreshDevelopmentPreviewAsync);
+    }
+
+    private async Task RefreshDevelopmentPreviewAsync()
+    {
+        if (_currentRoute != Features.Navigation.AppRoute.Pets || _petOperationInProgress)
+        {
+            return;
+        }
+
+        var selectedKey = _selectedPetEntry?.IsDevelopment == true
+            ? _selectedPetEntry.EntryKey
+            : null;
+        await RefreshPetGalleryAsync(showGallery: PetCenterPage.IsShowingGallery);
+        if (selectedKey is null || _petGallerySnapshot is null || PetCenterPage.IsShowingGallery)
+        {
+            return;
+        }
+
+        var refreshed = _petGallerySnapshot.Entries.FirstOrDefault(entry =>
+            string.Equals(entry.EntryKey, selectedKey, StringComparison.OrdinalIgnoreCase));
+        if (refreshed is null || !refreshed.CanOpen)
+        {
+            return;
+        }
+
+        _selectedPetEntry = refreshed;
+        PetService.SelectEntry(refreshed);
+        await RefreshPetCenterAsync();
+        ShowToast($"{refreshed.DisplayName}开发预览已刷新");
     }
 
     private async void PetCenterPage_RefreshRequested(object? sender, EventArgs e) =>
@@ -79,6 +226,8 @@ public partial class MainWindow
         object? sender,
         PetCenterAction action)
     {
+        var petName = PetService.CurrentPetDisplayName;
+        var petId = PetService.CurrentPetId;
         switch (action)
         {
             case PetCenterAction.Refresh:
@@ -89,11 +238,11 @@ public partial class MainWindow
                 {
                     await RunPetMutationAsync(
                         "正在安装",
-                        "正在 staging、校验并原子安装飞行雪绒…",
+                        $"正在 staging、校验并原子安装{petName}…",
                         cancellationToken => PetService.InstallAsync(
                             PetInstallIntent.Install,
                             cancellationToken),
-                        "飞行雪绒已安全安装，请在 Codex 的 Settings → Pets 中 Refresh 并选择它。");
+                        $"{petName}已安全安装，请在 Codex 的 Settings → Pets 中 Refresh 并选择它。");
                 }
                 break;
             case PetCenterAction.OpenCodex:
@@ -101,7 +250,7 @@ public partial class MainWindow
                 break;
             case PetCenterAction.Update:
                 if (ShowProductConfirmation(
-                        "更新飞行雪绒",
+                        $"更新{petName}",
                         "更新前会完整备份当前受管目录；新版经过 staging 和 SHA-256 校验后才会原子替换。不会修改其他宠物。",
                         "备份并更新") &&
                     await EnsurePetInformationDisclosureAsync())
@@ -112,12 +261,12 @@ public partial class MainWindow
                         cancellationToken => PetService.InstallAsync(
                             PetInstallIntent.UpdateConfirmed,
                             cancellationToken),
-                        "飞行雪绒已更新；请在 Codex Pets 中 Refresh 后重新选择。");
+                        $"{petName}已更新；请在 Codex Pets 中 Refresh 后重新选择。");
                 }
                 break;
             case PetCenterAction.Repair:
                 if (ShowProductConfirmation(
-                        "修复飞行雪绒",
+                        $"修复{petName}",
                         "修复会先备份当前目录，再用内置包中完整校验的运行文件替换损坏内容。",
                         "备份并修复") &&
                     await EnsurePetInformationDisclosureAsync())
@@ -128,7 +277,7 @@ public partial class MainWindow
                         cancellationToken => PetService.InstallAsync(
                             PetInstallIntent.RepairConfirmed,
                             cancellationToken),
-                        "飞行雪绒文件已修复；请回到 Codex Pets 刷新。");
+                        $"{petName}文件已修复；请回到 Codex Pets 刷新。");
                 }
                 break;
             case PetCenterAction.RecoverState:
@@ -161,13 +310,13 @@ public partial class MainWindow
                         cancellationToken => PetService.InstallAsync(
                             PetInstallIntent.ReplaceConfirmed,
                             cancellationToken),
-                        "已保留原内容备份，并重新安装飞行雪绒。");
+                        $"已保留原内容备份，并重新安装{petName}。");
                 }
                 break;
             case PetCenterAction.ExplainConflict:
                 if (ShowProductConfirmation(
                         "发现同 ID 宠物冲突",
-                        "一个或多个目录都声明了 flying-snowfluff。Tessalume 不会自行猜测；继续会先完整备份这些同 ID 目录，再归并为一个已校验的受管安装。",
+                        $"一个或多个目录都声明了 {petId}。Tessalume 不会自行猜测；继续会先完整备份这些同 ID 目录，再归并为一个已校验的受管安装。",
                         "全部备份并解决",
                         dangerous: true) &&
                     await EnsurePetInformationDisclosureAsync())
@@ -178,7 +327,7 @@ public partial class MainWindow
                         cancellationToken => PetService.InstallAsync(
                             PetInstallIntent.ReplaceConfirmed,
                             cancellationToken),
-                        "同 ID 目录已备份，飞行雪绒已建立唯一受管安装。");
+                        $"同 ID 目录已备份，{petName}已建立唯一受管安装。");
                 }
                 break;
         }
@@ -273,7 +422,7 @@ public partial class MainWindow
         try
         {
             await CodexPackageLauncher.OpenCodexAsync(_petCancellation.Token);
-            ShowToast("Codex 已打开：Settings → Pets → Refresh → 选择飞行雪绒 → 输入 /pet。");
+            ShowToast($"Codex 已打开：Settings → Pets → Refresh → 选择{PetService.CurrentPetDisplayName} → 输入 /pet。");
         }
         catch (OperationCanceledException) when (_petCancellation.IsCancellationRequested)
         {
@@ -298,9 +447,10 @@ public partial class MainWindow
 
         var requiresModifiedRemovalConfirmation = _petCenterState?.Status is
             PetCenterStatus.UnknownModification or PetCenterStatus.Damaged;
+        var petName = PetService.CurrentPetDisplayName;
         if (!await EnsurePetInformationDisclosureAsync() ||
             !ShowProductConfirmation(
-                "卸载飞行雪绒",
+                $"卸载{petName}",
                 requiresModifiedRemovalConfirmation
                     ? "受管文件已被修改、缺失或损坏。卸载前会完整备份目录；只移除 Tessalume 记录的受管文件，未知文件和其他宠物会保留。"
                     : "卸载前会创建可恢复备份；只移除 Tessalume 记录的受管文件，不会删除其他宠物。",
@@ -331,7 +481,7 @@ public partial class MainWindow
         if (!await EnsurePetInformationDisclosureAsync() ||
             !ShowProductConfirmation(
                 "恢复最近的宠物备份",
-                "恢复前会先为当前目标目录创建安全备份，再完整校验并恢复最近一次飞行雪绒备份；若目录已属于其他宠物 ID 会拒绝覆盖。",
+                $"恢复前会先为当前目标目录创建安全备份，再完整校验并恢复最近一次{PetService.CurrentPetDisplayName}备份；若目录已属于其他宠物 ID 会拒绝覆盖。",
                 "备份当前并恢复",
                 dangerous: true))
         {
@@ -342,7 +492,7 @@ public partial class MainWindow
             "正在恢复",
             "正在校验备份并原子恢复…",
             PetService.RestoreLatestBackupAsync,
-            "最近的飞行雪绒备份已恢复，请在 Codex Pets 中刷新。");
+            $"最近的{PetService.CurrentPetDisplayName}备份已恢复，请在 Codex Pets 中刷新。");
     }
 
     private async void PetCenterPage_SelectionAcknowledgementRequested(
@@ -361,17 +511,26 @@ public partial class MainWindow
 
     private void OpenRecommendedPetTheme()
     {
+        var recommendedThemeId = PetService.CurrentRecommendedThemeId;
+        if (string.IsNullOrWhiteSpace(recommendedThemeId))
+        {
+            ShowProductMessage(
+                "没有配套主题",
+                "这个宠物暂未声明配套主题。",
+                ProductDialogKind.Information);
+            return;
+        }
         _themeLibraryFilter = ThemeLibraryFilter.All;
         if (!string.IsNullOrEmpty(ThemeSearchBox.Text))
         {
             ThemeSearchBox.Clear();
         }
         ShowThemeLibraryPage();
-        ShowThemes(PetApplicationService.RecommendedThemeId);
+        ShowThemes(recommendedThemeId);
         if (_selectedTheme is null ||
             !string.Equals(
                 _selectedTheme.ThemeId,
-                PetApplicationService.RecommendedThemeId,
+                recommendedThemeId,
                 StringComparison.OrdinalIgnoreCase))
         {
             ShowProductMessage(
@@ -387,9 +546,10 @@ public partial class MainWindow
 
     private async void PetCenterPage_ApplyRecommendedThemeRequested(object? sender, EventArgs e)
     {
+        var recommendedThemeId = PetService.CurrentRecommendedThemeId;
         var theme = _themes.FirstOrDefault(candidate => string.Equals(
             candidate.ThemeId,
-            PetApplicationService.RecommendedThemeId,
+            recommendedThemeId,
             StringComparison.OrdinalIgnoreCase));
         if (theme is null || !theme.IsValid)
         {
@@ -417,7 +577,7 @@ public partial class MainWindow
         }
         if (await ApplyThemeAsync(theme))
         {
-            ShowToast("爱弥斯主题已应用；宠物安装状态没有被改变。");
+            ShowToast($"{theme.Name}已应用；宠物安装状态没有被改变。");
         }
     }
 
@@ -425,7 +585,7 @@ public partial class MainWindow
     {
         _petCenterState = state;
         PetCenterPage.Render(state);
-        SetStatus($"Codex 宠物：{state.StatusTitle}");
+        SetStatus($"{state.DisplayName}：{state.StatusTitle}");
     }
 
     private void ScheduleCompanionPetSuggestion(string themeId)
@@ -448,7 +608,7 @@ public partial class MainWindow
         {
             if (await PetService.TryClaimCompanionSuggestionAsync(_petCancellation.Token))
             {
-                ShowToast("爱弥斯主题有配套的飞行雪绒宠物，可从左栏“Codex 宠物”查看；不会自动安装。");
+                ShowToast("爱弥斯主题有配套的飞行雪绒宠物，可从左栏“宠物画廊”查看；不会自动安装。");
             }
         }
         catch (OperationCanceledException) when (_petCancellation.IsCancellationRequested)

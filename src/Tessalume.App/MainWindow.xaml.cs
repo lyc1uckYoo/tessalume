@@ -107,10 +107,12 @@ public partial class MainWindow : Window, IAsyncDisposable
 
     internal MainWindow(
         PortableLayout? layout = null,
-        PetApplicationServiceOptions? petOptions = null)
+        PetApplicationServiceOptions? petOptions = null,
+        PetGalleryServiceOptions? petGalleryOptions = null)
     {
         _layout = layout ?? PortableLayout.Create();
         _petOptions = petOptions;
+        _petGalleryOptions = petGalleryOptions;
         _personalImageStore = new PersonalImageStore(_layout.DataDirectory);
         _stateStore = new StudioStateStore(_layout.DataDirectory);
         _preferencesStore = new UiPreferencesStore(_layout.DataDirectory);
@@ -414,6 +416,13 @@ public partial class MainWindow : Window, IAsyncDisposable
         _visualApplyCancellation = null;
         _personalizationCancellation.Cancel();
         _personalizationCancellation.Dispose();
+        if (_petGalleryService is not null)
+        {
+            _petGalleryService.DevelopmentProjectsChanged -=
+                PetGalleryService_DevelopmentProjectsChanged;
+            _petGalleryService.Dispose();
+            _petGalleryService = null;
+        }
         _petCancellation.Cancel();
         if (_petApplicationService is not null)
         {

@@ -19,7 +19,15 @@ public partial class PetCenterView : UserControl, IDisposable
         _previewPlayer = new PetPreviewPlayer(PetPreviewImage, PreviewStateText);
         _previewPlayer.PlaybackStateChanged += PreviewPlayer_PlaybackStateChanged;
         _previewPlayer.SelectionChanged += PreviewPlayer_SelectionChanged;
+        GalleryPanel.EntryRequested += GalleryPanel_EntryRequested;
+        GalleryPanel.RefreshRequested += GalleryPanel_RefreshRequested;
     }
+
+    internal event EventHandler<PetGalleryEntry>? PetRequested;
+
+    internal event EventHandler? GalleryRefreshRequested;
+
+    internal event EventHandler? BackToGalleryRequested;
 
     internal event EventHandler? RefreshRequested;
 
@@ -39,21 +47,76 @@ public partial class PetCenterView : UserControl, IDisposable
 
     internal PetPreviewPlayer PreviewPlayer => _previewPlayer;
 
+    internal bool IsShowingGallery => GalleryPanel.Visibility == Visibility.Visible;
+
+    internal void ShowGalleryLoading()
+    {
+        GalleryPanel.Visibility = Visibility.Visible;
+        DetailPanel.Visibility = Visibility.Collapsed;
+        GalleryPanel.ShowLoading();
+        _previewPlayer.SetActive(false);
+    }
+
+    internal void RenderGallery(PetGallerySnapshot snapshot)
+    {
+        GalleryPanel.Render(snapshot);
+        ShowGallery();
+    }
+
+    internal void UpdateGalleryData(PetGallerySnapshot snapshot) =>
+        GalleryPanel.Render(snapshot);
+
+    internal void ShowGallery()
+    {
+        GalleryPanel.Visibility = Visibility.Visible;
+        DetailPanel.Visibility = Visibility.Collapsed;
+        _previewPlayer.SetActive(false);
+    }
+
     internal void Render(PetCenterPresentationState state)
     {
         _state = state;
+        GalleryPanel.Visibility = Visibility.Collapsed;
+        DetailPanel.Visibility = Visibility.Visible;
+        DetailPageTitleText.Text = state.DisplayName;
+        DetailPageSubtitleText.Text = state.IsDevelopmentPreview
+            ? "检查候选动作、角色资料与项目状态。"
+            : "检查完整动作、角色资料与安装状态。";
+        PetDisplayNameText.Text = state.DisplayName;
+        PetDescriptionText.Text = state.Description;
+        PetSourceBadgeText.Text = state.SourceBadge;
+        var sourceBrushKey = state.IsDevelopmentPreview ? "Accent" : "Teal";
+        var sourceSurfaceKey = state.IsDevelopmentPreview ? "AccentSoft" : "TealSoft";
+        PetSourceBadge.Background = (Brush)FindResource(sourceSurfaceKey);
+        PetSourceBadgeText.Foreground = (Brush)FindResource(sourceBrushKey);
         InstallationStatusTitle.Text = state.StatusTitle;
         InstallationStatusDetail.Text = state.StatusDetail;
         ProductVersionText.Text = state.ProductVersion;
         ProtocolText.Text = state.ProtocolSummary;
         AuthorLicenseText.Text = $"{state.Author} · {FormatLicenseSummary(state.LicenseSummary)}";
-        InstallLocationText.Text = FormatInstallLocation(state.InstallLocation);
-        InstallLocationText.ToolTip = $"仅管理 {state.InstallLocation}";
+        InstallLocationText.Text = FormatLocation(
+            state.InstallLocation,
+            state.IsDevelopmentPreview);
+        InstallLocationText.ToolTip = state.IsDevelopmentPreview
+            ? state.InstallLocation
+            : $"仅管理 {state.InstallLocation}";
+        LocationLabelText.Text = state.LocationLabel;
         PrimaryActionButton.Content = state.PrimaryActionText;
         PrimaryActionButton.IsEnabled = state.PrimaryActionEnabled && !state.IsBusy;
+        PrimaryActionGroup.Visibility = state.ShowPrimaryAction
+            ? Visibility.Visible
+            : Visibility.Collapsed;
         RefreshButton.IsEnabled = !state.IsBusy;
+        RefreshButton.Content = state.IsDevelopmentPreview ? "↻  立即刷新" : "↻  重新检查";
         UninstallButton.IsEnabled = state.CanUninstall && !state.IsBusy;
+        UninstallButton.Visibility = state.ShowInstallationManagement
+            ? Visibility.Visible
+            : Visibility.Collapsed;
         RestoreBackupButton.IsEnabled = state.CanRestoreBackup && !state.IsBusy;
+        RestoreBackupButton.Visibility = state.ShowInstallationManagement
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+        ManagementSectionTitle.Text = state.IsDevelopmentPreview ? "开发预览" : "管理工具";
         AcknowledgeSelectionButton.Visibility = state.CanAcknowledgeSelection
             ? Visibility.Visible
             : Visibility.Collapsed;
@@ -61,8 +124,16 @@ public partial class PetCenterView : UserControl, IDisposable
         ActivationGuidePanel.Visibility = state.Status == PetCenterStatus.AwaitingCodexSelection
             ? Visibility.Visible
             : Visibility.Collapsed;
+        ActivationGuideText.Text =
+            $"Settings → Pets → Refresh → 选择{state.DisplayName} → 输入 /pet";
+        RecommendedThemeNameText.Text = state.RecommendedThemeName;
+        RecommendedThemeSection.Visibility = state.HasRecommendedTheme
+            ? Visibility.Visible
+            : Visibility.Collapsed;
         RestoreBackupButton.ToolTip = state.LatestBackupLabel ?? "当前没有可恢复备份";
+        AutomationProperties.SetName(PetPreviewImage, $"{state.DisplayName}动态动作预览");
         _previewPlayer.Configure(state.PreviewFrames);
+        _previewPlayer.SetActive(_pageActive && IsVisible && DetailPanel.IsVisible);
         UpdatePreviewButtons();
         UpdatePlaybackPresentation();
         RenderStatusPalette(state.Status);
@@ -78,10 +149,10 @@ public partial class PetCenterView : UserControl, IDisposable
             var value => value,
         };
 
-    private static string FormatInstallLocation(string installLocation)
+    private static string FormatLocation(string location, bool developmentPreview)
     {
         const int maximumVisibleCharacters = 34;
-        var fullText = $"仅管理 {installLocation}";
+        var fullText = developmentPreview ? location : $"仅管理 {location}";
         if (fullText.Length <= maximumVisibleCharacters)
         {
             return fullText;
@@ -95,7 +166,7 @@ public partial class PetCenterView : UserControl, IDisposable
     internal void SetPageActive(bool active)
     {
         _pageActive = active;
-        _previewPlayer.SetActive(active && IsVisible);
+        _previewPlayer.SetActive(active && IsVisible && DetailPanel.IsVisible);
     }
 
     private void RenderStatusPalette(PetCenterStatus status)
@@ -103,6 +174,7 @@ public partial class PetCenterView : UserControl, IDisposable
         var resourceKey = status switch
         {
             PetCenterStatus.Installed => "Positive",
+            PetCenterStatus.DevelopmentPreview => "Accent",
             PetCenterStatus.AwaitingCodexSelection => "Sky",
             PetCenterStatus.UpdateAvailable => "Amber",
             PetCenterStatus.UnknownModification => "Amber",
@@ -158,6 +230,18 @@ public partial class PetCenterView : UserControl, IDisposable
     private void Refresh_Click(object sender, RoutedEventArgs e) =>
         RefreshRequested?.Invoke(this, EventArgs.Empty);
 
+    private void BackToGallery_Click(object sender, RoutedEventArgs e)
+    {
+        ShowGallery();
+        BackToGalleryRequested?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void GalleryPanel_EntryRequested(object? sender, PetGalleryEntry entry) =>
+        PetRequested?.Invoke(this, entry);
+
+    private void GalleryPanel_RefreshRequested(object? sender, EventArgs e) =>
+        GalleryRefreshRequested?.Invoke(this, EventArgs.Empty);
+
     private void OpenCodex_Click(object sender, RoutedEventArgs e) =>
         OpenCodexRequested?.Invoke(this, EventArgs.Empty);
 
@@ -186,14 +270,15 @@ public partial class PetCenterView : UserControl, IDisposable
     }
 
     private void PetCenterView_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e) =>
-        _previewPlayer.SetActive(_pageActive && IsVisible);
+        _previewPlayer.SetActive(_pageActive && IsVisible && DetailPanel.IsVisible);
 
     private void PetCenterView_Unloaded(object sender, RoutedEventArgs e) =>
         _previewPlayer.SetActive(false);
 
     private void PetCenterView_SizeChanged(object sender, SizeChangedEventArgs e)
     {
-        if (!double.IsFinite(e.NewSize.Width) || e.NewSize.Width <= 0)
+        if (DetailPanel.Visibility != Visibility.Visible ||
+            !double.IsFinite(e.NewSize.Width) || e.NewSize.Width <= 0)
         {
             return;
         }
@@ -268,6 +353,8 @@ public partial class PetCenterView : UserControl, IDisposable
         _disposed = true;
         _previewPlayer.PlaybackStateChanged -= PreviewPlayer_PlaybackStateChanged;
         _previewPlayer.SelectionChanged -= PreviewPlayer_SelectionChanged;
+        GalleryPanel.EntryRequested -= GalleryPanel_EntryRequested;
+        GalleryPanel.RefreshRequested -= GalleryPanel_RefreshRequested;
         _previewPlayer.Dispose();
         GC.SuppressFinalize(this);
     }

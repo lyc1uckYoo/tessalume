@@ -3,6 +3,7 @@ namespace Tessalume.App.Features.Pets;
 internal enum PetCenterStatus
 {
     Loading,
+    DevelopmentPreview,
     NotInstalled,
     Installed,
     AwaitingCodexSelection,
@@ -34,10 +35,33 @@ internal sealed record PetPreviewFrame(
     int ExpectedFrameCount = 2,
     int SourceWidth = 1,
     int SourceHeight = 1,
-    int RepresentativeFrame = 0);
+    int RepresentativeFrame = 0,
+    string Revision = "");
 
 internal sealed record PetCenterPresentationState
 {
+    public string PetId { get; init; } = PetApplicationService.BuiltInPetId;
+
+    public string DisplayName { get; init; } = "飞行雪绒";
+
+    public string Description { get; init; } = "爱弥斯的电子幽灵伙伴，陪你工作与互动。";
+
+    public string SourceBadge { get; init; } = "官方宠物";
+
+    public bool IsDevelopmentPreview { get; init; }
+
+    public bool ShowPrimaryAction { get; init; } = true;
+
+    public bool ShowInstallationManagement { get; init; } = true;
+
+    public string RecommendedThemeId { get; init; } = PetApplicationService.RecommendedThemeId;
+
+    public string RecommendedThemeName { get; init; } = "爱弥斯 · 星海远航";
+
+    public bool HasRecommendedTheme { get; init; } = true;
+
+    public string LocationLabel { get; init; } = "管理范围";
+
     public PetCenterStatus Status { get; init; } = PetCenterStatus.Loading;
 
     public string StatusTitle { get; init; } = "正在检查";
