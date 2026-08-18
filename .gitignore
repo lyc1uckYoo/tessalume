@@ -25,6 +25,13 @@ backups/
 /Prompt.md
 AGENTS.md
 
+# Codex owns the pet project sources; generated candidates stay local until a
+# reviewed package is explicitly promoted into pets/.
+/pet-projects/*/build/
+/pet-projects/*/tmp/
+/pet-projects/**/__pycache__/
+/pet-projects/**/*.pyc
+
 # Local project records (intentionally excluded from the public repository)
 docs/
 
