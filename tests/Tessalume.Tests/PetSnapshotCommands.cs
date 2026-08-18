@@ -8,6 +8,187 @@ using Tessalume.Core.Pets;
 
 internal static partial class TestSuite
 {
+    static Task<int> RenderPetGallerySnapshotsAsync(
+        string galleryLightPath,
+        string galleryDarkPath,
+        string developmentLightPath,
+        string developmentDarkPath)
+    {
+        var repositoryRoot = FindRepositoryRoot();
+        var portableRoot = Path.Combine(
+            Path.GetTempPath(),
+            $"tessalume-pet-gallery-snapshot-{Guid.NewGuid():N}");
+        var themes = Path.Combine(portableRoot, "themes");
+        var data = Path.Combine(portableRoot, "data");
+        Directory.CreateDirectory(themes);
+        Directory.CreateDirectory(data);
+        var petOptions = new PetApplicationServiceOptions(
+            Path.Combine(portableRoot, "codex-pets"),
+            Path.Combine(portableRoot, "pet-backups"),
+            Path.Combine(data, "pet-center-state.v1.json"));
+        var galleryOptions = new PetGalleryServiceOptions(
+            Path.Combine(repositoryRoot, "pets"),
+            Path.Combine(repositoryRoot, "pet-projects"));
+        Exception? failure = null;
+
+        using (var preferences = new UiPreferencesStore(data))
+        {
+            preferences.SaveAsync(new UiPreferences { OnboardingCompleted = true })
+                .GetAwaiter()
+                .GetResult();
+        }
+
+        var thread = new Thread(() =>
+        {
+            var dispatcher = Dispatcher.CurrentDispatcher;
+            SynchronizationContext.SetSynchronizationContext(
+                new DispatcherSynchronizationContext(dispatcher));
+            var application = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
+            MainWindow? window = null;
+            PetGalleryService? galleryService = null;
+
+            dispatcher.BeginInvoke(async () =>
+            {
+                try
+                {
+                    var layout = new PortableLayout(portableRoot, themes, data);
+                    window = new MainWindow(layout, petOptions, galleryOptions);
+                    InvokeMainWindowMethod(window, "EnsureMainUiInitialized");
+                    InvokeMainWindowMethod(window, "NavigateTo", AppRoute.Pets);
+                    CompleteInfoPageTransition(window);
+                    galleryService = new PetGalleryService(layout, galleryOptions);
+                    var snapshot = await galleryService.ScanAsync();
+                    Ensure(snapshot.DevelopmentEntries.Count > 0 &&
+                           snapshot.OfficialEntries.Count > 0,
+                        "Gallery snapshots require both the migrated development project and official package.");
+
+                    await RenderPetGalleryProfileAsync(
+                        window,
+                        snapshot,
+                        galleryLightPath,
+                        darkMode: false,
+                        new Size(1600, 900));
+                    await RenderPetGalleryProfileAsync(
+                        window,
+                        snapshot,
+                        galleryDarkPath,
+                        darkMode: true,
+                        new Size(1366, 768));
+
+                    var development = snapshot.DevelopmentEntries[0];
+                    var developmentState = new PetCenterPresentationState
+                    {
+                        PetId = development.PetId,
+                        DisplayName = development.DisplayName,
+                        Description = development.Description,
+                        SourceBadge = development.SourceBadge,
+                        IsDevelopmentPreview = true,
+                        ShowPrimaryAction = false,
+                        ShowInstallationManagement = false,
+                        Status = PetCenterStatus.DevelopmentPreview,
+                        StatusTitle = "实时监看中",
+                        StatusDetail = development.HealthMessage,
+                        ProductVersion = $"{development.Version} · 草稿",
+                        ProtocolSummary = development.ProtocolSummary,
+                        Author = development.Author,
+                        LicenseSummary = development.LicenseSummary,
+                        InstallLocation = development.RootDirectory,
+                        LocationLabel = "项目位置",
+                        RecommendedThemeId = development.RecommendedThemeId,
+                        RecommendedThemeName = development.RecommendedThemeName,
+                        HasRecommendedTheme = true,
+                        PreviewFrames = development.PreviewFrames,
+                    };
+                    await RenderPetDevelopmentProfileAsync(
+                        window,
+                        developmentState,
+                        developmentLightPath,
+                        darkMode: false,
+                        new Size(1600, 900),
+                        "idle");
+                    await RenderPetDevelopmentProfileAsync(
+                        window,
+                        developmentState,
+                        developmentDarkPath,
+                        darkMode: true,
+                        new Size(1366, 768),
+                        "showcase");
+                }
+                catch (Exception exception)
+                {
+                    failure = exception is TargetInvocationException invocation
+                        ? invocation.InnerException ?? invocation
+                        : exception;
+                }
+                finally
+                {
+                    galleryService?.Dispose();
+                    if (window is not null) await window.DisposeAsync();
+                    application.Shutdown();
+                    dispatcher.BeginInvokeShutdown(DispatcherPriority.Background);
+                }
+            });
+            Dispatcher.Run();
+        });
+        thread.SetApartmentState(ApartmentState.STA);
+        thread.Start();
+        thread.Join();
+
+        try
+        {
+            if (failure is not null)
+            {
+                Console.Error.WriteLine(failure);
+                return Task.FromResult(1);
+            }
+            Console.WriteLine($"Pet gallery light snapshot: {Path.GetFullPath(galleryLightPath)}");
+            Console.WriteLine($"Pet gallery dark snapshot: {Path.GetFullPath(galleryDarkPath)}");
+            Console.WriteLine($"Pet development light snapshot: {Path.GetFullPath(developmentLightPath)}");
+            Console.WriteLine($"Pet development dark snapshot: {Path.GetFullPath(developmentDarkPath)}");
+            return Task.FromResult(0);
+        }
+        finally
+        {
+            if (Directory.Exists(portableRoot)) Directory.Delete(portableRoot, recursive: true);
+        }
+    }
+
+    private static Task RenderPetGalleryProfileAsync(
+        MainWindow window,
+        PetGallerySnapshot snapshot,
+        string snapshotPath,
+        bool darkMode,
+        Size size)
+    {
+        InvokeMainWindowMethod(window, "ApplyStudioTheme", darkMode);
+        ArrangeMainSurface(window, size);
+        window.PetCenterPage.RenderGallery(snapshot);
+        window.InfoScroll.ScrollToTop();
+        ArrangeMainSurface(window, size);
+        SaveWindowContent(window, snapshotPath);
+        return Task.CompletedTask;
+    }
+
+    private static async Task RenderPetDevelopmentProfileAsync(
+        MainWindow window,
+        PetCenterPresentationState state,
+        string snapshotPath,
+        bool darkMode,
+        Size size,
+        string previewKey)
+    {
+        InvokeMainWindowMethod(window, "ApplyStudioTheme", darkMode);
+        ArrangeMainSurface(window, size);
+        window.PetCenterPage.Render(state);
+        window.PetCenterPage.PreviewPlayer.Select(previewKey);
+        window.PetCenterPage.PreviewPlayer.SetActive(true);
+        await window.PetCenterPage.PreviewPlayer.WaitForCurrentLoadAsync();
+        await Task.Delay(160);
+        ArrangeMainSurface(window, size);
+        window.InfoScroll.ScrollToTop();
+        SaveWindowContent(window, snapshotPath);
+    }
+
     static Task<int> RenderPetCenterSnapshotsAsync(
         string lightSnapshotPath,
         string darkSnapshotPath,

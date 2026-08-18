@@ -315,6 +315,20 @@ internal static partial class TestSuite
         }
 
         if (args is [
+                "--pet-gallery-snapshots",
+                var petGalleryLightPath,
+                var petGalleryDarkPath,
+                var petDevelopmentLightPath,
+                var petDevelopmentDarkPath])
+        {
+            return await RenderPetGallerySnapshotsAsync(
+                petGalleryLightPath,
+                petGalleryDarkPath,
+                petDevelopmentLightPath,
+                petDevelopmentDarkPath);
+        }
+
+        if (args is [
                 "--pet-center-v5-snapshots",
                 var petV5Light1600Path,
                 var petV5Dark1366Path,
@@ -378,6 +392,9 @@ internal static partial class TestSuite
             ("pet installer transactions are atomic and scoped", PetInstallerTransactionsAreAtomicAndScopedAsync),
             ("pet status state and ID scanning stay truthful", PetStatusStateAndIdScanningRemainTruthfulAsync),
             ("built-in pet package publishes and extracts safely", BuiltInPetPackageIsPublishedAndExtractedSafelyAsync),
+            ("pet development projects validate and stay out of release", PetDevelopmentProjectsValidateAndStayOutOfReleaseAsync),
+            ("pet gallery separates official and live development entries", PetGallerySeparatesOfficialAndLiveDevelopmentEntriesAsync),
+            ("pet gallery routes cards to generic animated detail", PetGalleryViewRoutesCardsToGenericAnimatedDetailAsync),
             ("path traversal is rejected", PathTraversalIsRejectedAsync),
             ("remote CSS is rejected", RemoteCssIsRejectedAsync),
             ("null manifest sections produce validation", NullManifestSectionsProduceValidationAsync),

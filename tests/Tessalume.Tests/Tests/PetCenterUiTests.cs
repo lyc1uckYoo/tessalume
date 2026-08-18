@@ -37,6 +37,16 @@ internal static partial class TestSuite
             appRoot,
             "MainWindow.Presentation.cs"));
         var petXaml = await File.ReadAllTextAsync(Path.Combine(petRoot, "PetCenterView.xaml"));
+        var galleryXaml = await File.ReadAllTextAsync(Path.Combine(petRoot, "PetGalleryView.xaml"));
+        var galleryViewSource = await File.ReadAllTextAsync(Path.Combine(
+            petRoot,
+            "PetGalleryView.xaml.cs"));
+        var galleryServiceSource = await File.ReadAllTextAsync(Path.Combine(
+            petRoot,
+            "PetGalleryService.cs"));
+        var projectWatcherSource = await File.ReadAllTextAsync(Path.Combine(
+            petRoot,
+            "PetProjectWatcher.cs"));
         var petViewSource = await File.ReadAllTextAsync(Path.Combine(
             petRoot,
             "PetCenterView.xaml.cs"));
@@ -52,6 +62,12 @@ internal static partial class TestSuite
         var motionSource = await File.ReadAllTextAsync(Path.Combine(
             petRoot,
             "PetMotionPreference.cs"));
+        var developmentLoaderSource = await File.ReadAllTextAsync(Path.Combine(
+            repositoryRoot,
+            "src",
+            "Tessalume.Core",
+            "Pets",
+            "PetDevelopmentProjectLoader.cs"));
         var mainWindowSource = await File.ReadAllTextAsync(Path.Combine(
             appRoot,
             "MainWindow.xaml.cs"));
@@ -85,6 +101,7 @@ internal static partial class TestSuite
 
         Ensure(mainXaml.Contains("x:Name=\"PetsButton\"", StringComparison.Ordinal) &&
                mainXaml.Contains("Click=\"Pets_Click\"", StringComparison.Ordinal) &&
+               mainXaml.Contains("Text=\"宠物画廊\"", StringComparison.Ordinal) &&
                mainXaml.Contains("x:Name=\"PetCenterPage\"", StringComparison.Ordinal) &&
                mainXaml.Contains("<pets:PetCenterView", StringComparison.Ordinal),
             "The shell must expose Codex Pets as a dedicated personalization destination.");
@@ -108,7 +125,8 @@ internal static partial class TestSuite
 
         foreach (var marker in new[]
                  {
-                     "AutomationProperties.Name=\"飞行雪绒动态动作预览\"",
+                     "AutomationProperties.Name=\"宠物动态动作预览\"",
+                     "AutomationProperties.Name=\"返回宠物画廊\"",
                      "AutomationProperties.Name=\"宠物主操作\"",
                      "AutomationProperties.Name=\"确认已在 Codex 完成宠物选择\"",
                      "AutomationProperties.Name=\"卸载 Tessalume 管理的宠物文件\"",
@@ -122,7 +140,7 @@ internal static partial class TestSuite
 
         foreach (var guidance in new[]
                  {
-                     "Settings → Pets → Refresh → 选择飞行雪绒 → 输入 /pet",
+                     "Settings → Pets → Refresh → 选择宠物 → 输入 /pet",
                      "仅管理当前用户 .codex\\pets",
                      "配套主题",
                      "爱弥斯 · 星海远航",
@@ -147,7 +165,8 @@ internal static partial class TestSuite
                petXaml.Contains("<Setter Property=\"Width\" Value=\"148\"", StringComparison.Ordinal) &&
                petXaml.Contains("<Setter Property=\"Height\" Value=\"39\"", StringComparison.Ordinal) &&
                petXaml.Contains("<Setter TargetName=\"ToolSurface\" Property=\"Opacity\" Value=\"0.48\"", StringComparison.Ordinal) &&
-               petXaml.Contains("Height=\"{Binding ActualHeight, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ScrollViewer}}}\"", StringComparison.Ordinal) &&
+               petXaml.Contains("<local:PetGalleryView x:Name=\"GalleryPanel\"", StringComparison.Ordinal) &&
+               petXaml.Contains("x:Name=\"DetailPanel\" Visibility=\"Collapsed\"", StringComparison.Ordinal) &&
                petXaml.Contains("MaxHeight=\"720\"", StringComparison.Ordinal) &&
                petXaml.Contains("Text=\"动作预览\"", StringComparison.Ordinal) &&
                petXaml.Contains("x:Name=\"PetHeaderIcon\"", StringComparison.Ordinal) &&
@@ -156,9 +175,30 @@ internal static partial class TestSuite
                petXaml.Contains("Background=\"{DynamicResource PersonalizationMotionGradient}\"", StringComparison.Ordinal) &&
                !petXaml.Contains("只解码当前选择", StringComparison.Ordinal) &&
                petViewSource.Contains("FormatLicenseSummary", StringComparison.Ordinal) &&
-               petViewSource.Contains("FormatInstallLocation", StringComparison.Ordinal) &&
+               petViewSource.Contains("FormatLocation", StringComparison.Ordinal) &&
                petViewSource.Contains("保留所有权利", StringComparison.Ordinal),
             "The pet console must reuse Tessalume surfaces, present a connected product header, and share one clear button system.");
+        Ensure(galleryXaml.Contains("Text=\"Codex 宠物画廊\"", StringComparison.Ordinal) &&
+               galleryXaml.Contains("x:Name=\"SearchBox\"", StringComparison.Ordinal) &&
+               galleryXaml.Contains("Content=\"官方宠物\"", StringComparison.Ordinal) &&
+               galleryXaml.Contains("Content=\"开发预览\"", StringComparison.Ordinal) &&
+               galleryXaml.Contains("跟随 Codex 候选输出自动刷新，只用于审核动作", StringComparison.Ordinal) &&
+               galleryXaml.Contains("已封版并通过哈希校验，才会开放安全安装", StringComparison.Ordinal) &&
+               galleryViewSource.Contains("PetGalleryFilter.Development", StringComparison.Ordinal) &&
+               galleryViewSource.Contains("Entry.IsDevelopment ? \"查看开发预览\" : \"查看并安装\"", StringComparison.Ordinal) &&
+               galleryServiceSource.Contains("UsesLastGoodPreview = true", StringComparison.Ordinal) &&
+               galleryServiceSource.Contains("GetFileRevision", StringComparison.Ordinal) &&
+               projectWatcherSource.Contains("DebounceDelay", StringComparison.Ordinal) &&
+               projectWatcherSource.Contains("StopCore()", StringComparison.Ordinal),
+            "The pet gallery must present searchable official/development cards and a bounded live-preview lifecycle.");
+        Ensure(developmentLoaderSource.Contains("PetDevelopmentProjectContract.RequiredPreviewActionKeys", StringComparison.Ordinal) &&
+               developmentLoaderSource.Contains("ResolveContainedPath", StringComparison.Ordinal) &&
+               developmentLoaderSource.Contains("EnsureRegularFile", StringComparison.Ordinal) &&
+               developmentLoaderSource.Contains("ValidatePreviewFile", StringComparison.Ordinal) &&
+               petServiceSource.Contains("开发预览不会连接正式宠物安装器", StringComparison.Ordinal) &&
+               petServiceSource.Contains("ShowInstallationManagement = false", StringComparison.Ordinal) &&
+               petServiceSource.Contains("ShowPrimaryAction = false", StringComparison.Ordinal),
+            "Development projects must stay preview-only and must not cross into the formal installer boundary.");
         Ensure(petViewSource.Contains("e.NewSize.Width < 720", StringComparison.Ordinal) &&
                petViewSource.Contains("e.NewSize.Width < 1100", StringComparison.Ordinal) &&
                petViewSource.Contains("new GridLength(2, GridUnitType.Star)", StringComparison.Ordinal) &&
@@ -325,6 +365,12 @@ internal static partial class TestSuite
                    StringComparison.Ordinal) &&
                themeExperienceSource.Contains(
                    "NavigateTo(Features.Navigation.AppRoute.Pets)",
+                   StringComparison.Ordinal) &&
+               themeExperienceSource.Contains(
+                   "OpenRecommendedCompanionPetAsync()",
+                   StringComparison.Ordinal) &&
+               petShellSource.Contains(
+                   "_petGallerySnapshot?.OfficialEntries.FirstOrDefault",
                    StringComparison.Ordinal),
             "The Aemeath theme detail must expose a visible, event-driven route to its companion pet.");
         var applyThemeStart = themeRuntimeSource.IndexOf(
