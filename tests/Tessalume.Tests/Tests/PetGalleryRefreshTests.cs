@@ -1,4 +1,3 @@
-using System.Security.Cryptography;
 using System.Text.Json.Nodes;
 using Tessalume.App.Features.Pets;
 using Tessalume.App.Infrastructure;
@@ -44,15 +43,16 @@ internal static partial class TestSuite
                phoebe.Package.PreviewFiles.Count() == 11,
             "Phoebe Jiubi must publish as a complete v2 APNG package with all product previews.");
 
-        var acceptedRuntime = Path.Combine(
-            projectRoot,
-            "phoebe-jiubi",
-            "build",
-            "final-motion-release",
-            "spritesheet.png");
-        Ensure(ComputePetGallerySha256(acceptedRuntime) ==
-               ComputePetGallerySha256(Path.Combine(packagesRoot, "phoebe-jiubi", "spritesheet.png")),
-            "The published Phoebe Jiubi runtime atlas must exactly match the user-accepted release.");
+        var phoebeProjectRoot = Path.Combine(projectRoot, "phoebe-jiubi");
+        var phoebeProjectManifest = JsonNode.Parse(await File.ReadAllTextAsync(Path.Combine(
+            phoebeProjectRoot,
+            PetDevelopmentProjectContract.ManifestFileName)))?.AsObject();
+        Ensure(phoebeProjectManifest is not null &&
+               File.Exists(Path.Combine(phoebeProjectRoot, "spritesheet.png")) &&
+               phoebeProjectManifest["previewOutputDirectory"]?.GetValue<string>() ==
+                   "build/final-motion-candidate" &&
+               phoebeProjectManifest["protocol"]?["usedFrameCount"]?.GetValue<int>() == 74,
+            "The tracked Phoebe Jiubi source project must keep its editable atlas and reproducible v2 contract without depending on ignored build output.");
     }
 
     static async Task PetGalleryUsesOneRefreshablePackageLibraryAsync()
@@ -192,7 +192,4 @@ internal static partial class TestSuite
                !shellSource.Contains("RefreshDevelopmentPreview", StringComparison.Ordinal),
             "The product must present one formal preview surface backed by the refreshable pets library.");
     }
-
-    private static string ComputePetGallerySha256(string path) =>
-        Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(path)));
 }
