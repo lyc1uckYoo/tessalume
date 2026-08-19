@@ -4,7 +4,7 @@
 
 Tessalume 是一款开源、便携、以本机为中心的 Windows 主题与伴侣工作室。它可以统一管理 Codex 的完整角色主题、三大图像区域、阅读体验与官方 Pets 资产，也能让你直接借助 Codex 创建、体检和导出自己的主题。
 
-![Release](https://img.shields.io/badge/release-2.1.0-6C5CE7?style=flat-square)
+![Release](https://img.shields.io/badge/release-2.1.1-6C5CE7?style=flat-square)
 ![Platform](https://img.shields.io/badge/platform-Windows%20x64-2563EB?style=flat-square)
 ![Local first](https://img.shields.io/badge/data-local%20first-0F9D87?style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT-F59E0B?style=flat-square)
@@ -79,9 +79,10 @@ Tessalume 会检查结构、素材、Template 1.0 契约、六槽图像推荐值
 - 自动更新只替换 `Tessalume.exe`，不会删除 `data/`、`themes/`、个人图片、宠物备份或创作项目。
 - 下载完成后必须通过 SHA-256 校验；新版本还要提交启动健康确认，否则自动恢复旧版。
 - 更新前会保存上一版 EXE 与旧版可读取的配置快照，成功后仍保留一个手动恢复点。
+- 从 2.1.1 开始，后续版本会优先下载上一正式版到新版本的增量包；基线或校验不匹配时自动改用完整 EXE。
 - Codex 页面结构的小变化可以通过独立兼容包修复，不必重新下载完整软件。
 
-从 2.0.2 升级到 2.1.0 时，Schema 5 配置会先原样备份，再迁移为 Schema 7。收藏、最近主题、亮暗图像参数、本地图片路径、动效/字号/密度、创作草稿和工作区记录都会保留；已经移出产品的旧方案字段不会继续写回。
+从 2.0.2 升级到 2.1.1 时，Schema 5 配置会先原样备份，再迁移为 Schema 7。已经使用 2.1.0 的用户无需再次迁移；收藏、最近主题、亮暗图像参数、本地图片路径、动效/字号/密度、创作草稿和工作区记录都会保留，已经移出产品的旧方案字段不会继续写回。
 
 ## 本机优先与安全边界
 
@@ -117,4 +118,4 @@ powershell -ExecutionPolicy Bypass -File ".\一键构建EXE.ps1"
 
 ## 许可证
 
-Tessalume 程序源码使用 [MIT License](LICENSE)。内置主题与宠物涉及的第三方作品名称、角色形象和美术素材仍归原权利人所有，不因本项目许可证获得再授权。
+Tessalume 程序源码使用 [MIT License](LICENSE)，第三方软件组件见 [THIRD-PARTY-NOTICES](THIRD-PARTY-NOTICES.md)。内置主题与宠物涉及的第三方作品名称、角色形象和美术素材仍归原权利人所有，不因本项目许可证获得再授权。
