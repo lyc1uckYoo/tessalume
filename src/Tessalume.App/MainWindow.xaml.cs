@@ -418,8 +418,7 @@ public partial class MainWindow : Window, IAsyncDisposable
         _personalizationCancellation.Dispose();
         if (_petGalleryService is not null)
         {
-            _petGalleryService.DevelopmentProjectsChanged -=
-                PetGalleryService_DevelopmentProjectsChanged;
+            _petGalleryService.PackagesChanged -= PetGalleryService_PackagesChanged;
             _petGalleryService.Dispose();
             _petGalleryService = null;
         }

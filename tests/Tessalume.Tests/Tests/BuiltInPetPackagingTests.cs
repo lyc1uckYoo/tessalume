@@ -129,6 +129,13 @@ internal static partial class TestSuite
                        HashBuiltInPetReleaseFile(sourcePath) == HashBuiltInPetReleaseFile(extractedPath),
                     $"Embedded pet extraction differs from source: {relativePath}.");
             }
+            var phoebeSourceRoot = Path.Combine(repositoryRoot, "pets", "phoebe-jiubi");
+            var extractedPhoebeRoot = Path.Combine(layout.PetsDirectory, "phoebe-jiubi");
+            Ensure(File.Exists(Path.Combine(extractedPhoebeRoot, "catalog.json")) &&
+                   File.Exists(Path.Combine(extractedPhoebeRoot, "spritesheet.png")) &&
+                   HashBuiltInPetReleaseFile(Path.Combine(phoebeSourceRoot, "spritesheet.png")) ==
+                   HashBuiltInPetReleaseFile(Path.Combine(extractedPhoebeRoot, "spritesheet.png")),
+                "Embedded extraction must include the accepted Phoebe Jiubi APNG package.");
 
             var unchangedPath = Path.Combine(extractedRoot, "pet.json");
             var unchangedWriteTime = File.GetLastWriteTimeUtc(unchangedPath);
@@ -172,9 +179,10 @@ internal static partial class TestSuite
                installerSource.Contains("EnsurePetPathHasNoReparsePoints", StringComparison.Ordinal) &&
                installerSource.Contains("RandomNumberGenerator.GetHexString", StringComparison.Ordinal) &&
                installerSource.Contains("FileMode.CreateNew", StringComparison.Ordinal) &&
-               buildSource.Contains("$builtInPetPackageNames = @('flying-snowfluff')", StringComparison.Ordinal) &&
+               buildSource.Contains("$builtInPetPackageNames = @('flying-snowfluff', 'phoebe-jiubi')", StringComparison.Ordinal) &&
                buildSource.Contains("Assert-SafeBuiltInPetTree", StringComparison.Ordinal) &&
                buildSource.Contains("Get-PetWebPMetadata", StringComparison.Ordinal) &&
+               buildSource.Contains("Get-PetPngMetadata", StringComparison.Ordinal) &&
                buildSource.Contains("Get-PetGifMetadata", StringComparison.Ordinal) &&
                buildSource.Contains("Kind = 'showcase'", StringComparison.Ordinal) &&
                buildSource.Contains("Assert-BuiltInPetPackages", StringComparison.Ordinal) &&

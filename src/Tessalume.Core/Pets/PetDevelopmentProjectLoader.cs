@@ -62,9 +62,9 @@ public sealed class PetDevelopmentProjectLoader
             }
             else
             {
-                validation.AddError(
+                validation.AddWarning(
                     "project.preview-output.missing",
-                    "开发预览尚未生成；请让 Codex 生成候选动画后重试。",
+                    "GIF 候选目录尚未生成；如果真实图集已存在，仍可直接预览。",
                     manifest.PreviewOutputDirectory);
             }
         }
@@ -80,6 +80,7 @@ public sealed class PetDevelopmentProjectLoader
         }
 
         PetManifest? petManifest = null;
+        string? runtimeSpritesheetPath = null;
         if (PetPathSafety.IsSafeRelativePath(manifest.PetManifestPath))
         {
             try
@@ -95,6 +96,12 @@ public sealed class PetDevelopmentProjectLoader
                 if (petManifest is not null)
                 {
                     ValidatePetManifest(manifest, petManifest, validation);
+                    runtimeSpritesheetPath = await ResolveRuntimeSpritesheetAsync(
+                        root,
+                        previewRoot,
+                        petManifest,
+                        validation,
+                        cancellationToken);
                 }
             }
             catch (Exception exception) when (
@@ -111,6 +118,14 @@ public sealed class PetDevelopmentProjectLoader
         var resolvedPreviews = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         var previewInfos = new Dictionary<string, PetGifInfo>(StringComparer.OrdinalIgnoreCase);
         var latestWrite = File.GetLastWriteTimeUtc(projectManifestPath);
+        if (runtimeSpritesheetPath is not null)
+        {
+            var spritesheetWriteTime = File.GetLastWriteTimeUtc(runtimeSpritesheetPath);
+            if (spritesheetWriteTime > latestWrite)
+            {
+                latestWrite = spritesheetWriteTime;
+            }
+        }
         foreach (var preview in manifest.Previews)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -124,7 +139,11 @@ public sealed class PetDevelopmentProjectLoader
                 var fullPath = PetPathSafety.ResolveContainedPath(previewRoot, preview.Path);
                 PetPathSafety.EnsureRegularFile(root, fullPath);
                 var info = await PetGifReader.ReadAsync(fullPath, cancellationToken);
-                ValidatePreviewFile(preview, info, validation);
+                ValidatePreviewFile(
+                    preview,
+                    info,
+                    validation,
+                    runtimeSpritesheetPath is not null);
                 resolvedPreviews[preview.Path] = fullPath;
                 previewInfos[preview.Path] = info;
                 var writeTime = File.GetLastWriteTimeUtc(fullPath);
@@ -137,7 +156,12 @@ public sealed class PetDevelopmentProjectLoader
                 exception is IOException or UnauthorizedAccessException or InvalidDataException or
                 ArgumentException or NotSupportedException)
             {
-                validation.AddError("project.preview.unavailable", exception.Message, preview.Path);
+                AddPreviewFileIssue(
+                    validation,
+                    runtimeSpritesheetPath is not null,
+                    "project.preview.unavailable",
+                    $"GIF 兼容预览不可用：{exception.Message}",
+                    preview.Path);
             }
         }
 
@@ -151,8 +175,103 @@ public sealed class PetDevelopmentProjectLoader
                 petManifest,
                 resolvedPreviews,
                 previewInfos,
+                runtimeSpritesheetPath,
                 new DateTimeOffset(DateTime.SpecifyKind(latestWrite, DateTimeKind.Utc))),
             validation);
+    }
+
+    private static async Task<string?> ResolveRuntimeSpritesheetAsync(
+        string projectRoot,
+        string previewRoot,
+        PetManifest manifest,
+        PetValidationResult validation,
+        CancellationToken cancellationToken)
+    {
+        if (!PetPathSafety.IsSafeRelativePath(manifest.SpritesheetPath))
+        {
+            return null;
+        }
+
+        var extension = Path.GetExtension(manifest.SpritesheetPath);
+        if (!extension.Equals(".png", StringComparison.OrdinalIgnoreCase) &&
+            !extension.Equals(".webp", StringComparison.OrdinalIgnoreCase))
+        {
+            validation.AddWarning(
+                "project.runtime-spritesheet.format.unsupported",
+                "实时图集预览只支持 PNG 或 WebP；当前将回退到 GIF。",
+                manifest.SpritesheetPath);
+            return null;
+        }
+
+        foreach (var baseDirectory in new[] { previewRoot, projectRoot })
+        {
+            try
+            {
+                var candidate = PetPathSafety.ResolveContainedPath(
+                    baseDirectory,
+                    manifest.SpritesheetPath);
+                if (!File.Exists(candidate))
+                {
+                    continue;
+                }
+
+                PetPathSafety.EnsureRegularFile(projectRoot, candidate);
+                var length = new FileInfo(candidate).Length;
+                if (length is <= 0 or > 20L * 1024 * 1024)
+                {
+                    validation.AddWarning(
+                        "project.runtime-spritesheet.size.invalid",
+                        "实时图集为空或超过 20 MiB；当前将回退到 GIF。",
+                        manifest.SpritesheetPath);
+                    return null;
+                }
+
+                int width;
+                int height;
+                bool hasAlpha;
+                if (extension.Equals(".png", StringComparison.OrdinalIgnoreCase))
+                {
+                    var png = await PetPngReader.ReadAsync(candidate, cancellationToken);
+                    width = png.Width;
+                    height = png.Height;
+                    hasAlpha = png.HasAlpha;
+                }
+                else
+                {
+                    var webp = await PetWebPReader.ReadAsync(candidate, cancellationToken);
+                    width = webp.Width;
+                    height = webp.Height;
+                    hasAlpha = webp.HasAlpha;
+                }
+                if (width != PetPackageContract.AtlasWidth ||
+                    height != PetPackageContract.AtlasHeight ||
+                    !hasAlpha)
+                {
+                    validation.AddWarning(
+                        "project.runtime-spritesheet.geometry.invalid",
+                        $"实时图集必须是 {PetPackageContract.AtlasWidth}×{PetPackageContract.AtlasHeight} 并包含透明通道；当前将回退到 GIF。",
+                        manifest.SpritesheetPath);
+                    return null;
+                }
+                return candidate;
+            }
+            catch (Exception exception) when (
+                exception is IOException or UnauthorizedAccessException or InvalidDataException or
+                ArgumentException or NotSupportedException or OverflowException)
+            {
+                validation.AddWarning(
+                    "project.runtime-spritesheet.unavailable",
+                    $"实时图集不可用：{exception.Message}",
+                    manifest.SpritesheetPath);
+                return null;
+            }
+        }
+
+        validation.AddWarning(
+            "project.runtime-spritesheet.missing",
+            "候选目录尚未生成真实图集；当前将回退到 GIF。",
+            manifest.SpritesheetPath);
+        return null;
     }
 
     private async Task<T?> ReadJsonAsync<T>(
@@ -384,18 +503,23 @@ public sealed class PetDevelopmentProjectLoader
     private static void ValidatePreviewFile(
         PetPreviewMetadata preview,
         PetGifInfo info,
-        PetValidationResult validation)
+        PetValidationResult validation,
+        bool runtimeSpritesheetAvailable)
     {
         if (info.Width != preview.Width || info.Height != preview.Height)
         {
-            validation.AddError(
+            AddPreviewFileIssue(
+                validation,
+                runtimeSpritesheetAvailable,
                 "project.preview.dimensions.mismatch",
                 $"GIF 实际尺寸必须是 {preview.Width}×{preview.Height}。",
                 preview.Path);
         }
         if (info.FrameCount != preview.ExpectedFrameCount)
         {
-            validation.AddError(
+            AddPreviewFileIssue(
+                validation,
+                runtimeSpritesheetAvailable,
                 "project.preview.frames.mismatch",
                 $"GIF 实际帧数必须是 {preview.ExpectedFrameCount}。",
                 preview.Path);
@@ -404,7 +528,29 @@ public sealed class PetDevelopmentProjectLoader
                 delay < PetPackageContract.MinimumPreviewDelayMilliseconds ||
                 delay > PetPackageContract.MaximumPreviewDelayMilliseconds))
         {
-            validation.AddError("project.preview.delay.invalid", "GIF 帧延时超出安全范围。", preview.Path);
+            AddPreviewFileIssue(
+                validation,
+                runtimeSpritesheetAvailable,
+                "project.preview.delay.invalid",
+                "GIF 帧延时超出安全范围。",
+                preview.Path);
+        }
+    }
+
+    private static void AddPreviewFileIssue(
+        PetValidationResult validation,
+        bool runtimeSpritesheetAvailable,
+        string code,
+        string message,
+        string path)
+    {
+        if (runtimeSpritesheetAvailable)
+        {
+            validation.AddWarning(code, message, path);
+        }
+        else
+        {
+            validation.AddError(code, message, path);
         }
     }
 

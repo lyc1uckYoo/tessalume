@@ -5,6 +5,8 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
+using Microsoft.Web.WebView2.Core;
+using Microsoft.Web.WebView2.Wpf;
 
 namespace Tessalume.App.Features.Pets;
 
@@ -23,6 +25,7 @@ internal sealed class PetPreviewPlayer : IDisposable
     private readonly DispatcherTimer _timer;
     private readonly IPetMotionPreference _motionPreference;
     private readonly SystemPetMotionPreference? _ownedMotionPreference;
+    private readonly PetCodexRuntimeRenderer? _runtimeRenderer;
     private IReadOnlyList<PetPreviewFrame> _previews = [];
     private IReadOnlyList<BitmapSource> _frames = [];
     private IReadOnlyList<TimeSpan> _frameDurations = [];
@@ -35,12 +38,15 @@ internal sealed class PetPreviewPlayer : IDisposable
     private double _stageHeight = DefaultStageHeight;
     private bool _active;
     private bool _reducedMotion;
+    private bool _runtimeAnimating;
+    private bool _usesRealtimeAtlas;
     private bool _disposed;
 
     public PetPreviewPlayer(
         Image target,
         TextBlock label,
-        IPetMotionPreference? motionPreference = null)
+        IPetMotionPreference? motionPreference = null,
+        WebView2CompositionControl? runtimeTarget = null)
     {
         _target = target;
         _label = label;
@@ -55,6 +61,10 @@ internal sealed class PetPreviewPlayer : IDisposable
             _motionPreference = motionPreference;
         }
         _motionPreference.Changed += MotionPreference_Changed;
+        if (runtimeTarget is not null)
+        {
+            _runtimeRenderer = new PetCodexRuntimeRenderer(runtimeTarget);
+        }
         _timer = new DispatcherTimer(DispatcherPriority.Background, target.Dispatcher)
         {
             Interval = TimeSpan.FromMilliseconds(100),
@@ -76,7 +86,13 @@ internal sealed class PetPreviewPlayer : IDisposable
 
     internal bool IsReducedMotion => _reducedMotion;
 
-    internal bool IsAnimating => _timer.IsEnabled;
+    internal bool IsAnimating => _runtimeAnimating || _timer.IsEnabled;
+
+    internal bool UsesRealtimeAtlas => _usesRealtimeAtlas;
+
+    internal bool HasVisual => _target.Source is not null || _runtimeRenderer?.IsVisible == true;
+
+    internal int RuntimeSequenceFrameCount { get; private set; }
 
     internal string PlaybackDescription { get; private set; } = "选择动作后开始预览";
 
@@ -86,7 +102,10 @@ internal sealed class PetPreviewPlayer : IDisposable
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         var normalized = previews
-            .Where(preview => !string.IsNullOrWhiteSpace(preview.FilePath))
+            .Where(preview =>
+                !string.IsNullOrWhiteSpace(preview.FilePath) ||
+                (!string.IsNullOrWhiteSpace(preview.RuntimeSpritesheetPath) &&
+                 PetCodexMotionSchedule.TryCreate(preview.Key, out _)))
             .ToArray();
         if (_previews.SequenceEqual(normalized))
         {
@@ -137,7 +156,7 @@ internal sealed class PetPreviewPlayer : IDisposable
         }
         if (_active == active)
         {
-            if (active && _selection is not null && _frames.Count == 0 && _loadTask.IsCompleted)
+            if (active && _selection is not null && !HasVisual && _loadTask.IsCompleted)
             {
                 StartLoadingCurrent();
             }
@@ -197,20 +216,115 @@ internal sealed class PetPreviewPlayer : IDisposable
         _loadCancellation = cancellation;
         _reducedMotion = _motionPreference.IsReducedMotion;
         var (pixelWidth, pixelHeight) = GetRequestedPixelBounds();
-        PlaybackDescription = _reducedMotion
-            ? "正在加载代表帧…"
-            : "正在解码当前动作…";
+        PetCodexMotionSequence? runtimeSequence = null;
+        var useRuntime = false;
+        if (_runtimeRenderer is not null &&
+            !string.IsNullOrWhiteSpace(selection.RuntimeSpritesheetPath) &&
+            PetCodexMotionSchedule.TryCreate(selection.Key, out var resolvedSequence))
+        {
+            runtimeSequence = resolvedSequence;
+            useRuntime = true;
+        }
+        PlaybackDescription = useRuntime
+            ? "正在加载实时图集…"
+            : _reducedMotion
+                ? "正在加载代表帧…"
+                : "正在解码兼容预览…";
         PlaybackStateChanged?.Invoke(this, EventArgs.Empty);
-        _loadTask = LoadCurrentAsync(
-            selection,
-            pixelWidth,
-            pixelHeight,
-            _reducedMotion,
-            generation,
-            cancellation.Token);
+        _loadTask = useRuntime
+            ? LoadRuntimeCurrentAsync(
+                selection,
+                runtimeSequence!,
+                _reducedMotion,
+                generation,
+                cancellation.Token)
+            : LoadGifCurrentAsync(
+                selection,
+                pixelWidth,
+                pixelHeight,
+                _reducedMotion,
+                generation,
+                cancellation.Token);
     }
 
-    private async Task LoadCurrentAsync(
+    private async Task LoadRuntimeCurrentAsync(
+        PetPreviewFrame selection,
+        PetCodexMotionSequence sequence,
+        bool reducedMotion,
+        int generation,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _runtimeRenderer!.ShowAsync(
+                selection.RuntimeSpritesheetPath!,
+                selection.RuntimeSpritesheetRevision,
+                sequence,
+                reducedMotion,
+                active: true,
+                cancellationToken);
+            if (!CanPublishLoad(selection, generation, cancellationToken))
+            {
+                _runtimeRenderer.Hide();
+                return;
+            }
+
+            _target.Source = null;
+            _frames = [];
+            _frameDurations = [];
+            EstimatedDecodedBytes = 0;
+            RuntimeSequenceFrameCount = sequence.TotalFrameCount;
+            _frameIndex = 0;
+            _usesRealtimeAtlas = true;
+            _runtimeAnimating = !reducedMotion && sequence.TotalFrameCount > 1;
+            PlaybackDescription = reducedMotion
+                ? "实时图集 · 系统减少动态 · 显示静止画面"
+                : sequence.IsShowcase
+                    ? "实时图集 · 九动作独立循环"
+                    : !sequence.MatchesCodexState
+                        ? $"实时图集 · 16 向连续检查 · {sequence.Frames.Count} 帧"
+                    : sequence.ReturnsToIdle
+                        ? $"实时图集 · 动作 {sequence.ActionCycleCount} 轮后进入待机"
+                        : "实时图集 · 待机 6.6 秒循环";
+            PlaybackStateChanged?.Invoke(this, EventArgs.Empty);
+        }
+        catch (OperationCanceledException)
+        {
+            // Selection, route, or window lifetime moved on.
+        }
+        catch (Exception exception) when (
+            exception is IOException or UnauthorizedAccessException or InvalidDataException or
+            NotSupportedException or ArgumentException or FormatException or COMException or
+            InvalidOperationException or TimeoutException or WebView2RuntimeNotFoundException)
+        {
+            if (!CanPublishLoad(selection, generation, cancellationToken))
+            {
+                return;
+            }
+
+            _runtimeRenderer?.Hide();
+            if (string.IsNullOrWhiteSpace(selection.FilePath))
+            {
+                ReleaseFrames();
+                PlaybackDescription = "实时图集暂不可用；当前项目没有 GIF 兼容预览";
+                PlaybackStateChanged?.Invoke(this, EventArgs.Empty);
+                return;
+            }
+
+            PlaybackDescription = "实时图集暂不可用，正在切换 GIF 兼容预览…";
+            PlaybackStateChanged?.Invoke(this, EventArgs.Empty);
+            var (pixelWidth, pixelHeight) = GetRequestedPixelBounds();
+            await LoadGifCurrentAsync(
+                selection,
+                pixelWidth,
+                pixelHeight,
+                reducedMotion,
+                generation,
+                cancellationToken);
+        }
+    }
+
+    private async Task LoadGifCurrentAsync(
         PetPreviewFrame selection,
         int pixelWidth,
         int pixelHeight,
@@ -236,11 +350,14 @@ internal sealed class PetPreviewPlayer : IDisposable
             _frames = decoded.Frames;
             _frameDurations = decoded.FrameDurations;
             EstimatedDecodedBytes = decoded.EstimatedDecodedBytes;
+            RuntimeSequenceFrameCount = 0;
+            _usesRealtimeAtlas = false;
+            _runtimeAnimating = false;
             _frameIndex = 0;
             _target.Source = _frames[0];
             PlaybackDescription = decoded.ReducedMotion
-                ? "系统已开启减少动态效果 · 显示代表帧"
-                : $"循环播放 · {_frames.Count} 帧";
+                ? "GIF 兼容回退 · 系统减少动态 · 显示代表帧"
+                : $"GIF 兼容回退 · 循环播放 · {_frames.Count} 帧";
             UpdateTimer();
             PlaybackStateChanged?.Invoke(this, EventArgs.Empty);
         }
@@ -348,6 +465,7 @@ internal sealed class PetPreviewPlayer : IDisposable
             cancellation.Dispose();
         }
         _timer.Stop();
+        _runtimeRenderer?.Hide();
         ReleaseFrames();
     }
 
@@ -358,6 +476,9 @@ internal sealed class PetPreviewPlayer : IDisposable
         _frameDurations = [];
         _frameIndex = 0;
         EstimatedDecodedBytes = 0;
+        RuntimeSequenceFrameCount = 0;
+        _runtimeAnimating = false;
+        _usesRealtimeAtlas = false;
     }
 
     public void Dispose()
@@ -373,6 +494,7 @@ internal sealed class PetPreviewPlayer : IDisposable
         _timer.Tick -= Timer_Tick;
         _motionPreference.Changed -= MotionPreference_Changed;
         _ownedMotionPreference?.Dispose();
+        _runtimeRenderer?.Dispose();
         GC.SuppressFinalize(this);
     }
 }

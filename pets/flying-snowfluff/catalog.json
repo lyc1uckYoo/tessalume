@@ -28,7 +28,7 @@
     ]
   },
   "author": {
-    "name": "Tessalume Contributors"
+    "name": "lyc1uckYoo"
   },
   "license": {
     "kind": "all-rights-reserved",
@@ -48,74 +48,74 @@
     },
     {
       "path": "spritesheet.webp",
-      "sha256": "aa4a7f8d5b517c37349f75889594baab324aae3b65a1f1bddbdd08a1fef2b50d",
-      "size": 2043200,
+      "sha256": "84f00f129959636ba2f577a070afe7c02e5bdcaa79775d7802eb3dc8d2781bab",
+      "size": 2179710,
       "role": "codex-spritesheet"
     },
     {
       "path": "previews/00-idle.gif",
-      "sha256": "60b0cc3d2d56b18edd90d14a7b1997814ca687a739b7bb915715334d4c59591f",
-      "size": 639287,
+      "sha256": "c1ce10ad1cb3b0c2f2936a200732377a14bf03f06914ded305e8abe69706c260",
+      "size": 638380,
       "role": "preview"
     },
     {
       "path": "previews/01-move-right.gif",
-      "sha256": "b5b74b92119184bf11df8024a026f3df8d37e6f5abae7cd382aca371d19db560",
-      "size": 818814,
+      "sha256": "10afb5e0e127558f5d9a8f761d685375771f0ad6fb3671d178a77b40847a2a1e",
+      "size": 818888,
       "role": "preview"
     },
     {
       "path": "previews/02-move-left.gif",
-      "sha256": "c68114b50db4185bedba679709ff02493e3130e53587c85a27bc787e9c34d067",
-      "size": 819337,
+      "sha256": "b8df19249da19954df84bd42bfe5ee01cd111ea6e356e487823b3d1f8eb62ee1",
+      "size": 819324,
       "role": "preview"
     },
     {
       "path": "previews/03-wave-touch.gif",
-      "sha256": "94f798ec0ee54333a3b9b4323725021fcbb17bf692fc42fc989024660b6d5588",
-      "size": 391051,
+      "sha256": "0894459978ff31941735cf9e8efb3f01cb15da8f21fd904c40f883e524a93093",
+      "size": 404590,
       "role": "preview"
     },
     {
       "path": "previews/04-jump.gif",
-      "sha256": "387549db801d38e3369ceedd23ca1463bc127949ddc484c21135e6978ee51128",
-      "size": 479933,
+      "sha256": "e38a27915c34a7ffa05b4d24d4cf240dbe0a4cc67275ed9657f357fa978de090",
+      "size": 482928,
       "role": "preview"
     },
     {
       "path": "previews/05-blocked.gif",
-      "sha256": "2d4098463eee44832d31e627de1e8e906774ac5788ad854f817e121414ccfe63",
-      "size": 685489,
+      "sha256": "c716fa661b1e96e553c6cbbec230c44a258d2e2398642e811ef03d94708b8e73",
+      "size": 718153,
       "role": "preview"
     },
     {
       "path": "previews/06-needs-input.gif",
-      "sha256": "6e6b010ee9f27bc07d63376207b3256c759ece3936388e116736cc9cfaca7a56",
-      "size": 640387,
+      "sha256": "25777de0902c7ef626241176ae8b38b8d2b9b1772be415329137cba7e644d44b",
+      "size": 640888,
       "role": "preview"
     },
     {
       "path": "previews/07-running.gif",
-      "sha256": "6a3d95d3742fb4cf7c497868527748954fcf4ee5206106006057c147178c81f7",
-      "size": 612340,
+      "sha256": "ef36b1727a123af0e43eb33789b03c4a758293d0524e807998a33c3206425e7e",
+      "size": 639715,
       "role": "preview"
     },
     {
       "path": "previews/08-ready.gif",
-      "sha256": "3b7c4d543299b2406c46cd10a83161753099950b340c0f4ce1e8a3cf0857cf79",
-      "size": 581373,
+      "sha256": "f55e66a4ac12e45fab8072c2d4874e900329d1e6fb8e5199c9c273e0418e33ab",
+      "size": 596195,
       "role": "preview"
     },
     {
       "path": "previews/10-gaze-clockwise.gif",
-      "sha256": "d3e8647954cdfbabc9ee31490dd4fe8a2479e0ae1f0816765284e673fb58a255",
+      "sha256": "27c9afea04e240c764b9bfd6243af7f455f5e8e03f5e57673e41c22958a42c9d",
       "size": 1375007,
       "role": "preview"
     },
     {
       "path": "previews/showcase.gif",
-      "sha256": "79b97beff291f1c5fafd6d42e36afebe0b98b74c1626059012d47a2cf052c370",
-      "size": 3389774,
+      "sha256": "73f31722cf2ff88e1465483c360967d110f8dc76396a2a7a9d1833fd36dbbda9",
+      "size": 3469256,
       "role": "preview"
     }
   ],

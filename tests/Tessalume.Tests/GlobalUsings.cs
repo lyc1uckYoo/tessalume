@@ -13,4 +13,5 @@ global using Tessalume.Core.Backup;
 global using Tessalume.Core.Compatibility;
 global using Tessalume.Core.Runtime;
 global using Tessalume.Core.Updates;
+global using Tessalume.Core.Updates.Delta;
 global using Tessalume.App.Infrastructure;

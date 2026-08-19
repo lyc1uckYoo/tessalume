@@ -32,8 +32,7 @@ public partial class MainWindow
             _layout,
             _petOptions ?? PetApplicationServiceOptions.ForCurrentUser(_layout.DataDirectory));
         _petGalleryService = new PetGalleryService(_layout, _petGalleryOptions);
-        _petGalleryService.DevelopmentProjectsChanged +=
-            PetGalleryService_DevelopmentProjectsChanged;
+        _petGalleryService.PackagesChanged += PetGalleryService_PackagesChanged;
         PetCenterPage.ShowGalleryLoading();
         PetCenterPage.PetRequested += PetCenterPage_PetRequested;
         PetCenterPage.GalleryRefreshRequested += PetCenterPage_GalleryRefreshRequested;
@@ -63,7 +62,16 @@ public partial class MainWindow
 
     private async Task OpenPetGalleryEntryAsync(PetGalleryEntry entry)
     {
-        if (_petOperationInProgress || !entry.CanOpen)
+        if (_petOperationInProgress)
+        {
+            return;
+        }
+
+        await RefreshPetGalleryAsync(showGallery: false);
+        entry = _petGallerySnapshot?.Entries.FirstOrDefault(candidate =>
+            string.Equals(candidate.EntryKey, entry.EntryKey, StringComparison.OrdinalIgnoreCase)) ??
+            entry;
+        if (!entry.CanOpen)
         {
             return;
         }
@@ -72,9 +80,7 @@ public partial class MainWindow
         PetService.SelectEntry(entry);
         _petCenterState = null;
         RenderPetState(PetService.CreateLoadingState(
-            detail: entry.IsDevelopment
-                ? "正在读取 Codex 最新生成的动作候选…"
-                : "正在校验正式宠物包与安装状态…"));
+            detail: "正在读取最新宠物资源并校验安装状态…"));
         await RefreshPetCenterAsync();
     }
 
@@ -82,7 +88,7 @@ public partial class MainWindow
     {
         PetCenterPage.ShowGallery();
         await RefreshPetGalleryAsync(showGallery: true);
-        var officialEntry = _petGallerySnapshot?.OfficialEntries.FirstOrDefault(entry =>
+        var officialEntry = _petGallerySnapshot?.Entries.FirstOrDefault(entry =>
             string.Equals(
                 entry.PetId,
                 PetApplicationService.BuiltInPetId,
@@ -152,27 +158,42 @@ public partial class MainWindow
         }
     }
 
-    private void PetGalleryService_DevelopmentProjectsChanged(object? sender, EventArgs e)
+    private void PetGalleryService_PackagesChanged(object? sender, EventArgs e)
     {
         if (_petCancellation.IsCancellationRequested || Dispatcher.HasShutdownStarted)
         {
             return;
         }
-        _ = Dispatcher.InvokeAsync(RefreshDevelopmentPreviewAsync);
+        _ = Dispatcher.InvokeAsync(RefreshPetResourcesAsync);
     }
 
-    private async Task RefreshDevelopmentPreviewAsync()
+    private async Task RefreshPetResourcesAsync()
     {
         if (_currentRoute != Features.Navigation.AppRoute.Pets || _petOperationInProgress)
         {
             return;
         }
 
-        var selectedKey = _selectedPetEntry?.IsDevelopment == true
-            ? _selectedPetEntry.EntryKey
-            : null;
-        await RefreshPetGalleryAsync(showGallery: PetCenterPage.IsShowingGallery);
-        if (selectedKey is null || _petGallerySnapshot is null || PetCenterPage.IsShowingGallery)
+        if (PetCenterPage.IsShowingGallery)
+        {
+            await RefreshPetGalleryAsync(showGallery: true);
+            return;
+        }
+
+        await ReloadSelectedPetEntryAsync(showToast: true);
+    }
+
+    private async Task ReloadSelectedPetEntryAsync(bool showToast)
+    {
+        var selectedKey = _selectedPetEntry?.EntryKey;
+        if (selectedKey is null)
+        {
+            await RefreshPetCenterAsync();
+            return;
+        }
+
+        await RefreshPetGalleryAsync(showGallery: false);
+        if (_petGallerySnapshot is null)
         {
             return;
         }
@@ -187,11 +208,22 @@ public partial class MainWindow
         _selectedPetEntry = refreshed;
         PetService.SelectEntry(refreshed);
         await RefreshPetCenterAsync();
-        ShowToast($"{refreshed.DisplayName}开发预览已刷新");
+        if (showToast)
+        {
+            ShowToast($"{refreshed.DisplayName}资源与预览已刷新");
+        }
     }
 
-    private async void PetCenterPage_RefreshRequested(object? sender, EventArgs e) =>
+    private async void PetCenterPage_RefreshRequested(object? sender, EventArgs e)
+    {
+        if (_selectedPetEntry is not null)
+        {
+            await ReloadSelectedPetEntryAsync(showToast: false);
+            return;
+        }
+
         await RefreshPetCenterAsync();
+    }
 
     private async Task RefreshPetCenterAsync()
     {

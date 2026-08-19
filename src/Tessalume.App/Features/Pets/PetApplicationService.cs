@@ -131,12 +131,6 @@ internal sealed class PetApplicationService : IDisposable
     private async Task<PetCenterPresentationState> RefreshCoreAsync(
         CancellationToken cancellationToken)
     {
-        if (_selectedEntry is { IsDevelopment: true } developmentEntry)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            return CreateDevelopmentState(developmentEntry);
-        }
-
         var package = await LoadSelectedPackageAsync(cancellationToken);
         var snapshot = await _installer.InspectAsync(package, cancellationToken);
         return await BuildPresentationStateAsync(package, snapshot, cancellationToken);
@@ -254,12 +248,6 @@ internal sealed class PetApplicationService : IDisposable
     {
         ThrowIfDisposed();
         cancellationToken.ThrowIfCancellationRequested();
-        if (_selectedEntry is { IsDevelopment: true })
-        {
-            throw new InvalidOperationException("开发预览不会连接正式宠物安装器。");
-        }
-
-        BuiltInAssetInstaller.EnsurePetsInstalled(_layout);
         var packageRoot = _selectedEntry?.Package?.RootDirectory ??
             Path.Combine(_layout.PetsDirectory, BuiltInPetId);
         var result = await _loader.LoadAsync(packageRoot, cancellationToken);
@@ -318,6 +306,12 @@ internal sealed class PetApplicationService : IDisposable
         }
 
         var catalog = package.Catalog;
+        var runtimeSpritesheetPath = package.ResolvedFiles[package.Manifest.SpritesheetPath];
+        var runtimeSpritesheetRevision = package.Catalog.Files.First(file =>
+            string.Equals(
+                file.Path,
+                package.Manifest.SpritesheetPath,
+                StringComparison.OrdinalIgnoreCase)).Sha256;
         var actionCount = Math.Max(0, catalog.Protocol.States.Count - 2);
         var directionalFrames = catalog.Protocol.States
             .Skip(actionCount)
@@ -327,7 +321,7 @@ internal sealed class PetApplicationService : IDisposable
             PetId = package.Manifest.Id,
             DisplayName = package.Manifest.DisplayName,
             Description = package.Manifest.Description,
-            SourceBadge = "官方宠物",
+            SourceBadge = "正式宠物",
             ProductVersion = catalog.ProductVersion,
             ProtocolSummary =
                 $"图集协议 v{catalog.Protocol.SpriteVersionNumber} · " +
@@ -341,59 +335,28 @@ internal sealed class PetApplicationService : IDisposable
                 : catalog.RecommendedThemeIds[0],
             RecommendedThemeName = GetRecommendedThemeName(catalog.RecommendedThemeIds),
             HasRecommendedTheme = catalog.RecommendedThemeIds.Count > 0,
-            PreviewFrames = _selectedEntry is { IsDevelopment: false } selected &&
-                string.Equals(selected.PetId, package.Manifest.Id, StringComparison.Ordinal)
-                    ? selected.PreviewFrames
-                    : package.PreviewFiles
-                        .Select(preview => new PetPreviewFrame(
-                            preview.Metadata.ActionKey,
-                            preview.Metadata.Label ?? preview.Metadata.ActionKey,
-                            preview.FullPath,
-                            preview.Metadata.Kind,
-                            preview.GifInfo.FrameCount,
-                            preview.GifInfo.Width,
-                            preview.GifInfo.Height,
-                            preview.Metadata.RepresentativeFrame,
-                            package.Catalog.Files.First(file => string.Equals(
-                                file.Path,
-                                preview.Metadata.Path,
-                                StringComparison.OrdinalIgnoreCase)).Sha256))
-                        .ToArray(),
+            PreviewFrames = package.PreviewFiles
+                .Select(preview => new PetPreviewFrame(
+                    preview.Metadata.ActionKey,
+                    preview.Metadata.Label ?? preview.Metadata.ActionKey,
+                    preview.FullPath,
+                    preview.Metadata.Kind,
+                    preview.GifInfo.FrameCount,
+                    preview.GifInfo.Width,
+                    preview.GifInfo.Height,
+                    preview.Metadata.RepresentativeFrame,
+                    package.Catalog.Files.First(file => string.Equals(
+                        file.Path,
+                        preview.Metadata.Path,
+                        StringComparison.OrdinalIgnoreCase)).Sha256,
+                    runtimeSpritesheetPath,
+                    runtimeSpritesheetRevision))
+                .ToArray(),
         };
     }
 
     private PetCenterPresentationState CreateCurrentSourceState() =>
-        _selectedEntry is { IsDevelopment: true } development
-            ? CreateDevelopmentState(development)
-            : CreatePackageOnlyState(_lastPackage ?? _selectedEntry?.Package);
-
-    private static PetCenterPresentationState CreateDevelopmentState(PetGalleryEntry entry) =>
-        new()
-        {
-            PetId = entry.PetId,
-            DisplayName = entry.DisplayName,
-            Description = entry.Description,
-            SourceBadge = entry.SourceBadge,
-            IsDevelopmentPreview = true,
-            ShowPrimaryAction = false,
-            ShowInstallationManagement = false,
-            Status = PetCenterStatus.DevelopmentPreview,
-            StatusTitle = entry.UsesLastGoodPreview ? "等待新候选稳定" : "实时监看中",
-            StatusDetail = entry.HealthMessage,
-            ProductVersion = $"{entry.Version} · 草稿",
-            ProtocolSummary = entry.ProtocolSummary,
-            Author = entry.Author,
-            LicenseSummary = entry.LicenseSummary,
-            InstallLocation = entry.RootDirectory,
-            LocationLabel = "项目位置",
-            PrimaryAction = PetCenterAction.Refresh,
-            PrimaryActionText = "刷新预览",
-            PrimaryActionEnabled = false,
-            RecommendedThemeId = entry.RecommendedThemeId,
-            RecommendedThemeName = entry.RecommendedThemeName,
-            HasRecommendedTheme = !string.IsNullOrWhiteSpace(entry.RecommendedThemeId),
-            PreviewFrames = entry.PreviewFrames,
-        };
+        CreatePackageOnlyState(_lastPackage ?? _selectedEntry?.Package);
 
     private static string GetRecommendedThemeName(IReadOnlyList<string> themeIds)
     {

@@ -2,12 +2,6 @@ using Tessalume.Core.Pets;
 
 namespace Tessalume.App.Features.Pets;
 
-internal enum PetGallerySourceKind
-{
-    Official,
-    Development,
-}
-
 internal sealed record PetGalleryEntry
 {
     public required string EntryKey { get; init; }
@@ -34,8 +28,6 @@ internal sealed record PetGalleryEntry
 
     public required DateTimeOffset LastUpdated { get; init; }
 
-    public required PetGallerySourceKind SourceKind { get; init; }
-
     public required IReadOnlyList<PetPreviewFrame> PreviewFrames { get; init; }
 
     public string RecommendedThemeId { get; init; } = string.Empty;
@@ -47,10 +39,6 @@ internal sealed record PetGalleryEntry
     public bool UsesLastGoodPreview { get; init; }
 
     public PetPackage? Package { get; init; }
-
-    public PetDevelopmentProject? DevelopmentProject { get; init; }
-
-    public bool IsDevelopment => SourceKind == PetGallerySourceKind.Development;
 
     public bool CanOpen => PreviewFrames.Count > 0 && (IsValid || UsesLastGoodPreview);
 
@@ -72,14 +60,6 @@ internal sealed record PetGalleryEntry
 
 internal sealed record PetGallerySnapshot(
     IReadOnlyList<PetGalleryEntry> Entries,
-    string DevelopmentProjectsRoot,
+    string PackagesRoot,
     DateTimeOffset RefreshedAt)
-{
-    public IReadOnlyList<PetGalleryEntry> DevelopmentEntries => Entries
-        .Where(entry => entry.IsDevelopment)
-        .ToArray();
-
-    public IReadOnlyList<PetGalleryEntry> OfficialEntries => Entries
-        .Where(entry => !entry.IsDevelopment)
-        .ToArray();
-}
+;

@@ -60,15 +60,15 @@ STATE_NAMES = (
 USED_COUNTS = (7, 8, 8, 4, 5, 8, 6, 6, 6, 8, 8)
 ANIMATION_COUNTS = (6, 8, 8, 4, 5, 8, 6, 6, 6)
 FRAME_DURATIONS = (
-    (280, 110, 110, 140, 140, 320),
-    (120, 120, 120, 120, 120, 120, 120, 220),
-    (120, 120, 120, 120, 120, 120, 120, 220),
-    (200, 120, 180, 260),
-    (140, 140, 140, 140, 280),
-    (140, 140, 140, 140, 140, 140, 140, 240),
-    (150, 150, 150, 150, 150, 260),
-    (120, 120, 120, 120, 120, 220),
-    (240, 110, 180, 90, 220, 300),
+    (180, 90, 90, 100, 100, 180),
+    (90, 90, 90, 90, 90, 90, 90, 110),
+    (90, 90, 90, 90, 90, 90, 90, 110),
+    (140, 80, 120, 160),
+    (110, 90, 100, 100, 130),
+    (110, 100, 100, 110, 110, 100, 110, 140),
+    (110, 100, 100, 100, 110, 140),
+    (100, 90, 90, 90, 100, 130),
+    (120, 90, 110, 80, 100, 150),
 )
 
 KEYFRAME_FILES = {
@@ -148,6 +148,11 @@ KEYFRAME_FILES = {
     ),
 }
 
+RUNNING_WING_FILES = {
+    2: "running/02-swipe-left-wing.png",
+    4: "running/04-cross-check-left-wing.png",
+}
+
 
 def clear_transparent_rgb(image: Image.Image) -> Image.Image:
     rgba = image.convert("RGBA")
@@ -158,6 +163,52 @@ def clear_transparent_rgb(image: Image.Image) -> Image.Image:
             data[offset + 1] = 0
             data[offset + 2] = 0
     return Image.frombytes("RGBA", rgba.size, bytes(data))
+
+
+def repair_visible_green_edge_residue(image: Image.Image) -> tuple[Image.Image, int]:
+    """Replace only visible green-screen edge residue while preserving alpha."""
+
+    rgba = clear_transparent_rgb(image)
+    pixels = rgba.load()
+    alpha = rgba.getchannel("A")
+    transparent = alpha.point(lambda value: 255 if value == 0 else 0)
+    near_transparency = transparent.filter(ImageFilter.MaxFilter(5))
+    contaminated: list[tuple[int, int]] = []
+    distance_limit_squared = 96 * 96
+    for y in range(rgba.height):
+        for x in range(rgba.width):
+            red, green, blue, opacity = pixels[x, y]
+            if (
+                opacity >= 16
+                and near_transparency.getpixel((x, y)) > 0
+                and red * red + (green - 255) * (green - 255) + blue * blue
+                <= distance_limit_squared
+            ):
+                contaminated.append((x, y))
+
+    for x, y in contaminated:
+        replacement: tuple[int, int, int] | None = None
+        for radius in range(1, 6):
+            candidates: list[tuple[int, int, int, int]] = []
+            for candidate_y in range(max(0, y - radius), min(rgba.height, y + radius + 1)):
+                for candidate_x in range(max(0, x - radius), min(rgba.width, x + radius + 1)):
+                    if max(abs(candidate_x - x), abs(candidate_y - y)) != radius:
+                        continue
+                    red, green, blue, opacity = pixels[candidate_x, candidate_y]
+                    if opacity < 16:
+                        continue
+                    distance_squared = red * red + (green - 255) * (green - 255) + blue * blue
+                    if distance_squared > distance_limit_squared:
+                        candidates.append((opacity, red, green, blue))
+            if candidates:
+                _, red, green, blue = max(candidates)
+                replacement = (red, green, blue)
+                break
+        if replacement is None:
+            replacement = (104, 236, 248)
+        pixels[x, y] = (*replacement, pixels[x, y][3])
+
+    return clear_transparent_rgb(rgba), len(contaminated)
 
 
 def resize_rgba(image: Image.Image, size: tuple[int, int]) -> Image.Image:
@@ -186,6 +237,13 @@ def load_keyframes(key: str) -> list[Image.Image]:
             raise ValueError(f"empty key pose: {path}")
         images.append(clear_transparent_rgb(image))
     return images
+
+
+def load_running_wings() -> dict[int, Image.Image]:
+    return {
+        frame_index: load_required_image(KEYFRAMES / relative_path, "running wing overlay")
+        for frame_index, relative_path in RUNNING_WING_FILES.items()
+    }
 
 
 def normalize_anchor(
@@ -265,6 +323,24 @@ def normalize_group(
     return normalized
 
 
+def normalize_accessory(
+    image: Image.Image,
+    *,
+    max_width: int,
+    max_height: int,
+) -> Image.Image:
+    """Trim ImageGen extraction haze and resize a transparent accessory layer."""
+
+    alpha = image.getchannel("A")
+    meaningful = alpha.point(lambda value: 255 if value >= 24 else 0)
+    bbox = meaningful.getbbox()
+    if bbox is None:
+        raise ValueError("cannot normalize an empty accessory")
+    crop = image.crop(bbox)
+    scale = min(max_width / crop.width, max_height / crop.height)
+    return resize_rgba(crop, (round(crop.width * scale), round(crop.height * scale)))
+
+
 def warm_head_centroid(image: Image.Image) -> tuple[float, float]:
     """Locate the stable pink/skin head mass for pose-to-pose registration."""
 
@@ -305,15 +381,6 @@ def align_head(
         dx=round((target[0] - current[0]) * factor) + dx,
         dy=round((target[1] - current[1]) * factor) + dy,
     )
-
-
-def replace_face(base: Image.Image, expression: Image.Image) -> Image.Image:
-    """Transfer only the expression so idle wings and body remain stable."""
-
-    mask = Image.new("L", base.size, 0)
-    ImageDraw.Draw(mask).ellipse((68, 88, 125, 134), fill=255)
-    mask = mask.filter(ImageFilter.GaussianBlur(2.2))
-    return clear_transparent_rgb(Image.composite(expression, base, mask))
 
 
 def transform_cell(
@@ -399,6 +466,22 @@ def draw_star(
     points = [(x, y - radius), (x + 2, y - 2), (x + radius, y), (x + 2, y + 2),
               (x, y + radius), (x - 2, y + 2), (x - radius, y), (x - 2, y - 2)]
     draw.polygon(points, fill=color)
+
+
+def draw_status_diamond(
+    canvas: Image.Image,
+    center: tuple[int, int],
+    *,
+    radius: int = 12,
+    fill: tuple[int, int, int, int] = (28, 42, 69, 225),
+    outline: tuple[int, int, int, int] = PALE_CYAN,
+) -> None:
+    x, y = center
+    ImageDraw.Draw(canvas).polygon(
+        ((x, y - radius), (x + radius, y), (x, y + radius), (x - radius, y)),
+        fill=fill,
+        outline=outline,
+    )
 
 
 def add_core_pulse(frame: Image.Image, phase: float) -> Image.Image:
@@ -515,6 +598,42 @@ def add_notification_ping(frame: Image.Image, index: int) -> Image.Image:
     return clear_transparent_rgb(output)
 
 
+def add_blocked_badge(frame: Image.Image, index: int) -> Image.Image:
+    """Keep the error state legible even when reduced motion shows frame zero."""
+
+    output = frame.copy()
+    overlay = Image.new("RGBA", frame.size, TRANSPARENT)
+    center = (158, 66)
+    pulse = (10, 11, 13, 15, 15, 13, 11, 10)[index]
+    draw_ripple(overlay, center, pulse, 90)
+    draw_status_diamond(
+        overlay,
+        center,
+        radius=11,
+        fill=(57, 29, 62, 226),
+        outline=PALE_PINK,
+    )
+    draw = ImageDraw.Draw(overlay)
+    draw.line((153, 61, 163, 71), fill=PALE_PINK, width=3)
+    draw.line((163, 61, 153, 71), fill=PALE_CYAN, width=3)
+    output.alpha_composite(overlay)
+    return clear_transparent_rgb(output)
+
+
+def add_ready_badge(frame: Image.Image, index: int) -> Image.Image:
+    output = frame.copy()
+    overlay = Image.new("RGBA", frame.size, TRANSPARENT)
+    center = (33, 62)
+    radius = 11 + (1 if index in (3, 4) else 0)
+    draw_status_diamond(overlay, center, radius=radius)
+    draw = ImageDraw.Draw(overlay)
+    draw.line((28, 62, 32, 66, 39, 57), fill=PALE_CYAN, width=3, joint="curve")
+    if index in (3, 4):
+        draw_star(overlay, 48, 51, 3, GOLD)
+    output.alpha_composite(overlay)
+    return clear_transparent_rgb(output)
+
+
 def add_running_scan(frame: Image.Image, index: int) -> Image.Image:
     output = frame.copy()
     overlay = Image.new("RGBA", frame.size, TRANSPARENT)
@@ -528,6 +647,12 @@ def add_running_scan(frame: Image.Image, index: int) -> Image.Image:
         draw.rounded_rectangle((x, 185, x + 7, 188), radius=1, fill=fill)
     if index in (2, 3):
         draw_star(overlay, 153, 117, 3, PALE_PINK)
+    spinner = (148, 54, 172, 78)
+    for segment in range(6):
+        start = (segment * 60 + index * 60) % 360
+        color = PALE_CYAN if segment in (0, 1) else (104, 236, 248, 70)
+        draw.arc(spinner, start, start + 34, fill=color, width=2)
+    draw_star(overlay, 160, 66, 2, PALE_PINK)
     output.alpha_composite(overlay)
     return clear_transparent_rgb(output)
 
@@ -587,14 +712,13 @@ def add_sunglasses(frame: Image.Image, *, dx: int = 0, dy: int = 0) -> Image.Ima
 
 def build_idle(keyposes: list[Image.Image], neutral_anchor: Image.Image) -> list[Image.Image]:
     poses = normalize_group(keyposes, target_height=164, max_width=184, bottom=196)
-    base = poses[0]
-    target_head = warm_head_centroid(base)
-    aligned_expressions = [align_head(pose, target_head) for pose in poses]
+    target_head = warm_head_centroid(poses[0])
+    poses = [align_head(pose, target_head, factor=0.82) for pose in poses]
     dys = (0, -1, 0, 0, 0, 1)
     scales = (1.0, 1.002, 1.0, 1.0, 1.0, 0.998)
     frames = []
-    for index, expression in enumerate(aligned_expressions):
-        frame = replace_face(base, expression)
+    for index, pose in enumerate(poses):
+        frame = pose
         frame = transform_cell(frame, scale=scales[index], dy=dys[index])
         frame = add_core_pulse(frame, (math.sin(index / 6 * math.tau) + 1) / 2)
         frames.append(add_idle_snow(frame, index))
@@ -640,11 +764,20 @@ def build_wave(keyposes: list[Image.Image]) -> list[Image.Image]:
     for index, (pose, (dx, dy)) in enumerate(zip(poses, offsets)):
         frame = transform_cell(pose, dx=dx, dy=dy)
         overlay = Image.new("RGBA", frame.size, TRANSPARENT)
+        cue_alpha = (55, 105, 220, 95)[index]
+        draw = ImageDraw.Draw(overlay)
+        draw.line((170, 73, 170, 151), fill=(104, 236, 248, cue_alpha), width=1)
+        draw.ellipse((144, 105, 158, 119), outline=(112, 239, 250, cue_alpha), width=2)
+        if index == 0:
+            draw.arc((126, 76, 151, 101), 250, 55, fill=PALE_CYAN, width=2)
         if index == 1:
-            draw_star(overlay, 156, 78, 3, PALE_PINK)
+            draw_star(overlay, 156, 82, 3, PALE_CYAN)
+            draw.line((136, 111, 146, 111), fill=PALE_CYAN, width=2)
         if index == 2:
             draw_ripple(overlay, (149, 112), 10, 180)
             draw_ripple(overlay, (149, 112), 15, 85)
+        if index == 3:
+            draw_ripple(overlay, (149, 112), 12, 65)
         frame.alpha_composite(overlay)
         frames.append(clear_transparent_rgb(frame))
     return frames
@@ -659,7 +792,7 @@ def build_jump(keyposes: list[Image.Image]) -> list[Image.Image]:
         center_y=104,
         align_alpha_centroid=True,
     )
-    dys = (5, 3, -2, 1, 5)
+    dys = (6, 0, -6, 0, 6)
     scales = (1.0, 1.0, 1.0, 1.0, 1.0)
     angles = (0.0, -0.3, 0.0, 0.3, 0.0)
     frames = []
@@ -674,9 +807,17 @@ def build_jump(keyposes: list[Image.Image]) -> list[Image.Image]:
         if index in (0, 4):
             draw = ImageDraw.Draw(overlay)
             draw.arc((58, 181, 134, 204), 190, 350, fill=(104, 236, 248, 190), width=2)
+        if index == 1:
+            draw_glowing_line(overlay, [(48, 166), (48, 190)], width=1, glow=2)
+            draw_glowing_line(overlay, [(144, 162), (144, 188)], width=1, glow=2)
         if index == 2:
+            draw_glowing_line(overlay, [(42, 153), (42, 186)], width=1, glow=2)
+            draw_glowing_line(overlay, [(150, 149), (150, 183)], width=1, glow=2)
             draw_star(overlay, 46, 69, 4, PALE_CYAN)
             draw_star(overlay, 148, 81, 3, PALE_PINK)
+        if index == 3:
+            draw_glowing_line(overlay, [(47, 61), (47, 84)], width=1, glow=2)
+            draw_glowing_line(overlay, [(145, 65), (145, 89)], width=1, glow=2)
         frame.alpha_composite(overlay)
         frames.append(clear_transparent_rgb(frame))
     return frames
@@ -700,14 +841,16 @@ def build_blocked(keyposes: list[Image.Image]) -> list[Image.Image]:
             overlay = Image.new("RGBA", frame.size, TRANSPARENT)
             draw_star(overlay, 96, 27, 4 + (index - 5), PALE_CYAN)
             frame.alpha_composite(overlay)
-        frames.append(clear_transparent_rgb(frame))
+        frames.append(add_blocked_badge(frame, index))
     return frames
 
 
 def build_needs_input(keyposes: list[Image.Image]) -> list[Image.Image]:
     poses = normalize_group(keyposes, target_height=166, max_width=184, bottom=196)
-    pose_order = (0, 1, 3, 4, 2, 5)
-    offsets = ((0, 0), (2, -1), (2, 1), (5, 1), (5, -1), (2, -1))
+    target_head = warm_head_centroid(poses[0])
+    poses = [align_head(pose, target_head, factor=0.65) for pose in poses]
+    pose_order = (0, 1, 2, 3, 4, 5)
+    offsets = ((0, 0), (1, -1), (2, 0), (2, 1), (0, 0), (1, -1))
     frames = []
     for index, (pose_index, (dx, dy)) in enumerate(zip(pose_order, offsets)):
         pose = transform_cell(poses[pose_index], dx=dx, dy=dy)
@@ -715,13 +858,26 @@ def build_needs_input(keyposes: list[Image.Image]) -> list[Image.Image]:
     return frames
 
 
-def build_running(keyposes: list[Image.Image]) -> list[Image.Image]:
+def build_running(
+    keyposes: list[Image.Image],
+    wing_overlays: dict[int, Image.Image],
+) -> list[Image.Image]:
     poses = normalize_group(keyposes, target_height=166, max_width=184, bottom=196)
-    offsets = ((0, 0), (1, -2), (6, 0), (0, -1), (2, 1), (0, 0))
+    target_head = warm_head_centroid(poses[0])
+    poses = [align_head(pose, target_head, factor=0.72) for pose in poses]
+    normalized_wings = {
+        2: normalize_accessory(wing_overlays[2], max_width=88, max_height=62),
+        4: normalize_accessory(wing_overlays[4], max_width=84, max_height=82),
+    }
+    wing_positions = {2: (4, 91), 4: (6, 68)}
+    offsets = ((0, 0), (0, -1), (1, 0), (1, -1), (0, 1), (0, 0))
     frames = []
     for index, (pose, (dx, dy)) in enumerate(zip(poses, offsets)):
         pose = transform_cell(pose, dx=dx, dy=dy)
-        frame = with_underlay(pose, working_underlay(index))
+        underlay = working_underlay(index)
+        if index in normalized_wings:
+            underlay.alpha_composite(normalized_wings[index], wing_positions[index])
+        frame = with_underlay(pose, underlay)
         frame = add_core_pulse(frame, 0.35 + (index % 3) * 0.25)
         frames.append(add_running_scan(frame, index))
     return frames
@@ -729,11 +885,17 @@ def build_running(keyposes: list[Image.Image]) -> list[Image.Image]:
 
 def build_ready(keyposes: list[Image.Image]) -> list[Image.Image]:
     poses = normalize_group(keyposes, target_height=168, max_width=188, bottom=196)
-    pose_order = (5, 1, 2, 3, 4, 5)
-    positions = ((56, 117), (96, 126), (48, 108), (160, 91), (124, 46), (71, 73))
-    angles = (-24, 8, -32, 8, 164, -55)
-    plane_scales = (1.28, 1.18, 1.28, 1.40, 1.36, 1.25)
-    offsets = ((1, 1), (0, -7), (1, -6), (-3, 2), (1, 2), (1, 1))
+    head_points = [warm_head_centroid(pose) for pose in poses]
+    head_pivot = (
+        sum(point[0] for point in head_points) / len(head_points),
+        sum(point[1] for point in head_points) / len(head_points),
+    )
+    poses = [align_head(pose, head_pivot, factor=0.78) for pose in poses]
+    pose_order = (0, 1, 2, 3, 4, 5)
+    positions = ((161, 111), (112, 126), (63, 110), (145, 91), (130, 49), (62, 78))
+    angles = (168, 145, -32, 8, 35, -55)
+    plane_scales = (1.12, 1.08, 1.18, 1.30, 1.20, 1.12)
+    offsets = ((0, 0), (0, -2), (0, -3), (-1, 0), (0, 1), (0, 0))
     frames = []
     for index, (pose_index, position, plane_angle, plane_scale, (dx, dy)) in enumerate(
         zip(pose_order, positions, angles, plane_scales, offsets)
@@ -753,7 +915,7 @@ def build_ready(keyposes: list[Image.Image]) -> list[Image.Image]:
         frame.alpha_composite(overlay)
         if index == 4:
             frame = add_sunglasses(frame, dx=dx, dy=dy)
-        frames.append(clear_transparent_rgb(frame))
+        frames.append(add_ready_badge(frame, index))
     return frames
 
 
@@ -849,7 +1011,7 @@ def make_previews(rows: list[list[Image.Image]], sheet: Image.Image) -> None:
         preview_dir / "10-gaze-clockwise.gif",
         save_all=True,
         append_images=direction_tiles[1:],
-        duration=170,
+        duration=90,
         loop=0,
         disposal=2,
     )
@@ -868,7 +1030,7 @@ def make_previews(rows: list[list[Image.Image]], sheet: Image.Image) -> None:
         OUT / "showcase.gif",
         save_all=True,
         append_images=showcase[1:],
-        duration=130,
+        duration=100,
         loop=0,
         disposal=2,
     )
@@ -984,6 +1146,7 @@ def build() -> None:
     if not project_version:
         raise ValueError(f"empty project version: {VERSION_FILE}")
     keyframes = {key: load_keyframes(key) for key in KEYFRAME_FILES}
+    running_wings = load_running_wings()
     rows: list[list[Image.Image]] = []
     rows.append(build_idle(keyframes["idle"], neutral_frame))
     move_right = build_move(keyframes["move_right"])
@@ -993,11 +1156,19 @@ def build() -> None:
     rows.append(build_jump(keyframes["jump"]))
     rows.append(build_blocked(keyframes["blocked"]))
     rows.append(build_needs_input(keyframes["needs_input"]))
-    rows.append(build_running(keyframes["running"]))
+    rows.append(build_running(keyframes["running"], running_wings))
     rows.append(build_ready(keyframes["ready"]))
     gaze = build_gaze(keyframes["gaze_right"])
     rows.append(gaze[:8])
     rows.append(gaze[8:])
+
+    green_edge_repairs: dict[str, int] = {}
+    for row_index, frames in enumerate(rows):
+        for frame_index, frame in enumerate(frames):
+            repaired, repair_count = repair_visible_green_edge_residue(frame)
+            rows[row_index][frame_index] = repaired
+            if repair_count:
+                green_edge_repairs[f"r{row_index}c{frame_index}"] = repair_count
 
     sheet = save_frame_rows(rows)
     sheet_path = OUT / "spritesheet.webp"
@@ -1027,6 +1198,15 @@ def build() -> None:
         },
         "reduced_motion_neutral": source_image_report(NEUTRAL_FRAME, neutral_frame),
         "keyframes": keyframe_report(keyframes),
+        "running_wing_overlays": {
+            str(frame_index): source_image_report(KEYFRAMES / RUNNING_WING_FILES[frame_index], image)
+            for frame_index, image in running_wings.items()
+        },
+        "green_edge_repairs": {
+            "method": "nearest-clean-edge-rgb-with-alpha-preserved",
+            "total": sum(green_edge_repairs.values()),
+            "by_cell": green_edge_repairs,
+        },
         "motion": motion_report(rows),
         "state_first_frame_hashes": {
             STATE_NAMES[index]: alpha_digest(rows[index][0]) for index in range(9)

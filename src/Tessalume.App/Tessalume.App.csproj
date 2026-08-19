@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net8.0-windows10.0.17763.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
@@ -13,13 +13,14 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <Description>Open-source visual theme studio for Codex desktop</Description>
     <Authors>$(AssemblyName) Contributors</Authors>
-    <Version>2.1.0</Version>
+    <Version>2.1.1</Version>
     <BuiltInThemesRoot Condition="'$(BuiltInThemesRoot)' == ''">..\..\themes</BuiltInThemesRoot>
     <BuiltInPetsRoot Condition="'$(BuiltInPetsRoot)' == ''">..\..\pets</BuiltInPetsRoot>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Tessalume.Core\Tessalume.Core.csproj" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4129.50" />
     <Resource Include="Assets\$(AssemblyName).ico" />
     <Resource Include="Assets\$(AssemblyName).png" />
   </ItemGroup>
@@ -50,11 +51,8 @@
                       Exclude="$(BuiltInThemesRoot)\**\.legacy\**;$(BuiltInThemesRoot)\**\.references\**;$(BuiltInThemesRoot)\**\.sources\**;$(BuiltInThemesRoot)\.optimizer-cache.json">
       <LogicalName>Tessalume.BuiltInThemes/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
     </EmbeddedResource>
-    <EmbeddedResource Include="$(BuiltInPetsRoot)\flying-snowfluff\catalog.json;$(BuiltInPetsRoot)\flying-snowfluff\pet.json;$(BuiltInPetsRoot)\flying-snowfluff\spritesheet.webp">
-      <LogicalName>Tessalume.BuiltInPets/flying-snowfluff/%(Filename)%(Extension)</LogicalName>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(BuiltInPetsRoot)\flying-snowfluff\previews\*.gif">
-      <LogicalName>Tessalume.BuiltInPets/flying-snowfluff/previews/%(Filename)%(Extension)</LogicalName>
+    <EmbeddedResource Include="$(BuiltInPetsRoot)\*\**\*">
+      <LogicalName>Tessalume.BuiltInPets/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
     </EmbeddedResource>
     <EmbeddedResource Include="..\..\examples\**\*">
       <LogicalName>Tessalume.Templates/theme-template-v1/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>

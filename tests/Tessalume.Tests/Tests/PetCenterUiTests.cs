@@ -12,6 +12,88 @@ using Tessalume.Core.Pets;
 
 internal static partial class TestSuite
 {
+    private static readonly int[] CodexIdleDurations = [1680, 660, 660, 840, 840, 1920];
+    private static readonly string[] RuntimeShowcaseKeys =
+    [
+        "idle", "move-right", "move-left", "wave-touch", "jump",
+        "blocked", "needs-input", "running", "ready",
+    ];
+
+    static Task PetPreviewClockMatchesCurrentCodexDesktopAsync()
+    {
+        Ensure(PetCodexMotionSchedule.RuntimeContractId ==
+               "codex-desktop-v2-2026-08-19",
+            "The runtime clock must expose the audited Codex compatibility revision.");
+        Ensure(PetCodexMotionSchedule.TryCreate("idle", out var idle) &&
+               idle.MatchesCodexState &&
+               idle.LoopStartIndex == 0 &&
+               idle.ActionCycleCount == 0 &&
+               idle.Frames.Select(frame => frame.Row).All(row => row == 0) &&
+               idle.Frames.Select(frame => frame.Column).SequenceEqual(
+                   Enumerable.Range(0, 6)) &&
+               idle.Frames.Select(frame => frame.DurationMilliseconds).SequenceEqual(
+                   CodexIdleDurations) &&
+               idle.Frames.Sum(frame => frame.DurationMilliseconds) == 6600,
+            "Idle must use Codex's six slow v2 cells and exact 6.6 second loop.");
+
+        var actions = new[]
+        {
+            (Key: "move-right", Row: 1, Count: 8, Step: 120, Last: 220),
+            (Key: "move-left", Row: 2, Count: 8, Step: 120, Last: 220),
+            (Key: "wave-touch", Row: 3, Count: 4, Step: 140, Last: 280),
+            (Key: "jump", Row: 4, Count: 5, Step: 140, Last: 280),
+            (Key: "blocked", Row: 5, Count: 8, Step: 140, Last: 240),
+            (Key: "needs-input", Row: 6, Count: 6, Step: 150, Last: 260),
+            (Key: "running", Row: 7, Count: 6, Step: 120, Last: 220),
+            (Key: "ready", Row: 8, Count: 6, Step: 150, Last: 280),
+        };
+        foreach (var expected in actions)
+        {
+            Ensure(PetCodexMotionSchedule.TryCreate(expected.Key, out var sequence) &&
+                   sequence.MatchesCodexState &&
+                   sequence.ReturnsToIdle &&
+                   sequence.ActionCycleCount == 3 &&
+                   sequence.LoopStartIndex == expected.Count * 3 &&
+                   sequence.Frames.Count == expected.Count * 3 + idle.Frames.Count,
+                $"{expected.Key} must play exactly three Codex action cycles before idle.");
+            for (var cycle = 0; cycle < 3; cycle++)
+            {
+                var action = sequence.Frames
+                    .Skip(cycle * expected.Count)
+                    .Take(expected.Count)
+                    .ToArray();
+                Ensure(action.Select(frame => frame.Row).All(row => row == expected.Row) &&
+                       action.Select(frame => frame.Column).SequenceEqual(
+                           Enumerable.Range(0, expected.Count)) &&
+                       action.Take(expected.Count - 1).All(frame =>
+                           frame.DurationMilliseconds == expected.Step) &&
+                       action[^1].DurationMilliseconds == expected.Last,
+                    $"{expected.Key} cycle {cycle + 1} must keep Codex's row, order, and delays.");
+            }
+            Ensure(sequence.Frames.Skip(sequence.LoopStartIndex).SequenceEqual(idle.Frames),
+                $"{expected.Key} must enter the exact slow idle tail after its third cycle.");
+        }
+
+        Ensure(PetCodexMotionSchedule.TryCreate("gaze-clockwise", out var gaze) &&
+               !gaze.MatchesCodexState &&
+               gaze.Frames.Count == 16 &&
+               gaze.Frames.Take(8).Select(frame => frame.Row).All(row => row == 9) &&
+               gaze.Frames.Skip(8).Select(frame => frame.Row).All(row => row == 10),
+            "The 16-direction diagnostic must use the real two atlas rows without pretending to be a Codex status.");
+        Ensure(PetCodexMotionSchedule.TryCreate("showcase", out var showcase) &&
+               showcase.IsShowcase &&
+               !showcase.MatchesCodexState &&
+               showcase.Tracks.Count == 9 &&
+               showcase.Tracks.Select(track => track.Key).SequenceEqual(RuntimeShowcaseKeys) &&
+               showcase.Tracks.All(track => track.LoopStartIndex == 0) &&
+               showcase.Tracks[0].Frames.SequenceEqual(idle.Frames) &&
+               showcase.Tracks.Skip(1).All(track =>
+                   track.Frames.Count > 1 &&
+                   track.Frames.All(frame => frame.Row > 0)),
+            "The nine-action showcase must render nine independent real-atlas tracks, including the live idle blink cell.");
+        return Task.CompletedTask;
+    }
+
     static async Task PetCenterRouteAndAccessibilityContractIsCompleteAsync()
     {
         var repositoryRoot = FindRepositoryRoot();
@@ -56,6 +138,12 @@ internal static partial class TestSuite
         var previewSource = await File.ReadAllTextAsync(Path.Combine(
             petRoot,
             "PetPreviewPlayer.cs"));
+        var runtimeRendererSource = await File.ReadAllTextAsync(Path.Combine(
+            petRoot,
+            "PetCodexRuntimeRenderer.cs"));
+        var motionScheduleSource = await File.ReadAllTextAsync(Path.Combine(
+            petRoot,
+            "PetCodexMotionSchedule.cs"));
         var decoderSource = await File.ReadAllTextAsync(Path.Combine(
             petRoot,
             "PetGifFrameDecoder.cs"));
@@ -168,45 +256,55 @@ internal static partial class TestSuite
                petXaml.Contains("<local:PetGalleryView x:Name=\"GalleryPanel\"", StringComparison.Ordinal) &&
                petXaml.Contains("x:Name=\"DetailPanel\" Visibility=\"Collapsed\"", StringComparison.Ordinal) &&
                petXaml.Contains("MaxHeight=\"720\"", StringComparison.Ordinal) &&
+               petXaml.Contains("Text=\"返回画廊\"", StringComparison.Ordinal) &&
+               petXaml.Contains("Style=\"{DynamicResource HomeCrispButton}\"", StringComparison.Ordinal) &&
                petXaml.Contains("Text=\"动作预览\"", StringComparison.Ordinal) &&
                petXaml.Contains("x:Name=\"PetHeaderIcon\"", StringComparison.Ordinal) &&
                petXaml.Contains("x:Name=\"HeaderStatusBadge\"", StringComparison.Ordinal) &&
-               petXaml.Contains("Background=\"{DynamicResource PersonalizationCanvasGradient}\"", StringComparison.Ordinal) &&
+               petXaml.Contains("x:Name=\"PetConsoleShell\"", StringComparison.Ordinal) &&
+               petXaml.Contains("Background=\"Transparent\"", StringComparison.Ordinal) &&
+               petXaml.Contains("MaxHeight=\"650\"", StringComparison.Ordinal) &&
+               petXaml.Contains("Effect=\"{DynamicResource HomeCardShadow}\"", StringComparison.Ordinal) &&
                petXaml.Contains("Background=\"{DynamicResource PersonalizationMotionGradient}\"", StringComparison.Ordinal) &&
                !petXaml.Contains("只解码当前选择", StringComparison.Ordinal) &&
                petViewSource.Contains("FormatLicenseSummary", StringComparison.Ordinal) &&
                petViewSource.Contains("FormatLocation", StringComparison.Ordinal) &&
                petViewSource.Contains("保留所有权利", StringComparison.Ordinal),
-            "The pet console must reuse Tessalume surfaces, present a connected product header, and share one clear button system.");
+            "The pet console must reuse Tessalume surfaces, present a labelled back action, and avoid a disconnected full-page ornament shell.");
         Ensure(galleryXaml.Contains("Text=\"Codex 宠物画廊\"", StringComparison.Ordinal) &&
                galleryXaml.Contains("x:Name=\"SearchBox\"", StringComparison.Ordinal) &&
-               galleryXaml.Contains("Content=\"官方宠物\"", StringComparison.Ordinal) &&
-               galleryXaml.Contains("Content=\"开发预览\"", StringComparison.Ordinal) &&
-               galleryXaml.Contains("跟随 Codex 候选输出自动刷新，只用于审核动作", StringComparison.Ordinal) &&
-               galleryXaml.Contains("已封版并通过哈希校验，才会开放安全安装", StringComparison.Ordinal) &&
-               galleryViewSource.Contains("PetGalleryFilter.Development", StringComparison.Ordinal) &&
-               galleryViewSource.Contains("Entry.IsDevelopment ? \"查看开发预览\" : \"查看并安装\"", StringComparison.Ordinal) &&
+               !galleryXaml.Contains("开发预览", StringComparison.Ordinal) &&
+               !galleryXaml.Contains("DevelopmentFilterButton", StringComparison.Ordinal) &&
+               galleryXaml.Contains("资源更新后刷新画廊即可重新载入预览", StringComparison.Ordinal) &&
+               galleryXaml.Contains("只有通过完整哈希校验的资源才会开放安装", StringComparison.Ordinal) &&
+               galleryXaml.Contains("<UniformGrid Columns=\"2\"", StringComparison.Ordinal) &&
+               galleryXaml.Contains("Background=\"{DynamicResource HomeHeroGradient}\"", StringComparison.Ordinal) &&
+               galleryXaml.Contains("Style=\"{DynamicResource HomeCrispButton}\"", StringComparison.Ordinal) &&
+               galleryViewSource.Contains("Entry.CanOpen ? \"查看并安装\" : \"资源不可用\"", StringComparison.Ordinal) &&
+               !galleryViewSource.Contains("IsDevelopment", StringComparison.Ordinal) &&
                galleryServiceSource.Contains("UsesLastGoodPreview = true", StringComparison.Ordinal) &&
-               galleryServiceSource.Contains("GetFileRevision", StringComparison.Ordinal) &&
+               galleryServiceSource.Contains("PetLibraryWatcher", StringComparison.Ordinal) &&
                projectWatcherSource.Contains("DebounceDelay", StringComparison.Ordinal) &&
                projectWatcherSource.Contains("StopCore()", StringComparison.Ordinal),
-            "The pet gallery must present searchable official/development cards and a bounded live-preview lifecycle.");
-        Ensure(developmentLoaderSource.Contains("PetDevelopmentProjectContract.RequiredPreviewActionKeys", StringComparison.Ordinal) &&
-               developmentLoaderSource.Contains("ResolveContainedPath", StringComparison.Ordinal) &&
-               developmentLoaderSource.Contains("EnsureRegularFile", StringComparison.Ordinal) &&
-               developmentLoaderSource.Contains("ValidatePreviewFile", StringComparison.Ordinal) &&
-               petServiceSource.Contains("开发预览不会连接正式宠物安装器", StringComparison.Ordinal) &&
-               petServiceSource.Contains("ShowInstallationManagement = false", StringComparison.Ordinal) &&
-               petServiceSource.Contains("ShowPrimaryAction = false", StringComparison.Ordinal),
-            "Development projects must stay preview-only and must not cross into the formal installer boundary.");
-        Ensure(petViewSource.Contains("e.NewSize.Width < 720", StringComparison.Ordinal) &&
-               petViewSource.Contains("e.NewSize.Width < 1100", StringComparison.Ordinal) &&
+            "The pet gallery must present one searchable package library with a bounded live-preview lifecycle.");
+        Ensure(galleryServiceSource.Contains("_options.PackagesRoot", StringComparison.Ordinal) &&
+               !galleryServiceSource.Contains("PetDevelopmentProjectLoader", StringComparison.Ordinal) &&
+               petShellSource.Contains("ReloadSelectedPetEntryAsync", StringComparison.Ordinal) &&
+               petShellSource.Contains("await RefreshPetGalleryAsync(showGallery: false)", StringComparison.Ordinal) &&
+               !petShellSource.Contains("RefreshDevelopmentPreview", StringComparison.Ordinal) &&
+               !petServiceSource.Contains("EnsurePetsInstalled(_layout)", StringComparison.Ordinal) &&
+               petServiceSource.Contains("LoadSelectedPackageAsync", StringComparison.Ordinal),
+            "Published pet resources must refresh from dist/pets without a rebuild or a separate installer boundary.");
+        Ensure(petViewSource.Contains("width < 720", StringComparison.Ordinal) &&
+               petViewSource.Contains("width < 1100", StringComparison.Ordinal) &&
                petViewSource.Contains("new GridLength(2, GridUnitType.Star)", StringComparison.Ordinal) &&
                petViewSource.Contains("new GridLength(3, GridUnitType.Star)", StringComparison.Ordinal) &&
                petViewSource.Contains("WorkspaceSurface_SizeChanged", StringComparison.Ordinal) &&
                petViewSource.Contains("UpdatePreviewStageBounds", StringComparison.Ordinal) &&
+               petViewSource.Contains("PetRuntimePreview.Width = displayWidth", StringComparison.Ordinal) &&
+               petViewSource.Contains("PetRuntimePreview.Height = displayHeight", StringComparison.Ordinal) &&
                !petViewSource.Contains("Grid.SetRow(ControlPanelHost, 1)", StringComparison.Ordinal),
-            "Pet layout must remain a height-bound two-column console from narrow through wide desktop viewports.");
+            "Pet layout must remain a height-bound two-column console whose real WebView preview keeps an explicit non-zero stage size.");
         Ensure(decoderSource.Contains("GifBitmapDecoder", StringComparison.Ordinal) &&
                decoderSource.Contains("MaximumRetainedDecodedBytes = 24L * 1024 * 1024", StringComparison.Ordinal) &&
                decoderSource.Contains("CalculateTargetSize", StringComparison.Ordinal) &&
@@ -219,6 +317,23 @@ internal static partial class TestSuite
                petViewSource.Contains("PetCenterView_IsVisibleChanged", StringComparison.Ordinal) &&
                petViewSource.Contains("PetCenterView_Unloaded", StringComparison.Ordinal),
             "The product preview must keep bounded decoding and stop its timer when the page is inactive.");
+        Ensure(petXaml.Contains("WebView2CompositionControl", StringComparison.Ordinal) &&
+               previewSource.Contains("LoadRuntimeCurrentAsync", StringComparison.Ordinal) &&
+               previewSource.Contains("GIF 兼容回退", StringComparison.Ordinal) &&
+               previewSource.Contains("实时图集 · 九动作独立循环", StringComparison.Ordinal) &&
+               runtimeRendererSource.Contains("SetVirtualHostNameToFolderMapping", StringComparison.Ordinal) &&
+               runtimeRendererSource.Contains("backgroundPosition", StringComparison.Ordinal) &&
+               runtimeRendererSource.Contains("setTimeout", StringComparison.Ordinal) &&
+               runtimeRendererSource.Contains("stage.className", StringComparison.Ordinal) &&
+               runtimeRendererSource.Contains("state.tracks.map", StringComparison.Ordinal) &&
+               motionScheduleSource.Contains("ActionCycleCount = 3", StringComparison.Ordinal) &&
+               motionScheduleSource.Contains("IdleSlowdown = 6", StringComparison.Ordinal) &&
+               motionScheduleSource.Contains("CreateShowcase", StringComparison.Ordinal) &&
+               galleryServiceSource.Contains("runtimeSpritesheetPath", StringComparison.Ordinal) &&
+               !petXaml.Contains("Codex 同步", StringComparison.Ordinal) &&
+               !petViewSource.Contains("Codex 同步", StringComparison.Ordinal) &&
+               !previewSource.Contains("Codex 同步", StringComparison.Ordinal),
+            "All pet previews must use the self-contained real-atlas runtime, including the live nine-panel scene, with GIF only as a compatibility fallback.");
         foreach (var previewMarker in new[]
                  {
                      "Content=\"待机\" Tag=\"idle\"",
@@ -370,7 +485,7 @@ internal static partial class TestSuite
                    "OpenRecommendedCompanionPetAsync()",
                    StringComparison.Ordinal) &&
                petShellSource.Contains(
-                   "_petGallerySnapshot?.OfficialEntries.FirstOrDefault",
+                   "_petGallerySnapshot?.Entries.FirstOrDefault",
                    StringComparison.Ordinal),
             "The Aemeath theme detail must expose a visible, event-driven route to its companion pet.");
         var applyThemeStart = themeRuntimeSource.IndexOf(
@@ -415,6 +530,8 @@ internal static partial class TestSuite
         var dataDirectory = Path.Combine(root, "data");
         Directory.CreateDirectory(themesDirectory);
         Directory.CreateDirectory(dataDirectory);
+        var portableLayout = new PortableLayout(root, themesDirectory, dataDirectory);
+        BuiltInAssetInstaller.EnsurePetsInstalled(portableLayout);
         var corruptPreviewPath = Path.Combine(dataDirectory, "corrupt-preview.gif");
         File.WriteAllBytes(corruptPreviewPath, [0x47]);
         var petOptions = new PetApplicationServiceOptions(
@@ -450,7 +567,7 @@ internal static partial class TestSuite
                 PetCenterPresentationState invalidManagementState;
                 PetCenterPresentationState recoveredManagementState;
                 using (var service = new PetApplicationService(
-                           new PortableLayout(root, themesDirectory, dataDirectory),
+                           portableLayout,
                            petOptions))
                 {
                     invalidManagementState = service.RefreshAsync()
@@ -495,7 +612,7 @@ internal static partial class TestSuite
                     "Recovering management state must archive the corrupt bytes, rebuild schema 1, leave Codex pet files unchanged, and rescan them as an unmanaged conflict.");
 
                 window = new MainWindow(
-                    new PortableLayout(root, themesDirectory, dataDirectory),
+                    portableLayout,
                     petOptions);
                 InvokeMainWindowMethod(window, "EnsureMainUiInitialized");
                 InvokeMainWindowMethod(window, "NavigateTo", AppRoute.Pets);

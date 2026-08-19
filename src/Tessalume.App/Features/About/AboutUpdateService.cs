@@ -23,7 +23,8 @@ internal sealed class AboutUpdateService : IDisposable
             BrandInfo.RepositoryOwner,
             BrandInfo.RepositoryName,
             layout.DataDirectory,
-            currentVersion);
+            currentVersion,
+            Path.Combine(layout.RootDirectory, executableName));
         _compatibilityClient = new CompatibilityUpdateClient(
             BrandInfo.RepositoryOwner,
             BrandInfo.RepositoryName,

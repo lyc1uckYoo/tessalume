@@ -234,6 +234,7 @@ internal static class UpdateBootstrapper
                      {
                          (Path.Combine(layout.DataDirectory, "updates", "helpers"), "Tessalume.UpdateHelper.*.exe"),
                          (Path.Combine(layout.DataDirectory, "updates", "downloads"), "Tessalume-*.exe.download*"),
+                         (Path.Combine(layout.DataDirectory, "updates", "downloads"), "Tessalume-*.delta.download*"),
                      })
             {
                 if (!Directory.Exists(directory)) continue;

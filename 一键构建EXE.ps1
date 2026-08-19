@@ -59,7 +59,7 @@ $replacementBackup = Join-Path $distRoot ".previous-portable-$Runtime"
 $sourceThemes = Join-Path $root 'themes'
 $optimizedThemes = Join-Path $root 'optimized-themes'
 $sourcePets = Join-Path $root 'pets'
-$builtInPetPackageNames = @('flying-snowfluff')
+$builtInPetPackageNames = @('flying-snowfluff', 'phoebe-jiubi')
 $themeOptimizer = Join-Path $root 'tools\optimize-theme-assets.py'
 $windowsTargetProperties = @(
     '-p:TargetPlatformDisplayName=Windows'
@@ -342,6 +342,99 @@ function Get-PetWebPMetadata([string]$Path) {
     }
 }
 
+function Read-PetUInt32BigEndian([IO.BinaryReader]$Reader, [string]$Path) {
+    $bytes = $Reader.ReadBytes(4)
+    if ($bytes.Length -ne 4) {
+        throw "Built-in pet PNG ended unexpectedly: $Path"
+    }
+    return [uint32](
+        ([uint32]$bytes[0] -shl 24) -bor
+        ([uint32]$bytes[1] -shl 16) -bor
+        ([uint32]$bytes[2] -shl 8) -bor
+        [uint32]$bytes[3])
+}
+
+function Get-PetPngMetadata([string]$Path) {
+    $stream = [IO.File]::Open($Path, [IO.FileMode]::Open, [IO.FileAccess]::Read, [IO.FileShare]::Read)
+    $reader = [IO.BinaryReader]::new($stream, [Text.Encoding]::ASCII, $true)
+    try {
+        $signature = $reader.ReadBytes(8)
+        $expectedSignature = [byte[]](0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a)
+        if ($signature.Length -ne 8 -or
+            ($signature -join ',') -cne ($expectedSignature -join ',')) {
+            throw "Built-in pet spritesheet is not a valid PNG: $Path"
+        }
+
+        $width = 0
+        $height = 0
+        $colorType = -1
+        $hasTransparencyChunk = $false
+        $isAnimated = $false
+        $sawHeader = $false
+        $sawEnd = $false
+        while ($stream.Position -lt $stream.Length) {
+            $dataLength = [long](Read-PetUInt32BigEndian $reader $Path)
+            $chunkTypeBytes = $reader.ReadBytes(4)
+            if ($chunkTypeBytes.Length -ne 4) {
+                throw "Built-in pet PNG has an incomplete chunk header: $Path"
+            }
+            $chunkType = [Text.Encoding]::ASCII.GetString($chunkTypeBytes)
+            if (-not $sawHeader -and $chunkType -cne 'IHDR') {
+                throw "Built-in pet PNG must begin with IHDR: $Path"
+            }
+            if ($dataLength -gt [int]::MaxValue -or $stream.Position -gt $stream.Length - $dataLength - 4) {
+                throw "Built-in pet PNG contains an out-of-bounds chunk: $Path"
+            }
+
+            if ($chunkType -ceq 'IHDR') {
+                if ($sawHeader -or $dataLength -ne 13) {
+                    throw "Built-in pet PNG has an invalid IHDR chunk: $Path"
+                }
+                $width = [int](Read-PetUInt32BigEndian $reader $Path)
+                $height = [int](Read-PetUInt32BigEndian $reader $Path)
+                $headerTail = $reader.ReadBytes(5)
+                if ($headerTail.Length -ne 5 -or $width -le 0 -or $height -le 0) {
+                    throw "Built-in pet PNG has invalid dimensions: $Path"
+                }
+                $colorType = [int]$headerTail[1]
+                if ($colorType -notin @(0, 2, 3, 4, 6)) {
+                    throw "Built-in pet PNG has an unsupported color type: $Path"
+                }
+                $sawHeader = $true
+            }
+            else {
+                if ($chunkType -ceq 'tRNS') { $hasTransparencyChunk = $true }
+                if ($chunkType -ceq 'acTL') { $isAnimated = $true }
+                $stream.Position += $dataLength
+            }
+
+            if ($reader.ReadBytes(4).Length -ne 4) {
+                throw "Built-in pet PNG has an incomplete chunk checksum: $Path"
+            }
+            if ($chunkType -ceq 'IEND') {
+                if ($dataLength -ne 0 -or $stream.Position -ne $stream.Length) {
+                    throw "Built-in pet PNG has an invalid IEND boundary: $Path"
+                }
+                $sawEnd = $true
+                break
+            }
+        }
+        if (-not $sawHeader -or -not $sawEnd) {
+            throw "Built-in pet PNG is incomplete: $Path"
+        }
+        return [pscustomobject]@{
+            Encoding = if ($isAnimated) { 'APNG' } else { 'PNG' }
+            Width = $width
+            Height = $height
+            HasAlpha = $colorType -in @(4, 6) -or $hasTransparencyChunk
+        }
+    }
+    finally {
+        $reader.Dispose()
+        $stream.Dispose()
+    }
+}
+
 function Assert-BuiltInPetPackages([string]$PetsRoot, [string[]]$ExpectedPackageNames) {
     $PetsRoot = Assert-InProject $PetsRoot
     if ($ExpectedPackageNames.Count -eq 0 -or
@@ -374,17 +467,17 @@ function Assert-BuiltInPetPackages([string]$PetsRoot, [string[]]$ExpectedPackage
         [pscustomobject]@{ Key = 'gaze-lower'; Row = 10; Frames = 8 }
     )
     $expectedPreviews = @(
-        [pscustomobject]@{ Path = 'previews/00-idle.gif'; Kind = 'action'; ActionKey = 'idle'; Label = (-join [char[]]@(0x5f85, 0x673a)); Width = 576; Height = 624; Frames = 6 },
-        [pscustomobject]@{ Path = 'previews/01-move-right.gif'; Kind = 'action'; ActionKey = 'move-right'; Label = (-join [char[]]@(0x5411, 0x53f3, 0x79fb, 0x52a8)); Width = 576; Height = 624; Frames = 8 },
-        [pscustomobject]@{ Path = 'previews/02-move-left.gif'; Kind = 'action'; ActionKey = 'move-left'; Label = (-join [char[]]@(0x5411, 0x5de6, 0x79fb, 0x52a8)); Width = 576; Height = 624; Frames = 8 },
-        [pscustomobject]@{ Path = 'previews/03-wave-touch.gif'; Kind = 'action'; ActionKey = 'wave-touch'; Label = (-join [char[]]@(0x6325, 0x624b, 0x4e92, 0x52a8)); Width = 576; Height = 624; Frames = 4 },
-        [pscustomobject]@{ Path = 'previews/04-jump.gif'; Kind = 'action'; ActionKey = 'jump'; Label = (-join [char[]]@(0x8df3, 0x8dc3)); Width = 576; Height = 624; Frames = 5 },
-        [pscustomobject]@{ Path = 'previews/05-blocked.gif'; Kind = 'action'; ActionKey = 'blocked'; Label = (-join [char[]]@(0x9047, 0x5230, 0x963b, 0x585e)); Width = 576; Height = 624; Frames = 8 },
-        [pscustomobject]@{ Path = 'previews/06-needs-input.gif'; Kind = 'action'; ActionKey = 'needs-input'; Label = (-join [char[]]@(0x7b49, 0x5f85, 0x8f93, 0x5165)); Width = 576; Height = 624; Frames = 6 },
-        [pscustomobject]@{ Path = 'previews/07-running.gif'; Kind = 'action'; ActionKey = 'running'; Label = (-join [char[]]@(0x6b63, 0x5728, 0x5de5, 0x4f5c)); Width = 576; Height = 624; Frames = 6 },
-        [pscustomobject]@{ Path = 'previews/08-ready.gif'; Kind = 'action'; ActionKey = 'ready'; Label = (-join [char[]]@(0x5b8c, 0x6210, 0x5f85, 0x770b)); Width = 576; Height = 624; Frames = 6 },
-        [pscustomobject]@{ Path = 'previews/10-gaze-clockwise.gif'; Kind = 'direction'; ActionKey = 'gaze-clockwise'; Label = ('16 ' + (-join [char[]]@(0x5411, 0x8f6c, 0x8eab))); Width = 576; Height = 684; Frames = 16 },
-        [pscustomobject]@{ Path = 'previews/showcase.gif'; Kind = 'showcase'; ActionKey = 'showcase'; Label = (-join [char[]]@(0x52a8, 0x6001, 0x4e5d, 0x5bab, 0x683c)); Width = 1152; Height = 1248; Frames = 8 }
+        [pscustomobject]@{ Path = 'previews/00-idle.gif'; Kind = 'action'; ActionKey = 'idle'; Width = 576; Height = 624 },
+        [pscustomobject]@{ Path = 'previews/01-move-right.gif'; Kind = 'action'; ActionKey = 'move-right'; Width = 576; Height = 624 },
+        [pscustomobject]@{ Path = 'previews/02-move-left.gif'; Kind = 'action'; ActionKey = 'move-left'; Width = 576; Height = 624 },
+        [pscustomobject]@{ Path = 'previews/03-wave-touch.gif'; Kind = 'action'; ActionKey = 'wave-touch'; Width = 576; Height = 624 },
+        [pscustomobject]@{ Path = 'previews/04-jump.gif'; Kind = 'action'; ActionKey = 'jump'; Width = 576; Height = 624 },
+        [pscustomobject]@{ Path = 'previews/05-blocked.gif'; Kind = 'action'; ActionKey = 'blocked'; Width = 576; Height = 624 },
+        [pscustomobject]@{ Path = 'previews/06-needs-input.gif'; Kind = 'action'; ActionKey = 'needs-input'; Width = 576; Height = 624 },
+        [pscustomobject]@{ Path = 'previews/07-running.gif'; Kind = 'action'; ActionKey = 'running'; Width = 576; Height = 624 },
+        [pscustomobject]@{ Path = 'previews/08-ready.gif'; Kind = 'action'; ActionKey = 'ready'; Width = 576; Height = 624 },
+        [pscustomobject]@{ Path = 'previews/10-gaze-clockwise.gif'; Kind = 'direction'; ActionKey = 'gaze-clockwise'; Width = 576; Height = 684 },
+        [pscustomobject]@{ Path = 'previews/showcase.gif'; Kind = 'showcase'; ActionKey = 'showcase'; Width = 1152; Height = 1248 }
     )
     $packages = @()
     foreach ($expectedName in $expectedNames) {
@@ -437,9 +530,10 @@ function Assert-BuiltInPetPackages([string]$PetsRoot, [string[]]$ExpectedPackage
                 throw "Built-in pet package '$expectedName' has an invalid protocol row at index $index."
             }
         }
+        $spritesheetRelativePath = [string]$manifest.spritesheetPath
         if (($states | Measure-Object -Property frames -Sum).Sum -ne 74 -or
             [int]$manifest.spriteVersionNumber -ne 2 -or
-            [string]$manifest.spritesheetPath -cne 'spritesheet.webp') {
+            $spritesheetRelativePath -cnotin @('spritesheet.png', 'spritesheet.webp')) {
             throw "Built-in pet package '$expectedName' has inconsistent manifest or protocol totals."
         }
 
@@ -463,7 +557,7 @@ function Assert-BuiltInPetPackages([string]$PetsRoot, [string[]]$ExpectedPackage
             if ($role -ceq 'codex-manifest' -and
                 ($relativePath -cne 'pet.json' -or [long]$file.size -gt 64KB) -or
                 $role -ceq 'codex-spritesheet' -and
-                ($relativePath -cne 'spritesheet.webp' -or [long]$file.size -gt 32MB) -or
+                ($relativePath -cne $spritesheetRelativePath -or [long]$file.size -gt 32MB) -or
                 $role -ceq 'preview' -and
                 ($relativePath -cnotin $expectedPreviews.Path -or [long]$file.size -gt 8MB)) {
                 throw "Built-in pet package '$expectedName' violates its file-role boundary: '$relativePath'."
@@ -486,7 +580,7 @@ function Assert-BuiltInPetPackages([string]$PetsRoot, [string[]]$ExpectedPackage
         $spritesheetFiles = @($files | Where-Object { [string]$_.role -ceq 'codex-spritesheet' })
         $previewFiles = @($files | Where-Object { [string]$_.role -ceq 'preview' })
         if ($manifestFiles.Count -ne 1 -or [string]$manifestFiles[0].path -cne 'pet.json' -or
-            $spritesheetFiles.Count -ne 1 -or [string]$spritesheetFiles[0].path -cne 'spritesheet.webp' -or
+            $spritesheetFiles.Count -ne 1 -or [string]$spritesheetFiles[0].path -cne $spritesheetRelativePath -or
             $previewFiles.Count -ne $expectedPreviews.Count) {
             throw "Built-in pet package '$expectedName' must have one manifest, one spritesheet, and eleven bounded GIF previews."
         }
@@ -504,8 +598,9 @@ function Assert-BuiltInPetPackages([string]$PetsRoot, [string[]]$ExpectedPackage
                 [string]$matches[0].mediaType -cne 'image/gif' -or
                 [string]$matches[0].actionKey -cne $expectedPreview.ActionKey -or
                 [string]$matches[0].stateKey -cne $expectedPreview.ActionKey -or
-                [string]$matches[0].label -cne $expectedPreview.Label -or
-                [int]$matches[0].expectedFrameCount -ne $expectedPreview.Frames -or
+                [string]::IsNullOrWhiteSpace([string]$matches[0].label) -or
+                [int]$matches[0].expectedFrameCount -lt 2 -or
+                [int]$matches[0].expectedFrameCount -gt 24 -or
                 [int]$matches[0].width -ne $expectedPreview.Width -or
                 [int]$matches[0].height -ne $expectedPreview.Height -or
                 [int]$matches[0].representativeFrame -ne 0 -or
@@ -516,14 +611,21 @@ function Assert-BuiltInPetPackages([string]$PetsRoot, [string[]]$ExpectedPackage
             }
             $gif = Get-PetGifMetadata (Join-Path $package.FullName ($expectedPreview.Path -replace '/', [IO.Path]::DirectorySeparatorChar))
             if ($gif.Width -ne $expectedPreview.Width -or $gif.Height -ne $expectedPreview.Height -or
-                $gif.FrameCount -ne $expectedPreview.Frames) {
+                $gif.FrameCount -ne [int]$matches[0].expectedFrameCount) {
                 throw "Built-in pet package '$expectedName' has an invalid animated preview boundary: '$($expectedPreview.Path)'."
             }
         }
 
-        $webp = Get-PetWebPMetadata (Join-Path $package.FullName 'spritesheet.webp')
-        if ($webp.Encoding -cne 'VP8L' -or $webp.Width -ne 1536 -or $webp.Height -ne 2288 -or
-            -not $webp.HasAlpha) {
+        $spritesheetPath = Join-Path $package.FullName $spritesheetRelativePath
+        $spritesheet = if ([IO.Path]::GetExtension($spritesheetRelativePath) -ceq '.png') {
+            Get-PetPngMetadata $spritesheetPath
+        }
+        else {
+            Get-PetWebPMetadata $spritesheetPath
+        }
+        if ($spritesheet.Encoding -cnotin @('PNG', 'APNG', 'VP8L') -or
+            $spritesheet.Width -ne 1536 -or $spritesheet.Height -ne 2288 -or
+            -not $spritesheet.HasAlpha) {
             throw "Built-in pet package '$expectedName' has an invalid runtime spritesheet."
         }
 
@@ -537,9 +639,12 @@ function Assert-BuiltInPetPackages([string]$PetsRoot, [string[]]$ExpectedPackage
         if (($actualFiles -join "`n") -cne ($expectedFiles -join "`n")) {
             throw "Built-in pet package '$expectedName' contains undeclared or missing release files."
         }
-        if (@($catalog.recommendedThemeIds).Count -ne 1 -or
-            [string]$catalog.recommendedThemeIds[0] -cne 'aemeath.star-voyage') {
-            throw "Built-in pet package '$expectedName' must retain its exact paired theme metadata."
+        $recommendedThemeIds = @($catalog.recommendedThemeIds)
+        if ($recommendedThemeIds.Count -ne @($recommendedThemeIds | Select-Object -Unique).Count -or
+            @($recommendedThemeIds | Where-Object {
+                [string]$_ -cnotmatch '^[a-z0-9][a-z0-9.-]{2,127}$'
+            }).Count -ne 0) {
+            throw "Built-in pet package '$expectedName' has invalid paired theme metadata."
         }
     }
 

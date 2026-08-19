@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "id": "phoebe-jiubi",
+  "displayName": "菲比啾比",
+  "description": "头比帽子还软、会踮脚忙活也会抱杖邀功的菲比啾比。",
+  "projectVersion": "0.1.0",
+  "petManifestPath": "pet.json",
+  "previewOutputDirectory": "build/final-motion-candidate",
+  "protocol": {
+    "spriteVersionNumber": 2,
+    "atlasWidth": 1536,
+    "atlasHeight": 2288,
+    "columns": 8,
+    "rows": 11,
+    "cellWidth": 192,
+    "cellHeight": 208,
+    "usedFrameCount": 74,
+    "states": [
+      { "key": "idle", "row": 0, "frames": 7 },
+      { "key": "move-right", "row": 1, "frames": 8 },
+      { "key": "move-left", "row": 2, "frames": 8 },
+      { "key": "wave-touch", "row": 3, "frames": 4 },
+      { "key": "jump", "row": 4, "frames": 5 },
+      { "key": "blocked", "row": 5, "frames": 8 },
+      { "key": "needs-input", "row": 6, "frames": 6 },
+      { "key": "running", "row": 7, "frames": 6 },
+      { "key": "ready", "row": 8, "frames": 6 },
+      { "key": "gaze-upper", "row": 9, "frames": 8 },
+      { "key": "gaze-lower", "row": 10, "frames": 8 }
+    ]
+  },
+  "author": {
+    "name": "lyc1uckYoo"
+  },
+  "license": {
+    "kind": "all-rights-reserved",
+    "spdx": "LicenseRef-All-Rights-Reserved",
+    "name": "All rights reserved"
+  },
+  "rights": {
+    "kind": "fan-work",
+    "notice": "非官方同人宠物；菲比、《鸣潮》及相关名称、设计与商标权利归其各自权利人所有。"
+  },
+  "previews": [
+    { "path": "previews/00-idle.gif", "kind": "action", "mediaType": "image/gif", "actionKey": "idle", "stateKey": "idle", "label": "静坐眨眼", "expectedFrameCount": 9, "width": 576, "height": 624, "representativeFrame": 0, "loop": true },
+    { "path": "previews/01-move-right.gif", "kind": "action", "mediaType": "image/gif", "actionKey": "move-right", "stateKey": "move-right", "label": "踮脚向右", "expectedFrameCount": 8, "width": 576, "height": 624, "representativeFrame": 0, "loop": true },
+    { "path": "previews/02-move-left.gif", "kind": "action", "mediaType": "image/gif", "actionKey": "move-left", "stateKey": "move-left", "label": "踮脚向左", "expectedFrameCount": 8, "width": 576, "height": 624, "representativeFrame": 0, "loop": true },
+    { "path": "previews/03-wave-touch.gif", "kind": "action", "mediaType": "image/gif", "actionKey": "wave-touch", "stateKey": "wave-touch", "label": "扶帽挥手", "expectedFrameCount": 4, "width": 576, "height": 624, "representativeFrame": 0, "loop": true },
+    { "path": "previews/04-jump.gif", "kind": "action", "mediaType": "image/gif", "actionKey": "jump", "stateKey": "jump", "label": "压帽弹跳", "expectedFrameCount": 5, "width": 576, "height": 624, "representativeFrame": 0, "loop": true },
+    { "path": "previews/05-blocked.gif", "kind": "action", "mediaType": "image/gif", "actionKey": "blocked", "stateKey": "blocked", "label": "帽檐滑落", "expectedFrameCount": 8, "width": 576, "height": 624, "representativeFrame": 0, "loop": true },
+    { "path": "previews/06-needs-input.gif", "kind": "action", "mediaType": "image/gif", "actionKey": "needs-input", "stateKey": "needs-input", "label": "探身倾听", "expectedFrameCount": 6, "width": 576, "height": 624, "representativeFrame": 0, "loop": true },
+    { "path": "previews/07-running.gif", "kind": "action", "mediaType": "image/gif", "actionKey": "running", "stateKey": "running", "label": "电脑打字", "expectedFrameCount": 6, "width": 576, "height": 624, "representativeFrame": 0, "loop": true },
+    { "path": "previews/08-ready.gif", "kind": "action", "mediaType": "image/gif", "actionKey": "ready", "stateKey": "ready", "label": "抱杖邀功", "expectedFrameCount": 6, "width": 576, "height": 624, "representativeFrame": 0, "loop": true },
+    { "path": "previews/10-gaze-clockwise.gif", "kind": "direction", "mediaType": "image/gif", "actionKey": "gaze-clockwise", "stateKey": "gaze-clockwise", "label": "16 向转身", "expectedFrameCount": 16, "width": 576, "height": 684, "representativeFrame": 0, "loop": true },
+    { "path": "showcase.gif", "kind": "showcase", "mediaType": "image/gif", "actionKey": "showcase", "stateKey": "showcase", "label": "动态九宫格", "expectedFrameCount": 8, "width": 1152, "height": 1248, "representativeFrame": 0, "loop": true }
+  ],
+  "recommendedThemeIds": []
+}

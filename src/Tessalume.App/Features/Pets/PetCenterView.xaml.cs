@@ -16,7 +16,10 @@ public partial class PetCenterView : UserControl, IDisposable
     public PetCenterView()
     {
         InitializeComponent();
-        _previewPlayer = new PetPreviewPlayer(PetPreviewImage, PreviewStateText);
+        _previewPlayer = new PetPreviewPlayer(
+            PetPreviewImage,
+            PreviewStateText,
+            runtimeTarget: PetRuntimePreview);
         _previewPlayer.PlaybackStateChanged += PreviewPlayer_PlaybackStateChanged;
         _previewPlayer.SelectionChanged += PreviewPlayer_SelectionChanged;
         GalleryPanel.EntryRequested += GalleryPanel_EntryRequested;
@@ -79,44 +82,30 @@ public partial class PetCenterView : UserControl, IDisposable
         GalleryPanel.Visibility = Visibility.Collapsed;
         DetailPanel.Visibility = Visibility.Visible;
         DetailPageTitleText.Text = state.DisplayName;
-        DetailPageSubtitleText.Text = state.IsDevelopmentPreview
-            ? "检查候选动作、角色资料与项目状态。"
-            : "检查完整动作、角色资料与安装状态。";
+        DetailPageSubtitleText.Text = "查看真实动作、角色资料和本地安装状态。";
         PetDisplayNameText.Text = state.DisplayName;
         PetDescriptionText.Text = state.Description;
         PetSourceBadgeText.Text = state.SourceBadge;
-        var sourceBrushKey = state.IsDevelopmentPreview ? "Accent" : "Teal";
-        var sourceSurfaceKey = state.IsDevelopmentPreview ? "AccentSoft" : "TealSoft";
-        PetSourceBadge.Background = (Brush)FindResource(sourceSurfaceKey);
-        PetSourceBadgeText.Foreground = (Brush)FindResource(sourceBrushKey);
+        PetSourceBadge.Background = (Brush)FindResource("TealSoft");
+        PetSourceBadgeText.Foreground = (Brush)FindResource("Teal");
         InstallationStatusTitle.Text = state.StatusTitle;
         InstallationStatusDetail.Text = state.StatusDetail;
         ProductVersionText.Text = state.ProductVersion;
         ProtocolText.Text = state.ProtocolSummary;
         AuthorLicenseText.Text = $"{state.Author} · {FormatLicenseSummary(state.LicenseSummary)}";
-        InstallLocationText.Text = FormatLocation(
-            state.InstallLocation,
-            state.IsDevelopmentPreview);
-        InstallLocationText.ToolTip = state.IsDevelopmentPreview
-            ? state.InstallLocation
-            : $"仅管理 {state.InstallLocation}";
-        LocationLabelText.Text = state.LocationLabel;
+        InstallLocationText.Text = FormatLocation(state.InstallLocation);
+        InstallLocationText.ToolTip = $"仅管理 {state.InstallLocation}";
+        LocationLabelText.Text = "管理范围";
         PrimaryActionButton.Content = state.PrimaryActionText;
         PrimaryActionButton.IsEnabled = state.PrimaryActionEnabled && !state.IsBusy;
-        PrimaryActionGroup.Visibility = state.ShowPrimaryAction
-            ? Visibility.Visible
-            : Visibility.Collapsed;
+        PrimaryActionGroup.Visibility = Visibility.Visible;
         RefreshButton.IsEnabled = !state.IsBusy;
-        RefreshButton.Content = state.IsDevelopmentPreview ? "↻  立即刷新" : "↻  重新检查";
+        RefreshButton.Content = "↻  刷新资源";
         UninstallButton.IsEnabled = state.CanUninstall && !state.IsBusy;
-        UninstallButton.Visibility = state.ShowInstallationManagement
-            ? Visibility.Visible
-            : Visibility.Collapsed;
+        UninstallButton.Visibility = Visibility.Visible;
         RestoreBackupButton.IsEnabled = state.CanRestoreBackup && !state.IsBusy;
-        RestoreBackupButton.Visibility = state.ShowInstallationManagement
-            ? Visibility.Visible
-            : Visibility.Collapsed;
-        ManagementSectionTitle.Text = state.IsDevelopmentPreview ? "开发预览" : "管理工具";
+        RestoreBackupButton.Visibility = Visibility.Visible;
+        ManagementSectionTitle.Text = "管理工具";
         AcknowledgeSelectionButton.Visibility = state.CanAcknowledgeSelection
             ? Visibility.Visible
             : Visibility.Collapsed;
@@ -132,11 +121,13 @@ public partial class PetCenterView : UserControl, IDisposable
             : Visibility.Collapsed;
         RestoreBackupButton.ToolTip = state.LatestBackupLabel ?? "当前没有可恢复备份";
         AutomationProperties.SetName(PetPreviewImage, $"{state.DisplayName}动态动作预览");
+        AutomationProperties.SetName(PetRuntimePreview, $"{state.DisplayName}实时图集动作预览");
         _previewPlayer.Configure(state.PreviewFrames);
         _previewPlayer.SetActive(_pageActive && IsVisible && DetailPanel.IsVisible);
         UpdatePreviewButtons();
         UpdatePlaybackPresentation();
         RenderStatusPalette(state.Status);
+        ApplyDetailLayout(ActualWidth, ActualHeight);
     }
 
     private static string FormatLicenseSummary(string licenseSummary) =>
@@ -149,10 +140,10 @@ public partial class PetCenterView : UserControl, IDisposable
             var value => value,
         };
 
-    private static string FormatLocation(string location, bool developmentPreview)
+    private static string FormatLocation(string location)
     {
         const int maximumVisibleCharacters = 34;
-        var fullText = developmentPreview ? location : $"仅管理 {location}";
+        var fullText = $"仅管理 {location}";
         if (fullText.Length <= maximumVisibleCharacters)
         {
             return fullText;
@@ -174,7 +165,6 @@ public partial class PetCenterView : UserControl, IDisposable
         var resourceKey = status switch
         {
             PetCenterStatus.Installed => "Positive",
-            PetCenterStatus.DevelopmentPreview => "Accent",
             PetCenterStatus.AwaitingCodexSelection => "Sky",
             PetCenterStatus.UpdateAvailable => "Amber",
             PetCenterStatus.UnknownModification => "Amber",
@@ -191,11 +181,14 @@ public partial class PetCenterView : UserControl, IDisposable
     private void UpdatePlaybackPresentation()
     {
         PlaybackStatusText.Text = _previewPlayer.PlaybackDescription;
-        PreviewFallbackText.Visibility = PetPreviewImage.Source is null
+        PreviewFallbackText.Visibility = !_previewPlayer.HasVisual
             ? Visibility.Visible
             : Visibility.Collapsed;
         AutomationProperties.SetHelpText(
             PetPreviewImage,
+            $"{PreviewStateText.Text}；{_previewPlayer.PlaybackDescription}");
+        AutomationProperties.SetHelpText(
+            PetRuntimePreview,
             $"{PreviewStateText.Text}；{_previewPlayer.PlaybackDescription}");
     }
 
@@ -278,19 +271,37 @@ public partial class PetCenterView : UserControl, IDisposable
     private void PetCenterView_SizeChanged(object sender, SizeChangedEventArgs e)
     {
         if (DetailPanel.Visibility != Visibility.Visible ||
-            !double.IsFinite(e.NewSize.Width) || e.NewSize.Width <= 0)
+            !double.IsFinite(e.NewSize.Width) || e.NewSize.Width <= 0 ||
+            !double.IsFinite(e.NewSize.Height) || e.NewSize.Height <= 0)
         {
             return;
         }
 
-        var narrow = e.NewSize.Width < 720;
-        var medium = !narrow && e.NewSize.Width < 1100;
+        ApplyDetailLayout(e.NewSize.Width, e.NewSize.Height);
+    }
+
+    private void ApplyDetailLayout(double width, double height)
+    {
+        if (!double.IsFinite(width) || width <= 0 ||
+            !double.IsFinite(height) || height <= 0)
+        {
+            return;
+        }
+
+        var viewportHeight = FindViewportHeight();
+        if (viewportHeight > 0)
+        {
+            height = Math.Min(height, viewportHeight);
+        }
+
+        var narrow = width < 720;
+        var medium = !narrow && width < 1100;
         WorkspaceLeftColumn.Width = narrow
             ? new GridLength(2, GridUnitType.Star)
             : medium
-                ? new GridLength(1.05, GridUnitType.Star)
-                : new GridLength(1.15, GridUnitType.Star);
-        WorkspaceGapColumn.Width = new GridLength(narrow ? 12 : medium ? 14 : 18);
+                ? new GridLength(1.02, GridUnitType.Star)
+                : new GridLength(1.10, GridUnitType.Star);
+        WorkspaceGapColumn.Width = new GridLength(narrow ? 12 : medium ? 14 : 16);
         WorkspaceRightColumn.Width = narrow
             ? new GridLength(3, GridUnitType.Star)
             : new GridLength(1, GridUnitType.Star);
@@ -300,16 +311,34 @@ public partial class PetCenterView : UserControl, IDisposable
         Grid.SetRow(ControlPanelHost, 0);
         Grid.SetRowSpan(ControlPanelHost, 1);
         ControlPanelHost.Margin = new Thickness(0);
-        ControlPanelHost.Padding = new Thickness(narrow ? 9 : medium ? 10 : 12);
+        ControlPanelHost.Padding = new Thickness(narrow ? 10 : medium ? 12 : 16);
         ControlPanelHost.BorderThickness = new Thickness(1);
         ControlPanelHost.MinHeight = 0;
         WorkspaceSurface.MinHeight = 0;
         WorkspaceSurface.MaxHeight = 650;
-        WorkspaceSurface.Margin = new Thickness(0, 10, 0, 0);
+        WorkspaceSurface.Height = Math.Clamp(
+            height - Math.Max(64, PageHeader.ActualHeight) - 14,
+            narrow ? 500 : 540,
+            650);
+        WorkspaceSurface.Margin = new Thickness(0, 14, 0, 0);
         WorkspaceSurface.Padding = new Thickness(0);
         PreviewStage.MinHeight = 0;
-        PreviewStage.Padding = new Thickness(narrow ? 9 : medium ? 10 : 12);
+        PreviewStage.Padding = new Thickness(narrow ? 10 : medium ? 12 : 14);
         UpdatePreviewStageBounds();
+    }
+
+    private double FindViewportHeight()
+    {
+        DependencyObject? current = this;
+        while ((current = VisualTreeHelper.GetParent(current)) is not null)
+        {
+            if (current is ScrollViewer { ViewportHeight: > 0 } scrollViewer)
+            {
+                return scrollViewer.ViewportHeight;
+            }
+        }
+
+        return 0;
     }
 
     private void WorkspaceSurface_SizeChanged(object sender, SizeChangedEventArgs e) =>
@@ -333,14 +362,20 @@ public partial class PetCenterView : UserControl, IDisposable
         var heightBudget = Math.Max(200, surfaceHeight - WorkspaceSurface.Padding.Top -
             WorkspaceSurface.Padding.Bottom - PreviewStage.Padding.Top -
             PreviewStage.Padding.Bottom - 42);
-        var hostHeight = Math.Clamp(Math.Min(heightBudget, hostWidth * 1.08), 190, 580);
+        var hostHeight = stageWidth < 300
+            ? Math.Clamp(Math.Min(heightBudget, hostWidth * 1.05), 190, 270)
+            : Math.Clamp(heightBudget, 240, 560);
+        var displayWidth = Math.Max(150, Math.Min(400, hostWidth - 20));
+        var displayHeight = Math.Max(170, Math.Min(400, hostHeight - 20));
         PreviewImageHost.MinHeight = 0;
         PreviewImageHost.Height = hostHeight;
-        PetPreviewImage.MaxWidth = Math.Max(150, hostWidth - 8);
-        PetPreviewImage.MaxHeight = Math.Max(170, hostHeight - 8);
-        _previewPlayer.SetDisplayBounds(
-            Math.Max(150, hostWidth - 8),
-            Math.Max(170, hostHeight - 8));
+        PetPreviewImage.MaxWidth = displayWidth;
+        PetPreviewImage.MaxHeight = displayHeight;
+        PetRuntimePreview.Width = displayWidth;
+        PetRuntimePreview.Height = displayHeight;
+        PetRuntimePreview.MaxWidth = displayWidth;
+        PetRuntimePreview.MaxHeight = displayHeight;
+        _previewPlayer.SetDisplayBounds(displayWidth, displayHeight);
     }
 
     public void Dispose()

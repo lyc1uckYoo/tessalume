@@ -73,6 +73,7 @@ public sealed record PetDevelopmentProject(
     PetManifest? PetManifest,
     IReadOnlyDictionary<string, string> ResolvedPreviews,
     IReadOnlyDictionary<string, PetGifInfo> PreviewInfos,
+    string? RuntimeSpritesheetPath,
     DateTimeOffset LastUpdated)
 {
     public IEnumerable<(PetPreviewMetadata Metadata, string FullPath, PetGifInfo GifInfo)> PreviewFiles =>

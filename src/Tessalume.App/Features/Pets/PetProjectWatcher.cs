@@ -2,7 +2,7 @@ using System.IO;
 
 namespace Tessalume.App.Features.Pets;
 
-internal sealed class PetProjectWatcher : IDisposable
+internal sealed class PetLibraryWatcher : IDisposable
 {
     private static readonly TimeSpan DebounceDelay = TimeSpan.FromMilliseconds(650);
     private readonly object _gate = new();
@@ -11,7 +11,7 @@ internal sealed class PetProjectWatcher : IDisposable
     private Timer? _debounce;
     private bool _disposed;
 
-    public PetProjectWatcher(string root)
+    public PetLibraryWatcher(string root)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(root);
         _root = Path.GetFullPath(root);

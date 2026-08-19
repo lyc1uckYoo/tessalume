@@ -1,0 +1,136 @@
+{
+  "schemaVersion": 2,
+  "id": "phoebe-jiubi",
+  "displayName": "菲比啾比",
+  "description": "头比帽子还软、会踮脚忙活也会抱杖邀功的菲比啾比。",
+  "productVersion": "1.0.0",
+  "protocol": {
+    "spriteVersionNumber": 2,
+    "atlasWidth": 1536,
+    "atlasHeight": 2288,
+    "columns": 8,
+    "rows": 11,
+    "cellWidth": 192,
+    "cellHeight": 208,
+    "usedFrameCount": 74,
+    "states": [
+      { "key": "idle", "row": 0, "frames": 7 },
+      { "key": "move-right", "row": 1, "frames": 8 },
+      { "key": "move-left", "row": 2, "frames": 8 },
+      { "key": "wave-touch", "row": 3, "frames": 4 },
+      { "key": "jump", "row": 4, "frames": 5 },
+      { "key": "blocked", "row": 5, "frames": 8 },
+      { "key": "needs-input", "row": 6, "frames": 6 },
+      { "key": "running", "row": 7, "frames": 6 },
+      { "key": "ready", "row": 8, "frames": 6 },
+      { "key": "gaze-upper", "row": 9, "frames": 8 },
+      { "key": "gaze-lower", "row": 10, "frames": 8 }
+    ]
+  },
+  "author": {
+    "name": "lyc1uckYoo"
+  },
+  "license": {
+    "kind": "all-rights-reserved",
+    "spdx": "LicenseRef-All-Rights-Reserved",
+    "name": "All rights reserved"
+  },
+  "rights": {
+    "kind": "fan-work",
+    "notice": "非官方同人宠物；菲比、《鸣潮》及相关名称、设计与商标权利归其各自权利人所有。"
+  },
+  "files": [
+    {
+      "path": "pet.json",
+      "sha256": "df09feaabe4467f7334c5fbfcd784886f69fdd6218ea4fb7a1f4206bacf363f4",
+      "size": 221,
+      "role": "codex-manifest"
+    },
+    {
+      "path": "spritesheet.png",
+      "sha256": "0d78e88ece85b87301e2807f39fcbd6dfda3adc7dba4f2597db950a8962bdeb2",
+      "size": 2874034,
+      "role": "codex-spritesheet"
+    },
+    {
+      "path": "previews/00-idle.gif",
+      "sha256": "48104688934fea8ee83fc8b87ec513106db83884bde6b360203988c840d38d90",
+      "size": 1116238,
+      "role": "preview"
+    },
+    {
+      "path": "previews/01-move-right.gif",
+      "sha256": "339dbab9a9f1bf23b285d448f0f797650fab148a2f186f0a804ec9a0ddf6cdb8",
+      "size": 719953,
+      "role": "preview"
+    },
+    {
+      "path": "previews/02-move-left.gif",
+      "sha256": "5d257635fd6169cca5ca63fb283b5451af3b0fcfe15d62360a6086b555a60027",
+      "size": 621682,
+      "role": "preview"
+    },
+    {
+      "path": "previews/03-wave-touch.gif",
+      "sha256": "caa2041baed343d0709b18da27a972ae176510046b9934bf806b3396164e6913",
+      "size": 460001,
+      "role": "preview"
+    },
+    {
+      "path": "previews/04-jump.gif",
+      "sha256": "d282bfc0e7abd85355174a81a239e828dd768574920d031acac10c338bf265c8",
+      "size": 525142,
+      "role": "preview"
+    },
+    {
+      "path": "previews/05-blocked.gif",
+      "sha256": "071d22bd930cf00b1b759f998d6f8b44632856e95e5f8fcc201d74e80bb0d034",
+      "size": 897222,
+      "role": "preview"
+    },
+    {
+      "path": "previews/06-needs-input.gif",
+      "sha256": "9c73883be44b870d134cab76a032d9db7b247eea5bb8f43c129bb80b740e44d9",
+      "size": 626808,
+      "role": "preview"
+    },
+    {
+      "path": "previews/07-running.gif",
+      "sha256": "af4e6c41ebd00238c9440575f438749731a7f41c93ab3c7988f278a12ae62b23",
+      "size": 633658,
+      "role": "preview"
+    },
+    {
+      "path": "previews/08-ready.gif",
+      "sha256": "0f08b9821186bc31ec34c6857a5620eb7aab3d9b827c372248ac682bc963326f",
+      "size": 666536,
+      "role": "preview"
+    },
+    {
+      "path": "previews/10-gaze-clockwise.gif",
+      "sha256": "07270cb9fd7994f75568602cb266033b7ae2bb33f9808f94d48072b11cebd857",
+      "size": 1698796,
+      "role": "preview"
+    },
+    {
+      "path": "previews/showcase.gif",
+      "sha256": "fd0c722baeece884ccea5a06de5791559c46304ea1db9c31bca4335afa6640bf",
+      "size": 3852185,
+      "role": "preview"
+    }
+  ],
+  "previews": [
+    { "path": "previews/00-idle.gif", "kind": "action", "mediaType": "image/gif", "actionKey": "idle", "stateKey": "idle", "label": "静坐眨眼", "expectedFrameCount": 9, "width": 576, "height": 624, "representativeFrame": 0, "loop": true },
+    { "path": "previews/01-move-right.gif", "kind": "action", "mediaType": "image/gif", "actionKey": "move-right", "stateKey": "move-right", "label": "踮脚向右", "expectedFrameCount": 8, "width": 576, "height": 624, "representativeFrame": 0, "loop": true },
+    { "path": "previews/02-move-left.gif", "kind": "action", "mediaType": "image/gif", "actionKey": "move-left", "stateKey": "move-left", "label": "踮脚向左", "expectedFrameCount": 8, "width": 576, "height": 624, "representativeFrame": 0, "loop": true },
+    { "path": "previews/03-wave-touch.gif", "kind": "action", "mediaType": "image/gif", "actionKey": "wave-touch", "stateKey": "wave-touch", "label": "扶帽挥手", "expectedFrameCount": 4, "width": 576, "height": 624, "representativeFrame": 0, "loop": true },
+    { "path": "previews/04-jump.gif", "kind": "action", "mediaType": "image/gif", "actionKey": "jump", "stateKey": "jump", "label": "压帽弹跳", "expectedFrameCount": 5, "width": 576, "height": 624, "representativeFrame": 0, "loop": true },
+    { "path": "previews/05-blocked.gif", "kind": "action", "mediaType": "image/gif", "actionKey": "blocked", "stateKey": "blocked", "label": "帽檐滑落", "expectedFrameCount": 8, "width": 576, "height": 624, "representativeFrame": 0, "loop": true },
+    { "path": "previews/06-needs-input.gif", "kind": "action", "mediaType": "image/gif", "actionKey": "needs-input", "stateKey": "needs-input", "label": "探身倾听", "expectedFrameCount": 6, "width": 576, "height": 624, "representativeFrame": 0, "loop": true },
+    { "path": "previews/07-running.gif", "kind": "action", "mediaType": "image/gif", "actionKey": "running", "stateKey": "running", "label": "电脑打字", "expectedFrameCount": 6, "width": 576, "height": 624, "representativeFrame": 0, "loop": true },
+    { "path": "previews/08-ready.gif", "kind": "action", "mediaType": "image/gif", "actionKey": "ready", "stateKey": "ready", "label": "抱杖邀功", "expectedFrameCount": 6, "width": 576, "height": 624, "representativeFrame": 0, "loop": true },
+    { "path": "previews/10-gaze-clockwise.gif", "kind": "direction", "mediaType": "image/gif", "actionKey": "gaze-clockwise", "stateKey": "gaze-clockwise", "label": "16 向转身", "expectedFrameCount": 16, "width": 576, "height": 684, "representativeFrame": 0, "loop": true },
+    { "path": "previews/showcase.gif", "kind": "showcase", "mediaType": "image/gif", "actionKey": "showcase", "stateKey": "showcase", "label": "动态九宫格", "expectedFrameCount": 8, "width": 1152, "height": 1248, "representativeFrame": 0, "loop": true }
+  ],
+  "recommendedThemeIds": []
+}

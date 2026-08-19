@@ -11,8 +11,8 @@ internal static partial class TestSuite
     static Task<int> RenderPetGallerySnapshotsAsync(
         string galleryLightPath,
         string galleryDarkPath,
-        string developmentLightPath,
-        string developmentDarkPath)
+        string detailLightPath,
+        string detailDarkPath)
     {
         var repositoryRoot = FindRepositoryRoot();
         var portableRoot = Path.Combine(
@@ -27,8 +27,7 @@ internal static partial class TestSuite
             Path.Combine(portableRoot, "pet-backups"),
             Path.Combine(data, "pet-center-state.v1.json"));
         var galleryOptions = new PetGalleryServiceOptions(
-            Path.Combine(repositoryRoot, "pets"),
-            Path.Combine(repositoryRoot, "pet-projects"));
+            Path.Combine(repositoryRoot, "pets"));
         Exception? failure = null;
 
         using (var preferences = new UiPreferencesStore(data))
@@ -58,9 +57,8 @@ internal static partial class TestSuite
                     CompleteInfoPageTransition(window);
                     galleryService = new PetGalleryService(layout, galleryOptions);
                     var snapshot = await galleryService.ScanAsync();
-                    Ensure(snapshot.DevelopmentEntries.Count > 0 &&
-                           snapshot.OfficialEntries.Count > 0,
-                        "Gallery snapshots require both the migrated development project and official package.");
+                    Ensure(snapshot.Entries.Count >= 2,
+                        "Gallery snapshots require both published pet packages.");
 
                     await RenderPetGalleryProfileAsync(
                         window,
@@ -75,41 +73,40 @@ internal static partial class TestSuite
                         darkMode: true,
                         new Size(1366, 768));
 
-                    var development = snapshot.DevelopmentEntries[0];
-                    var developmentState = new PetCenterPresentationState
+                    var selected = snapshot.Entries.First(entry =>
+                        string.Equals(entry.PetId, "phoebe-jiubi", StringComparison.Ordinal));
+                    var detailState = new PetCenterPresentationState
                     {
-                        PetId = development.PetId,
-                        DisplayName = development.DisplayName,
-                        Description = development.Description,
-                        SourceBadge = development.SourceBadge,
-                        IsDevelopmentPreview = true,
-                        ShowPrimaryAction = false,
-                        ShowInstallationManagement = false,
-                        Status = PetCenterStatus.DevelopmentPreview,
-                        StatusTitle = "实时监看中",
-                        StatusDetail = development.HealthMessage,
-                        ProductVersion = $"{development.Version} · 草稿",
-                        ProtocolSummary = development.ProtocolSummary,
-                        Author = development.Author,
-                        LicenseSummary = development.LicenseSummary,
-                        InstallLocation = development.RootDirectory,
-                        LocationLabel = "项目位置",
-                        RecommendedThemeId = development.RecommendedThemeId,
-                        RecommendedThemeName = development.RecommendedThemeName,
-                        HasRecommendedTheme = true,
-                        PreviewFrames = development.PreviewFrames,
+                        PetId = selected.PetId,
+                        DisplayName = selected.DisplayName,
+                        Description = selected.Description,
+                        SourceBadge = selected.SourceBadge,
+                        Status = PetCenterStatus.NotInstalled,
+                        StatusTitle = "尚未安装",
+                        StatusDetail = selected.HealthMessage,
+                        ProductVersion = selected.Version,
+                        ProtocolSummary = selected.ProtocolSummary,
+                        Author = selected.Author,
+                        LicenseSummary = selected.LicenseSummary,
+                        InstallLocation = petOptions.CodexPetsRoot,
+                        PrimaryAction = PetCenterAction.Install,
+                        PrimaryActionText = $"安装{selected.DisplayName}",
+                        RecommendedThemeId = selected.RecommendedThemeId,
+                        RecommendedThemeName = selected.RecommendedThemeName,
+                        HasRecommendedTheme = !string.IsNullOrWhiteSpace(selected.RecommendedThemeId),
+                        PreviewFrames = selected.PreviewFrames,
                     };
                     await RenderPetDevelopmentProfileAsync(
                         window,
-                        developmentState,
-                        developmentLightPath,
+                        detailState,
+                        detailLightPath,
                         darkMode: false,
                         new Size(1600, 900),
                         "idle");
                     await RenderPetDevelopmentProfileAsync(
                         window,
-                        developmentState,
-                        developmentDarkPath,
+                        detailState,
+                        detailDarkPath,
                         darkMode: true,
                         new Size(1366, 768),
                         "showcase");
@@ -143,8 +140,8 @@ internal static partial class TestSuite
             }
             Console.WriteLine($"Pet gallery light snapshot: {Path.GetFullPath(galleryLightPath)}");
             Console.WriteLine($"Pet gallery dark snapshot: {Path.GetFullPath(galleryDarkPath)}");
-            Console.WriteLine($"Pet development light snapshot: {Path.GetFullPath(developmentLightPath)}");
-            Console.WriteLine($"Pet development dark snapshot: {Path.GetFullPath(developmentDarkPath)}");
+            Console.WriteLine($"Pet detail light snapshot: {Path.GetFullPath(detailLightPath)}");
+            Console.WriteLine($"Pet detail dark snapshot: {Path.GetFullPath(detailDarkPath)}");
             return Task.FromResult(0);
         }
         finally
@@ -419,7 +416,11 @@ internal static partial class TestSuite
                previewButtons.Length == 11 &&
                previewButtons.All(button => IsInsidePetViewport(button, window.InfoScroll)) &&
                requiredElements.All(element => IsInsidePetViewport(element, window.InfoScroll)),
-            $"The real {size.Width:0}x{size.Height:0} WPF pet console must fit every preview and operation without main-content scrolling.");
+            $"The real {size.Width:0}x{size.Height:0} WPF pet console must fit every preview and operation without main-content scrolling " +
+            $"(view={window.PetCenterPage.ActualWidth:0.0}x{window.PetCenterPage.ActualHeight:0.0}, " +
+            $"viewport={window.InfoScroll.ViewportWidth:0.0}x{window.InfoScroll.ViewportHeight:0.0}, " +
+            $"scroll={window.InfoScroll.ScrollableWidth:0.0}x{window.InfoScroll.ScrollableHeight:0.0}, " +
+            $"workspace={window.PetCenterPage.WorkspaceSurface.ActualWidth:0.0}x{window.PetCenterPage.WorkspaceSurface.ActualHeight:0.0}).");
         SaveWindowContent(window, snapshotPath);
     }
 

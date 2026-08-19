@@ -350,11 +350,13 @@ public sealed partial class PetInstaller
             throw new InvalidDataException("staging pet.json 与已验证宠物包不一致。");
         }
         var sheetPath = PetPathSafety.ResolveContainedPath(staging, stagedManifest.SpritesheetPath);
-        var webp = await PetWebPReader.ReadAsync(sheetPath, cancellationToken);
-        if (webp.Width != package.Catalog.Protocol.AtlasWidth ||
-            webp.Height != package.Catalog.Protocol.AtlasHeight || !webp.HasAlpha)
+        var spritesheet = await PetPackageLoader.ReadSpritesheetInfoAsync(
+            sheetPath,
+            cancellationToken);
+        if (spritesheet.Width != package.Catalog.Protocol.AtlasWidth ||
+            spritesheet.Height != package.Catalog.Protocol.AtlasHeight || !spritesheet.HasAlpha)
         {
-            throw new InvalidDataException("staging WebP 图集协议校验失败。");
+            throw new InvalidDataException("staging 宠物图集协议校验失败。");
         }
     }
 

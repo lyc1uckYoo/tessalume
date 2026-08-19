@@ -187,23 +187,6 @@ public partial class MainWindow
         }
     }
 
-    private async Task ConfirmAndInstallUpdateAsync(ReleaseUpdate release)
-    {
-        var notes = FormatReleaseNotes(release.ReleaseNotes);
-        var confirmed = ShowProductConfirmation(
-            $"发现 Tessalume {release.VersionLabel}",
-            $"当前版本：{BrandInfo.VersionLabel}\n新版本：{release.VersionLabel}\n下载大小：{FormatBytes(release.DownloadSize)}\n\n{notes}\n\n下载完成后会校验 SHA-256，随后退出、替换程序并自动重新打开。你的主题和 data 数据不会被删除。",
-            "下载并安装");
-        if (!confirmed)
-        {
-            _updateStatusMessage = $"{release.VersionLabel} 可用 · 已选择稍后更新";
-            UpdateUpdateControls();
-            return;
-        }
-
-        await DownloadAndInstallUpdateAsync(release);
-    }
-
     private void HandleUpdateFailure(Exception exception, bool showDialog)
     {
         LocalLog.Write("Update check or installation failed.", exception);
@@ -217,47 +200,6 @@ public partial class MainWindow
                 $"当前版本没有被修改，可以继续使用。\n\n{errorMessage}",
                 ProductDialogKind.Error);
         }
-    }
-
-    private async Task DownloadAndInstallUpdateAsync(ReleaseUpdate release)
-    {
-        ShowMainInterface();
-        AboutPage.ShowSection(AboutSection.DataAndUpdates);
-        NavigateTo(Features.Navigation.AppRoute.DataAndUpdates);
-        _updateStatusMessage = $"正在下载 {release.VersionLabel}…";
-        if (_uiInitialized)
-        {
-            AboutPage.SetUpdateProgress(
-                0,
-                $"0% · 0 B / {FormatBytes(release.DownloadSize)}");
-        }
-
-        var progress = new Progress<UpdateDownloadProgress>(value =>
-        {
-            var total = Math.Max(1, value.TotalBytes);
-            var percentage = Math.Clamp(value.BytesReceived * 100d / total, 0, 100);
-            if (_uiInitialized)
-            {
-                AboutPage.SetUpdateProgress(
-                    percentage,
-                    $"{percentage:0}% · {FormatBytes(value.BytesReceived)} / " +
-                    FormatBytes(total));
-            }
-        });
-        var downloaded = await _aboutUpdateService.DownloadApplicationAsync(
-            release,
-            progress,
-            _updateCancellation.Token);
-        _updateStatusMessage = "下载与 SHA-256 校验完成，正在准备安全替换…";
-        UpdateUpdateControls();
-        var helperProcessId = await UpdateBootstrapper.StartHelperAsync(
-            _layout,
-            downloaded,
-            release,
-            _updateCancellation.Token);
-        LocalLog.Write($"Update helper {helperProcessId} started for {release.VersionLabel}.");
-        _shutdownRequested = true;
-        Application.Current.Shutdown();
     }
 
     private void UpdateUpdateControls()

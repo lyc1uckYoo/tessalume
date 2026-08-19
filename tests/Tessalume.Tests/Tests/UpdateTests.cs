@@ -75,6 +75,244 @@ internal static partial class TestSuite
         }
     }
 
+    static async Task ReleaseUpdaterUsesVerifiedDeltaAndFallsBackAsync()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"tessalume-delta-client-{Guid.NewGuid():N}");
+        var dataDirectory = Path.Combine(root, "data");
+        Directory.CreateDirectory(dataDirectory);
+        try
+        {
+            var basisPath = Path.Combine(root, "Tessalume.exe");
+            var targetPath = Path.Combine(root, "Tessalume-next.exe");
+            var deltaName = "Tessalume-1.2.0-to-1.3.0.delta";
+            var deltaPath = Path.Combine(root, deltaName);
+            var basisBytes = new byte[2 * 1024 * 1024];
+            new Random(173).NextBytes(basisBytes);
+            var targetBytes = basisBytes.ToArray();
+            Encoding.UTF8.GetBytes("verified incremental update payload")
+                .CopyTo(targetBytes, 640 * 1024);
+            await File.WriteAllBytesAsync(basisPath, basisBytes);
+            await File.WriteAllBytesAsync(targetPath, targetBytes);
+            await BinaryDeltaCodec.CreateAsync(basisPath, targetPath, deltaPath);
+            var deltaBytes = await File.ReadAllBytesAsync(deltaPath);
+            Ensure(deltaBytes.Length < targetBytes.Length / 4,
+                "A localized executable change must produce a materially smaller delta asset.");
+
+            var basisSha256 = Convert.ToHexString(SHA256.HashData(basisBytes));
+            var targetSha256 = Convert.ToHexString(SHA256.HashData(targetBytes));
+            var deltaSha256 = Convert.ToHexString(SHA256.HashData(deltaBytes));
+            var manifest = new UpdateDeltaManifest
+            {
+                SchemaVersion = UpdateDeltaManifest.CurrentSchemaVersion,
+                TargetVersion = "1.3.0",
+                TargetFileName = UpdateDeltaManifest.TargetExecutableName,
+                TargetSize = targetBytes.Length,
+                TargetSha256 = targetSha256,
+                Deltas =
+                [
+                    new UpdateDeltaEntry
+                    {
+                        FromVersion = "1.2.0",
+                        FromSha256 = basisSha256,
+                        Algorithm = UpdateDeltaEntry.SupportedAlgorithm,
+                        AssetName = deltaName,
+                        AssetSize = deltaBytes.Length,
+                        AssetSha256 = deltaSha256,
+                    },
+                ],
+            };
+            var manifestBytes = JsonSerializer.SerializeToUtf8Bytes(
+                manifest,
+                UpdateDeltaManifest.JsonOptions);
+            var manifestSha256 = Convert.ToHexString(SHA256.HashData(manifestBytes));
+            var requestedUris = new List<Uri>();
+            using var httpClient = new HttpClient(new StubHttpHandler(request =>
+            {
+                requestedUris.Add(request.RequestUri!);
+                if (request.RequestUri!.Host == "api.github.com")
+                {
+                    var json = JsonSerializer.Serialize(new
+                    {
+                        tag_name = "v1.3.0",
+                        html_url = "https://github.com/lyc1uckYoo/tessalume/releases/tag/v1.3.0",
+                        body = "Delta update test release",
+                        draft = false,
+                        prerelease = false,
+                        assets = new[]
+                        {
+                            new
+                            {
+                                name = UpdateDeltaManifest.TargetExecutableName,
+                                browser_download_url = "https://downloads.example.test/Tessalume.exe",
+                                size = targetBytes.Length,
+                                digest = $"sha256:{targetSha256.ToLowerInvariant()}",
+                            },
+                            new
+                            {
+                                name = UpdateDeltaManifest.FileName,
+                                browser_download_url = "https://downloads.example.test/Tessalume.update.json",
+                                size = manifestBytes.Length,
+                                digest = $"sha256:{manifestSha256.ToLowerInvariant()}",
+                            },
+                            new
+                            {
+                                name = deltaName,
+                                browser_download_url = $"https://downloads.example.test/{deltaName}",
+                                size = deltaBytes.Length,
+                                digest = $"sha256:{deltaSha256.ToLowerInvariant()}",
+                            },
+                        },
+                    });
+                    return new HttpResponseMessage(HttpStatusCode.OK)
+                    {
+                        Content = new StringContent(json, Encoding.UTF8, "application/json"),
+                    };
+                }
+
+                var bytes = request.RequestUri.AbsolutePath switch
+                {
+                    "/Tessalume.exe" => targetBytes,
+                    "/Tessalume.update.json" => manifestBytes,
+                    _ when request.RequestUri.AbsolutePath.EndsWith(deltaName, StringComparison.Ordinal) => deltaBytes,
+                    _ => null,
+                };
+                return bytes is null
+                    ? new HttpResponseMessage(HttpStatusCode.NotFound)
+                    : new HttpResponseMessage(HttpStatusCode.OK)
+                    {
+                        Content = new ByteArrayContent(bytes),
+                    };
+            }));
+            using var client = new ReleaseUpdateClient(
+                httpClient,
+                "lyc1uckYoo",
+                "tessalume",
+                dataDirectory,
+                new Version(1, 2, 0),
+                basisPath);
+            var release = await client.CheckLatestAsync();
+            Ensure(release is { UsesDelta: true } &&
+                   release.PreferredDownloadSize == deltaBytes.Length &&
+                   release.Delta?.FromSha256 == basisSha256,
+                "A matching signed manifest must select the smaller delta for the installed version.");
+            var reconstructed = await client.DownloadAsync(release!);
+            Ensure(File.ReadAllBytes(reconstructed).SequenceEqual(targetBytes) &&
+                   requestedUris.Any(uri => uri.AbsolutePath.EndsWith(deltaName, StringComparison.Ordinal)) &&
+                   !requestedUris.Any(uri => uri.AbsolutePath == "/Tessalume.exe"),
+                "The updater must reconstruct the exact target from the verified delta without downloading the full EXE.");
+
+            requestedUris.Clear();
+            basisBytes[0] ^= 0xff;
+            await File.WriteAllBytesAsync(basisPath, basisBytes);
+            var fallback = await client.DownloadAsync(release!);
+            Ensure(File.ReadAllBytes(fallback).SequenceEqual(targetBytes) &&
+                   requestedUris.Any(uri => uri.AbsolutePath == "/Tessalume.exe") &&
+                   !requestedUris.Any(uri => uri.AbsolutePath.EndsWith(deltaName, StringComparison.Ordinal)),
+                "A mismatched local EXE must skip the delta and safely fall back to the verified full asset.");
+        }
+        finally
+        {
+            if (Directory.Exists(root)) Directory.Delete(root, recursive: true);
+        }
+    }
+
+    static async Task DeltaUpdatePackIsDeterministicAndExactAsync()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"tessalume-delta-pack-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(root);
+        try
+        {
+            var basisPath = Path.Combine(root, "basis.exe");
+            var targetPath = Path.Combine(root, "target.exe");
+            var firstOutput = Path.Combine(root, "first");
+            var secondOutput = Path.Combine(root, "second");
+            var basis = new byte[1024 * 1024];
+            new Random(811).NextBytes(basis);
+            var target = basis.ToArray();
+            Encoding.UTF8.GetBytes("deterministic release delta")
+                .CopyTo(target, 384 * 1024);
+            await File.WriteAllBytesAsync(basisPath, basis);
+            await File.WriteAllBytesAsync(targetPath, target);
+            var repositoryRoot = FindRepositoryRoot();
+            var project = Path.Combine(
+                repositoryRoot,
+                "tools",
+                "Tessalume.UpdatePack",
+                "Tessalume.UpdatePack.csproj");
+
+            foreach (var output in new[] { firstOutput, secondOutput })
+            {
+                var startInfo = new System.Diagnostics.ProcessStartInfo("dotnet")
+                {
+                    WorkingDirectory = repositoryRoot,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                };
+                foreach (var argument in new[]
+                         {
+                             "run",
+                             "--project",
+                             project,
+                             "--configuration",
+                             "Release",
+                             "--no-build",
+                             "--",
+                             basisPath,
+                             "2.1.1",
+                             targetPath,
+                             "2.1.2",
+                             output,
+                         })
+                {
+                    startInfo.ArgumentList.Add(argument);
+                }
+                using var process = System.Diagnostics.Process.Start(startInfo)
+                    ?? throw new InvalidOperationException("Could not start the incremental update pack builder.");
+                var standardOutput = await process.StandardOutput.ReadToEndAsync();
+                var standardError = await process.StandardError.ReadToEndAsync();
+                await process.WaitForExitAsync();
+                Ensure(process.ExitCode == 0 && standardOutput.Contains("\"published\":true", StringComparison.Ordinal),
+                    $"The incremental pack builder failed: {standardError}");
+            }
+
+            var deltaName = "Tessalume-2.1.1-to-2.1.2.delta";
+            foreach (var name in new[] { deltaName, UpdateDeltaManifest.FileName, "SHA256SUMS.txt" })
+            {
+                var first = await File.ReadAllBytesAsync(Path.Combine(firstOutput, name));
+                var second = await File.ReadAllBytesAsync(Path.Combine(secondOutput, name));
+                Ensure(first.SequenceEqual(second),
+                    $"Incremental release asset generation must be deterministic: {name}.");
+            }
+
+            var manifest = JsonSerializer.Deserialize<UpdateDeltaManifest>(
+                await File.ReadAllBytesAsync(Path.Combine(firstOutput, UpdateDeltaManifest.FileName)),
+                UpdateDeltaManifest.JsonOptions);
+            Ensure(manifest is { SchemaVersion: UpdateDeltaManifest.CurrentSchemaVersion } &&
+                   manifest.TargetVersion == "2.1.2" &&
+                   manifest.Deltas.Count == 1 &&
+                   manifest.Deltas[0].FromVersion == "2.1.1",
+                "The generated manifest must bind one exact basis version to one target executable.");
+            var reconstructed = Path.Combine(root, "reconstructed.exe");
+            await BinaryDeltaCodec.ApplyAsync(
+                basisPath,
+                Path.Combine(firstOutput, deltaName),
+                reconstructed);
+            Ensure(File.ReadAllBytes(reconstructed).SequenceEqual(target),
+                "The published delta asset must reconstruct the target executable byte-for-byte.");
+            var checksums = await File.ReadAllTextAsync(Path.Combine(firstOutput, "SHA256SUMS.txt"));
+            Ensure(checksums.Contains($"*{UpdateDeltaManifest.TargetExecutableName}", StringComparison.Ordinal) &&
+                   checksums.Contains($"*{deltaName}", StringComparison.Ordinal) &&
+                   checksums.Contains($"*{UpdateDeltaManifest.FileName}", StringComparison.Ordinal),
+                "The release checksum file must cover the full EXE, delta, and delta manifest.");
+        }
+        finally
+        {
+            if (Directory.Exists(root)) Directory.Delete(root, recursive: true);
+        }
+    }
+
     static async Task PortableUpdaterReplacesAndBacksUpAsync()
     {
         var root = Path.Combine(Path.GetTempPath(), $"tessalume-update-install-{Guid.NewGuid():N}");

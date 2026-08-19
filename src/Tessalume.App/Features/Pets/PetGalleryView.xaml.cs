@@ -1,7 +1,6 @@
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
 using System.Windows.Media.Imaging;
 
 namespace Tessalume.App.Features.Pets;
@@ -9,7 +8,6 @@ namespace Tessalume.App.Features.Pets;
 public partial class PetGalleryView : UserControl
 {
     private IReadOnlyList<PetGalleryEntry> _entries = [];
-    private PetGalleryFilter _filter;
 
     public PetGalleryView()
     {
@@ -40,25 +38,17 @@ public partial class PetGalleryView : UserControl
     {
         var query = SearchBox.Text.Trim();
         var filtered = _entries.Where(entry =>
-            (_filter == PetGalleryFilter.All ||
-             _filter == PetGalleryFilter.Official && !entry.IsDevelopment ||
-             _filter == PetGalleryFilter.Development && entry.IsDevelopment) &&
-            (query.Length == 0 ||
+            query.Length == 0 ||
              entry.DisplayName.Contains(query, StringComparison.CurrentCultureIgnoreCase) ||
              entry.PetId.Contains(query, StringComparison.OrdinalIgnoreCase) ||
-             entry.Description.Contains(query, StringComparison.CurrentCultureIgnoreCase)))
+             entry.Description.Contains(query, StringComparison.CurrentCultureIgnoreCase))
             .ToArray();
         var cards = filtered
             .Select(PetGalleryCardViewModel.Create)
             .ToArray();
 
         GalleryItems.ItemsSource = cards;
-        GallerySectionTitle.Text = _filter switch
-        {
-            PetGalleryFilter.Official => "官方宠物",
-            PetGalleryFilter.Development => "开发预览",
-            _ => "全部伙伴",
-        };
+        GallerySectionTitle.Text = "全部伙伴";
         FilteredCountText.Text = $"{cards.Length} 个结果";
         GallerySection.Visibility = cards.Length == 0
             ? Visibility.Collapsed
@@ -84,33 +74,8 @@ public partial class PetGalleryView : UserControl
         ApplyFilter();
     }
 
-    private void Filter_Click(object sender, RoutedEventArgs e)
-    {
-        if (sender is not ToggleButton { Tag: string filter })
-        {
-            return;
-        }
-        _filter = filter switch
-        {
-            "official" => PetGalleryFilter.Official,
-            "development" => PetGalleryFilter.Development,
-            _ => PetGalleryFilter.All,
-        };
-        AllFilterButton.IsChecked = _filter == PetGalleryFilter.All;
-        OfficialFilterButton.IsChecked = _filter == PetGalleryFilter.Official;
-        DevelopmentFilterButton.IsChecked = _filter == PetGalleryFilter.Development;
-        ApplyFilter();
-    }
-
     private void Refresh_Click(object sender, RoutedEventArgs e) =>
         RefreshRequested?.Invoke(this, EventArgs.Empty);
-
-    private enum PetGalleryFilter
-    {
-        All,
-        Official,
-        Development,
-    }
 
     private sealed record PetGalleryCardViewModel(
         PetGalleryEntry Entry,
@@ -124,21 +89,23 @@ public partial class PetGalleryView : UserControl
 
         public string HealthMessage => Entry.HealthMessage;
 
-        public string VersionText => Entry.IsDevelopment
-            ? $"v{Entry.Version} · 草稿"
-            : $"v{Entry.Version}";
+        public string VersionText => $"v{Entry.Version}";
 
         public string ActionSummary => $"{Entry.PreviewFrames.Count}/11 动作";
 
-        public string FooterText => Entry.IsDevelopment
-            ? $"更新于 {Entry.LastUpdated.ToLocalTime():MM-dd HH:mm}"
-            : "完整校验 · 可安全安装";
+        public string ValidationText => Entry.UsesLastGoodPreview
+            ? "资源更新中，暂时显示上一组完整预览"
+            : Entry.IsValid
+                ? "资源完整，已通过本机校验"
+                : Entry.HealthMessage;
 
-        public string ActionText => Entry.IsDevelopment ? "查看开发预览" : "查看并安装";
+        public string FooterText => Entry.UsesLastGoodPreview
+            ? "等待资源写入完成"
+            : $"更新于 {Entry.LastUpdated.ToLocalTime():MM-dd HH:mm}";
+
+        public string ActionText => Entry.CanOpen ? "查看并安装" : "资源不可用";
 
         public string AutomationName => $"查看{Entry.DisplayName}{Entry.SourceBadge}";
-
-        public bool IsDevelopment => Entry.IsDevelopment;
 
         public bool CanOpen => Entry.CanOpen;
 

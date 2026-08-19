@@ -57,6 +57,36 @@ jobs:
           dotnet format Tessalume.sln --verify-no-changes --no-restore --verbosity minimal
           .\一键构建EXE.ps1 -Configuration Release -Runtime win-x64 -NoLaunch -FullValidation
 
+      - name: Build verified incremental update from previous release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $targetVersion = '${{ github.ref_name }}'.TrimStart('v')
+          $releases = gh release list --limit 20 --exclude-drafts --exclude-pre-releases --json tagName,publishedAt |
+            ConvertFrom-Json
+          $previous = $releases |
+            Where-Object {
+              $_.tagName -ne '${{ github.ref_name }}' -and
+              $_.tagName -match '^v\d+\.\d+\.\d+$'
+            } |
+            Sort-Object publishedAt -Descending |
+            Select-Object -First 1
+          if ($null -eq $previous) {
+            Write-Host 'No previous stable release is available; publishing the full EXE only.'
+            exit 0
+          }
+
+          $basisDirectory = 'artifacts/delta-basis'
+          New-Item -ItemType Directory -Path $basisDirectory -Force | Out-Null
+          gh release download $previous.tagName --pattern 'Tessalume.exe' --dir $basisDirectory --clobber
+          .\tools\New-DeltaUpdatePack.ps1 `
+            -BasisExecutable "$basisDirectory/Tessalume.exe" `
+            -BasisVersion $previous.tagName `
+            -TargetExecutable 'dist/portable-win-x64/Tessalume.exe' `
+            -TargetVersion $targetVersion `
+            -OutputDirectory 'dist/portable-win-x64'
+
       - name: Publish GitHub Release
         shell: pwsh
         env:
@@ -65,8 +95,15 @@ jobs:
           $tag = '${{ github.ref_name }}'
           $assets = @(
             'dist/portable-win-x64/Tessalume.exe',
-            'dist/portable-win-x64/SHA256SUMS.txt'
+            'dist/portable-win-x64/SHA256SUMS.txt',
+            'THIRD-PARTY-NOTICES.md'
           )
+          $manifest = 'dist/portable-win-x64/Tessalume.update.json'
+          if (Test-Path -LiteralPath $manifest) {
+            $assets += $manifest
+            $assets += @(Get-ChildItem 'dist/portable-win-x64' -Filter '*.delta' -File |
+              Select-Object -ExpandProperty FullName)
+          }
           if (gh release view $tag 2>$null) {
             gh release upload $tag @assets --clobber
             gh release edit $tag --title "Tessalume $tag" --notes-file 'artifacts/release-notes.md' --latest
@@ -82,5 +119,8 @@ jobs:
           path: |
             dist/portable-win-x64/Tessalume.exe
             dist/portable-win-x64/SHA256SUMS.txt
+            dist/portable-win-x64/Tessalume.update.json
+            dist/portable-win-x64/*.delta
+            THIRD-PARTY-NOTICES.md
           if-no-files-found: error
           retention-days: 30

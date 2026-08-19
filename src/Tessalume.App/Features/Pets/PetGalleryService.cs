@@ -6,12 +6,10 @@ namespace Tessalume.App.Features.Pets;
 
 internal sealed class PetGalleryService : IDisposable
 {
-    private readonly PortableLayout _layout;
     private readonly PetGalleryServiceOptions _options;
     private readonly PetPackageLoader _packageLoader = new();
-    private readonly PetDevelopmentProjectLoader _projectLoader = new();
-    private readonly PetProjectWatcher _projectWatcher;
-    private readonly Dictionary<string, PetGalleryEntry> _lastGoodDevelopmentEntries =
+    private readonly PetLibraryWatcher _libraryWatcher;
+    private readonly Dictionary<string, PetGalleryEntry> _lastGoodEntries =
         new(StringComparer.OrdinalIgnoreCase);
     private bool _disposed;
 
@@ -20,94 +18,62 @@ internal sealed class PetGalleryService : IDisposable
         PetGalleryServiceOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(layout);
-        _layout = layout;
         _options = options ?? PetGalleryServiceOptions.ForLayout(layout);
         _options = _options with
         {
-            OfficialPackagesRoot = Path.GetFullPath(_options.OfficialPackagesRoot),
-            DevelopmentProjectsRoot = Path.GetFullPath(_options.DevelopmentProjectsRoot),
+            PackagesRoot = Path.GetFullPath(_options.PackagesRoot),
         };
-        _projectWatcher = new PetProjectWatcher(_options.DevelopmentProjectsRoot);
-        _projectWatcher.Changed += ProjectWatcher_Changed;
+        _libraryWatcher = new PetLibraryWatcher(_options.PackagesRoot);
+        _libraryWatcher.Changed += LibraryWatcher_Changed;
     }
 
-    public event EventHandler? DevelopmentProjectsChanged;
+    public event EventHandler? PackagesChanged;
 
-    public string DevelopmentProjectsRoot => _options.DevelopmentProjectsRoot;
+    public string PackagesRoot => _options.PackagesRoot;
 
     public void SetWatching(bool active)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        _projectWatcher.SetActive(active);
+        _libraryWatcher.SetActive(active);
     }
 
     public async Task<PetGallerySnapshot> ScanAsync(
         CancellationToken cancellationToken = default)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        BuiltInAssetInstaller.EnsurePetsInstalled(_layout);
         var entries = new List<PetGalleryEntry>();
 
         var scanner = new PetCatalogScanner(_packageLoader);
         foreach (var candidate in await scanner.ScanAsync(
-                     _options.OfficialPackagesRoot,
+                     _options.PackagesRoot,
                      cancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
-            entries.Add(CreateOfficialEntry(candidate));
-        }
-
-        if (Directory.Exists(_options.DevelopmentProjectsRoot))
-        {
-            foreach (var directory in Directory
-                         .EnumerateDirectories(
-                             _options.DevelopmentProjectsRoot,
-                             "*",
-                             SearchOption.TopDirectoryOnly)
-                         .Order(StringComparer.OrdinalIgnoreCase))
+            var entry = CreateEntry(candidate);
+            if (entry.IsValid)
             {
-                cancellationToken.ThrowIfCancellationRequested();
-                PetDevelopmentLoadResult result;
-                try
-                {
-                    result = await _projectLoader.LoadAsync(directory, cancellationToken);
-                }
-                catch (Exception exception) when (
-                    exception is IOException or UnauthorizedAccessException or InvalidDataException or
-                    ArgumentException or NotSupportedException)
-                {
-                    var validation = new PetValidationResult();
-                    validation.AddError("project.scan.failed", exception.Message, directory);
-                    result = new PetDevelopmentLoadResult(null, validation);
-                }
-
-                var entry = CreateDevelopmentEntry(directory, result);
-                if (entry.IsValid)
-                {
-                    _lastGoodDevelopmentEntries[directory] = entry;
-                }
-                else if (_lastGoodDevelopmentEntries.TryGetValue(directory, out var previous))
-                {
-                    entry = previous with
-                    {
-                        UsesLastGoodPreview = true,
-                        HealthMessage = "候选文件正在更新，暂时保留上一组完整预览。",
-                    };
-                }
-                entries.Add(entry);
+                _lastGoodEntries[candidate.DirectoryPath] = entry;
             }
+            else if (_lastGoodEntries.TryGetValue(candidate.DirectoryPath, out var previous))
+            {
+                entry = previous with
+                {
+                    UsesLastGoodPreview = true,
+                    HealthMessage = "宠物资源正在更新，暂时保留上一组完整预览。",
+                };
+            }
+            entries.Add(entry);
         }
 
         return new PetGallerySnapshot(
             entries
-                .OrderByDescending(entry => entry.IsDevelopment)
-                .ThenBy(entry => entry.DisplayName, StringComparer.CurrentCultureIgnoreCase)
+                .OrderBy(entry => entry.DisplayName, StringComparer.CurrentCultureIgnoreCase)
                 .ToArray(),
-            _options.DevelopmentProjectsRoot,
+            _options.PackagesRoot,
             DateTimeOffset.Now);
     }
 
-    private static PetGalleryEntry CreateOfficialEntry(PetPackageCandidate candidate)
+    private static PetGalleryEntry CreateEntry(PetPackageCandidate candidate)
     {
         var package = candidate.Package;
         if (package is null)
@@ -115,7 +81,7 @@ internal sealed class PetGalleryService : IDisposable
             var directoryName = Path.GetFileName(candidate.DirectoryPath);
             return new PetGalleryEntry
             {
-                EntryKey = $"official:{directoryName}",
+                EntryKey = $"package:{directoryName}",
                 PetId = directoryName,
                 DisplayName = directoryName,
                 Description = "正式宠物包未通过校验，暂时不能预览或安装。",
@@ -127,16 +93,21 @@ internal sealed class PetGalleryService : IDisposable
                 SourceBadge = "正式包异常",
                 HealthMessage = SummarizeValidation(candidate.Validation),
                 LastUpdated = GetDirectoryLastUpdated(candidate.DirectoryPath),
-                SourceKind = PetGallerySourceKind.Official,
                 PreviewFrames = [],
                 IsValid = false,
             };
         }
 
         var catalog = package.Catalog;
+        var runtimeSpritesheetPath = package.ResolvedFiles[package.Manifest.SpritesheetPath];
+        var runtimeSpritesheetRevision = package.Catalog.Files.First(file =>
+            string.Equals(
+                file.Path,
+                package.Manifest.SpritesheetPath,
+                StringComparison.OrdinalIgnoreCase)).Sha256;
         return new PetGalleryEntry
         {
-            EntryKey = $"official:{package.Manifest.Id}",
+            EntryKey = $"package:{package.Manifest.Id}",
             PetId = package.Manifest.Id,
             DisplayName = package.Manifest.DisplayName,
             Description = package.Manifest.Description,
@@ -145,17 +116,18 @@ internal sealed class PetGalleryService : IDisposable
             LicenseSummary = catalog.License.Name ?? catalog.License.Spdx ?? catalog.License.Kind,
             ProtocolSummary = FormatProtocol(catalog.Protocol),
             RootDirectory = package.RootDirectory,
-            SourceBadge = "官方宠物",
-            HealthMessage = "已封版并通过完整哈希校验，可以安全安装。",
+            SourceBadge = "正式宠物",
+            HealthMessage = "资源已通过完整哈希校验，可以预览和安全安装。",
             LastUpdated = GetDirectoryLastUpdated(package.RootDirectory),
-            SourceKind = PetGallerySourceKind.Official,
             PreviewFrames = package.PreviewFiles
                 .Select(preview => CreatePreviewFrame(
                     preview.Metadata,
                     preview.FullPath,
                     preview.GifInfo,
                     package.Catalog.Files.First(file =>
-                        string.Equals(file.Path, preview.Metadata.Path, StringComparison.OrdinalIgnoreCase)).Sha256))
+                        string.Equals(file.Path, preview.Metadata.Path, StringComparison.OrdinalIgnoreCase)).Sha256,
+                    runtimeSpritesheetPath,
+                    runtimeSpritesheetRevision))
                 .ToArray(),
             RecommendedThemeId = catalog.RecommendedThemeIds.Count == 0
                 ? string.Empty
@@ -169,94 +141,25 @@ internal sealed class PetGalleryService : IDisposable
         };
     }
 
-    private static PetGalleryEntry CreateDevelopmentEntry(
-        string directory,
-        PetDevelopmentLoadResult result)
-    {
-        var project = result.Project;
-        if (project is null)
-        {
-            var directoryName = Path.GetFileName(directory);
-            return new PetGalleryEntry
-            {
-                EntryKey = $"development:{directoryName}",
-                PetId = directoryName,
-                DisplayName = directoryName,
-                Description = "Codex 开发项目尚未提供可读取的 pet-project.json。",
-                Version = "草稿",
-                Author = "—",
-                LicenseSummary = "—",
-                ProtocolSummary = "等待候选输出",
-                RootDirectory = directory,
-                SourceBadge = "开发预览",
-                HealthMessage = SummarizeValidation(result.Validation),
-                LastUpdated = GetDirectoryLastUpdated(directory),
-                SourceKind = PetGallerySourceKind.Development,
-                PreviewFrames = [],
-                IsValid = false,
-            };
-        }
-
-        var manifest = project.Manifest;
-        var frames = project.PreviewFiles
-            .Select(preview => CreatePreviewFrame(
-                preview.Metadata,
-                preview.FullPath,
-                preview.GifInfo,
-                GetFileRevision(preview.FullPath)))
-            .ToArray();
-        return new PetGalleryEntry
-        {
-            EntryKey = $"development:{manifest.Id}",
-            PetId = manifest.Id,
-            DisplayName = manifest.DisplayName,
-            Description = manifest.Description,
-            Version = manifest.ProjectVersion,
-            Author = manifest.Author.Name,
-            LicenseSummary = manifest.License.Name ?? manifest.License.Spdx ?? manifest.License.Kind,
-            ProtocolSummary = FormatProtocol(manifest.Protocol),
-            RootDirectory = project.RootDirectory,
-            SourceBadge = "开发预览",
-            HealthMessage = result.Validation.IsValid
-                ? $"正在监看 Codex 候选输出 · {project.LastUpdated.ToLocalTime():MM-dd HH:mm:ss}"
-                : SummarizeValidation(result.Validation),
-            LastUpdated = project.LastUpdated,
-            SourceKind = PetGallerySourceKind.Development,
-            PreviewFrames = frames,
-            RecommendedThemeId = manifest.RecommendedThemeIds.Count == 0
-                ? string.Empty
-                : manifest.RecommendedThemeIds[0],
-            RecommendedThemeName = GetRecommendedThemeName(
-                manifest.RecommendedThemeIds.Count == 0
-                    ? null
-                    : manifest.RecommendedThemeIds[0]),
-            IsValid = result.Validation.IsValid &&
-                frames.Length == PetDevelopmentProjectContract.RequiredPreviewActionKeys.Count,
-            DevelopmentProject = project,
-        };
-    }
-
     private static PetPreviewFrame CreatePreviewFrame(
         PetPreviewMetadata metadata,
         string fullPath,
-        PetGifInfo gifInfo,
-        string revision) =>
+        PetGifInfo? gifInfo,
+        string revision,
+        string? runtimeSpritesheetPath,
+        string runtimeSpritesheetRevision) =>
         new(
             metadata.ActionKey,
             metadata.Label ?? metadata.ActionKey,
             fullPath,
             metadata.Kind,
-            gifInfo.FrameCount,
-            gifInfo.Width,
-            gifInfo.Height,
+            gifInfo?.FrameCount ?? metadata.ExpectedFrameCount,
+            gifInfo?.Width ?? metadata.Width,
+            gifInfo?.Height ?? metadata.Height,
             metadata.RepresentativeFrame,
-            revision);
-
-    private static string GetFileRevision(string path)
-    {
-        var info = new FileInfo(path);
-        return $"{info.Length:x}-{info.LastWriteTimeUtc.Ticks:x}";
-    }
+            revision,
+            runtimeSpritesheetPath,
+            runtimeSpritesheetRevision);
 
     private static DateTimeOffset GetDirectoryLastUpdated(string directory)
     {
@@ -292,7 +195,7 @@ internal sealed class PetGalleryService : IDisposable
             .Distinct(StringComparer.Ordinal)
             .Take(2)
             .ToArray();
-        return messages.Length == 0 ? "项目暂时不可用。" : string.Join("；", messages);
+        return messages.Length == 0 ? "宠物资源暂时不可用。" : string.Join("；", messages);
     }
 
     private static string GetRecommendedThemeName(string? themeId) =>
@@ -302,8 +205,8 @@ internal sealed class PetGalleryService : IDisposable
                 ? string.Empty
                 : themeId;
 
-    private void ProjectWatcher_Changed(object? sender, EventArgs e) =>
-        DevelopmentProjectsChanged?.Invoke(this, EventArgs.Empty);
+    private void LibraryWatcher_Changed(object? sender, EventArgs e) =>
+        PackagesChanged?.Invoke(this, EventArgs.Empty);
 
     public void Dispose()
     {
@@ -312,8 +215,8 @@ internal sealed class PetGalleryService : IDisposable
             return;
         }
         _disposed = true;
-        _projectWatcher.Changed -= ProjectWatcher_Changed;
-        _projectWatcher.Dispose();
+        _libraryWatcher.Changed -= LibraryWatcher_Changed;
+        _libraryWatcher.Dispose();
         GC.SuppressFinalize(this);
     }
 }

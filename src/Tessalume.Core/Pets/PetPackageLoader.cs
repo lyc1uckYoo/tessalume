@@ -180,13 +180,15 @@ public sealed partial class PetPackageLoader
         {
             try
             {
-                spritesheetInfo = await PetWebPReader.ReadAsync(spritesheetPath, cancellationToken);
+                spritesheetInfo = await ReadSpritesheetInfoAsync(
+                    spritesheetPath,
+                    cancellationToken);
                 ValidateSpritesheet(spritesheetInfo, catalog.Protocol, validation, manifest.SpritesheetPath);
             }
             catch (InvalidDataException exception)
             {
                 validation.AddError(
-                    "spritesheet.webp.invalid",
+                    "spritesheet.invalid",
                     exception.Message,
                     manifest.SpritesheetPath);
             }
@@ -208,6 +210,27 @@ public sealed partial class PetPackageLoader
                 spritesheetInfo,
                 previewInfos),
             validation);
+    }
+
+    internal static async Task<PetWebPInfo> ReadSpritesheetInfoAsync(
+        string path,
+        CancellationToken cancellationToken)
+    {
+        var extension = Path.GetExtension(path);
+        if (extension.Equals(".webp", StringComparison.OrdinalIgnoreCase))
+        {
+            return await PetWebPReader.ReadAsync(path, cancellationToken);
+        }
+        if (extension.Equals(".png", StringComparison.OrdinalIgnoreCase))
+        {
+            var png = await PetPngReader.ReadAsync(path, cancellationToken);
+            return new PetWebPInfo(
+                png.Width,
+                png.Height,
+                png.HasAlpha,
+                png.IsAnimated ? "APNG" : "PNG");
+        }
+        throw new InvalidDataException("Codex 宠物图集必须是 PNG/APNG 或 WebP。");
     }
 
     internal static async Task<string> ComputeSha256Async(
@@ -710,12 +733,12 @@ public sealed partial class PetPackageLoader
         {
             validation.AddError(
                 "spritesheet.dimensions.mismatch",
-                $"WebP 图集必须是 {protocol.AtlasWidth}×{protocol.AtlasHeight}。",
+                $"宠物图集必须是 {protocol.AtlasWidth}×{protocol.AtlasHeight}。",
                 path);
         }
         if (!info.HasAlpha)
         {
-            validation.AddError("spritesheet.alpha.missing", "WebP 图集必须声明透明通道。", path);
+            validation.AddError("spritesheet.alpha.missing", "宠物图集必须声明透明通道。", path);
         }
     }
 

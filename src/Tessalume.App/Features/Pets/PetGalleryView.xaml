@@ -7,85 +7,50 @@
              TextOptions.TextRenderingMode="ClearType"
              TextOptions.TextHintingMode="Fixed">
     <UserControl.Resources>
-        <Style x:Key="PetGalleryFilter" TargetType="ToggleButton">
-            <Setter Property="Height" Value="32" />
-            <Setter Property="Padding" Value="13,0" />
-            <Setter Property="Margin" Value="0,0,7,0" />
-            <Setter Property="Foreground" Value="{DynamicResource MutedText}" />
-            <Setter Property="Background" Value="{DynamicResource Surface}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource Border}" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="FontSize" Value="10.5" />
-            <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="FocusVisualStyle" Value="{DynamicResource KeyboardFocusVisual}" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="ToggleButton">
-                        <Border x:Name="Surface"
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="10">
-                            <ContentPresenter Margin="{TemplateBinding Padding}"
-                                              HorizontalAlignment="Center"
-                                              VerticalAlignment="Center" />
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Surface" Property="Background" Value="{DynamicResource HoverSurface}" />
-                                <Setter TargetName="Surface" Property="BorderBrush" Value="{DynamicResource Accent}" />
-                            </Trigger>
-                            <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="Surface" Property="Background" Value="{DynamicResource AccentSoft}" />
-                                <Setter TargetName="Surface" Property="BorderBrush" Value="{DynamicResource Accent}" />
-                                <Setter Property="Foreground" Value="{DynamicResource Accent}" />
-                                <Setter Property="FontWeight" Value="SemiBold" />
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="Surface" Property="Opacity" Value="0.78" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
         <Style x:Key="PetGalleryCardButton" TargetType="Button">
-            <Setter Property="Width" Value="400" />
-            <Setter Property="MinHeight" Value="376" />
+            <Setter Property="Height" Value="330" />
             <Setter Property="Padding" Value="0" />
-            <Setter Property="Margin" Value="0,0,14,14" />
+            <Setter Property="Margin" Value="6,3,6,12" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
             <Setter Property="VerticalContentAlignment" Value="Stretch" />
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="FocusVisualStyle" Value="{DynamicResource KeyboardFocusVisual}" />
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="CardSurface"
-                                Background="{DynamicResource SurfaceElevated}"
-                                BorderBrush="{DynamicResource Border}"
-                                BorderThickness="1"
-                                CornerRadius="18"
-                                SnapsToDevicePixels="True">
-                            <Grid>
-                                <Border x:Name="HoverTint" Background="{DynamicResource AccentSoft}" CornerRadius="18" Opacity="0" />
-                                <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                                  VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
-                            </Grid>
-                        </Border>
+                        <Grid x:Name="MotionRoot">
+                            <Border x:Name="CardSurface"
+                                    Background="{DynamicResource SurfaceElevated}"
+                                    BorderBrush="{DynamicResource Border}"
+                                    BorderThickness="1"
+                                    CornerRadius="17"
+                                    Effect="{DynamicResource HomeCardShadow}"
+                                    SnapsToDevicePixels="True">
+                                <Grid>
+                                    <Border x:Name="HoverTint" Background="{DynamicResource AccentSoft}" CornerRadius="17" Opacity="0" />
+                                    <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                                </Grid>
+                            </Border>
+                        </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="CardSurface" Property="BorderBrush" Value="{DynamicResource Accent}" />
-                                <Setter TargetName="HoverTint" Property="Opacity" Value="0.10" />
+                                <Setter TargetName="HoverTint" Property="Opacity" Value="0.13" />
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="CardSurface" Property="Opacity" Value="0.80" />
+                                <Setter TargetName="MotionRoot" Property="Opacity" Value="0.80" />
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="CardSurface" Property="BorderBrush" Value="{DynamicResource Accent}" />
+                                <Setter TargetName="CardSurface" Property="BorderThickness" Value="2" />
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="CardSurface" Property="Opacity" Value="0.58" />
+                                <Setter TargetName="MotionRoot" Property="Opacity" Value="0.50" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -101,54 +66,40 @@
                     AutomationProperties.Name="{Binding AutomationName}">
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="214" />
+                        <RowDefinition Height="184" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
-
-                    <Border Margin="8,8,8,0"
+                    <Border Margin="7,7,7,0"
                             Background="{DynamicResource PersonalizationMotionGradient}"
                             BorderBrush="{DynamicResource PersonalizationMotionBorder}"
                             BorderThickness="1"
-                            CornerRadius="14"
+                            CornerRadius="13"
                             ClipToBounds="True">
                         <Grid>
-                            <Ellipse Width="220" Height="220" Margin="0,-135,-72,0" HorizontalAlignment="Right" VerticalAlignment="Top" Fill="{DynamicResource Accent}" Opacity="0.09" />
-                            <Ellipse Width="150" Height="150" Margin="-78,0,0,-82" HorizontalAlignment="Left" VerticalAlignment="Bottom" Fill="{DynamicResource Teal}" Opacity="0.07" />
-                            <TextBlock Text="✦" Foreground="{DynamicResource Accent}" FontSize="46" Opacity="0.22" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <Ellipse Width="230" Height="230" Margin="0,-140,-78,0" HorizontalAlignment="Right" VerticalAlignment="Top" Fill="{DynamicResource Accent}" Opacity="0.09" />
+                            <Ellipse Width="158" Height="158" Margin="-82,0,0,-86" HorizontalAlignment="Left" VerticalAlignment="Bottom" Fill="{DynamicResource Teal}" Opacity="0.07" />
+                            <TextBlock Text="✦" Foreground="{DynamicResource Accent}" FontSize="44" Opacity="0.16" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             <Image Source="{Binding CoverImage}"
-                                   MaxWidth="260"
-                                   MaxHeight="194"
-                                   Margin="8"
+                                   MaxWidth="238"
+                                   MaxHeight="166"
+                                   Margin="10"
                                    Stretch="Uniform"
                                    RenderOptions.BitmapScalingMode="HighQuality" />
-                            <Border x:Name="SourceBadge"
-                                    Padding="9,5"
-                                    Margin="10"
-                                    HorizontalAlignment="Left"
-                                    VerticalAlignment="Top"
-                                    Background="{DynamicResource TealSoft}"
-                                    BorderBrush="{DynamicResource Teal}"
-                                    BorderThickness="1"
-                                    CornerRadius="9">
+                            <Border Padding="9,5" Margin="10" HorizontalAlignment="Left" VerticalAlignment="Top"
+                                    Background="{DynamicResource TealSoft}" BorderBrush="{DynamicResource Teal}" BorderThickness="1" CornerRadius="9">
                                 <StackPanel Orientation="Horizontal">
-                                    <Ellipse x:Name="SourceDot" Width="6" Height="6" Fill="{DynamicResource Teal}" Margin="0,0,6,0" />
-                                    <TextBlock x:Name="SourceText" Text="{Binding SourceBadge}" Foreground="{DynamicResource Teal}" FontSize="9.5" FontWeight="SemiBold" />
+                                    <Ellipse Width="6" Height="6" Fill="{DynamicResource Teal}" Margin="0,0,6,0" />
+                                    <TextBlock Text="{Binding SourceBadge}" Foreground="{DynamicResource Teal}" FontSize="9.5" FontWeight="SemiBold" />
                                 </StackPanel>
                             </Border>
-                            <Border Padding="8,4"
-                                    Margin="10"
-                                    HorizontalAlignment="Right"
-                                    VerticalAlignment="Top"
-                                    Background="{DynamicResource HomeToolbarSurface}"
-                                    BorderBrush="{DynamicResource HomeToolbarBorder}"
-                                    BorderThickness="1"
-                                    CornerRadius="9">
+                            <Border Padding="8,4" Margin="10" HorizontalAlignment="Right" VerticalAlignment="Top"
+                                    Background="{DynamicResource HomeToolbarSurface}" BorderBrush="{DynamicResource HomeToolbarBorder}" BorderThickness="1" CornerRadius="9">
                                 <TextBlock Text="{Binding VersionText}" Foreground="{DynamicResource MutedText}" FontSize="9.5" />
                             </Border>
                         </Grid>
                     </Border>
 
-                    <Grid Grid.Row="1" Margin="17,13,17,15">
+                    <Grid Grid.Row="1" Margin="17,11,17,14">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
@@ -157,195 +108,159 @@
                         </Grid.RowDefinitions>
                         <Grid>
                             <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                            <TextBlock Text="{Binding DisplayName}" Foreground="{DynamicResource PrimaryText}" FontSize="17" FontWeight="Bold" />
-                            <TextBlock Grid.Column="1" Text="{Binding ActionSummary}" Foreground="{DynamicResource Accent}" FontSize="9.5" FontWeight="SemiBold" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding DisplayName}" Foreground="{DynamicResource PrimaryText}" FontSize="17" FontWeight="Bold" TextTrimming="CharacterEllipsis" />
+                            <Border Grid.Column="1" Padding="7,3" Margin="10,0,0,0" Background="{DynamicResource AccentSoft}" CornerRadius="8" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding ActionSummary}" Foreground="{DynamicResource Accent}" FontSize="9.5" FontWeight="SemiBold" />
+                            </Border>
                         </Grid>
-                        <TextBlock Grid.Row="1"
-                                   Text="{Binding Description}"
-                                   Foreground="{DynamicResource MutedText}"
-                                   FontSize="10.5"
-                                   LineHeight="16"
-                                   TextWrapping="Wrap"
-                                   TextTrimming="CharacterEllipsis"
-                                   MaxHeight="34"
-                                   Margin="0,5,0,0" />
-                        <TextBlock Grid.Row="2"
-                                   Text="{Binding HealthMessage}"
-                                   Foreground="{DynamicResource SubtleText}"
-                                   FontSize="9.5"
-                                   TextWrapping="Wrap"
-                                   VerticalAlignment="Center"
-                                   Margin="0,8,0,8" />
+                        <TextBlock Grid.Row="1" Text="{Binding Description}" Foreground="{DynamicResource MutedText}" FontSize="10.5" LineHeight="16"
+                                   TextWrapping="Wrap" TextTrimming="CharacterEllipsis" MaxHeight="34" Margin="0,5,0,0" />
+                        <StackPanel Grid.Row="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,5,0,4">
+                            <Grid Width="16" Height="16" Margin="0,0,6,0">
+                                <Ellipse Fill="{DynamicResource TealSoft}" />
+                                <Path Width="8" Height="8" Data="M 3,8 L 6,11 L 12,5" Stroke="{DynamicResource Teal}" StrokeThickness="1.7" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Stretch="Uniform" />
+                            </Grid>
+                            <TextBlock Text="{Binding ValidationText}" Foreground="{DynamicResource SubtleText}" FontSize="9.5" VerticalAlignment="Center" />
+                        </StackPanel>
                         <Grid Grid.Row="3">
                             <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                             <TextBlock Text="{Binding FooterText}" Foreground="{DynamicResource SubtleText}" FontSize="9.5" VerticalAlignment="Center" />
-                            <Border Grid.Column="1" Padding="11,6" Background="{DynamicResource AccentSoft}" BorderBrush="{DynamicResource Accent}" BorderThickness="1" CornerRadius="9">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="{Binding ActionText}" Foreground="{DynamicResource Accent}" FontSize="10.5" FontWeight="SemiBold" />
-                                    <TextBlock Text="  →" Foreground="{DynamicResource Accent}" FontSize="10.5" />
-                                </StackPanel>
-                            </Border>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding ActionText}" Foreground="{DynamicResource Accent}" FontSize="10.5" FontWeight="SemiBold" />
+                                <TextBlock Text="  →" Foreground="{DynamicResource Accent}" FontSize="10.5" />
+                            </StackPanel>
                         </Grid>
                     </Grid>
                 </Grid>
             </Button>
-            <DataTemplate.Triggers>
-                <DataTrigger Binding="{Binding IsDevelopment}" Value="True">
-                    <Setter TargetName="SourceBadge" Property="Background" Value="{DynamicResource AccentSoft}" />
-                    <Setter TargetName="SourceBadge" Property="BorderBrush" Value="{DynamicResource Accent}" />
-                    <Setter TargetName="SourceDot" Property="Fill" Value="{DynamicResource Accent}" />
-                    <Setter TargetName="SourceText" Property="Foreground" Value="{DynamicResource Accent}" />
-                </DataTrigger>
-            </DataTemplate.Triggers>
         </DataTemplate>
     </UserControl.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="12" />
+            <RowDefinition Height="16" />
+            <RowDefinition Height="92" />
+            <RowDefinition Height="14" />
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="18" />
-            <RowDefinition Height="Auto" />
+            <RowDefinition Height="14" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <Border Padding="20,17"
-                Background="{DynamicResource PersonalizationCanvasGradient}"
-                BorderBrush="{DynamicResource PersonalizationCanvasBorder}"
-                BorderThickness="1"
-                CornerRadius="22"
-                Effect="{DynamicResource PersonalizationCardShadow}">
+        <Grid MinHeight="62">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+            <StackPanel VerticalAlignment="Center">
+                <TextBlock Text="TESSALUME  PET LIBRARY" Foreground="{DynamicResource Accent}" FontSize="10" FontWeight="Bold" />
+                <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+                    <TextBlock Text="Codex 宠物画廊" Foreground="{DynamicResource PrimaryText}" FontSize="28" FontWeight="Bold" />
+                    <Border Width="7" Height="7" CornerRadius="4" Background="{DynamicResource Teal}" Margin="10,0,0,7" VerticalAlignment="Bottom" />
+                </StackPanel>
+                <TextBlock Text="选择角色伙伴，查看真实动作并安全安装到 Codex。" Foreground="{DynamicResource MutedText}" FontSize="12" Margin="1,4,0,0" />
+            </StackPanel>
+            <Border Grid.Column="1" Height="36" Padding="12,0" VerticalAlignment="Center" Background="{DynamicResource HomeToolbarSurface}" BorderBrush="{DynamicResource HomeToolbarBorder}" BorderThickness="1" CornerRadius="10">
+                <StackPanel Orientation="Horizontal">
+                    <Grid Width="10" Height="10" Margin="0,0,8,0" VerticalAlignment="Center">
+                        <Ellipse Fill="{DynamicResource Accent}" Opacity="0.15" />
+                        <Ellipse Width="6" Height="6" Fill="{DynamicResource Positive}" />
+                    </Grid>
+                    <TextBlock x:Name="GalleryCountText" Text="正在扫描…" Foreground="{DynamicResource PrimaryText}" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" />
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <Border Grid.Row="2" Background="{DynamicResource HomeHeroGradient}" BorderBrush="{DynamicResource HomeHeroBorder}" BorderThickness="1"
+                CornerRadius="18" ClipToBounds="True" Effect="{DynamicResource HomeHeroShadow}">
             <Grid>
-                <Ellipse Width="220" Height="220" Margin="0,-150,-82,0" HorizontalAlignment="Right" VerticalAlignment="Top" Fill="{DynamicResource Accent}" Opacity="0.055" IsHitTestVisible="False" />
-                <Grid>
+                <Ellipse Width="220" Height="220" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-142,-22,0" Fill="{DynamicResource HomeHeroGlowOne}" Opacity="0.11" />
+                <Ellipse Width="160" Height="160" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,242,-120" Fill="{DynamicResource HomeHeroGlowTwo}" Opacity="0.10" />
+                <Grid Margin="20,10,16,10">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="52" />
-                        <ColumnDefinition Width="13" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="52" /><ColumnDefinition Width="14" /><ColumnDefinition Width="*" /><ColumnDefinition Width="12" /><ColumnDefinition Width="230" />
                     </Grid.ColumnDefinitions>
-                    <Border Width="50" Height="50" Background="{DynamicResource PrimaryGradient}" CornerRadius="16">
-                        <Path Width="25" Height="25" Data="M 7,10 C 4,10 3,7 4.5,5.5 C 6,4 8.5,5 9,7.2 M 15,7.2 C 15.5,5 18,4 19.5,5.5 C 21,7 20,10 17,10 M 7,12 C 7,8 17,8 17,12 C 20,13 20,18 16.5,19.5 C 14,20.6 13,19 12,19 C 11,19 10,20.6 7.5,19.5 C 4,18 4,13 7,12 Z" Stroke="White" StrokeThickness="1.7" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Fill="Transparent" Stretch="Uniform" />
+                    <Border Width="52" Height="52" CornerRadius="16" Background="{DynamicResource PrimaryGradient}" VerticalAlignment="Center">
+                        <Grid>
+                            <Ellipse Width="34" Height="34" Fill="#24FFFFFF" />
+                            <Path Width="24" Height="24" Data="M 7,10 C 4,10 3,7 4.5,5.5 C 6,4 8.5,5 9,7.2 M 15,7.2 C 15.5,5 18,4 19.5,5.5 C 21,7 20,10 17,10 M 7,12 C 7,8 17,8 17,12 C 20,13 20,18 16.5,19.5 C 14,20.6 13,19 12,19 C 11,19 10,20.6 7.5,19.5 C 4,18 4,13 7,12 Z" Stroke="White" StrokeThickness="1.7" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Fill="Transparent" Stretch="Uniform" />
+                        </Grid>
                     </Border>
                     <StackPanel Grid.Column="2" VerticalAlignment="Center">
-                        <TextBlock Text="个性化角色伙伴" Foreground="{DynamicResource Accent}" FontSize="9.5" FontWeight="Bold" />
-                        <TextBlock Text="Codex 宠物画廊" Foreground="{DynamicResource PrimaryText}" FontSize="25" FontWeight="Bold" Margin="0,2,0,0" />
-                        <TextBlock Text="浏览角色伙伴，预览完整动作并安装到 Codex。" Foreground="{DynamicResource MutedText}" FontSize="11.5" Margin="0,3,0,0" />
+                        <TextBlock Text="MEET YOUR CODEX COMPANIONS" Foreground="{DynamicResource Accent}" FontSize="10" FontWeight="Bold" />
+                        <TextBlock Text="让角色伙伴陪你一起工作" Foreground="{DynamicResource PrimaryText}" FontSize="19" FontWeight="Bold" Margin="0,2,0,0" />
+                        <TextBlock Text="资源更新后刷新画廊即可重新载入预览，无需重启应用。" Foreground="{DynamicResource HomeHeroMuted}" FontSize="11" Margin="0,3,0,0" TextWrapping="Wrap" />
                     </StackPanel>
-                    <Border Grid.Column="3" Padding="12,7" Margin="14,0,0,0" VerticalAlignment="Center" Background="{DynamicResource HomeToolbarSurface}" BorderBrush="{DynamicResource HomeToolbarBorder}" BorderThickness="1" CornerRadius="11">
-                        <StackPanel Orientation="Horizontal">
-                            <Grid Width="11" Height="11" Margin="0,0,7,0">
-                                <Ellipse Fill="{DynamicResource Accent}" Opacity="0.16" />
-                                <Ellipse Width="6" Height="6" Fill="{DynamicResource Accent}" />
-                            </Grid>
-                            <TextBlock x:Name="GalleryCountText" Text="正在扫描…" Foreground="{DynamicResource PrimaryText}" FontSize="10.5" FontWeight="SemiBold" VerticalAlignment="Center" />
-                        </StackPanel>
-                    </Border>
-                </Grid>
-            </Grid>
-        </Border>
-
-        <Border Grid.Row="2"
-                Padding="12,10"
-                Background="{DynamicResource HomeToolbarSurface}"
-                BorderBrush="{DynamicResource HomeToolbarBorder}"
-                BorderThickness="1"
-                CornerRadius="15">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="280" />
-                    <ColumnDefinition Width="14" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <Border Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="10" Height="34">
-                    <Grid>
-                        <Grid.ColumnDefinitions><ColumnDefinition Width="34" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                        <Path Width="14" Height="14" Data="M 10,18 A 8,8 0 1 1 10,2 A 8,8 0 1 1 10,18 M 16,16 L 22,22" Stroke="{DynamicResource SubtleText}" StrokeThickness="1.7" StrokeStartLineCap="Round" Stretch="Uniform" />
-                        <TextBox x:Name="SearchBox"
-                                 Grid.Column="1"
-                                 BorderThickness="0"
-                                 Background="Transparent"
-                                 Foreground="{DynamicResource PrimaryText}"
-                                 FontSize="10.5"
-                                 VerticalContentAlignment="Center"
-                                 TextChanged="SearchBox_TextChanged"
-                                 AutomationProperties.Name="搜索宠物" />
-                        <TextBlock x:Name="SearchPlaceholder" Grid.Column="1" Text="搜索宠物名称或 ID" Foreground="{DynamicResource SubtleText}" FontSize="10.5" VerticalAlignment="Center" IsHitTestVisible="False" />
+                    <Grid Grid.Column="4" VerticalAlignment="Center">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="10" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                        <Border Height="60" Background="{DynamicResource HomeHeroPanel}" BorderBrush="{DynamicResource HomeHeroBorder}" BorderThickness="1" CornerRadius="13">
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="11" Foreground="{DynamicResource PrimaryText}" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" />
+                                <TextBlock Text="项动作预览" Foreground="{DynamicResource HomeHeroMuted}" FontSize="9.5" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,1,0,0" />
+                            </StackPanel>
+                        </Border>
+                        <Border Grid.Column="2" Height="60" Background="{DynamicResource HomeHeroPanel}" BorderBrush="{DynamicResource HomeHeroBorder}" BorderThickness="1" CornerRadius="13">
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="v2" Foreground="{DynamicResource PrimaryText}" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" />
+                                <TextBlock Text="Codex 协议" Foreground="{DynamicResource HomeHeroMuted}" FontSize="9.5" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,1,0,0" />
+                            </StackPanel>
+                        </Border>
                     </Grid>
-                </Border>
-                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                    <ToggleButton x:Name="AllFilterButton" Style="{StaticResource PetGalleryFilter}" Content="全部" Tag="all" IsChecked="True" Click="Filter_Click" />
-                    <ToggleButton x:Name="OfficialFilterButton" Style="{StaticResource PetGalleryFilter}" Content="官方宠物" Tag="official" Click="Filter_Click" />
-                    <ToggleButton x:Name="DevelopmentFilterButton" Style="{StaticResource PetGalleryFilter}" Content="开发预览" Tag="development" Click="Filter_Click" />
-                </StackPanel>
-                <Button Grid.Column="3" Style="{DynamicResource HomeUtilityButton}" Height="34" MinWidth="92" Content="↻  刷新画廊" Click="Refresh_Click" AutomationProperties.Name="重新扫描宠物画廊" />
+                </Grid>
             </Grid>
         </Border>
 
-        <Border Grid.Row="4"
-                Padding="13,10"
-                Background="{DynamicResource InfoSurface}"
-                BorderBrush="{DynamicResource InfoBorder}"
-                BorderThickness="1"
-                CornerRadius="13">
+        <Border Grid.Row="4" Padding="10,8" Background="{DynamicResource HomeToolbarSurface}" BorderBrush="{DynamicResource HomeToolbarBorder}" BorderThickness="1" CornerRadius="14">
             <Grid>
-                <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="20" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                <Grid.ColumnDefinitions><ColumnDefinition Width="300" /><ColumnDefinition Width="14" /><ColumnDefinition Width="*" /><ColumnDefinition Width="12" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                 <Grid>
-                    <Grid.ColumnDefinitions><ColumnDefinition Width="24" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                    <Border Width="20" Height="20" Background="{DynamicResource AccentSoft}" CornerRadius="7">
-                        <Ellipse Width="6" Height="6" Fill="{DynamicResource Accent}" />
-                    </Border>
-                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="开发预览" Foreground="{DynamicResource Accent}" FontSize="10" FontWeight="SemiBold" />
-                        <TextBlock Text="  跟随 Codex 候选输出自动刷新，只用于审核动作。" Foreground="{DynamicResource MutedText}" FontSize="10" />
-                    </StackPanel>
+                    <TextBox x:Name="SearchBox" Style="{DynamicResource HomeSearchTextBox}" TextChanged="SearchBox_TextChanged" AutomationProperties.Name="搜索宠物" />
+                    <Path Width="15" Height="15" HorizontalAlignment="Left" Margin="14,0,0,0" IsHitTestVisible="False"
+                          Data="M 6,11 A 5,5 0 1 1 6,1 A 5,5 0 1 1 6,11 M 9.5,9.5 L 13.5,13.5"
+                          Stretch="Uniform" Stroke="{DynamicResource MutedText}" StrokeThickness="1.6" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Fill="Transparent" />
+                    <TextBlock x:Name="SearchPlaceholder" Text="搜索宠物名称或 ID" Foreground="{DynamicResource SubtleText}" FontSize="12" VerticalAlignment="Center" Margin="42,0,34,0" IsHitTestVisible="False" />
                 </Grid>
-                <Grid Grid.Column="2">
-                    <Grid.ColumnDefinitions><ColumnDefinition Width="24" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                    <Border Width="20" Height="20" Background="{DynamicResource TealSoft}" CornerRadius="7">
-                        <Path Width="11" Height="11" Data="M 4,11 L 8,15 L 17,6" Stroke="{DynamicResource Teal}" StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Stretch="Uniform" />
-                    </Border>
-                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="官方宠物" Foreground="{DynamicResource Teal}" FontSize="10" FontWeight="SemiBold" />
-                        <TextBlock Text="  已封版并通过哈希校验，才会开放安全安装。" Foreground="{DynamicResource MutedText}" FontSize="10" />
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Grid Width="18" Height="18" Margin="0,0,7,0">
+                        <Ellipse Fill="{DynamicResource TealSoft}" />
+                        <Path Width="9" Height="9" Data="M 3,8 L 6,11 L 12,5" Stroke="{DynamicResource Teal}" StrokeThickness="1.7" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Stretch="Uniform" />
+                    </Grid>
+                    <TextBlock Text="只有通过完整哈希校验的资源才会开放安装。" Foreground="{DynamicResource MutedText}" FontSize="10.5" VerticalAlignment="Center" />
+                </StackPanel>
+                <Button Grid.Column="4" Height="38" MinWidth="100" Style="{DynamicResource HomeCrispButton}" Click="Refresh_Click" AutomationProperties.Name="重新扫描宠物画廊">
+                    <StackPanel Orientation="Horizontal">
+                        <Path Width="13" Height="13" Data="M 19,7 L 19,3 L 15,3 M 19,3 C 16.5,1.2 12.8,1.5 10.5,3.2 C 8.7,4.5 7.7,6.4 7.5,8.4 M 5,17 L 5,21 L 9,21 M 5,21 C 7.5,22.8 11.2,22.5 13.5,20.8 C 15.3,19.5 16.3,17.6 16.5,15.6" Style="{DynamicResource NavIcon}" Margin="0,0,6,0" />
+                        <TextBlock Text="刷新资源" FontSize="10.5" FontWeight="SemiBold" VerticalAlignment="Center" />
                     </StackPanel>
-                </Grid>
+                </Button>
             </Grid>
         </Border>
 
-        <StackPanel x:Name="GallerySection" Grid.Row="5" Margin="0,15,0,0">
-            <Grid Margin="1,0,1,9">
+        <StackPanel x:Name="GallerySection" Grid.Row="6">
+            <Grid Margin="1,0,1,6">
                 <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                 <StackPanel>
                     <TextBlock x:Name="GallerySectionTitle" Text="全部伙伴" Foreground="{DynamicResource PrimaryText}" FontSize="17" FontWeight="Bold" />
-                    <TextBlock Text="选择一张卡片，进入完整动作与角色资料详情。" Foreground="{DynamicResource MutedText}" FontSize="10.5" Margin="0,3,0,0" />
+                    <TextBlock Text="选择一张卡片进入真实动作预览和安装详情。" Foreground="{DynamicResource MutedText}" FontSize="10.5" Margin="0,3,0,0" />
                 </StackPanel>
                 <Border Grid.Column="1" Padding="9,5" VerticalAlignment="Center" Background="{DynamicResource SurfaceAlt}" BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="9">
                     <TextBlock x:Name="FilteredCountText" Text="0 个结果" Foreground="{DynamicResource PrimaryText}" FontSize="9.5" FontWeight="SemiBold" />
                 </Border>
             </Grid>
-            <ItemsControl x:Name="GalleryItems" ItemTemplate="{StaticResource PetGalleryCardTemplate}">
+            <ItemsControl x:Name="GalleryItems" ItemTemplate="{StaticResource PetGalleryCardTemplate}" Margin="-6,0,-6,0">
                 <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+                    <ItemsPanelTemplate><UniformGrid Columns="2" /></ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
             </ItemsControl>
         </StackPanel>
 
-        <Border x:Name="EmptyState"
-                Grid.Row="6"
-                Margin="0,4,0,0"
-                Padding="26"
-                Background="{DynamicResource SurfaceElevated}"
-                BorderBrush="{DynamicResource Border}"
-                BorderThickness="1"
-                CornerRadius="18"
-                Visibility="Collapsed">
+        <Border x:Name="EmptyState" Grid.Row="7" Margin="0,4,0,0" Padding="42" Background="{DynamicResource SurfaceElevated}"
+                BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="18" Effect="{DynamicResource HomeCardShadow}" Visibility="Collapsed">
             <StackPanel HorizontalAlignment="Center">
-                <TextBlock Text="没有匹配的宠物" Foreground="{DynamicResource PrimaryText}" FontSize="16" FontWeight="SemiBold" HorizontalAlignment="Center" />
-                <TextBlock Text="调整搜索或筛选条件后再试。" Foreground="{DynamicResource MutedText}" FontSize="10.5" Margin="0,5,0,0" HorizontalAlignment="Center" />
+                <Grid Width="54" Height="54" HorizontalAlignment="Center">
+                    <Ellipse Fill="{DynamicResource AccentSoft}" />
+                    <Path Width="22" Height="22" Data="M 6,11 A 5,5 0 1 1 6,1 A 5,5 0 1 1 6,11 M 9.5,9.5 L 13.5,13.5" Stretch="Uniform" Stroke="{DynamicResource Accent}" StrokeThickness="1.6" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Fill="Transparent" />
+                </Grid>
+                <TextBlock Text="没有匹配的宠物" Foreground="{DynamicResource PrimaryText}" FontSize="17" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,13,0,0" />
+                <TextBlock Text="清除搜索内容后查看全部角色伙伴。" Foreground="{DynamicResource MutedText}" FontSize="10.5" Margin="0,5,0,0" HorizontalAlignment="Center" />
             </StackPanel>
         </Border>
     </Grid>
