@@ -26,7 +26,7 @@ Tessalume 内置 12 套同时支持亮色与暗色的完整角色主题。你可
 | **主题画廊** | 管理完整角色主题，查看亮暗预览、主题信息和状态，快速收藏、导入与切换。 |
 | **图像工作台 3.0** | 分别调整首页横幅、左栏图片和聊天背景；亮暗模式独立保存原图、构图、滤镜与遮罩。 |
 | **显示偏好** | 按主题调整动效强度、正文字号与界面密度，让阅读更稳定舒适。 |
-| **Codex 宠物** | 预览全部动态动作，安全安装、更新、修复、恢复或卸载当前用户的官方 Pets 资产。 |
+| **Codex 宠物画廊** | 浏览飞行雪绒与菲比啾比，按真实 Codex 图集预览全部动作，并安全安装、修复、恢复或卸载官方 Pets 资产。 |
 | **创作项目中心** | 用 Codex 创建主题，再完成项目体检、运行验收、问题修复提示和最终导出。 |
 | **兼容与恢复** | 通过小型兼容补丁适配页面变化；完整更新支持 SHA-256、健康检查与上一版本恢复。 |
 
@@ -44,16 +44,18 @@ Tessalume 内置 12 套同时支持亮色与暗色的完整角色主题。你可
   <img alt="Tessalume 2.1 图像工作台" src=".github/assets/screenshots/tessalume-personalization-light.png">
 </picture>
 
-## Codex 宠物，仍然保持本机边界
+## Codex 宠物画廊，仍然保持本机边界
 
-宠物中心内置首只角色伙伴“飞行雪绒”，可以逐项预览待机、移动、交互、任务状态和 16 向转身等 11 组动态动作。Tessalume 只管理当前用户 `.codex\pets` 中的官方 Pets 文件，安装前校验清单和 SHA-256，覆盖前保留备份，并提供修复、恢复和受管卸载。
+宠物画廊目前内置“飞行雪绒”和“菲比啾比”，集中展示伙伴封面、版本、资源状态和配套主题，并支持搜索与重新检查。进入详情后，可以按照真实 Codex v2 图集与动作时序逐项预览待机、移动、交互、任务状态、16 向转身和动态九宫格；资源文件变化后，画廊会安全刷新并保留最后一次可用预览。
+
+只有通过完整清单、尺寸和 SHA-256 校验的发布包才会开放安装。Tessalume 只管理当前用户 `.codex\pets` 中的官方 Pets 文件，覆盖前保留备份，并提供更新、修复、恢复和受管卸载。仓库中的 `pet-projects/` 同时保留可继续交给 Codex 修改的宠物源工程；重新构建发布资源后，在画廊刷新即可验收。
 
 Tessalume 不会启动独立桌宠进程，不读取 Codex 对话、账号或日志；安装后仍由你在 Codex 的 Settings → Pets 中完成选择。
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset=".github/assets/screenshots/tessalume-pets-dark.png">
   <source media="(prefers-color-scheme: light)" srcset=".github/assets/screenshots/tessalume-pets-light.png">
-  <img alt="Tessalume 2.1 Codex 宠物中心" src=".github/assets/screenshots/tessalume-pets-light.png">
+  <img alt="Tessalume 2.1.1 Codex 宠物画廊" src=".github/assets/screenshots/tessalume-pets-light.png">
 </picture>
 
 ## 让 Codex 帮你制作自己的皮肤
