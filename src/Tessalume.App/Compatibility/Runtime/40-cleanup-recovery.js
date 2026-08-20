@@ -187,6 +187,8 @@
     }
 
     (document.head || document.documentElement).appendChild(style);
+    (document.head || document.documentElement).appendChild(compatibilityStyle);
+    addCleanup(() => compatibilityStyle.remove());
     (document.head || document.documentElement).appendChild(visualMotionStyle);
     addCleanup(() => visualMotionStyle.remove());
     document.body?.appendChild(root);

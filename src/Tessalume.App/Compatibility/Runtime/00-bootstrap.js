@@ -97,6 +97,14 @@
   style.id = "tessalume-theme-style";
   style.dataset.themeId = themeId;
   style.textContent = `${templateCssText}\n${cssText}`;
+  const compatibilityStyle = document.createElement("style");
+  compatibilityStyle.id = "tessalume-runtime-compatibility-style";
+  compatibilityStyle.dataset.themeId = themeId;
+  compatibilityStyle.textContent = `
+html.tessalume-theme-active :is(main,[role="main"]):has(.composer-surface-chrome) .thread-scroll-container .sticky.bottom-0.tessalume-composer-fade-carrier {
+  pointer-events:none!important;
+  z-index:0!important;
+}`;
   const visualMotionStyle = document.createElement("style");
   visualMotionStyle.id = "tessalume-artwork-motion-style";
   visualMotionStyle.dataset.themeId = themeId;

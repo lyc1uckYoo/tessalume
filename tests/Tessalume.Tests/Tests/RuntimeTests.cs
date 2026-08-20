@@ -222,8 +222,15 @@ internal static partial class TestSuite
                payload.Contains("style.backgroundImage.includes(\"linear-gradient\")", StringComparison.Ordinal) &&
                payload.Contains("carrierStyle.position === \"absolute\"", StringComparison.Ordinal) &&
                payload.Contains("carrierStyle.position === \"fixed\"", StringComparison.Ordinal) &&
-               payload.Contains("const fadeSearchRoot = bottomCarrier.parentElement || bottomCarrier", StringComparison.Ordinal),
+               payload.Contains("const fadeSearchRoot = bottomCarrier.parentElement || bottomCarrier", StringComparison.Ordinal) &&
+               payload.Contains("mark(nativeFadeCarrier, \"tessalume-composer-fade-carrier\")", StringComparison.Ordinal),
             "The runtime must semantically alias native composer fades in both legacy sticky and current absolute bottom carriers.");
+        Ensure(payload.Contains("tessalume-runtime-compatibility-style", StringComparison.Ordinal) &&
+               payload.Contains(".sticky.bottom-0.tessalume-composer-fade-carrier", StringComparison.Ordinal) &&
+               payload.Contains("pointer-events:none!important", StringComparison.Ordinal) &&
+               payload.Contains("z-index:0!important", StringComparison.Ordinal) &&
+               payload.Contains("addCleanup(() => compatibilityStyle.remove())", StringComparison.Ordinal),
+            "Compatibility packs must override an older executable's embedded composer CSS and restore it during disposal.");
         Ensure(payload.Contains("background:transparent!important", StringComparison.Ordinal),
             "The native composer fade override must remain transparent.");
         Ensure(payload.Contains("background-image:none!important", StringComparison.Ordinal),

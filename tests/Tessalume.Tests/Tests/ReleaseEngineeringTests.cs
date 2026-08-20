@@ -145,7 +145,7 @@ internal static partial class TestSuite
         Ensure(packScript.Contains("minimumAppVersion", StringComparison.Ordinal) &&
                packScript.Contains("Tessalume.App.csproj", StringComparison.Ordinal) &&
                packScript.Contains("does not match source profileVersion", StringComparison.Ordinal) &&
-               compatibilityReadme.Contains("New-CompatibilityPack.ps1 -Version 3.0.5", StringComparison.Ordinal) &&
+               compatibilityReadme.Contains("New-CompatibilityPack.ps1 -Version 3.0.6", StringComparison.Ordinal) &&
                notesScript.Contains("CHANGELOG.md does not contain", StringComparison.Ordinal) &&
                notesScript.All(character => character <= 0x7f),
             "Release scripts must derive compatibility requirements from source, reject version drift, and reject missing release notes.");
@@ -234,7 +234,7 @@ internal static partial class TestSuite
             var mismatch = await RunPackBuildAsync(mismatchOutput, "3.0.2");
             Ensure(mismatch.ExitCode != 0 &&
                    mismatch.Output.Contains(
-                       "does not match source profileVersion '3.0.5'",
+                       "does not match source profileVersion '3.0.6'",
                        StringComparison.Ordinal) &&
                    !File.Exists(Path.Combine(
                        mismatchOutput,
@@ -272,8 +272,8 @@ internal static partial class TestSuite
             using var manifestStream = archive.GetEntry("compatibility-pack.json")!.Open();
             using var profileDocument = JsonDocument.Parse(profileStream);
             using var manifestDocument = JsonDocument.Parse(manifestStream);
-            Ensure(profileDocument.RootElement.GetProperty("profileVersion").GetString() == "3.0.5" &&
-                   manifestDocument.RootElement.GetProperty("packVersion").GetString() == "3.0.5" &&
+            Ensure(profileDocument.RootElement.GetProperty("profileVersion").GetString() == "3.0.6" &&
+                   manifestDocument.RootElement.GetProperty("packVersion").GetString() == "3.0.6" &&
                    manifestDocument.RootElement.GetProperty("runtimeContractVersion").GetInt32() == 4,
                 "The compatibility archive must preserve the source profile version and runtime contract without rewriting them.");
         }
@@ -287,7 +287,7 @@ internal static partial class TestSuite
 
         async Task BuildPackAsync(string outputDirectory)
         {
-            var result = await RunPackBuildAsync(outputDirectory, "3.0.5");
+            var result = await RunPackBuildAsync(outputDirectory, "3.0.6");
             Ensure(result.ExitCode == 0,
                 $"Compatibility pack build failed. {result.Output}".Trim());
         }

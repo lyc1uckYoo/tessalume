@@ -190,6 +190,10 @@
               Math.abs(box.bottom - carrierBox.bottom) < 2;
           });
         mark(nativeFade, "tessalume-composer-native-fade");
+        const nativeFadeCarrier = nativeFade?.parentElement;
+        if (nativeFadeCarrier && !nativeFadeCarrier.contains(surface)) {
+          mark(nativeFadeCarrier, "tessalume-composer-fade-carrier");
+        }
       }
       const footer = queryFirst(
         surface,

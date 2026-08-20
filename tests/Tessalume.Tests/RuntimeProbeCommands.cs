@@ -16,6 +16,28 @@ internal static partial class TestSuite
         return 0;
     }
 
+    static async Task<int> InstallCompatibilityPackAsync(
+        string builtInDirectory,
+        string dataDirectory,
+        string archivePath,
+        string expectedSha256,
+        Version appVersion)
+    {
+        var store = new CompatibilityPackStore(
+            builtInDirectory,
+            dataDirectory,
+            appVersion,
+            ThemeRuntime.ContractVersion);
+        var installed = await store.InstallAsync(archivePath, expectedSha256);
+        Console.WriteLine(JsonSerializer.Serialize(new
+        {
+            installed.Changed,
+            ActiveVersion = installed.ActivePack.PackVersionLabel,
+            PreviousVersion = installed.PreviousPack.PackVersionLabel,
+        }));
+        return 0;
+    }
+
     static async Task<int> CheckLiveUpdateAsync(Version currentVersion)
     {
         var dataDirectory = Path.Combine(

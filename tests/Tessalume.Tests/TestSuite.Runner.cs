@@ -8,6 +8,23 @@ internal static partial class TestSuite
             return await ProbeCodexUsageAsync();
         }
 
+        if (args is [
+                "--install-compatibility-pack",
+                var builtInDirectory,
+                var compatibilityDataDirectory,
+                var compatibilityArchivePath,
+                var compatibilitySha256,
+                var compatibilityAppVersionText] &&
+            Version.TryParse(compatibilityAppVersionText, out var compatibilityAppVersion))
+        {
+            return await InstallCompatibilityPackAsync(
+                builtInDirectory,
+                compatibilityDataDirectory,
+                compatibilityArchivePath,
+                compatibilitySha256,
+                compatibilityAppVersion);
+        }
+
         if (args is ["--probe", var portText] && int.TryParse(portText, out var probePort))
         {
             return await ProbeRuntimeAsync(probePort);
