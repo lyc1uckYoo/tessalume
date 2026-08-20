@@ -219,14 +219,30 @@ internal static partial class TestSuite
             "The runtime must neutralize the current Codex composer fade utility names.");
         Ensure(payload.Contains("tessalume-composer-native-fade", StringComparison.Ordinal) &&
                payload.Contains("style.pointerEvents !== \"none\"", StringComparison.Ordinal) &&
-               payload.Contains("style.backgroundImage.includes(\"linear-gradient\")", StringComparison.Ordinal),
-            "The runtime must semantically alias the native composer fade instead of relying only on unstable utility classes.");
+               payload.Contains("style.backgroundImage.includes(\"linear-gradient\")", StringComparison.Ordinal) &&
+               payload.Contains("carrierStyle.position === \"absolute\"", StringComparison.Ordinal) &&
+               payload.Contains("carrierStyle.position === \"fixed\"", StringComparison.Ordinal) &&
+               payload.Contains("const fadeSearchRoot = bottomCarrier.parentElement || bottomCarrier", StringComparison.Ordinal),
+            "The runtime must semantically alias native composer fades in both legacy sticky and current absolute bottom carriers.");
         Ensure(payload.Contains("background:transparent!important", StringComparison.Ordinal),
             "The native composer fade override must remain transparent.");
         Ensure(payload.Contains("background-image:none!important", StringComparison.Ordinal),
             "The native composer fade image must be fully removed so it cannot obscure chat artwork.");
-        Ensure(payload.Contains(":has(.composer-surface-chrome) .sticky.bottom-0", StringComparison.Ordinal),
-            "The runtime must keep the sticky composer visible on Codex home layout changes.");
+        Ensure(payload.Contains(
+                ":has(.composer-surface-chrome) .sticky.bottom-0:has(.composer-surface-chrome)",
+                StringComparison.Ordinal) &&
+               !sharedTemplate.Contains(
+                   ":has(.composer-surface-chrome) .sticky.bottom-0 {",
+                   StringComparison.Ordinal),
+            "Only a legacy sticky carrier that actually contains the composer may be elevated or receive pointer events.");
+        Ensure(sharedTemplate.Contains(
+                ":is(.sticky,.absolute,.fixed).bottom-0:has(.composer-surface-chrome)",
+                StringComparison.Ordinal),
+            "The compatibility template must neutralize the current full-width absolute composer fade before semantic decoration runs.");
+        Ensure(sharedTemplate.Contains(
+                ".thread-scroll-container:has(.composer-surface-chrome) .sticky.bottom-0",
+                StringComparison.Ordinal),
+            "The compatibility template must neutralize Codex's sibling sticky fade while preserving the centered composer surface.");
         Ensure(payload.Contains("min-height:64px!important", StringComparison.Ordinal),
             "The composer surface must keep a visible minimum hit area.");
         Ensure(sharedTemplate.Contains(

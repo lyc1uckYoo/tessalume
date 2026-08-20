@@ -2,6 +2,20 @@ using Tessalume.App.Features.Personalization.ArtworkWorkbench.Infrastructure;
 
 internal static partial class TestSuite
 {
+    static async Task<int> ProbeCodexUsageAsync()
+    {
+        _ = Application.Current ?? new Application();
+        var snapshot = await new CodexUsageReader().ReadAsync();
+        if (snapshot is null)
+        {
+            Console.Error.WriteLine("No Codex quota snapshot was available.");
+            return 2;
+        }
+
+        Console.WriteLine(JsonSerializer.Serialize(snapshot));
+        return 0;
+    }
+
     static async Task<int> CheckLiveUpdateAsync(Version currentVersion)
     {
         var dataDirectory = Path.Combine(
@@ -297,6 +311,7 @@ internal static partial class TestSuite
                       display: style.display,
                       visibility: style.visibility,
                       opacity: style.opacity,
+                      pointerEvents: style.pointerEvents,
                       position: style.position,
                       zIndex: style.zIndex,
                       overflow: style.overflow,
@@ -381,9 +396,47 @@ internal static partial class TestSuite
                       const footer = composer.querySelector('[class*="ComposerLayoutFooter"], [class*="_footer_"]');
                       return footer ? styleOf(footer) : null;
                     })() : null,
+                    composerHitTest: editor ? (() => {
+                      const box = editor.getBoundingClientRect();
+                      return document.elementsFromPoint(
+                        Math.round(box.left + box.width / 2),
+                        Math.round(box.top + box.height / 2))
+                        .slice(0, 8)
+                        .map(styleOf);
+                    })() : [],
                     nativeFade: (() => {
                       const fade = document.querySelector('.tessalume-composer-native-fade');
                       return fade ? styleOf(fade) : null;
+                    })(),
+                    composerFadeCandidate: (() => {
+                      const fade = Array.from(document.querySelectorAll('*')).find(element => {
+                        const className = typeof element.className === 'string' ? element.className : '';
+                        return className.includes('bg-gradient-to-t') && className.includes('bottom-0');
+                      });
+                      if (!fade) return null;
+                      let commonAncestor = fade.parentElement;
+                      let commonAncestorDepth = 1;
+                      while (commonAncestor && composer && !commonAncestor.contains(composer)) {
+                        commonAncestor = commonAncestor.parentElement;
+                        commonAncestorDepth += 1;
+                      }
+                      return {
+                        style: styleOf(fade),
+                        parentClassName: typeof fade.parentElement?.className === 'string'
+                          ? fade.parentElement.className
+                          : '',
+                        grandparentClassName: typeof fade.parentElement?.parentElement?.className === 'string'
+                          ? fade.parentElement.parentElement.className
+                          : '',
+                        containsComposer: Boolean(composer && fade.contains(composer)),
+                        composerContainsCandidate: Boolean(composer && composer.contains(fade)),
+                        parentContainsComposer: Boolean(composer && fade.parentElement?.contains(composer)),
+                        grandparentContainsComposer: Boolean(composer && fade.parentElement?.parentElement?.contains(composer)),
+                        commonAncestorDepth,
+                        commonAncestorClassName: typeof commonAncestor?.className === 'string'
+                          ? commonAncestor.className
+                          : ''
+                      };
                     })(),
                     before: composer ? (() => { const s = getComputedStyle(composer, '::before'); return { content: s.content, background: s.background, boxShadow: s.boxShadow, display: s.display }; })() : null,
                     after: composer ? (() => { const s = getComputedStyle(composer, '::after'); return { content: s.content, background: s.background, boxShadow: s.boxShadow, display: s.display }; })() : null,

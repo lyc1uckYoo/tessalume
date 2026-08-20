@@ -3,6 +3,11 @@ internal static partial class TestSuite
     public static async Task<int> RunAsync(string[] args)
     {
 
+        if (args is ["--usage-probe"])
+        {
+            return await ProbeCodexUsageAsync();
+        }
+
         if (args is ["--probe", var portText] && int.TryParse(portText, out var probePort))
         {
             return await ProbeRuntimeAsync(probePort);
@@ -412,6 +417,7 @@ internal static partial class TestSuite
             ("runtime diagnostics use Tessalume markers", RuntimeDiagnosticsUseTessalumeMarkersAsync),
             ("skipped pet overlays retain the processed marker", SkippedPetOverlaysRetainProcessedMarkerAsync),
             ("runtime removes native composer fade", RuntimeRemovesNativeComposerFadeAsync),
+            ("Codex quota reader supports legacy and grouped limits", CodexUsageReaderSupportsLegacyAndGroupedLimitsAsync),
             ("runtime preserves wide assistant content", RuntimePreservesWideAssistantContentAsync),
             ("display preferences change effective runtime styles", DisplayPreferencesChangeEffectiveRuntimeStylesAsync),
             ("runtime decorates task surfaces before deferred repair", RuntimeDecoratesTaskSurfacesBeforeDeferredRepairAsync),

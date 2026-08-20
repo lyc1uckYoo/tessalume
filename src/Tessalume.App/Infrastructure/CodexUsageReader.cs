@@ -9,7 +9,9 @@ internal sealed record CodexUsageWindow(
     string Label,
     double RemainingPercent,
     DateTimeOffset? ResetsAt,
-    int WindowDurationMinutes);
+    int WindowDurationMinutes,
+    string? LimitId = null,
+    string? LimitName = null);
 
 internal sealed record CodexUsageSnapshot(IReadOnlyList<CodexUsageWindow> Windows)
 {
@@ -112,21 +114,73 @@ internal sealed class CodexUsageReader
         }
     }
 
-    private static CodexUsageSnapshot? ParseSnapshot(JsonElement response)
+    internal static CodexUsageSnapshot? ParseSnapshot(JsonElement response)
     {
-        if (!response.TryGetProperty("result", out var result) ||
-            !result.TryGetProperty("rateLimits", out var rateLimits))
+        if (!response.TryGetProperty("result", out var result))
         {
             return null;
         }
 
-        var windows = new List<CodexUsageWindow>(2);
-        AddWindow(rateLimits, "primary", windows);
-        AddWindow(rateLimits, "secondary", windows);
+        var windows = new List<CodexUsageWindow>(4);
+        var seenWindows = new HashSet<string>(StringComparer.Ordinal);
+        if (result.TryGetProperty("rateLimits", out var rateLimits) &&
+            rateLimits.ValueKind == JsonValueKind.Object)
+        {
+            AddLimitGroup(rateLimits, null, windows, seenWindows);
+        }
+
+        // Newer Codex app-server builds also expose model-specific limits here.
+        // Only read the canonical Codex group: a Spark or other model window
+        // must never be presented as the account's original five-hour quota.
+        if (result.TryGetProperty("rateLimitsByLimitId", out var groupedLimits) &&
+            groupedLimits.ValueKind == JsonValueKind.Object)
+        {
+            foreach (var group in groupedLimits.EnumerateObject())
+            {
+                if (group.Value.ValueKind == JsonValueKind.Object &&
+                    IsCanonicalCodexLimit(group.Name, group.Value))
+                {
+                    AddLimitGroup(group.Value, group.Name, windows, seenWindows);
+                }
+            }
+        }
+
         return windows.Count == 0 ? null : new CodexUsageSnapshot(windows);
     }
 
-    private static void AddWindow(JsonElement rateLimits, string propertyName, List<CodexUsageWindow> windows)
+    private static bool IsCanonicalCodexLimit(string propertyName, JsonElement group)
+    {
+        if (string.Equals(propertyName, "codex", StringComparison.OrdinalIgnoreCase)) return true;
+        return group.TryGetProperty("limitId", out var limitId) &&
+               limitId.ValueKind == JsonValueKind.String &&
+               string.Equals(limitId.GetString(), "codex", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static void AddLimitGroup(
+        JsonElement rateLimits,
+        string? fallbackLimitId,
+        List<CodexUsageWindow> windows,
+        HashSet<string> seenWindows)
+    {
+        var limitId = rateLimits.TryGetProperty("limitId", out var limitIdElement) &&
+                      limitIdElement.ValueKind == JsonValueKind.String
+            ? limitIdElement.GetString()
+            : fallbackLimitId;
+        var limitName = rateLimits.TryGetProperty("limitName", out var limitNameElement) &&
+                        limitNameElement.ValueKind == JsonValueKind.String
+            ? limitNameElement.GetString()
+            : null;
+        AddWindow(rateLimits, "primary", limitId, limitName, windows, seenWindows);
+        AddWindow(rateLimits, "secondary", limitId, limitName, windows, seenWindows);
+    }
+
+    private static void AddWindow(
+        JsonElement rateLimits,
+        string propertyName,
+        string? limitId,
+        string? limitName,
+        List<CodexUsageWindow> windows,
+        HashSet<string> seenWindows)
     {
         if (!rateLimits.TryGetProperty(propertyName, out var window) ||
             window.ValueKind != JsonValueKind.Object ||
@@ -140,6 +194,9 @@ internal sealed class CodexUsageReader
                               durationElement.TryGetInt32(out var duration)
             ? duration
             : 0;
+        var windowKey = $"{limitId ?? "<default>"}\u001f{durationMinutes}";
+        if (!seenWindows.Add(windowKey)) return;
+
         DateTimeOffset? resetsAt = null;
         if (window.TryGetProperty("resetsAt", out var resetElement) &&
             resetElement.TryGetInt64(out var resetUnixSeconds))
@@ -148,21 +205,29 @@ internal sealed class CodexUsageReader
         }
 
         windows.Add(new CodexUsageWindow(
-            FormatWindowLabel(durationMinutes),
+            FormatWindowLabel(durationMinutes, limitName),
             Math.Clamp(100d - usedPercent, 0d, 100d),
             resetsAt,
-            durationMinutes));
+            durationMinutes,
+            limitId,
+            limitName));
     }
 
-    private static string FormatWindowLabel(int durationMinutes) => durationMinutes switch
+    private static string FormatWindowLabel(int durationMinutes, string? limitName)
     {
-        300 => "5 小时额度",
-        1440 => "每日额度",
-        10080 => "每周额度",
-        _ when durationMinutes > 0 && durationMinutes % 1440 == 0 => $"{durationMinutes / 1440} 天额度",
-        _ when durationMinutes > 0 && durationMinutes % 60 == 0 => $"{durationMinutes / 60} 小时额度",
-        _ => "Codex 额度",
-    };
+        var durationLabel = durationMinutes switch
+        {
+            300 => "5 小时额度",
+            1440 => "每日额度",
+            10080 => "每周额度",
+            _ when durationMinutes > 0 && durationMinutes % 1440 == 0 => $"{durationMinutes / 1440} 天额度",
+            _ when durationMinutes > 0 && durationMinutes % 60 == 0 => $"{durationMinutes / 60} 小时额度",
+            _ => "Codex 额度",
+        };
+        return string.IsNullOrWhiteSpace(limitName)
+            ? durationLabel
+            : $"{limitName} · {durationLabel}";
+    }
 
     private static string? FindCodexExecutable()
     {

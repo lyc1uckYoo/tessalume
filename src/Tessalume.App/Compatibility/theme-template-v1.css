@@ -8,7 +8,8 @@ html.tessalume-theme-active .sticky.bottom-0:has(.composer-surface-chrome) [clas
 /* Codex 26.810 renamed the composer fade utilities from token-main-surface to
    from-surface/via-surface. The runtime also assigns a semantic alias so later
    native class renames cannot paint an opaque band over theme chat artwork. */
-html.tessalume-theme-active .sticky.bottom-0:has(.composer-surface-chrome) > [class*="bg-gradient-to-t"][class*="from-surface"],
+html.tessalume-theme-active :is(.sticky,.absolute,.fixed).bottom-0:has(.composer-surface-chrome) > [class*="bg-gradient-to-t"][class*="from-surface"],
+html.tessalume-theme-active .thread-scroll-container:has(.composer-surface-chrome) .sticky.bottom-0 > [class*="bg-gradient-to-t"][class*="from-surface"],
 html.tessalume-theme-active .tessalume-composer-native-fade {
   background:transparent!important;
   background-color:transparent!important;
@@ -19,7 +20,7 @@ html.tessalume-theme-active :is(main,[role="main"]):has(.composer-surface-chrome
   overflow-x:hidden!important;
 }
 
-html.tessalume-theme-active :is(main,[role="main"]):has(.composer-surface-chrome) .sticky.bottom-0 {
+html.tessalume-theme-active :is(main,[role="main"]):has(.composer-surface-chrome) .sticky.bottom-0:has(.composer-surface-chrome) {
   display:block!important;
   visibility:visible!important;
   opacity:1!important;

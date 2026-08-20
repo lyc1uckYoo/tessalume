@@ -153,30 +153,41 @@
       // mid-2026. Keep the stable Tessalume aliases at the compatibility layer
       // so every existing theme can continue styling the native composer.
       mark(surface, "composer-surface-chrome");
-      let stickyContainer = surface.parentElement;
-      while (stickyContainer && stickyContainer !== document.body) {
-        const stickyStyle = getComputedStyle(stickyContainer);
-        const stickyBottom = parseFloat(stickyStyle.bottom);
-        if (stickyStyle.position === "sticky" &&
-            Number.isFinite(stickyBottom) &&
-            Math.abs(stickyBottom) < .5) {
+      const surfaceBox = surface.getBoundingClientRect();
+      let bottomCarrier = surface.parentElement;
+      while (bottomCarrier && bottomCarrier !== document.body) {
+        const carrierStyle = getComputedStyle(bottomCarrier);
+        const carrierBottom = parseFloat(carrierStyle.bottom);
+        const carrierBox = bottomCarrier.getBoundingClientRect();
+        const isBottomPositioned = carrierStyle.position === "sticky" ||
+          carrierStyle.position === "absolute" ||
+          carrierStyle.position === "fixed";
+        if (isBottomPositioned &&
+            Number.isFinite(carrierBottom) &&
+            Math.abs(carrierBottom) < .5 &&
+            carrierBox.width >= surfaceBox.width) {
           break;
         }
-        stickyContainer = stickyContainer.parentElement;
+        bottomCarrier = bottomCarrier.parentElement;
       }
-      if (stickyContainer && stickyContainer !== document.body) {
-        const stickyBox = stickyContainer.getBoundingClientRect();
-        const nativeFade = Array.from(stickyContainer.querySelectorAll("*"))
+      if (bottomCarrier && bottomCarrier !== document.body) {
+        const carrierBox = bottomCarrier.getBoundingClientRect();
+        // Current Codex builds place the native fade outside the composer
+        // carrier in a sibling sticky spacer. Search their nearest shared
+        // layout parent so both the legacy nested and current sibling shapes work.
+        const fadeSearchRoot = bottomCarrier.parentElement || bottomCarrier;
+        const nativeFade = Array.from(fadeSearchRoot.querySelectorAll("*"))
           .find((node) => {
+            if (node === surface || node.contains(surface) || surface.contains(node)) return false;
             const style = getComputedStyle(node);
             if (style.pointerEvents !== "none" || style.position !== "absolute") return false;
             const className = typeof node.className === "string" ? node.className : "";
             if (!style.backgroundImage.includes("linear-gradient") &&
                 !className.includes("bg-gradient")) return false;
             const box = node.getBoundingClientRect();
-            return box.width >= stickyBox.width * .8 &&
-              box.height >= surface.getBoundingClientRect().height &&
-              Math.abs(box.bottom - stickyBox.bottom) < 2;
+            return box.width >= carrierBox.width * .8 &&
+              box.height >= surfaceBox.height &&
+              Math.abs(box.bottom - carrierBox.bottom) < 2;
           });
         mark(nativeFade, "tessalume-composer-native-fade");
       }
