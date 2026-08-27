@@ -131,8 +131,7 @@ public partial class MainWindow : Window, IAsyncDisposable
         _aboutUpdateService = new AboutUpdateService(
             _layout,
             _compatibilityPacks,
-            Version.Parse(BrandInfo.Version),
-            $"{BrandInfo.ProductName}.exe");
+            Version.Parse(BrandInfo.Version));
         _runtime = new ThemeRuntime(
             new LoopbackCdpDiscovery(),
             new ThemePayloadBuilder(() => _compatibilityPacks.Resolve().RuntimeAssets),

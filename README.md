@@ -4,7 +4,7 @@
 
 Tessalume 是一款开源、便携、以本机为中心的 Windows 主题与伴侣工作室。它可以统一管理 Codex 的完整角色主题、三大图像区域、阅读体验与官方 Pets 资产，也能让你直接借助 Codex 创建、体检和导出自己的主题。
 
-![Release](https://img.shields.io/badge/release-2.1.1-6C5CE7?style=flat-square)
+![Release](https://img.shields.io/badge/release-2.1.2-6C5CE7?style=flat-square)
 ![Platform](https://img.shields.io/badge/platform-Windows%20x64-2563EB?style=flat-square)
 ![Local first](https://img.shields.io/badge/data-local%20first-0F9D87?style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT-F59E0B?style=flat-square)
@@ -55,7 +55,7 @@ Tessalume 不会启动独立桌宠进程，不读取 Codex 对话、账号或日
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset=".github/assets/screenshots/tessalume-pets-dark.png">
   <source media="(prefers-color-scheme: light)" srcset=".github/assets/screenshots/tessalume-pets-light.png">
-  <img alt="Tessalume 2.1.1 Codex 宠物画廊" src=".github/assets/screenshots/tessalume-pets-light.png">
+  <img alt="Tessalume 2.1 Codex 宠物画廊" src=".github/assets/screenshots/tessalume-pets-light.png">
 </picture>
 
 ## 让 Codex 帮你制作自己的皮肤
@@ -82,9 +82,10 @@ Tessalume 会检查结构、素材、Template 1.0 契约、六槽图像推荐值
 - 下载完成后必须通过 SHA-256 校验；新版本还要提交启动健康确认，否则自动恢复旧版。
 - 更新前会保存上一版 EXE 与旧版可读取的配置快照，成功后仍保留一个手动恢复点。
 - 从 2.1.1 开始，后续版本会优先下载上一正式版到新版本的增量包；基线或校验不匹配时自动改用完整 EXE。
+- 即使浏览器将程序保存为 `Tessalume (1).exe` 或你手动改名，更新、重启和上一版本恢复仍会作用于当前这个 EXE。
 - Codex 页面结构的小变化可以通过独立兼容包修复，不必重新下载完整软件。
 
-从 2.0.2 升级到 2.1.1 时，Schema 5 配置会先原样备份，再迁移为 Schema 7。已经使用 2.1.0 的用户无需再次迁移；收藏、最近主题、亮暗图像参数、本地图片路径、动效/字号/密度、创作草稿和工作区记录都会保留，已经移出产品的旧方案字段不会继续写回。
+从 2.0.2 升级到当前 2.1.x 时，Schema 5 配置会先原样备份，再迁移为 Schema 7。已经使用 2.1.0 或更新版本的用户无需再次迁移；收藏、最近主题、亮暗图像参数、本地图片路径、动效/字号/密度、创作草稿和工作区记录都会保留，已经移出产品的旧方案字段不会继续写回。
 
 ## 本机优先与安全边界
 

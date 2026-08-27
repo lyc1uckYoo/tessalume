@@ -379,11 +379,11 @@ public partial class MainWindow
         }
     }
 
-    private Window ProductDialogOwner => IsVisible
+    private Window? ProductDialogOwner => IsVisible
         ? this
         : _quickSwitchWindow is { IsVisible: true }
             ? _quickSwitchWindow
-            : this;
+            : null;
 
     private bool ShowProductConfirmation(
         string title,

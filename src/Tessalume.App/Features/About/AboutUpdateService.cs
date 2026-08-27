@@ -16,15 +16,17 @@ internal sealed class AboutUpdateService : IDisposable
         PortableLayout layout,
         CompatibilityPackStore compatibilityPacks,
         Version currentVersion,
-        string executableName)
+        string? processPath = null)
     {
+        var executablePath = ResolveExecutablePath(layout, processPath ?? Environment.ProcessPath);
+        var executableName = Path.GetFileName(executablePath);
         _compatibilityPacks = compatibilityPacks;
         _applicationClient = new ReleaseUpdateClient(
             BrandInfo.RepositoryOwner,
             BrandInfo.RepositoryName,
             layout.DataDirectory,
             currentVersion,
-            Path.Combine(layout.RootDirectory, executableName));
+            executablePath);
         _compatibilityClient = new CompatibilityUpdateClient(
             BrandInfo.RepositoryOwner,
             BrandInfo.RepositoryName,
@@ -34,6 +36,32 @@ internal sealed class AboutUpdateService : IDisposable
             layout.RootDirectory,
             layout.DataDirectory,
             executableName);
+    }
+
+    internal static string ResolveExecutablePath(PortableLayout layout, string? processPath)
+    {
+        var applicationRoot = Path.TrimEndingDirectorySeparator(Path.GetFullPath(layout.RootDirectory));
+        var fallback = Path.Combine(applicationRoot, $"{BrandInfo.ProductName}.exe");
+        if (string.IsNullOrWhiteSpace(processPath)) return fallback;
+
+        try
+        {
+            var candidate = Path.GetFullPath(processPath);
+            var candidateDirectory = Path.GetDirectoryName(candidate) is { } directory
+                ? Path.TrimEndingDirectorySeparator(directory)
+                : null;
+            if (string.Equals(candidateDirectory, applicationRoot, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(Path.GetExtension(candidate), ".exe", StringComparison.OrdinalIgnoreCase))
+            {
+                return candidate;
+            }
+        }
+        catch (Exception exception) when (
+            exception is ArgumentException or IOException or NotSupportedException)
+        {
+        }
+
+        return fallback;
     }
 
     public async Task<AboutUpdateCheckResult> CheckAsync(CancellationToken cancellationToken)

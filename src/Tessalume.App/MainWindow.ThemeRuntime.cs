@@ -250,6 +250,10 @@ public partial class MainWindow
 
         if (CodexPackageLauncher.IsCodexRunning())
         {
+            if (!IsVisible && _quickSwitchWindow is not { IsVisible: true })
+            {
+                ShowMainInterface();
+            }
             var confirmed = ShowProductConfirmation(
                 "需要重新启动 Codex",
                 "Codex 当前没有可用的主题连接。为了应用所选主题，需要关闭并重新启动 Codex。\n\n请先保存正在编辑的内容并确认当前任务可以中断。",

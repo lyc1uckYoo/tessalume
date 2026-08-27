@@ -1,5 +1,91 @@
 internal static partial class TestSuite
 {
+    static Task UpdateHelperAcceptsRenamedPortableExecutableWithinItsRootAsync()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"tessalume-helper-boundary-{Guid.NewGuid():N}");
+        var downloads = Path.Combine(root, "data", "updates", "downloads");
+        var helpers = Path.Combine(root, "data", "updates", "helpers");
+        Directory.CreateDirectory(downloads);
+        Directory.CreateDirectory(helpers);
+        try
+        {
+            var source = Path.Combine(downloads, "Tessalume-v2.1.2.exe.download");
+            var destination = Path.Combine(root, "Tessalume (1).exe");
+            var resultPath = Path.Combine(root, "data", "update-result.json");
+            var helper = Path.Combine(helpers, $"Tessalume.UpdateHelper.{Guid.NewGuid():N}.exe");
+            var token = Guid.NewGuid().ToString("N");
+            var snapshotId = Guid.NewGuid().ToString("N");
+            var hash = new string('A', 64);
+            var args = new[]
+            {
+                "--apply-update",
+                PortableUpdateOperation.Install.ToString(),
+                "42",
+                source,
+                destination,
+                hash,
+                "v2.1.2",
+                "v2.1.1",
+                resultPath,
+                helper,
+                token,
+                snapshotId,
+                hash,
+                "-",
+                "-",
+            };
+
+            Ensure(UpdateBootstrapper.TryParseHelperArguments(args, helper, out var request) &&
+                   request?.DestinationPath == destination &&
+                   request.HelperPath == helper,
+                "A portable executable renamed by Windows or the user must still update inside its own root.");
+            Ensure(Tessalume.App.Features.About.AboutUpdateService.ResolveExecutablePath(
+                       new PortableLayout(
+                           root + Path.DirectorySeparatorChar,
+                           Path.Combine(root, "themes"),
+                           Path.Combine(root, "data")),
+                       destination) == destination,
+                "Update discovery, incremental download, and rollback must use the actual renamed executable.");
+
+            var rejected = false;
+            try
+            {
+                var outsideDestination = Path.Combine(Path.GetDirectoryName(root)!, "outside", "Tessalume.exe");
+                _ = UpdateBootstrapper.TryParseHelperArguments(
+                    args.Select((value, index) => index == 4 ? outsideDestination : value).ToArray(),
+                    helper,
+                    out _);
+            }
+            catch (InvalidDataException)
+            {
+                rejected = true;
+            }
+            Ensure(rejected,
+                "Deriving the portable root from the running helper must still reject executable targets outside it.");
+
+            rejected = false;
+            try
+            {
+                var otherHelper = Path.Combine(helpers, $"Tessalume.UpdateHelper.{Guid.NewGuid():N}.exe");
+                _ = UpdateBootstrapper.TryParseHelperArguments(
+                    args.Select((value, index) => index == 9 ? otherHelper : value).ToArray(),
+                    helper,
+                    out _);
+            }
+            catch (InvalidDataException)
+            {
+                rejected = true;
+            }
+            Ensure(rejected,
+                "The helper argument must still identify the helper process that is actually running.");
+        }
+        finally
+        {
+            if (Directory.Exists(root)) Directory.Delete(root, recursive: true);
+        }
+        return Task.CompletedTask;
+    }
+
     static async Task ReleaseUpdaterChecksAndDownloadsAsync()
     {
         var dataDirectory = Path.Combine(Path.GetTempPath(), $"tessalume-update-client-{Guid.NewGuid():N}");

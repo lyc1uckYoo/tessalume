@@ -496,6 +496,7 @@ internal static partial class TestSuite
             ("deferred main UI replays the live engine state", DeferredMainUiReplaysEngineStateAsync),
             ("main window disposal is idempotent", MainWindowDisposalIsIdempotentAsync),
             ("startup stays opt-in and cleans the predecessor brand", StartupRegistrationStaysOptInAsync),
+            ("update helper accepts renamed portable executables without leaving its root", UpdateHelperAcceptsRenamedPortableExecutableWithinItsRootAsync),
             ("release updater checks downloads and verifies SHA-256", ReleaseUpdaterChecksAndDownloadsAsync),
             ("release updater applies verified deltas with full fallback", ReleaseUpdaterUsesVerifiedDeltaAndFallsBackAsync),
             ("incremental update packs are deterministic and exact", DeltaUpdatePackIsDeterministicAndExactAsync),
@@ -521,6 +522,7 @@ internal static partial class TestSuite
         var releaseOnlyChecks = new HashSet<string>(StringComparer.Ordinal)
         {
             nameof(SourceLayoutKeepsFeatureBoundariesAsync),
+            nameof(UpdateHelperAcceptsRenamedPortableExecutableWithinItsRootAsync),
             nameof(ReleaseUpdaterChecksAndDownloadsAsync),
             nameof(ReleaseUpdaterUsesVerifiedDeltaAndFallsBackAsync),
             nameof(DeltaUpdatePackIsDeterministicAndExactAsync),

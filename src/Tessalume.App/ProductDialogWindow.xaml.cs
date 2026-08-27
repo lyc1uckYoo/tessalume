@@ -58,7 +58,7 @@ public partial class ProductDialogWindow : Window
     }
 
     public static bool Confirm(
-        Window owner,
+        Window? owner,
         string title,
         string message,
         string confirmText = "确认",
@@ -73,15 +73,13 @@ public partial class ProductDialogWindow : Window
             darkMode,
             confirmText,
             cancelText,
-            dangerous)
-        {
-            Owner = owner,
-        };
+            dangerous);
+        AssignOwnerIfShown(dialog, owner);
         return dialog.ShowDialog() == true;
     }
 
     public static void ShowMessage(
-        Window owner,
+        Window? owner,
         string title,
         string message,
         ProductDialogKind kind = ProductDialogKind.Information,
@@ -94,11 +92,17 @@ public partial class ProductDialogWindow : Window
             darkMode,
             "知道了",
             null,
-            false)
-        {
-            Owner = owner,
-        };
+            false);
+        AssignOwnerIfShown(dialog, owner);
         dialog.ShowDialog();
+    }
+
+    internal static void AssignOwnerIfShown(Window dialog, Window? owner)
+    {
+        if (owner is not null && PresentationSource.FromVisual(owner) is not null)
+        {
+            dialog.Owner = owner;
+        }
     }
 
     private void ApplyTheme(bool darkMode)

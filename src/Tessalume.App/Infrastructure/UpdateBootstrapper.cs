@@ -18,6 +18,24 @@ internal static class UpdateBootstrapper
 
     public static bool TryParseHelperArguments(string[] args, out PortableUpdateRequest? request)
     {
+        var runningHelperPath = Environment.ProcessPath;
+        if (string.IsNullOrWhiteSpace(runningHelperPath))
+        {
+            request = null;
+            if (args.Length > 0 && string.Equals(args[0], ApplyUpdateArgument, StringComparison.Ordinal))
+            {
+                throw new InvalidDataException("自动更新助手无法确认自身路径。");
+            }
+            return false;
+        }
+        return TryParseHelperArguments(args, runningHelperPath, out request);
+    }
+
+    internal static bool TryParseHelperArguments(
+        string[] args,
+        string runningHelperPath,
+        out PortableUpdateRequest? request)
+    {
         request = null;
         if (args.Length == 0 || !string.Equals(args[0], ApplyUpdateArgument, StringComparison.Ordinal))
         {
@@ -40,20 +58,38 @@ internal static class UpdateBootstrapper
         var source = Path.GetFullPath(args[3]);
         var destination = Path.GetFullPath(args[4]);
         var resultPath = Path.GetFullPath(args[8]);
-        var helperPath = Path.GetFullPath(args[9]);
-        var applicationRoot = Path.GetDirectoryName(destination)
-            ?? throw new InvalidDataException("自动更新目标路径无效。");
-        var dataRoot = Path.Combine(applicationRoot, "data");
-        var expectedResultPath = Path.Combine(dataRoot, ResultFileName);
-        var expectedExecutableName = $"{BrandInfo.ProductName}.exe";
+        var requestedHelperPath = Path.GetFullPath(args[9]);
+        var helperPath = Path.GetFullPath(runningHelperPath);
+        var helpersDirectory = Path.GetDirectoryName(helperPath)
+            ?? throw new InvalidDataException("自动更新助手路径无效。");
+        var updatesDirectory = Path.GetDirectoryName(helpersDirectory);
+        var dataDirectory = updatesDirectory is null ? null : Path.GetDirectoryName(updatesDirectory);
+        var applicationRoot = dataDirectory is null ? null : Path.GetDirectoryName(dataDirectory);
+        if (updatesDirectory is null || dataDirectory is null || applicationRoot is null ||
+            !string.Equals(Path.GetFileName(helpersDirectory), "helpers", StringComparison.OrdinalIgnoreCase) ||
+            !string.Equals(Path.GetFileName(updatesDirectory), "updates", StringComparison.OrdinalIgnoreCase) ||
+            !string.Equals(Path.GetFileName(dataDirectory), "data", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidDataException("自动更新助手不在受信任的便携目录中。");
+        }
+
+        applicationRoot = Path.GetFullPath(applicationRoot);
+        dataDirectory = Path.GetFullPath(dataDirectory);
+        var expectedResultPath = Path.Combine(dataDirectory, ResultFileName);
+        var destinationDirectory = Path.GetDirectoryName(destination);
+        var destinationIsRootExecutable =
+            string.Equals(destinationDirectory, applicationRoot, StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(Path.GetExtension(destination), ".exe", StringComparison.OrdinalIgnoreCase);
         var allowedSource = operation == PortableUpdateOperation.Install
-            ? IsInside(source, Path.Combine(dataRoot, "updates", "downloads"))
+            ? IsInside(source, Path.Combine(dataDirectory, "updates", "downloads"))
             : string.Equals(source, destination + ".previous", StringComparison.OrdinalIgnoreCase);
-        if (!string.Equals(Path.GetFileName(destination), expectedExecutableName, StringComparison.OrdinalIgnoreCase) ||
+        if (!destinationIsRootExecutable ||
             !allowedSource ||
-            !IsInside(helperPath, Path.Combine(dataRoot, "updates", "helpers")) ||
+            !IsInside(helperPath, helpersDirectory) ||
+            !Path.GetFileName(helperPath).StartsWith("Tessalume.UpdateHelper.", StringComparison.OrdinalIgnoreCase) ||
+            !string.Equals(Path.GetExtension(helperPath), ".exe", StringComparison.OrdinalIgnoreCase) ||
             !string.Equals(resultPath, expectedResultPath, StringComparison.OrdinalIgnoreCase) ||
-            !string.Equals(helperPath, Environment.ProcessPath, StringComparison.OrdinalIgnoreCase))
+            !string.Equals(requestedHelperPath, helperPath, StringComparison.OrdinalIgnoreCase))
         {
             throw new InvalidDataException("自动更新助手拒绝了越界路径。");
         }

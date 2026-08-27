@@ -39,7 +39,7 @@ internal static partial class TestSuite
             "The release build must create a checksum and propagate complete-build failures.");
         Ensure(File.Exists(securityPath) && File.Exists(issueTemplatePath) && File.Exists(changelogPath) &&
                File.Exists(thirdPartyNoticesPath) &&
-               changelog.Contains("## 2.1.1", StringComparison.Ordinal) &&
+               changelog.Contains("## 2.1.2", StringComparison.Ordinal) &&
                license.Contains("MIT License", StringComparison.Ordinal) &&
                license.Contains("Permission is hereby granted", StringComparison.Ordinal) &&
                thirdPartyNotices.Contains("Octodiff", StringComparison.Ordinal) &&
@@ -191,7 +191,7 @@ internal static partial class TestSuite
                              "-File",
                              scriptPath,
                              "-Version",
-                             "2.1.1",
+                             "2.1.2",
                              "-OutputPath",
                              outputPath,
                          })
@@ -208,8 +208,8 @@ internal static partial class TestSuite
                     ? await File.ReadAllTextAsync(outputPath)
                     : string.Empty;
                 Ensure(process.ExitCode == 0 &&
-                       notes.Contains("自动更新加入可验证的二进制增量协议", StringComparison.Ordinal) &&
-                       !notes.Contains("## 2.1.0", StringComparison.Ordinal),
+                       notes.Contains("便携 EXE 被浏览器或用户重命名", StringComparison.Ordinal) &&
+                       !notes.Contains("## 2.1.1", StringComparison.Ordinal),
                     $"{hostName} must extract only the requested release notes. " +
                     $"{standardOutput} {standardError}".Trim());
             }

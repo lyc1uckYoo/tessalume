@@ -28,7 +28,8 @@ public partial class FirstRunWindow : Window
 
     public static bool Show(Window owner, bool darkMode, bool codexInstalled)
     {
-        var window = new FirstRunWindow(darkMode, codexInstalled) { Owner = owner };
+        var window = new FirstRunWindow(darkMode, codexInstalled);
+        ProductDialogWindow.AssignOwnerIfShown(window, owner);
         return window.ShowDialog() == true;
     }
 

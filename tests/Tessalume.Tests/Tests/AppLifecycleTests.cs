@@ -595,6 +595,11 @@ internal static partial class TestSuite
             "src",
             "Tessalume.App",
             "FirstRunWindow.xaml"));
+        var productDialogSource = await File.ReadAllTextAsync(Path.Combine(
+            repositoryRoot,
+            "src",
+            "Tessalume.App",
+            "ProductDialogWindow.xaml.cs"));
         var startupStart = source.IndexOf("internal async Task StartInQuickModeAsync()", StringComparison.Ordinal);
         var startupEnd = startupStart < 0
             ? -1
@@ -612,8 +617,11 @@ internal static partial class TestSuite
                !source.Contains("Random.Shared", StringComparison.Ordinal),
             "First-run startup must never choose or apply a random theme.");
         Ensure(source.Contains("需要重新启动 Codex", StringComparison.Ordinal) &&
-               source.Contains("ShowProductConfirmation", StringComparison.Ordinal),
-            "Restarting an existing Codex session must require an explicit confirmation.");
+               source.Contains("ShowProductConfirmation", StringComparison.Ordinal) &&
+               source.Contains("if (!IsVisible && _quickSwitchWindow is not { IsVisible: true })", StringComparison.Ordinal) &&
+               source.Contains("ShowMainInterface();", StringComparison.Ordinal) &&
+               productDialogSource.Contains("PresentationSource.FromVisual(owner) is not null", StringComparison.Ordinal),
+            "Restarting an existing Codex session must show a visible owner first and never attach a dialog to an unshown window.");
         Ensure(onboardingXaml.Contains("首次启动不会自动换肤", StringComparison.Ordinal) &&
                onboardingXaml.Contains("进入主题库", StringComparison.Ordinal) &&
                onboardingXaml.Contains("必要时重新连接", StringComparison.Ordinal),
