@@ -1,7 +1,22 @@
 // TESSALUME_RUNTIME_FRAGMENT: sidebar, message, task, output, and shared surface decoration
+    let observedSidebar = null;
+    let sidebarObserver = null;
+    let sidebarNeedsDecoration = true;
     const decorateSidebar = (aside) => {
       const sidebar = spec.sidebar;
       if (!aside || !sidebar) return;
+      if (aside !== observedSidebar) {
+        sidebarObserver?.disconnect();
+        observedSidebar = aside;
+        sidebarNeedsDecoration = true;
+        sidebarObserver = new MutationObserver(() => {
+          sidebarNeedsDecoration = true;
+          schedule();
+        });
+        sidebarObserver.observe(aside, { childList:true, characterData:true, subtree:true });
+      }
+      if (!sidebarNeedsDecoration) return;
+      sidebarNeedsDecoration = false;
       const palette = sidebar.palette || [];
       const projectTone = sidebar.projectTone || "phase";
       const threadIndex = sidebar.threadIndex || "thread";
@@ -117,17 +132,20 @@
       // The environment panel can open on a branch/status view that does not
       // render the old "Output" or "Sources" labels. Its item slot remains
       // stable across those views and after React replaces the panel subtree.
-      queryAll(
+      const panelItems = queryAll(
         document,
         "outputPanelItem",
         ['[data-slot="thread-summary-panel-item-button"]'],
-      ).forEach(collectSection);
+      );
+      panelItems.forEach(collectSection);
 
       // Keep compatibility with older Codex builds that predate the item slot.
       const legacyLabels = new Set(["\u8f93\u51fa", "\u6765\u6e90", "Output", "Sources"]);
-      document.querySelectorAll("button").forEach((button) => {
-        if (legacyLabels.has(button.textContent?.trim() || "")) collectSection(button);
-      });
+      if (panelItems.length === 0) {
+        document.querySelectorAll("button").forEach((button) => {
+          if (legacyLabels.has(button.textContent?.trim() || "")) collectSection(button);
+        });
+      }
 
       sections.forEach((section) => {
         const panel = section.parentElement?.parentElement;

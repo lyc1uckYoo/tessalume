@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "profileVersion": "3.0.6",
+  "profileVersion": "3.0.7",
   "runtimeContractVersion": 4,
   "selectors": {
     "main": [
@@ -43,7 +43,8 @@
     ],
     "settingsScrollChild": [
       ":scope > .scrollbar-stable.flex-1.overflow-y-auto.p-panel",
-      ".scrollbar-stable.flex-1.overflow-y-auto.p-panel"
+      ".scrollbar-stable.flex-1.overflow-y-auto.p-panel",
+      "[data-app-shell-main-content-layout=\"full-bleed\"] .flex-1.scrollbar-stable.overflow-y-auto:has([class*=\"_shell_\"])"
     ],
     "windowBar": [
       ".group\\/application-menu-top-bar"

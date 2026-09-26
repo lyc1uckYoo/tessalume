@@ -120,7 +120,26 @@
     };
     const findHome = () => {
       const icon = queryFirst(document, "homeIcon", ['[data-testid="home-icon"]']);
-      return closestFirst(icon, "homeAncestor", ['[role="main"]', "main"]);
+      const home = closestFirst(icon, "homeAncestor", ['[role="main"]', "main"]);
+      if (!home) return null;
+      const markHomePart = (node, part) => {
+        if (!node || node.getAttribute("data-tessalume-home-part") === part) return;
+        const previous = node.getAttribute("data-tessalume-home-part");
+        node.setAttribute("data-tessalume-home-part", part);
+        surfaced.push([node, previous, "data-tessalume-home-part"]);
+      };
+      const banner = icon.parentElement?.parentElement?.parentElement?.parentElement;
+      if (banner && home.contains(banner)) {
+        markHomePart(home.firstElementChild, "layout");
+        markHomePart(banner.parentElement, "hero-region");
+        markHomePart(banner, "banner");
+        markHomePart(banner.firstElementChild, "banner-inner");
+        markHomePart(banner.firstElementChild?.firstElementChild, "native-title");
+      }
+      const editor = queryFirst(home, "composerEditor", ['[data-codex-composer="true"]']);
+      const composerCarrier = editor?.closest('[class*="z-20"][class*="pb-4"]');
+      markHomePart(composerCarrier, "composer-carrier");
+      return home;
     };
     const findMain = () => queryFirst(
       document,
@@ -176,7 +195,9 @@
         // carrier in a sibling sticky spacer. Search their nearest shared
         // layout parent so both the legacy nested and current sibling shapes work.
         const fadeSearchRoot = bottomCarrier.parentElement || bottomCarrier;
-        const nativeFade = Array.from(fadeSearchRoot.querySelectorAll("*"))
+        const nativeFade = Array.from(fadeSearchRoot.querySelectorAll(
+          '[class*="gradient"],[class*="from-surface"],[style*="gradient"]',
+        ))
           .find((node) => {
             if (node === surface || node.contains(surface) || surface.contains(node)) return false;
             const style = getComputedStyle(node);
@@ -223,7 +244,10 @@
       const settingsScrollChild = queryFirst(
         main,
         "settingsScrollChild",
-        [".scrollbar-stable.flex-1.overflow-y-auto.p-panel"],
+        [
+          ".scrollbar-stable.flex-1.overflow-y-auto.p-panel",
+          '[data-app-shell-main-content-layout="full-bleed"] .flex-1.scrollbar-stable.overflow-y-auto:has([class*="_shell_"])',
+        ],
       );
       return settingsScrollChild?.parentElement || null;
     };

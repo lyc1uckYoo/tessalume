@@ -348,11 +348,13 @@ public sealed partial class ThemeRuntime : IAsyncDisposable
                   await queryClient.refetchQueries({ queryKey: settingsKey, exact: true, type: 'active' });
 
                   const deadline = Date.now() + 5000;
-                  while ((!document.documentElement.classList.contains(`electron-${next}`) ||
+                  const resolvedTheme = () => document.documentElement.getAttribute('data-theme') ||
+                    (document.documentElement.classList.contains('electron-dark') ? 'dark' : 'light');
+                  while ((resolvedTheme() !== next ||
                           bridge.getSystemThemeVariant() !== next) && Date.now() < deadline) {
                     await new Promise(resolve => setTimeout(resolve, 50));
                   }
-                  if (!document.documentElement.classList.contains(`electron-${next}`) ||
+                  if (resolvedTheme() !== next ||
                       bridge.getSystemThemeVariant() !== next) {
                     throw new Error('Codex 未完成原生外观切换');
                   }

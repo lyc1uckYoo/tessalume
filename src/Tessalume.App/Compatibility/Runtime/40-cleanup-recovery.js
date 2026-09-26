@@ -7,6 +7,8 @@
       if (themeDisposed) return true;
       themeDisposed = true;
       if (ensureTimer) window.clearTimeout(ensureTimer);
+      sidebarObserver?.disconnect();
+      sidebarObserver = null;
       if (layoutFrame) window.cancelAnimationFrame(layoutFrame);
       layoutFrame = 0;
       layoutResizeObserver?.disconnect();

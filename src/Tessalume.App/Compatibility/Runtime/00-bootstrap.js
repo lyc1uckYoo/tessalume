@@ -96,11 +96,35 @@
   const style = document.createElement("style");
   style.id = "tessalume-theme-style";
   style.dataset.themeId = themeId;
-  style.textContent = `${templateCssText}\n${cssText}`;
+  // Codex 26.924 inserted display:contents wrappers around the home hero.
+  // Translate the historical home-only chains at injection time so existing
+  // character CSS and the frozen Template 1.0 geometry keep their meaning.
+  const retargetHomeCss = (source) => source.replace(
+    /(\[data-tessalume-surface="home"\]|\.[a-z][a-z0-9]*-home)((?:\s*>\s*div(?::first-child|:nth-child\(2\)))+)/g,
+    (selector, home, chain) => {
+      const steps = Array.from(chain.matchAll(/div(:first-child|:nth-child\(2\))/g),
+        (match) => match[1]);
+      const part = steps.at(-1) === ":nth-child(2)" && steps.length === 4
+        ? "composer-carrier"
+        : steps.every((step) => step === ":first-child")
+          ? ["", "layout", "hero-region", "banner", "banner-inner", "native-title"][steps.length]
+          : null;
+      return part ? `${home} [data-tessalume-home-part="${part}"]` : selector;
+    },
+  );
+  style.textContent = retargetHomeCss(`${templateCssText}\n${cssText}`);
   const compatibilityStyle = document.createElement("style");
   compatibilityStyle.id = "tessalume-runtime-compatibility-style";
   compatibilityStyle.dataset.themeId = themeId;
   compatibilityStyle.textContent = `
+html.tessalume-theme-active [data-tessalume-surface="home"] {
+  --tessalume-v1-home-composer-reserve:300px;
+}
+html.tessalume-theme-active.tessalume-is-home [data-tessalume-surface="home"] [data-tessalume-home-part="composer-carrier"] {
+  top:0!important;
+  left:auto!important;
+  right:auto!important;
+}
 html.tessalume-theme-active :is(main,[role="main"]):has(.composer-surface-chrome) .thread-scroll-container .sticky.bottom-0.tessalume-composer-fade-carrier {
   pointer-events:none!important;
   z-index:0!important;
@@ -135,6 +159,29 @@ html.tessalume-theme-active :is(main,[role="main"]):has(.composer-surface-chrome
     managedCleanups.push(cleanup);
     return cleanup;
   };
+
+  // Codex now publishes its color mode on data-theme. Existing character CSS
+  // and the frozen template still use the historical electron-dark class.
+  const colorModeRoot = document.documentElement;
+  const hadNativeDarkClass = colorModeRoot.classList.contains("electron-dark");
+  const syncLegacyColorMode = () => {
+    const mode = colorModeRoot.getAttribute("data-theme");
+    if (mode === "dark" || mode === "light") {
+      colorModeRoot.classList.toggle("electron-dark", mode === "dark");
+    }
+  };
+  syncLegacyColorMode();
+  const colorModeObserver = new MutationObserver(syncLegacyColorMode);
+  colorModeObserver.observe(colorModeRoot, {
+    attributes: true,
+    attributeFilter: ["data-theme"],
+  });
+  addCleanup(() => {
+    colorModeObserver.disconnect();
+    if (!hadNativeDarkClass && colorModeRoot.hasAttribute("data-theme")) {
+      colorModeRoot.classList.remove("electron-dark");
+    }
+  });
 
   const assetDataUrl = (name) => {
     const value = assetDataUrls[name];
