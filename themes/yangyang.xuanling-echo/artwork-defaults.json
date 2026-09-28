@@ -2,7 +2,7 @@
   "$schema": "../../schemas/theme-artwork-defaults-v1.schema.json",
   "schemaVersion": 1,
   "themeId": "yangyang.xuanling-echo",
-  "defaultsVersion": "1.1.0",
+  "defaultsVersion": "1.1.2",
   "slots": {
     "hero": {
       "light": {
@@ -151,12 +151,12 @@
         "asset": "sidebar-light",
         "placement": {
           "size": {
-            "width": "220.58448021%",
+            "width": "162.88066422741343%",
             "height": "auto"
           },
           "position": {
-            "x": "91.79156853%",
-            "y": "-79.84px"
+            "x": "94.51615865634317%",
+            "y": "0px"
           },
           "scale": 1,
           "origin": {
@@ -199,12 +199,12 @@
         "asset": "sidebar-dark",
         "placement": {
           "size": {
-            "width": "237.6%",
+            "width": "162.88066422741346%",
             "height": "auto"
           },
           "position": {
-            "x": "80.78463094%",
-            "y": "-153.52306863px"
+            "x": "89.03231731268623%",
+            "y": "-0.00000000000021849189124623083px"
           },
           "scale": 1,
           "origin": {
@@ -249,17 +249,17 @@
         "asset": "chat-light",
         "placement": {
           "size": {
-            "width": "contain",
+            "width": "cover",
             "height": "auto"
           },
           "position": {
-            "x": "center",
-            "y": "center"
+            "x": "50.094161958568804%",
+            "y": "0%"
           },
-          "scale": 1,
+          "scale": 1.08,
           "origin": {
-            "x": "50%",
-            "y": "50%"
+            "x": "50.094161958568804%",
+            "y": "0%"
           },
           "mirrorX": false,
           "mirrorY": false
@@ -329,13 +329,13 @@
             "height": "auto"
           },
           "position": {
-            "x": "50.30964798%",
-            "y": "100%"
+            "x": "50.30964798000003%",
+            "y": "27.496381712184636%"
           },
           "scale": 1.083337855616,
           "origin": {
-            "x": "50.30964798%",
-            "y": "100%"
+            "x": "50.30964798000003%",
+            "y": "27.496381712184636%"
           },
           "mirrorX": false,
           "mirrorY": false

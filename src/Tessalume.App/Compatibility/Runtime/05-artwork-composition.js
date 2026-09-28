@@ -7,10 +7,16 @@
       return { element: document.querySelector('[data-tessalume-surface="sidebar"]'), pseudo: "::after" };
     }
     if (region === "chat") {
-      return { element: document.querySelector('main[data-tessalume-surface="main"]'), pseudo: "::before" };
+      const main = document.querySelector('main[data-tessalume-surface="main"]');
+      return {
+        element: main?.querySelector(".thread-scroll-container") || main,
+        pseudo: "::before",
+      };
     }
     return {
       element: document.querySelector(
+        '[data-tessalume-home-part="banner"]',
+      ) || document.querySelector(
         '[data-tessalume-surface="home"]>div:first-child>div:first-child>div:first-child',
       ),
       pseudo: "::before",
@@ -278,7 +284,7 @@
         `main[data-tessalume-surface="main"]::before`;
     }
     return `html.tessalume-theme-active${color}.tessalume-is-home ` +
-      `[data-tessalume-surface="home"]>div:first-child>div:first-child>div:first-child::before`;
+      `[data-tessalume-surface="home"] [data-tessalume-home-part="banner"]::before`;
   };
   const motionLength = (value) => {
     const match = String(value || "").trim().toLowerCase().match(

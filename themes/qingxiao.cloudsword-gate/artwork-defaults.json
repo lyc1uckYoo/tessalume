@@ -2,7 +2,7 @@
   "$schema": "../../schemas/theme-artwork-defaults-v1.schema.json",
   "schemaVersion": 1,
   "themeId": "qingxiao.cloudsword-gate",
-  "defaultsVersion": "1.1.0",
+  "defaultsVersion": "1.1.2",
   "slots": {
     "hero": {
       "light": {
@@ -113,12 +113,12 @@
         "asset": "sidebar-light",
         "placement": {
           "size": {
-            "width": "211.64858182%",
+            "width": "171.18635294%",
             "height": "auto"
           },
           "position": {
-            "x": "50.78292432%",
-            "y": "-166.0672px"
+            "x": "52%",
+            "y": "-144.0672px"
           },
           "scale": 1,
           "origin": {
@@ -161,12 +161,12 @@
         "asset": "sidebar-dark",
         "placement": {
           "size": {
-            "width": "195.97090909%",
+            "width": "184.88126117303992%",
             "height": "auto"
           },
           "position": {
-            "x": "35.0790215%",
-            "y": "-79.84px"
+            "x": "38.25425586025385%",
+            "y": "-32.64454976303316px"
           },
           "scale": 1,
           "origin": {
@@ -291,12 +291,12 @@
             "height": "auto"
           },
           "position": {
-            "x": "50%",
+            "x": "48.27846921508979%",
             "y": "center"
           },
           "scale": 1,
           "origin": {
-            "x": "50%",
+            "x": "48.27846921508979%",
             "y": "center"
           },
           "mirrorX": false,

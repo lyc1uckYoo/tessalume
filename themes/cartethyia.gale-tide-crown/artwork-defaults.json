@@ -2,7 +2,7 @@
   "$schema": "../../schemas/theme-artwork-defaults-v1.schema.json",
   "schemaVersion": 1,
   "themeId": "cartethyia.gale-tide-crown",
-  "defaultsVersion": "1.1.0",
+  "defaultsVersion": "1.1.1",
   "slots": {
     "hero": {
       "light": {
@@ -151,12 +151,12 @@
         "asset": "sidebar-light",
         "placement": {
           "size": {
-            "width": "261.29454545%",
+            "width": "211.34117647%",
             "height": "auto"
           },
           "position": {
-            "x": "41.87172612%",
-            "y": "-79.84px"
+            "x": "49.06123953%",
+            "y": "-87.84px"
           },
           "scale": 1,
           "origin": {
@@ -199,12 +199,12 @@
         "asset": "sidebar-dark",
         "placement": {
           "size": {
-            "width": "281.93049881117156%",
+            "width": "228.0320211%",
             "height": "auto"
           },
           "position": {
-            "x": "52.47729949938649%",
-            "y": "-121.6463036525212px"
+            "x": "60.3131712%",
+            "y": "-129.6463036525212px"
           },
           "scale": 1,
           "origin": {

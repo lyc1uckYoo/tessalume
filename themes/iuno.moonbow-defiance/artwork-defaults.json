@@ -2,7 +2,7 @@
   "$schema": "../../schemas/theme-artwork-defaults-v1.schema.json",
   "schemaVersion": 1,
   "themeId": "iuno.moonbow-defiance",
-  "defaultsVersion": "1.1.0",
+  "defaultsVersion": "1.1.1",
   "slots": {
     "hero": {
       "light": {
@@ -151,12 +151,12 @@
         "asset": "sidebar-light",
         "placement": {
           "size": {
-            "width": "240.30773975%",
+            "width": "194.36655421%",
             "height": "auto"
           },
           "position": {
-            "x": "51.59468295%",
-            "y": "-104.54477919px"
+            "x": "62.04720977%",
+            "y": "-97.54477919px"
           },
           "scale": 1,
           "origin": {
@@ -199,12 +199,12 @@
         "asset": "sidebar-dark",
         "placement": {
           "size": {
-            "width": "238.23123863%",
+            "width": "192.68703124%",
             "height": "auto"
           },
           "position": {
-            "x": "50.03945452%",
-            "y": "-92.47818009px"
+            "x": "60.3606032%",
+            "y": "-40.47818009px"
           },
           "scale": 1,
           "origin": {

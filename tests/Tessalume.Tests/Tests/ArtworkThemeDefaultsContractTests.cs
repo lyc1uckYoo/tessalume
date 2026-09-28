@@ -35,8 +35,23 @@ internal static partial class TestSuite
                    defaults is { IsExact: true, Diagnostic: null },
                 $"{package.Manifest.Id} must load its declared defaults without a standard fallback: {defaults.Diagnostic}");
             ThemeArtworkDefaultsValidator.Validate(defaults.Defaults);
-            Ensure(defaults.Defaults.DefaultsVersion == "1.1.0",
-                $"{package.Manifest.Id} must publish the chat-mask defaults contract as version 1.1.0.");
+            var expectedVersion = package.Manifest.Id switch
+            {
+                "aemeath.star-voyage" => "1.1.4",
+                "cartethyia.gale-tide-crown" => "1.1.1",
+                "danya.bubble-void-duality" => "1.1.2",
+                "hiyuki.crimson-snow" => "1.1.2",
+                "iuno.moonbow-defiance" => "1.1.1",
+                "qingxiao.cloudsword-gate" => "1.1.2",
+                "shorekeeper.tethys-reverie" => "1.1.2",
+                "sigrika.semantic-sunrise" => "1.1.1",
+                "suisui.inkscape-dawn" => "1.1.2",
+                "xin.moonfox-sovereign" => "1.1.2",
+                "yangyang.xuanling-echo" => "1.1.2",
+                _ => "1.1.0",
+            };
+            Ensure(defaults.Defaults.DefaultsVersion == expectedVersion,
+                $"{package.Manifest.Id} must publish the artwork defaults contract as version {expectedVersion}.");
             documents[package.Manifest.Id] = defaults.Defaults;
 
             var resolution = ThemeArtworkSettingsResolver.Resolve(defaults.Defaults, null);
@@ -130,8 +145,8 @@ internal static partial class TestSuite
             documents["xin.moonfox-sovereign"],
             heroLight: ("30.54872742%", 1d, "center", "30.54872742%"),
             heroDark: ("center", 1d, "73%", "50%"),
-            sidebarLight: ("231.12%", "86.03183277%", "-88px"),
-            sidebarDark: ("243%", "91.47461234%", "-175.17918318px"),
+            sidebarLight: ("162.88066422741346%", "100%", "-0.00000000000010924594562311542px"),
+            sidebarDark: ("171.93814160482194%", "100%", "-54.71832879393387px"),
             chatLight: ("23.09063744%", "100%", 1.1664d, "23.09063744%", "100%"),
             chatDark: ("41.13820796%", "89.79151689%", 1.1664d, "41.13820796%", "89.79151689%"),
             "flagship");
@@ -167,11 +182,11 @@ internal static partial class TestSuite
             new Tessalume.App.Features.Personalization.ArtworkWorkbench.Domain.ArtworkSize(
                 dimensions.Width,
                 dimensions.Height),
-            new Tessalume.App.Features.Personalization.ArtworkWorkbench.Domain.ArtworkSize(260, 800));
-        EnsureAlmostEqual(projection.RenderedImage.Width, 733.019296909046d, "Cartethyia exact rendered width");
-        EnsureAlmostEqual(projection.RenderedImage.Height, 1099.52894536357d, "Cartethyia exact rendered height");
-        EnsureAlmostEqual(projection.RenderedImage.X, -248.227753128852d, "Cartethyia exact rendered X");
-        EnsureAlmostEqual(projection.RenderedImage.Y, -121.6463036525212d, "Cartethyia exact rendered Y");
+            new Tessalume.App.Features.Personalization.ArtworkWorkbench.Domain.ArtworkSize(340, 984));
+        EnsureAlmostEqual(projection.RenderedImage.Width, 775.30887174d, "Cartethyia exact rendered width");
+        EnsureAlmostEqual(projection.RenderedImage.Height, 1162.96330761d, "Cartethyia exact rendered height");
+        EnsureAlmostEqual(projection.RenderedImage.X, -262.5485850613346d, "Cartethyia exact rendered X");
+        EnsureAlmostEqual(projection.RenderedImage.Y, -129.6463036525212d, "Cartethyia exact rendered Y");
     }
 
     private static IEnumerable<(
@@ -265,17 +280,17 @@ internal static partial class TestSuite
             "Cartethyia dark hero");
         AssertPlacement(
             document.Slots.Sidebar.Light,
-            "261.29454545%",
+            "211.34117647%",
             "auto",
-            "41.87172612%",
-            "-79.84px",
+            "49.06123953%",
+            "-87.84px",
             "Cartethyia light sidebar");
         AssertPlacement(
             document.Slots.Sidebar.Dark,
-            "281.93049881117156%",
+            "228.0320211%",
             "auto",
-            "52.47729949938649%",
-            "-121.6463036525212px",
+            "60.3131712%",
+            "-129.6463036525212px",
             "Cartethyia dark sidebar");
         AssertPlacement(
             document.Slots.Chat.Dark,
@@ -323,19 +338,20 @@ internal static partial class TestSuite
                 $"Aemeath's promoted {scenario} placement must remain the theme default.");
         }
 
-        foreach (var (slot, scenario) in new[]
+        foreach (var (slot, width, height, x, originY, veilEnabled, veilStrength, scenario) in new[]
                  {
-                     (document.Slots.Chat.Light, "light chat"),
-                     (document.Slots.Chat.Dark, "dark chat"),
+                     (document.Slots.Chat.Light, "107.66724286000954%", "100%", "100%", "50%", true, 100d, "light chat"),
+                     (document.Slots.Chat.Dark, "cover", "auto", "50%", "center", false, 0d, "dark chat"),
                  })
         {
-            Ensure(slot.Placement.Size.Width == "cover" &&
-                   slot.Placement.Size.Height == "auto" &&
-                   slot.Placement.Position.X == "50%" &&
+            Ensure(slot.Placement.Size.Width == width &&
+                   slot.Placement.Size.Height == height &&
+                   slot.Placement.Position.X == x &&
                    slot.Placement.Position.Y == "center" &&
                    slot.Placement.Origin.X == "50%" &&
-                   slot.Placement.Origin.Y == "center" &&
-                   slot.Effects.GradientVeil is { Enabled: false, Strength: 0d, Layers.Count: 1 },
+                   slot.Placement.Origin.Y == originY &&
+                   slot.Effects.GradientVeil is { Layers.Count: 1 } veil &&
+                   veil.Enabled == veilEnabled && veil.Strength == veilStrength,
                 $"Aemeath's promoted {scenario} placement and mask must remain the theme default.");
         }
     }

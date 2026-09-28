@@ -139,9 +139,17 @@ html.ae3-theme aside.app-shell-left-panel::after {
   pointer-events:none;
 }
 
-html.ae3-theme aside.app-shell-left-panel>* {
+html.ae3-theme aside.app-shell-left-panel> :first-child {
   position:relative;
   z-index:1;
+}
+
+html.ae3-theme aside.app-shell-left-panel .sidebar-navigation {
+  background:linear-gradient(90deg,rgba(255,250,253,.12),rgba(255,250,253,.05) 76%,rgba(255,250,253,.15))!important;
+}
+
+html.ae3-theme.electron-dark aside.app-shell-left-panel .sidebar-navigation {
+  background:linear-gradient(90deg,rgba(4,8,19,.24),rgba(4,8,19,.10) 76%,rgba(4,8,19,.20))!important;
 }
 
 html.ae3-theme aside.app-shell-left-panel::before {
@@ -181,12 +189,12 @@ html.ae3-theme aside [data-app-action-sidebar-project-row][data-ae3-phase="core"
 
 .ae3-project-heading {
   position:relative;
-  padding-right:49px!important;
+  padding-right:0!important;
   font-weight:760!important;
   color:var(--ae3-text)!important;
 }
 
-.ae3-project-heading::before {
+html.ae3-theme aside [data-app-action-sidebar-project-row]::before {
   content:"";
   position:absolute;
   right:28px;
@@ -198,9 +206,10 @@ html.ae3-theme aside [data-app-action-sidebar-project-row][data-ae3-phase="core"
   border-radius:50%;
   background:conic-gradient(from 30deg,var(--phase),transparent 22%,var(--phase) 39%,transparent 58%,var(--phase));
   box-shadow:inset 0 0 0 4px var(--ae3-solid),0 0 12px color-mix(in srgb,var(--phase) 38%,transparent);
+  pointer-events:none;
 }
 
-.ae3-project-heading::after {
+html.ae3-theme aside [data-app-action-sidebar-project-row]::after {
   content:attr(data-ae3-index);
   position:absolute;
   right:8px;
@@ -208,6 +217,7 @@ html.ae3-theme aside [data-app-action-sidebar-project-row][data-ae3-phase="core"
   transform:translateY(-50%);
   color:var(--ae3-text3);
   font:700 6px/1 "Cascadia Code",Consolas,monospace;
+  pointer-events:none;
 }
 
 html.ae3-theme aside [data-app-action-sidebar-thread-row] {
@@ -1076,11 +1086,9 @@ html.ae3-theme.electron-dark .ae3-heart-sigil {
 /* 09 Message and output frames */
 /* 09 消息与输出框架：任务标题、消息气泡、聊天背景与环境信息。 */
 html.ae3-theme .ae3-task-header {
-  position:relative!important;
-  overflow:hidden!important;
   border:1px solid color-mix(in srgb,var(--ae3-pink) 58%,var(--ae3-cyan))!important;
   border-radius:5px 17px 5px 17px!important;
-  background:linear-gradient(90deg,color-mix(in srgb,var(--ae3-solid) 96%,transparent),color-mix(in srgb,var(--ae3-pink) 12%,var(--ae3-solid)) 70%,color-mix(in srgb,var(--ae3-cyan) 10%,transparent))!important;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--ae3-solid) 72%,transparent),color-mix(in srgb,var(--ae3-pink) 9%,transparent) 70%,color-mix(in srgb,var(--ae3-cyan) 7%,transparent))!important;
   box-shadow:0 8px 24px color-mix(in srgb,var(--ae3-pink) 16%,transparent),inset 0 1px rgba(255,255,255,.62)!important;
 }
 
@@ -1115,6 +1123,28 @@ html.ae3-theme .ae3-task-title[data-tessalume-surface="task-title"],html.ae3-the
 html.ae3-theme .ae3-task-title[data-tessalume-surface="task-title"]:has(button.truncate) {
   width:max-content!important;
   max-width:var(--tessalume-task-title-primary-width,min(680px,max(160px,calc(50vw - 330px))))!important;
+}
+
+html.ae3-theme .ae3-task-title[data-app-shell-titlebar-content="true"] {
+  max-width:var(--tessalume-task-title-primary-width,min(680px,max(160px,calc(50vw - 330px))))!important;
+}
+
+html.ae3-theme .ae3-task-title[data-app-shell-titlebar-content="true"]::before {
+  content:"";
+  flex:0 0 15px;
+  width:15px;
+  height:15px;
+  background:var(--ae3-cyan);
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M2.5 7V18.5H21.5V9H11L9 6.5H2.5Z' fill='none' stroke='black' stroke-width='1.8' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat;
+  pointer-events:none;
+}
+
+html.ae3-theme .ae3-task-title[data-app-shell-titlebar-content="true"] > .truncate {
+  color:var(--ae3-text)!important;
+  padding:0!important;
+  margin:0!important;
+  font-size:13px!important;
+  line-height:20px!important;
 }
 
 html.ae3-theme .ae3-task-title>span {
@@ -1155,7 +1185,7 @@ html.ae3-theme .ae3-task-title::after {
 
 html.ae3-theme.electron-dark .ae3-task-header {
   border-color:color-mix(in srgb,var(--ae3-pink) 66%,var(--ae3-cyan))!important;
-  background:linear-gradient(90deg,rgba(12,13,31,.98),rgba(31,15,42,.96) 70%,rgba(8,28,42,.98))!important;
+  background:linear-gradient(90deg,rgba(12,13,31,.70),rgba(31,15,42,.54) 70%,rgba(8,28,42,.62))!important;
   box-shadow:0 9px 27px rgba(0,0,0,.46),inset 0 1px rgba(255,255,255,.07)!important;
 }
 
@@ -1401,7 +1431,8 @@ html.ae3-theme [class*="_homeUtilityBar_"] {
 
 html.ae3-theme .ae3-output-panel {
   position:relative!important;
-  overflow:hidden!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
   border:1px solid color-mix(in srgb,var(--ae3-pink) 52%,var(--ae3-cyan))!important;
   border-radius:22px 5px 22px 5px!important;
   background:linear-gradient(145deg,color-mix(in srgb,var(--ae3-solid) 94%,var(--ae3-pink) 6%),color-mix(in srgb,var(--ae3-panel) 91%,var(--ae3-pink) 9%))!important;
@@ -1415,18 +1446,29 @@ html.ae3-theme .ae3-output-panel::before {
   z-index:3;
   left:14px;
   right:14px;
-  top:4px;
-  height:1px;
-  background:linear-gradient(90deg,var(--ae3-pink),var(--ae3-cyan),transparent 82%);
+  top:5px;
+  height:7px;
   color:var(--ae3-text3);
   font:700 6px/1 "Cascadia Code",Consolas,monospace;
   letter-spacing:.14em;
   pointer-events:none;
 }
 
+html.ae3-theme .ae3-output-panel::after {
+  content:"";
+  position:absolute;
+  z-index:3;
+  left:14px;
+  right:14px;
+  top:0;
+  height:1px;
+  background:linear-gradient(90deg,var(--ae3-pink),var(--ae3-cyan),transparent 82%);
+  pointer-events:none;
+}
+
 html.ae3-theme .ae3-output-panel>div {
   gap:8px!important;
-  padding:8px 8px 10px!important;
+  padding:16px 8px 10px!important;
 }
 
 html.ae3-theme .ae3-output-panel>div>section {
@@ -1444,11 +1486,16 @@ html.ae3-theme .ae3-output-panel>div>section::after {
 
 html.ae3-theme .ae3-output-panel>div>section>header {
   position:relative!important;
+  top:0!important;
   min-height:31px!important;
   padding:3px 10px 3px 12px!important;
   border-bottom:1px solid color-mix(in srgb,var(--ae3-pink) 70%,transparent)!important;
   background:linear-gradient(90deg,color-mix(in srgb,var(--ae3-pink) 12%,var(--ae3-solid)),color-mix(in srgb,var(--ae3-cyan) 9%,var(--ae3-panel)))!important;
   color:var(--ae3-pink)!important;
+}
+
+html.ae3-theme .ae3-output-panel>div>section>header::before {
+  display:none!important;
 }
 
 html.ae3-theme .ae3-output-panel>div>section>header [class~="group/section-toggle"] {
@@ -1480,6 +1527,22 @@ html.ae3-theme .ae3-output-panel [data-slot="thread-summary-panel-item-button"] 
   color:var(--ae3-cyan)!important;
 }
 
+html.ae3-theme .ae3-output-panel :is([data-slot="thread-summary-panel-item"],[data-slot="thread-summary-panel-item-link"]) {
+  min-height:30px!important;
+  padding:5px 8px!important;
+  border:1px solid transparent!important;
+  border-left:2px solid color-mix(in srgb,var(--ae3-cyan) 70%,var(--ae3-pink))!important;
+  border-radius:9px 3px 9px 3px!important;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--ae3-cyan) 10%,var(--ae3-solid)),color-mix(in srgb,var(--ae3-solid) 64%,transparent) 82%,transparent)!important;
+  color:var(--ae3-text2)!important;
+}
+
+html.ae3-theme .ae3-output-panel :is([data-slot="thread-summary-panel-item"],[data-slot="thread-summary-panel-item-link"]):hover {
+  border-color:color-mix(in srgb,var(--ae3-pink) 64%,var(--ae3-line))!important;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--ae3-pink) 13%,var(--ae3-solid)),color-mix(in srgb,var(--ae3-cyan) 10%,transparent) 82%,transparent)!important;
+  color:var(--ae3-text)!important;
+}
+
 html.ae3-theme.electron-dark .ae3-output-panel {
   background:linear-gradient(145deg,rgba(14,18,42,.98),rgba(31,15,37,.98) 72%,rgba(8,28,42,.98))!important;
   box-shadow:0 20px 48px rgba(0,0,0,.54),inset 0 1px rgba(255,255,255,.06)!important;
@@ -1494,7 +1557,15 @@ html.ae3-theme.electron-dark .ae3-output-panel [data-slot="thread-summary-panel-
   color:var(--ae3-text2)!important;
 }
 
+html.ae3-theme.electron-dark .ae3-output-panel :is([data-slot="thread-summary-panel-item"],[data-slot="thread-summary-panel-item-link"]) {
+  background:linear-gradient(90deg,rgba(27,47,76,.88),rgba(53,20,45,.58) 82%,transparent)!important;
+}
+
 html.ae3-theme.electron-dark .ae3-output-panel [data-slot="thread-summary-panel-item-button"]:hover {
+  background:linear-gradient(90deg,rgba(43,77,104,.82),rgba(93,35,57,.58) 82%,transparent)!important;
+}
+
+html.ae3-theme.electron-dark .ae3-output-panel :is([data-slot="thread-summary-panel-item"],[data-slot="thread-summary-panel-item-link"]):hover {
   background:linear-gradient(90deg,rgba(43,77,104,.82),rgba(93,35,57,.58) 82%,transparent)!important;
 }
 

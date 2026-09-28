@@ -2,7 +2,7 @@
   "$schema": "../../schemas/theme-artwork-defaults-v1.schema.json",
   "schemaVersion": 1,
   "themeId": "shorekeeper.tethys-reverie",
-  "defaultsVersion": "1.1.0",
+  "defaultsVersion": "1.1.2",
   "slots": {
     "hero": {
       "light": {
@@ -151,12 +151,12 @@
         "asset": "sidebar-light",
         "placement": {
           "size": {
-            "width": "257.28973772%",
+            "width": "220.21862688902448%",
             "height": "auto"
           },
           "position": {
-            "x": "89.32096884%",
-            "y": "-184.62445243px"
+            "x": "93.38846668984618%",
+            "y": "-235.02600877921992px"
           },
           "scale": 1,
           "origin": {
@@ -199,12 +199,12 @@
         "asset": "sidebar-dark",
         "placement": {
           "size": {
-            "width": "261.11111111%",
+            "width": "246.33201600000007%",
             "height": "auto"
           },
           "position": {
-            "x": "82.08645677%",
-            "y": "-108.15727576px"
+            "x": "79.59612607518787%",
+            "y": "-164.0856495924172px"
           },
           "scale": 1,
           "origin": {

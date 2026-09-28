@@ -111,7 +111,7 @@ html.cthy-theme.electron-dark aside.app-shell-left-panel {
   box-shadow:14px 0 44px rgba(0,0,0,.58),inset -1px 0 rgba(112,181,255,.14)!important;
 }
 
-html.cthy-theme aside.app-shell-left-panel>* {
+html.cthy-theme aside.app-shell-left-panel> :first-child {
   position:relative;
   z-index:1;
 }
@@ -1180,7 +1180,8 @@ html.cthy-theme:not(.electron-dark) .cthy-chat-paper :is(.cthy-markdown,[data-us
 
 .cthy-output-panel {
   position:relative!important;
-  overflow:hidden!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
   color:var(--cthy-text)!important;
   border:1px solid color-mix(in srgb,var(--cthy-blue) 54%,var(--cthy-gold))!important;
   border-radius:22px 5px 22px 5px!important;
@@ -1195,18 +1196,29 @@ html.cthy-theme:not(.electron-dark) .cthy-chat-paper :is(.cthy-markdown,[data-us
   z-index:3;
   left:14px;
   right:14px;
-  top:4px;
-  height:1px;
-  background:linear-gradient(90deg,var(--cthy-cyan),var(--cthy-gold),transparent 82%);
+  top:5px;
+  height:7px;
   color:var(--cthy-text-3);
   font:700 6px/1 var(--cthy-mono);
   letter-spacing:.14em;
   pointer-events:none;
 }
 
+.cthy-output-panel::after {
+  content:"";
+  position:absolute;
+  z-index:3;
+  left:14px;
+  right:14px;
+  top:0;
+  height:1px;
+  background:linear-gradient(90deg,var(--cthy-cyan),var(--cthy-gold),transparent 82%);
+  pointer-events:none;
+}
+
 .cthy-output-panel>div {
   gap:8px!important;
-  padding:8px 8px 10px!important;
+  padding:16px 8px 10px!important;
 }
 
 .cthy-output-panel>div>section {
@@ -1224,11 +1236,16 @@ html.cthy-theme:not(.electron-dark) .cthy-chat-paper :is(.cthy-markdown,[data-us
 
 .cthy-output-panel>div>section>header {
   position:relative!important;
+  top:0!important;
   min-height:31px!important;
   padding:3px 10px 3px 12px!important;
   color:var(--cthy-gold)!important;
   border-bottom:1px solid color-mix(in srgb,var(--cthy-gold) 42%,var(--cthy-line))!important;
   background:linear-gradient(90deg,color-mix(in srgb,var(--cthy-blue) 12%,var(--cthy-solid)),color-mix(in srgb,var(--cthy-gold) 9%,var(--cthy-panel)))!important;
+}
+
+.cthy-output-panel>div>section>header::before {
+  display:none!important;
 }
 
 .cthy-output-panel>div>section>header [class~="group/section-toggle"] {
@@ -1249,7 +1266,25 @@ html.cthy-theme:not(.electron-dark) .cthy-chat-paper :is(.cthy-markdown,[data-us
   transition:border-color .2s,background .2s,transform .2s;
 }
 
+.cthy-output-panel :is([data-slot="thread-summary-panel-item"],[data-slot="thread-summary-panel-item-link"]) {
+  min-height:30px!important;
+  padding:5px 8px!important;
+  color:var(--cthy-text-2)!important;
+  border:1px solid transparent!important;
+  border-left:2px solid color-mix(in srgb,var(--cthy-cyan) 66%,var(--cthy-gold))!important;
+  border-radius:9px 3px 9px 3px!important;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--cthy-blue) 10%,var(--cthy-solid)),color-mix(in srgb,var(--cthy-solid) 63%,transparent) 82%,transparent)!important;
+  transition:border-color .2s,background .2s,transform .2s;
+}
+
 .cthy-output-panel [data-slot="thread-summary-panel-item-button"]:hover {
+  color:var(--cthy-text)!important;
+  border-color:color-mix(in srgb,var(--cthy-gold) 58%,var(--cthy-line))!important;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--cthy-cyan) 14%,var(--cthy-solid)),color-mix(in srgb,var(--cthy-gold) 10%,transparent) 82%,transparent)!important;
+  transform:translateX(2px);
+}
+
+.cthy-output-panel :is([data-slot="thread-summary-panel-item"],[data-slot="thread-summary-panel-item-link"]):hover {
   color:var(--cthy-text)!important;
   border-color:color-mix(in srgb,var(--cthy-gold) 58%,var(--cthy-line))!important;
   background:linear-gradient(90deg,color-mix(in srgb,var(--cthy-cyan) 14%,var(--cthy-solid)),color-mix(in srgb,var(--cthy-gold) 10%,transparent) 82%,transparent)!important;
@@ -1270,6 +1305,11 @@ html.cthy-theme.electron-dark .cthy-output-panel>div>section {
 }
 
 html.cthy-theme.electron-dark .cthy-output-panel [data-slot="thread-summary-panel-item-button"] {
+  color:var(--cthy-text-2)!important;
+  background:linear-gradient(90deg,rgba(30,62,114,.86),rgba(29,29,72,.62) 82%,transparent)!important;
+}
+
+html.cthy-theme.electron-dark .cthy-output-panel :is([data-slot="thread-summary-panel-item"],[data-slot="thread-summary-panel-item-link"]) {
   color:var(--cthy-text-2)!important;
   background:linear-gradient(90deg,rgba(30,62,114,.86),rgba(29,29,72,.62) 82%,transparent)!important;
 }

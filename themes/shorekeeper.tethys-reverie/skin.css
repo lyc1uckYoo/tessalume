@@ -140,7 +140,7 @@ html.sk3-theme aside.app-shell-left-panel::after {
   pointer-events:none;
 }
 
-html.sk3-theme aside.app-shell-left-panel>* {
+html.sk3-theme aside.app-shell-left-panel> :first-child {
   position:relative;
   z-index:1;
 }
@@ -1390,7 +1390,8 @@ html.sk3-theme .sk3-message-user [data-user-message-bubble="true"] {
 
 html.sk3-theme .sk3-output-panel {
   position:relative!important;
-  overflow:hidden!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
   border:1px solid color-mix(in srgb,var(--sk3-cyan) 54%,var(--sk3-violet))!important;
   border-radius:22px 6px 22px 6px!important;
   background:linear-gradient(145deg,color-mix(in srgb,var(--sk3-solid) 94%,var(--sk3-cyan) 6%),color-mix(in srgb,var(--sk3-panel) 91%,var(--sk3-violet) 9%))!important;
@@ -1404,18 +1405,29 @@ html.sk3-theme .sk3-output-panel::before {
   z-index:3;
   left:14px;
   right:14px;
-  top:4px;
-  height:1px;
-  background:linear-gradient(90deg,var(--sk3-cyan),var(--sk3-pink),var(--sk3-violet),transparent 84%);
+  top:5px;
+  height:7px;
   color:var(--sk3-text3);
   font:700 6px/1 "Cascadia Code",Consolas,monospace;
   letter-spacing:.14em;
   pointer-events:none;
 }
 
+html.sk3-theme .sk3-output-panel::after {
+  content:"";
+  position:absolute;
+  z-index:3;
+  left:14px;
+  right:14px;
+  top:0;
+  height:1px;
+  background:linear-gradient(90deg,var(--sk3-cyan),var(--sk3-pink),var(--sk3-violet),transparent 84%);
+  pointer-events:none;
+}
+
 html.sk3-theme .sk3-output-panel>div {
   gap:8px!important;
-  padding:8px 8px 10px!important;
+  padding:16px 8px 10px!important;
 }
 
 html.sk3-theme .sk3-output-panel>div>section {
@@ -1433,11 +1445,16 @@ html.sk3-theme .sk3-output-panel>div>section::after {
 
 html.sk3-theme .sk3-output-panel>div>section>header {
   position:relative!important;
+  top:0!important;
   min-height:31px!important;
   padding:3px 10px 3px 12px!important;
   border-bottom:1px solid color-mix(in srgb,var(--sk3-line-cyan) 74%,transparent)!important;
   background:linear-gradient(90deg,color-mix(in srgb,var(--sk3-pink) 10%,var(--sk3-solid)),color-mix(in srgb,var(--sk3-cyan) 9%,var(--sk3-panel)))!important;
   color:var(--sk3-pink)!important;
+}
+
+html.sk3-theme .sk3-output-panel>div>section>header::before {
+  display:none!important;
 }
 
 html.sk3-theme .sk3-output-panel>div>section>header [class~="group/section-toggle"] {
@@ -1458,7 +1475,25 @@ html.sk3-theme .sk3-output-panel [data-slot="thread-summary-panel-item-button"] 
   transition:border-color .2s,background .2s,transform .2s;
 }
 
+html.sk3-theme .sk3-output-panel :is([data-slot="thread-summary-panel-item"],[data-slot="thread-summary-panel-item-link"]) {
+  min-height:30px!important;
+  padding:5px 8px!important;
+  border:1px solid transparent!important;
+  border-left:2px solid color-mix(in srgb,var(--sk3-cyan) 68%,var(--sk3-violet))!important;
+  border-radius:9px 4px 9px 4px!important;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--sk3-blue) 10%,var(--sk3-solid)),color-mix(in srgb,var(--sk3-solid) 63%,transparent) 82%,transparent)!important;
+  color:var(--sk3-text2)!important;
+  transition:border-color .2s,background .2s,transform .2s;
+}
+
 html.sk3-theme .sk3-output-panel [data-slot="thread-summary-panel-item-button"]:hover {
+  border-color:color-mix(in srgb,var(--sk3-pink) 64%,var(--sk3-line))!important;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--sk3-cyan) 13%,var(--sk3-solid)),color-mix(in srgb,var(--sk3-violet) 11%,transparent) 82%,transparent)!important;
+  color:var(--sk3-text)!important;
+  transform:translateX(2px);
+}
+
+html.sk3-theme .sk3-output-panel :is([data-slot="thread-summary-panel-item"],[data-slot="thread-summary-panel-item-link"]):hover {
   border-color:color-mix(in srgb,var(--sk3-pink) 64%,var(--sk3-line))!important;
   background:linear-gradient(90deg,color-mix(in srgb,var(--sk3-cyan) 13%,var(--sk3-solid)),color-mix(in srgb,var(--sk3-violet) 11%,transparent) 82%,transparent)!important;
   color:var(--sk3-text)!important;
@@ -1483,7 +1518,16 @@ html.sk3-theme.electron-dark .sk3-output-panel [data-slot="thread-summary-panel-
   color:var(--sk3-text2)!important;
 }
 
+html.sk3-theme.electron-dark .sk3-output-panel :is([data-slot="thread-summary-panel-item"],[data-slot="thread-summary-panel-item-link"]) {
+  background:linear-gradient(90deg,rgba(26,52,84,.88),rgba(47,28,73,.58) 82%,transparent)!important;
+  color:var(--sk3-text2)!important;
+}
+
 html.sk3-theme.electron-dark .sk3-output-panel [data-slot="thread-summary-panel-item-button"]:hover {
+  background:linear-gradient(90deg,rgba(48,96,119,.82),rgba(92,54,115,.58) 82%,transparent)!important;
+}
+
+html.sk3-theme.electron-dark .sk3-output-panel :is([data-slot="thread-summary-panel-item"],[data-slot="thread-summary-panel-item-link"]):hover {
   background:linear-gradient(90deg,rgba(48,96,119,.82),rgba(92,54,115,.58) 82%,transparent)!important;
 }
 

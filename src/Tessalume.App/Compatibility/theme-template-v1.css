@@ -38,6 +38,12 @@ html.tessalume-theme-active .composer-surface-chrome {
   pointer-events:auto!important;
 }
 
+/* The current home composer paints an opaque native body over each theme's
+   composer shell. Task composers already have a transparent body. */
+html.tessalume-theme-active .composer-surface-chrome[data-composer-utility-bar-variant="home"] > [data-composer-body] {
+  background:transparent!important;
+}
+
 /* Codex renders a full-width surface gradient behind multi-step and file-change
    status. It appears as a black rectangle over transparent theme artwork, so
    neutralize only that native fade and leave the status capsule untouched. */
@@ -155,10 +161,12 @@ html.tessalume-theme-active [data-tessalume-surface="chat-paper"] :is(div,button
   box-shadow:none!important;
 }
 
-/* Light-mode text remains opaque while the artwork-aware reading field is
-   composed exactly once from each slot's versioned gradient/readability data. */
+/* Keep light-mode prose crisp over the resolved artwork reading field.
+   Native Markdown now reads --font-content directly, bypassing each theme's
+   body font; preserve the themes' text face without changing code or emphasis. */
 html.tessalume-theme-active:not(.electron-dark) [data-tessalume-message="assistant"] [data-tessalume-surface="markdown"],
 html.tessalume-theme-active:not(.electron-dark) [data-tessalume-message="user"] [data-user-message-bubble="true"] {
+  --font-content:"Microsoft YaHei UI","Segoe UI",sans-serif;
   color:var(--tessalume-v1-light-text-primary,#14202a)!important;
   text-shadow:none!important;
   opacity:1!important;
@@ -176,6 +184,12 @@ html.tessalume-theme-active:not(.electron-dark) [data-tessalume-surface="sidebar
   backdrop-filter:none!important;
   text-shadow:none!important;
   opacity:1!important;
+}
+
+/* Codex now overlays the navigation artwork with a 65% native surface color.
+   Keep theme-specific image gradients and row fills while removing that wash. */
+html.tessalume-theme-active aside.app-shell-left-panel .sidebar-navigation {
+  background-color:transparent!important;
 }
 
 /* Final resolved artwork. Theme packages provide source assets and versioned recommended
@@ -567,22 +581,22 @@ html.tessalume-theme-active.tessalume-is-task #tessalume-theme-root :is([data-th
 }
 
 #tessalume-theme-root[data-tessalume-template-version="1.0"] [data-theme-role="task-left"] {
-  left:4px;
+  left:var(--tessalume-left-rail-inset,4px);
   top:72px;
   width:146px;
   height:234px;
   border-radius:24px 4px 24px 4px;
 }
 
-#tessalume-theme-root[data-tessalume-template-version="1.0"] [data-theme-role="task-right"] {
+html.tessalume-theme-active.tessalume-is-task #tessalume-theme-root [data-theme-role="task-right"] {
   bottom:52px;
-  width:188px;
-  height:334px;
+  width:156px;
+  height:278px;
   border-radius:5px 32px 5px 32px;
 }
 
-#tessalume-theme-root[data-tessalume-template-version="1.0"] [data-theme-role="task-right"][data-theme-priority="secondary"] { right:218px; }
-#tessalume-theme-root[data-tessalume-template-version="1.0"] [data-theme-role="task-right"][data-theme-priority="primary"] { right:18px; }
+html.tessalume-theme-active.tessalume-is-task #tessalume-theme-root [data-theme-role="task-right"][data-theme-priority="secondary"] { right:180px; }
+html.tessalume-theme-active.tessalume-is-task #tessalume-theme-root [data-theme-role="task-right"][data-theme-priority="primary"] { right:12px; }
 
 #tessalume-theme-root[data-tessalume-template-version="1.0"] [data-theme-part="task-card-caption"] {
   position:absolute;
@@ -597,7 +611,7 @@ html.tessalume-theme-active.tessalume-is-task #tessalume-theme-root :is([data-th
 #tessalume-theme-root[data-tessalume-template-version="1.0"] [data-theme-role="memory"] {
   position:absolute;
   z-index:11;
-  left:4px;
+  left:var(--tessalume-left-rail-inset,4px);
   top:334px;
   width:146px;
   min-height:165px;
@@ -612,16 +626,20 @@ html.tessalume-theme-active.tessalume-is-task #tessalume-theme-root :is([data-th
 
 #tessalume-theme-root[data-tessalume-template-version="1.0"] [data-theme-role="memory"] > p { margin:9px 0; }
 
-html.tessalume-theme-active.tessalume-has-output #tessalume-theme-root [data-theme-role="task-right"] {
-  bottom:52px;
-  width:156px;
-  height:278px;
+/* Native message navigation opens a portaled preview beside the left rail. */
+html.tessalume-theme-active.tessalume-is-task:has(
+  [data-thread-user-message-navigation-rail-list="true"]:hover,
+  [data-thread-user-message-navigation-rail-list="true"]:focus-within,
+  [data-thread-user-message-navigation-rail-list="true"][data-state="open"],
+  [role="tooltip"]:not([hidden]):not([aria-hidden="true"]) [data-thread-user-message-navigation-tooltip-preview="true"]
+) #tessalume-theme-root [data-theme-role="memory"] {
+  visibility:hidden!important;
+  opacity:0!important;
+  pointer-events:none!important;
 }
 
-html.tessalume-theme-active.tessalume-has-output #tessalume-theme-root [data-theme-role="task-right"][data-theme-priority="secondary"] { right:180px; }
-html.tessalume-theme-active.tessalume-has-output #tessalume-theme-root [data-theme-role="task-right"][data-theme-priority="primary"] { right:12px; }
-
-html.tessalume-theme-active.tessalume-has-output #tessalume-theme-root [data-theme-part="task-card-caption"] {
+/* Keep the compact right-card footprint when the native summary closes. */
+html.tessalume-theme-active #tessalume-theme-root [data-theme-role="task-right"] [data-theme-part="task-card-caption"] {
   left:13px;
   right:10px;
   bottom:13px;

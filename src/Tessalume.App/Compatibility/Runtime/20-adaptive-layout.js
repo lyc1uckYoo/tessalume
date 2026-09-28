@@ -55,7 +55,8 @@
       if (templateVersion !== "1.0") return;
       const primary = Array.from(document.querySelectorAll(
         '[data-tessalume-surface="task-title"]',
-      )).find((node) => node.querySelector("button.truncate"));
+      )).find((node) => node.matches('[data-app-shell-titlebar-content="true"]') ||
+        node.querySelector("button.truncate"));
       if (!primary?.isConnected) return;
 
       const primaryBox = primary.getBoundingClientRect();
@@ -65,7 +66,9 @@
       const identity = root.querySelector('[data-theme-role="identity"]');
       const secondary = Array.from(header?.querySelectorAll(
         '[data-tessalume-surface="task-title"]',
-      ) || []).find((node) => node !== primary && !node.querySelector("button.truncate"));
+      ) || []).find((node) => node !== primary &&
+        !node.matches('[data-app-shell-titlebar-content="true"]') &&
+        !node.querySelector("button.truncate"));
       const boundaries = [identity, secondary]
         .map((node) => node?.getBoundingClientRect())
         .filter((box) => box && box.width > 0 && box.height > 0 && box.left > primaryBox.left + 120)
@@ -139,22 +142,57 @@
       const rightGutter = Math.max(0, workspaceBox.right - composerBox.right);
       const workspaceHeight = workspaceBox.height;
       const reviewOpen = html.classList.contains("tessalume-code-review-open");
+      const summaryPanel = Array.from(document.querySelectorAll(
+        '[data-summary-panel-variant="summary"] [data-tessalume-surface="output-panel"]',
+      )).find((node) => node.getBoundingClientRect().width > 0);
+      const summaryBox = summaryPanel?.getBoundingClientRect();
+      const stageBox = stage.getBoundingClientRect();
+      const navigation = document.querySelector('[data-thread-user-message-navigation-rail-list="true"]');
+      const navigationBox = navigation?.getBoundingClientRect();
+      const leftInset = navigationBox?.width > 0 && navigationBox.height > 0
+        ? Math.max(4, Math.ceil(navigationBox.right - stageBox.left + 8))
+        : 4;
+      const insetValue = `${leftInset}px`;
+      if (root.style.getPropertyValue("--tessalume-left-rail-inset") !== insetValue) {
+        root.style.setProperty("--tessalume-left-rail-inset", insetValue);
+      }
+      const summaryOverlapsRightRail = !!summaryBox && rightRoles.some((node) => {
+        const style = window.getComputedStyle(node);
+        const width = Number.parseFloat(style.width);
+        const height = Number.parseFloat(style.height);
+        const right = Number.parseFloat(style.right);
+        const bottom = Number.parseFloat(style.bottom);
+        if (![width, height, right, bottom].every(Number.isFinite)) return false;
+        const anchor = style.position === "fixed"
+          ? { right: window.innerWidth, bottom: window.innerHeight }
+          : stageBox;
+        const railLeft = anchor.right - right - width;
+        const railTop = anchor.bottom - bottom - height;
+        return summaryBox.left < anchor.right - right &&
+          summaryBox.right > railLeft &&
+          summaryBox.top < railTop + height &&
+          summaryBox.bottom > railTop - 10;
+      });
 
       const previousLeft = root.getAttribute("data-tessalume-left-rail");
       const previousRight = root.getAttribute("data-tessalume-right-rail");
       const previousAccessory = root.getAttribute("data-tessalume-composer-accessory");
 
       const leftFits = !reviewOpen &&
-        leftGutter >= (previousLeft === "full" ? 164 : 180) &&
+        leftGutter >= Math.max(previousLeft === "full" ? 164 : 180, leftInset + 146 + 14) &&
         workspaceHeight >= (previousLeft === "full" ? 680 : 720);
 
       let rightRail = "none";
-      if (!reviewOpen) {
+      if (!reviewOpen && !summaryOverlapsRightRail) {
+        // Cards retain the summary-open footprint in both summary states.
+        const fullThreshold = 352;
+        const singleThreshold = 184;
         const fullFits =
-          rightGutter >= (previousRight === "full" ? 398 : 422) &&
+          rightGutter >= (previousRight === "full" ? fullThreshold - 16 : fullThreshold) &&
           workspaceHeight >= (previousRight === "full" ? 680 : 720);
         const singleFits =
-          rightGutter >= (previousRight === "single" || previousRight === "full" ? 166 : 182) &&
+          rightGutter >= (previousRight === "single" || previousRight === "full"
+            ? singleThreshold - 16 : singleThreshold) &&
           workspaceHeight >= (previousRight === "single" || previousRight === "full" ? 590 : 620);
         rightRail = fullFits ? "full" : singleFits ? "single" : "none";
       }
@@ -167,7 +205,7 @@
       rightRoles.forEach((node) => {
         const secondary = node.getAttribute("data-theme-priority") === "secondary";
         const hidden = rightRail === "none" || (rightRail === "single" && secondary);
-        setAutoHidden(node, hidden, "right-rail");
+        setAutoHidden(node, hidden, summaryOverlapsRightRail ? "summary-panel" : "right-rail");
       });
       accessories.forEach((node) => setAutoHidden(node, !accessoryFits, "composer-rail"));
 
@@ -201,9 +239,13 @@
         ? queryFirst(document, "workspace", [".thread-scroll-container"]) || main
         : null;
       const composer = findComposerSurface();
+      const summaryPanel = document.querySelector(
+        '[data-summary-panel-variant="summary"] [data-tessalume-surface="output-panel"]',
+      );
+      const messageNavigation = document.querySelector('[data-thread-user-message-navigation-rail-list="true"]');
 
       syncLayoutObservers(adaptiveLayout
-        ? [main, workspace, composer]
+        ? [main, workspace, composer, summaryPanel, messageNavigation]
         : [main]);
       syncStageGeometry(main, stage);
       if (decorate) decorateSharedSurfaces(main, aside, home);

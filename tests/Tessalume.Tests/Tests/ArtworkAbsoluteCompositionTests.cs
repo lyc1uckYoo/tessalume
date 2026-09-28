@@ -38,10 +38,10 @@ internal static partial class TestSuite
         Ensure(sidebar.AssetKey == "sidebar-dark" &&
                sidebar.Adjustment.ThemeAssetKey == "sidebar-dark" &&
                placement.SizeMode == ThemeArtworkSizeMode.Explicit &&
-               placement.Width == ThemeArtworkLength.Percent(281.93049881117156d) &&
+               placement.Width == ThemeArtworkLength.Percent(228.0320211d) &&
                placement.Height == ThemeArtworkLength.Auto &&
-               placement.PositionX == ThemeArtworkPositionValue.Percent(52.47729949938649d) &&
-               placement.PositionY == ThemeArtworkPositionValue.Pixels(-121.6463036525212d),
+               placement.PositionX == ThemeArtworkPositionValue.Percent(60.3131712d) &&
+               placement.PositionY == ThemeArtworkPositionValue.Pixels(-129.6463036525212d),
             "Cartethyia dark sidebar must resolve the promoted user framing exactly.");
         Ensure(sidebar.Adjustment.CompositionMode == ThemeArtworkCompositionMode.Theme &&
                sidebar.Adjustment.Zoom == 100d &&
@@ -71,21 +71,21 @@ internal static partial class TestSuite
                    runtimeSidebar.GetProperty("offsetY").GetDouble() == 0d &&
                    runtimePlacement.GetProperty("sizeMode").GetString() == "Explicit" &&
                    runtimePlacement.GetProperty("width").GetProperty("unit").GetString() == "Percent" &&
-                   runtimePlacement.GetProperty("width").GetProperty("value").GetDouble() == 281.93049881117156d &&
+                   runtimePlacement.GetProperty("width").GetProperty("value").GetDouble() == 228.0320211d &&
                    runtimePlacement.GetProperty("height").GetProperty("unit").GetString() == "Auto" &&
-                   runtimePlacement.GetProperty("positionX").GetProperty("value").GetDouble() == 52.47729949938649d &&
-                   runtimePlacement.GetProperty("positionY").GetProperty("value").GetDouble() == -121.6463036525212d,
+                   runtimePlacement.GetProperty("positionX").GetProperty("value").GetDouble() == 60.3131712d &&
+                   runtimePlacement.GetProperty("positionY").GetProperty("value").GetDouble() == -129.6463036525212d,
                 "The renderer payload must receive Cartethyia's final typed placement directly, with neutral legacy transforms.");
         }
 
         var projected = ArtworkPlacementMapper.Project(
             placement,
             new ArtworkSize(1024d, 1536d),
-            new ArtworkSize(260d, 800d));
-        EnsureAlmostEqual(projected.RenderedImage.Width, 733.019296909046d, "Cartethyia rendered width");
-        EnsureAlmostEqual(projected.RenderedImage.Height, 1099.52894536357d, "Cartethyia rendered height");
-        EnsureAlmostEqual(projected.RenderedImage.X, -248.227753128852d, "Cartethyia rendered X");
-        EnsureAlmostEqual(projected.RenderedImage.Y, -121.6463036525212d, "Cartethyia rendered Y");
+            new ArtworkSize(340d, 984d));
+        EnsureAlmostEqual(projected.RenderedImage.Width, 775.30887174d, "Cartethyia rendered width");
+        EnsureAlmostEqual(projected.RenderedImage.Height, 1162.96330761d, "Cartethyia rendered height");
+        EnsureAlmostEqual(projected.RenderedImage.X, -262.5485850613346d, "Cartethyia rendered X");
+        EnsureAlmostEqual(projected.RenderedImage.Y, -129.6463036525212d, "Cartethyia rendered Y");
         Ensure(projected.CoversSurface && !projected.IsDistorted,
             "Cartethyia page-effect projection must cover without distorting the source.");
 

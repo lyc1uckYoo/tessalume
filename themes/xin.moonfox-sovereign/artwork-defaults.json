@@ -2,7 +2,7 @@
   "$schema": "../../schemas/theme-artwork-defaults-v1.schema.json",
   "schemaVersion": 1,
   "themeId": "xin.moonfox-sovereign",
-  "defaultsVersion": "1.1.0",
+  "defaultsVersion": "1.1.2",
   "slots": {
     "hero": {
       "light": {
@@ -151,12 +151,12 @@
         "asset": "sidebar-light",
         "placement": {
           "size": {
-            "width": "231.12%",
+            "width": "162.88066422741346%",
             "height": "auto"
           },
           "position": {
-            "x": "86.03183277%",
-            "y": "-88px"
+            "x": "100%",
+            "y": "-0.00000000000010924594562311542px"
           },
           "scale": 1,
           "origin": {
@@ -199,12 +199,12 @@
         "asset": "sidebar-dark",
         "placement": {
           "size": {
-            "width": "243%",
+            "width": "171.93814160482194%",
             "height": "auto"
           },
           "position": {
-            "x": "91.47461234%",
-            "y": "-175.17918318px"
+            "x": "100%",
+            "y": "-54.71832879393387px"
           },
           "scale": 1,
           "origin": {

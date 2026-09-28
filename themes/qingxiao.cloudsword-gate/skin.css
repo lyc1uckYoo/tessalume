@@ -98,7 +98,7 @@ html.qxo-theme main.qxo-main>header.app-header-tint {
   backdrop-filter:blur(20px);
 }
 
-html.qxo-theme aside.app-shell-left-panel>* {
+html.qxo-theme aside.app-shell-left-panel> :first-child {
   position:relative;
   z-index:1;
 }
@@ -1490,7 +1490,8 @@ html.qxo-theme [data-tessalume-message] .qxo-markdown p {
 
 html.qxo-theme .qxo-output-panel {
   position:relative!important;
-  overflow:hidden!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
   border:1px solid color-mix(in srgb,var(--qxo-red) 52%,var(--qxo-gold))!important;
   border-radius:22px 6px 22px 6px!important;
   background:linear-gradient(145deg,color-mix(in srgb,var(--qxo-solid) 94%,var(--qxo-red) 6%),color-mix(in srgb,var(--qxo-panel) 91%,var(--qxo-green) 9%))!important;
@@ -1504,18 +1505,29 @@ html.qxo-theme .qxo-output-panel::before {
   z-index:3;
   left:14px;
   right:14px;
-  top:4px;
-  height:1px;
-  background:linear-gradient(90deg,var(--qxo-green),var(--qxo-red),var(--qxo-gold),transparent 84%);
+  top:5px;
+  height:7px;
   color:var(--qxo-text-3);
   font:700 6px/1 var(--qxo-mono);
   letter-spacing:.14em;
   pointer-events:none;
 }
 
+html.qxo-theme .qxo-output-panel::after {
+  content:"";
+  position:absolute;
+  z-index:3;
+  left:14px;
+  right:14px;
+  top:0;
+  height:1px;
+  background:linear-gradient(90deg,var(--qxo-green),var(--qxo-red),var(--qxo-gold),transparent 84%);
+  pointer-events:none;
+}
+
 html.qxo-theme .qxo-output-panel>div {
   gap:8px!important;
-  padding:8px 8px 10px!important;
+  padding:16px 8px 10px!important;
 }
 
 html.qxo-theme .qxo-output-panel>div>section {
@@ -1533,11 +1545,16 @@ html.qxo-theme .qxo-output-panel>div>section::after {
 
 html.qxo-theme .qxo-output-panel>div>section>header {
   position:relative!important;
+  top:0!important;
   min-height:31px!important;
   padding:3px 10px 3px 12px!important;
   border-bottom:1px solid color-mix(in srgb,var(--qxo-line-red) 74%,transparent)!important;
   background:linear-gradient(90deg,color-mix(in srgb,var(--qxo-red) 10%,var(--qxo-solid)),color-mix(in srgb,var(--qxo-green) 9%,var(--qxo-panel)))!important;
   color:var(--qxo-red)!important;
+}
+
+html.qxo-theme .qxo-output-panel>div>section>header::before {
+  display:none!important;
 }
 
 html.qxo-theme .qxo-output-panel>div>section>header [class~="group/section-toggle"] {
@@ -1569,6 +1586,22 @@ html.qxo-theme .qxo-output-panel [data-slot="thread-summary-panel-item-button"] 
   color:var(--qxo-red)!important;
 }
 
+html.qxo-theme .qxo-output-panel :is([data-slot="thread-summary-panel-item"],[data-slot="thread-summary-panel-item-link"]) {
+  min-height:30px!important;
+  padding:5px 8px!important;
+  border:1px solid transparent!important;
+  border-left:2px solid color-mix(in srgb,var(--qxo-green) 68%,var(--qxo-gold))!important;
+  border-radius:9px 4px 9px 4px!important;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--qxo-green) 9%,var(--qxo-solid)),color-mix(in srgb,var(--qxo-solid) 63%,transparent) 82%,transparent)!important;
+  color:var(--qxo-text-2)!important;
+}
+
+html.qxo-theme .qxo-output-panel :is([data-slot="thread-summary-panel-item"],[data-slot="thread-summary-panel-item-link"]):hover {
+  border-color:color-mix(in srgb,var(--qxo-red) 64%,var(--qxo-line))!important;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--qxo-red-bright) 12%,var(--qxo-solid)),color-mix(in srgb,var(--qxo-gold) 10%,transparent) 82%,transparent)!important;
+  color:var(--qxo-text)!important;
+}
+
 html.qxo-theme.electron-dark .qxo-output-panel {
   background:linear-gradient(145deg,rgba(7,18,29,.98),rgba(14,29,43,.98) 72%,rgba(21,18,34,.98))!important;
   box-shadow:0 20px 48px rgba(0,0,0,.52),inset 0 1px rgba(255,255,255,.06)!important;
@@ -1583,7 +1616,15 @@ html.qxo-theme.electron-dark .qxo-output-panel [data-slot="thread-summary-panel-
   color:var(--qxo-text-2)!important;
 }
 
+html.qxo-theme.electron-dark .qxo-output-panel :is([data-slot="thread-summary-panel-item"],[data-slot="thread-summary-panel-item-link"]) {
+  background:linear-gradient(90deg,rgba(20,51,61,.88),rgba(52,26,46,.58) 82%,transparent)!important;
+}
+
 html.qxo-theme.electron-dark .qxo-output-panel [data-slot="thread-summary-panel-item-button"]:hover {
+  background:linear-gradient(90deg,rgba(38,92,103,.82),rgba(105,48,64,.58) 82%,transparent)!important;
+}
+
+html.qxo-theme.electron-dark .qxo-output-panel :is([data-slot="thread-summary-panel-item"],[data-slot="thread-summary-panel-item-link"]):hover {
   background:linear-gradient(90deg,rgba(38,92,103,.82),rgba(105,48,64,.58) 82%,transparent)!important;
 }
 

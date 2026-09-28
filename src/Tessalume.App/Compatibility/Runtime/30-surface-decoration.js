@@ -25,10 +25,24 @@
       const threadRows = '[data-app-action-sidebar-thread-row]';
 
       aside.querySelectorAll('[data-sidebar-project-drop-zone="project-icon"]').forEach((icon, index) => {
-        const heading = icon.parentElement;
-        const row = heading?.closest(projectRows);
-        mark(heading, roleClass("project-heading"));
+        const row = icon.closest(projectRows);
+        if (!row) return;
+        // The current sidebar gives the icon its own fixed-width slot. Theme
+        // heading padding and badges belong to the branch containing both the
+        // icon and title, leaving the native action buttons in their own lane.
+        const title = (row.getAttribute("aria-labelledby") || "").split(/\s+/)
+          .map((id) => document.getElementById(id))
+          .find((node) => node && row.contains(node)) || row.querySelector('[data-marquee-text]');
+        let heading = icon;
+        while (heading.parentElement && heading.parentElement !== row) heading = heading.parentElement;
+        if (heading === icon || !title || !heading.contains(title)) heading = row;
+        const headingClass = roleClass("project-heading");
+        for (const previous of [row, ...row.querySelectorAll(`.${headingClass}`)]) {
+          if (previous !== heading) previous.classList.remove(headingClass);
+        }
+        mark(heading, headingClass);
         setData(heading, "index", String(index + 1).padStart(2, "0"));
+        setData(row, "index", String(index + 1).padStart(2, "0"));
         if (row && palette.length) setData(row, projectTone, palette[index % palette.length]);
       });
 
@@ -110,13 +124,14 @@
         ['[data-testid="app-shell-header-context-menu-surface"]'],
       ).forEach((header) => {
         if (!header.isConnected) return;
+        const currentTitle = header.querySelector('[data-app-shell-titlebar-content="true"]');
         const titleButton = header.querySelector("span > button.truncate");
         const title = titleButton?.parentElement?.parentElement ||
           header.querySelector("span > span.truncate")?.parentElement;
         const secondaryTitle = header.querySelector("span > span.truncate")?.parentElement;
         mark(header, roleClass("task-header"));
         markSurface(header, "task-header");
-        for (const candidate of new Set([title, secondaryTitle])) {
+        for (const candidate of new Set([currentTitle, title, secondaryTitle])) {
           mark(candidate, roleClass("task-title"));
           markSurface(candidate, "task-title");
         }
@@ -124,14 +139,25 @@
     };
     const decorateOutputPanels = () => {
       const sections = new Set();
+      const panels = new Set();
       const collectSection = (node) => {
         const section = node?.closest?.("section");
         if (section?.isConnected) sections.add(section);
       };
 
-      // The environment panel can open on a branch/status view that does not
-      // render the old "Output" or "Sources" labels. Its item slot remains
-      // stable across those views and after React replaces the panel subtree.
+      // Current Codex builds render a data-dependent set of summary sections.
+      // Git/worktree rows use item-trigger rather than item-button, while plan,
+      // usage, and other sections may contain neither slot. Bind the summary
+      // container itself so every present section receives the same theme.
+      document.querySelectorAll('[data-summary-panel-variant="summary"]').forEach((root) => {
+        const panel = root.firstElementChild;
+        if (!panel?.isConnected) return;
+        panels.add(panel);
+        panel.querySelectorAll(':scope > div > section').forEach((section) => sections.add(section));
+      });
+
+      // Keep compatibility with older Codex builds that predate the summary
+      // variant attribute.
       const panelItems = queryAll(
         document,
         "outputPanelItem",
@@ -139,7 +165,6 @@
       );
       panelItems.forEach(collectSection);
 
-      // Keep compatibility with older Codex builds that predate the item slot.
       const legacyLabels = new Set(["\u8f93\u51fa", "\u6765\u6e90", "Output", "Sources"]);
       if (panelItems.length === 0) {
         document.querySelectorAll("button").forEach((button) => {
@@ -149,11 +174,14 @@
 
       sections.forEach((section) => {
         const panel = section.parentElement?.parentElement;
+        if (panel?.isConnected) panels.add(panel);
         mark(section, roleClass("output-section"));
         mark(section.querySelector("header"), roleClass("output-header"));
-        mark(panel, roleClass("output-panel"));
         markSurface(section, "output-section");
         markSurface(section.querySelector("header"), "output-header");
+      });
+      panels.forEach((panel) => {
+        mark(panel, roleClass("output-panel"));
         markSurface(panel, "output-panel");
       });
     };
@@ -240,7 +268,9 @@
       decorateOutputPanels();
       const outputOpen = Array.from(document.querySelectorAll(`.${roleClass("output-panel")}`)).some((panel) => {
         const box = panel.getBoundingClientRect();
-        return box.width > 120 && box.height > 80;
+        return box.width > 120 && box.height > 80 &&
+          box.right > 0 && box.left < window.innerWidth &&
+          box.bottom > 0 && box.top < window.innerHeight;
       });
       html.classList.toggle(roleClass("has-output"), outputOpen);
       html.classList.toggle("tessalume-has-output", outputOpen);

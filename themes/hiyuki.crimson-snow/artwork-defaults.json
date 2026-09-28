@@ -2,7 +2,7 @@
   "$schema": "../../schemas/theme-artwork-defaults-v1.schema.json",
   "schemaVersion": 1,
   "themeId": "hiyuki.crimson-snow",
-  "defaultsVersion": "1.1.0",
+  "defaultsVersion": "1.1.2",
   "slots": {
     "hero": {
       "light": {
@@ -151,12 +151,12 @@
         "asset": "sidebar-light",
         "placement": {
           "size": {
-            "width": "204.24488908%",
+            "width": "165.19807205000006%",
             "height": "auto"
           },
           "position": {
-            "x": "46.05607186%",
-            "y": "0px"
+            "x": "44.751838284584906%",
+            "y": "-5.6682464454977435px"
           },
           "scale": 1,
           "origin": {
@@ -199,12 +199,12 @@
         "asset": "sidebar-dark",
         "placement": {
           "size": {
-            "width": "220.58448021%",
+            "width": "208.101993745248%",
             "height": "auto"
           },
           "position": {
-            "x": "46.74393864%",
-            "y": "-2.36492891px"
+            "x": "46.83598303413347%",
+            "y": "-4.663507109004699px"
           },
           "scale": 1,
           "origin": {

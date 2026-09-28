@@ -14,6 +14,7 @@
       layoutResizeObserver?.disconnect();
       layoutResizeObserver = null;
       layoutObserved = new Set();
+      root.style.removeProperty("--tessalume-left-rail-inset");
       if (taskTitleWidthManaged) {
         if (taskTitleWidthPrevious) {
           html.style.setProperty("--tessalume-task-title-primary-width", taskTitleWidthPrevious);
@@ -22,6 +23,16 @@
         }
         taskTitleWidthManaged = false;
       }
+      for (const [main, previous] of chatCanvasStyles) {
+        for (const [property, value] of [
+          ["--tessalume-chat-canvas-left", previous.left],
+          ["--tessalume-chat-canvas-width", previous.width],
+        ]) {
+          if (value) main.style.setProperty(property, value);
+          else main.style.removeProperty(property);
+        }
+      }
+      chatCanvasStyles.clear();
       spec.onCleanup?.(api);
       for (const [node, className] of marked) {
         try { node?.classList?.remove(className); } catch { }
@@ -187,6 +198,29 @@
     if (!(await disposeCompatibleRuntime()) && window.__CODEX_DREAM_SKIN_STATE__?.cleanup) {
       window.__CODEX_DREAM_SKIN_STATE__.cleanup();
     }
+
+    // The predecessor's cleanup removes its legacy color-mode alias. Install
+    // ours only after that cleanup so live reapplication keeps the dark skin.
+    const colorModeRoot = document.documentElement;
+    const hadNativeDarkClass = colorModeRoot.classList.contains("electron-dark");
+    const syncLegacyColorMode = () => {
+      const mode = colorModeRoot.getAttribute("data-theme");
+      if (mode === "dark" || mode === "light") {
+        colorModeRoot.classList.toggle("electron-dark", mode === "dark");
+      }
+    };
+    syncLegacyColorMode();
+    const colorModeObserver = new MutationObserver(syncLegacyColorMode);
+    colorModeObserver.observe(colorModeRoot, {
+      attributes: true,
+      attributeFilter: ["data-theme"],
+    });
+    addCleanup(() => {
+      colorModeObserver.disconnect();
+      if (!hadNativeDarkClass && colorModeRoot.hasAttribute("data-theme")) {
+        colorModeRoot.classList.remove("electron-dark");
+      }
+    });
 
     (document.head || document.documentElement).appendChild(style);
     (document.head || document.documentElement).appendChild(compatibilityStyle);

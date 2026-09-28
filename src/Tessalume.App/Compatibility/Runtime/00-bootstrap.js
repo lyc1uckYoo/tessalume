@@ -117,9 +117,6 @@
   compatibilityStyle.id = "tessalume-runtime-compatibility-style";
   compatibilityStyle.dataset.themeId = themeId;
   compatibilityStyle.textContent = `
-html.tessalume-theme-active [data-tessalume-surface="home"] {
-  --tessalume-v1-home-composer-reserve:300px;
-}
 html.tessalume-theme-active.tessalume-is-home [data-tessalume-surface="home"] [data-tessalume-home-part="composer-carrier"] {
   top:0!important;
   left:auto!important;
@@ -128,6 +125,15 @@ html.tessalume-theme-active.tessalume-is-home [data-tessalume-surface="home"] [d
 html.tessalume-theme-active :is(main,[role="main"]):has(.composer-surface-chrome) .thread-scroll-container .sticky.bottom-0.tessalume-composer-fade-carrier {
   pointer-events:none!important;
   z-index:0!important;
+}
+html.tessalume-theme-active.tessalume-is-task main[data-tessalume-surface="main"]::before,
+html.tessalume-theme-active.tessalume-is-task main[data-tessalume-surface="main"]::after {
+  left:var(--tessalume-chat-canvas-left,0px)!important;
+  right:auto!important;
+  width:var(--tessalume-chat-canvas-width,100%)!important;
+}
+html.tessalume-theme-active.tessalume-is-task body [data-tessalume-surface="task-title"][data-app-shell-titlebar-content="true"] {
+  max-width:var(--tessalume-task-title-primary-width,calc(100vw - 24px))!important;
 }`;
   const visualMotionStyle = document.createElement("style");
   visualMotionStyle.id = "tessalume-artwork-motion-style";
@@ -159,29 +165,6 @@ html.tessalume-theme-active :is(main,[role="main"]):has(.composer-surface-chrome
     managedCleanups.push(cleanup);
     return cleanup;
   };
-
-  // Codex now publishes its color mode on data-theme. Existing character CSS
-  // and the frozen template still use the historical electron-dark class.
-  const colorModeRoot = document.documentElement;
-  const hadNativeDarkClass = colorModeRoot.classList.contains("electron-dark");
-  const syncLegacyColorMode = () => {
-    const mode = colorModeRoot.getAttribute("data-theme");
-    if (mode === "dark" || mode === "light") {
-      colorModeRoot.classList.toggle("electron-dark", mode === "dark");
-    }
-  };
-  syncLegacyColorMode();
-  const colorModeObserver = new MutationObserver(syncLegacyColorMode);
-  colorModeObserver.observe(colorModeRoot, {
-    attributes: true,
-    attributeFilter: ["data-theme"],
-  });
-  addCleanup(() => {
-    colorModeObserver.disconnect();
-    if (!hadNativeDarkClass && colorModeRoot.hasAttribute("data-theme")) {
-      colorModeRoot.classList.remove("electron-dark");
-    }
-  });
 
   const assetDataUrl = (name) => {
     const value = assetDataUrls[name];

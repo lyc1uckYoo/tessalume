@@ -31,6 +31,7 @@
     let layoutStableFrames = 0;
     let taskTitleWidthManaged = false;
     let taskTitleWidthPrevious = "";
+    const chatCanvasStyles = new Map();
     const adaptiveLayout = spec.adaptiveLayout === true ||
       (spec.adaptiveLayout && typeof spec.adaptiveLayout === "object");
 
@@ -271,17 +272,31 @@
       if (!main || !stage) return "";
       const box = main.getBoundingClientRect();
       if (!(box.width > 0 && box.height > 0)) return "";
+      const workspace = queryFirst(main, "workspace", [".thread-scroll-container"]);
+      const workspaceBox = workspace?.getBoundingClientRect();
+      const canvasBox = workspaceBox && workspaceBox.width > 0 &&
+        workspaceBox.left >= box.left && workspaceBox.right <= box.right + 1
+        ? workspaceBox
+        : box;
       const pixels = (value) => `${Math.round(value * 100) / 100}px`;
+      if (!chatCanvasStyles.has(main)) {
+        chatCanvasStyles.set(main, {
+          left: main.style.getPropertyValue("--tessalume-chat-canvas-left"),
+          width: main.style.getPropertyValue("--tessalume-chat-canvas-width"),
+        });
+      }
+      main.style.setProperty("--tessalume-chat-canvas-left", pixels(canvasBox.left - box.left));
+      main.style.setProperty("--tessalume-chat-canvas-width", pixels(canvasBox.width));
       const geometry = {
-        left: pixels(box.left),
+        left: pixels(canvasBox.left),
         top: pixels(box.top),
-        width: pixels(box.width),
+        width: pixels(canvasBox.width),
         height: pixels(box.height),
       };
       for (const [property, value] of Object.entries(geometry)) {
         if (stage.style[property] !== value) stage.style[property] = value;
       }
-      return [box.left, box.top, box.width, box.height]
+      return [canvasBox.left, box.top, canvasBox.width, box.height]
         .map((value) => Math.round(value * 4) / 4)
         .join(":");
     };

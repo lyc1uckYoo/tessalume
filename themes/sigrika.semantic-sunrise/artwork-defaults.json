@@ -2,7 +2,7 @@
   "$schema": "../../schemas/theme-artwork-defaults-v1.schema.json",
   "schemaVersion": 1,
   "themeId": "sigrika.semantic-sunrise",
-  "defaultsVersion": "1.1.0",
+  "defaultsVersion": "1.1.1",
   "slots": {
     "hero": {
       "light": {
@@ -151,12 +151,12 @@
         "asset": "sidebar-light",
         "placement": {
           "size": {
-            "width": "254%",
+            "width": "253.99999999999997%",
             "height": "auto"
           },
           "position": {
-            "x": "61%",
-            "y": "-148px"
+            "x": "59.20868786386029%",
+            "y": "-192.30331753554503px"
           },
           "scale": 1,
           "origin": {
@@ -199,12 +199,12 @@
         "asset": "sidebar-dark",
         "placement": {
           "size": {
-            "width": "254%",
+            "width": "253.99999999999997%",
             "height": "auto"
           },
           "position": {
-            "x": "60.51552795%",
-            "y": "-171.3407675px"
+            "x": "60.51552795000001%",
+            "y": "-213.31233148104258px"
           },
           "scale": 1,
           "origin": {
