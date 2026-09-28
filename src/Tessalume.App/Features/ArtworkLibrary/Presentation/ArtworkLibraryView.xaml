@@ -1,0 +1,300 @@
+<UserControl x:Class="Tessalume.App.Features.ArtworkLibrary.Presentation.ArtworkLibraryView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:workbench="clr-namespace:Tessalume.App.Features.Personalization.ArtworkWorkbench.Presentation"
+             FontFamily="Microsoft YaHei UI" UseLayoutRounding="True"
+             TextOptions.TextFormattingMode="Display" TextOptions.TextRenderingMode="ClearType"
+             SizeChanged="View_SizeChanged">
+    <UserControl.Resources>
+        <Style x:Key="ArtworkGalleryCardButton" TargetType="Button">
+            <Setter Property="Width" Value="{Binding CardWidth}" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Margin" Value="6,3,6,10" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalAlignment" Value="Top" />
+            <Setter Property="Background" Value="{DynamicResource SurfaceElevated}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Border}" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FocusVisualStyle" Value="{DynamicResource KeyboardFocusVisual}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="CardSurface" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1"
+                                CornerRadius="14" Effect="{DynamicResource HomeCardShadow}" SnapsToDevicePixels="True">
+                            <Grid>
+                                <Border x:Name="HoverTint" Background="{DynamicResource AccentSoft}" CornerRadius="14" Opacity="0" />
+                                <ContentPresenter Margin="7" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="CardSurface" Property="BorderBrush" Value="{DynamicResource Accent}" />
+                                <Setter TargetName="HoverTint" Property="Opacity" Value="0.22" />
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="CardSurface" Property="BorderBrush" Value="{DynamicResource Accent}" /></Trigger>
+                            <Trigger Property="IsPressed" Value="True"><Setter TargetName="CardSurface" Property="Opacity" Value="0.82" /></Trigger>
+                            <Trigger Property="IsEnabled" Value="False"><Setter TargetName="CardSurface" Property="Opacity" Value="0.5" /></Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="ArtworkFavoriteFilter" TargetType="ToggleButton">
+            <Setter Property="Content" Value="♡  收藏" />
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryText}" />
+            <Setter Property="Background" Value="{DynamicResource Surface}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Border}" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Height" Value="38" />
+            <Setter Property="MinWidth" Value="110" />
+            <Setter Property="Padding" Value="12,0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FocusVisualStyle" Value="{DynamicResource KeyboardFocusVisual}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="FilterSurface" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="1" CornerRadius="10" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="FilterSurface" Property="BorderBrush" Value="{DynamicResource Accent}" /></Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="FilterSurface" Property="BorderBrush" Value="{DynamicResource Accent}" /></Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="FilterSurface" Property="Background" Value="{DynamicResource AccentSoft}" />
+                                <Setter TargetName="FilterSurface" Property="BorderBrush" Value="{DynamicResource Accent}" />
+                                <Setter Property="Foreground" Value="{DynamicResource Accent}" />
+                                <Setter Property="Content" Value="♥  收藏" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False"><Setter TargetName="FilterSurface" Property="Opacity" Value="0.5" /></Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <DataTemplate x:Key="ArtworkGalleryCardTemplate">
+            <Button Style="{StaticResource ArtworkGalleryCardButton}" Tag="{Binding}" Click="ArtworkCard_Click"
+                    AutomationProperties.Name="{Binding AutomationName}" ToolTip="{Binding Name}">
+                <StackPanel>
+                    <Border x:Name="ArtworkThumbnailFrame" Height="{Binding ImageHeight}" Background="{DynamicResource PersonalizationMotionGradient}"
+                            CornerRadius="12" ClipToBounds="True">
+                        <Grid>
+                            <TextBlock Text="✦" FontSize="34" Foreground="{DynamicResource Accent}" Opacity="0.14" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <Rectangle RadiusX="12" RadiusY="12" RenderOptions.BitmapScalingMode="HighQuality">
+                                <Rectangle.Fill><ImageBrush ImageSource="{Binding Thumbnail}" Stretch="Uniform" /></Rectangle.Fill>
+                            </Rectangle>
+                            <Border HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10" Padding="8,4" CornerRadius="7" Background="{DynamicResource HomeToolbarSurface}" Opacity="0.95">
+                                <TextBlock Text="{Binding ModeLabel}" FontSize="9.5" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryText}" />
+                            </Border>
+                            <TextBlock Text="{Binding FavoriteLabel}" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="11,7" Foreground="#FFFFD37A" FontSize="20" />
+                        </Grid>
+                    </Border>
+                    <Grid Margin="8,6,8,5">
+                        <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                        <TextBlock Text="{Binding Name}" FontSize="13.5" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryText}" TextTrimming="CharacterEllipsis" />
+                        <TextBlock Grid.Column="1" Text="→" FontSize="13" Foreground="{DynamicResource Accent}" Margin="8,0,0,0" VerticalAlignment="Center" />
+                        <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding SourceLabel}" FontSize="9" Foreground="{DynamicResource SubtleText}" Margin="0,2,0,0" TextTrimming="CharacterEllipsis" />
+                    </Grid>
+                </StackPanel>
+            </Button>
+        </DataTemplate>
+        <DataTemplate x:Key="CharacterAlbumCardTemplate">
+            <Button Style="{StaticResource ArtworkGalleryCardButton}" Tag="{Binding}" Click="CharacterCard_Click"
+                    AutomationProperties.Name="{Binding Name}" ToolTip="{Binding Name}">
+                <StackPanel>
+                    <Border x:Name="CharacterCoverFrame" Height="{Binding ImageHeight}" Background="{DynamicResource PersonalizationMotionGradient}" CornerRadius="10">
+                        <Grid>
+                            <TextBlock Text="✦" FontSize="30" Foreground="{DynamicResource Accent}" Opacity="0.14" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <Rectangle RadiusX="10" RadiusY="10" RenderOptions.BitmapScalingMode="HighQuality">
+                                <Rectangle.Fill><ImageBrush ImageSource="{Binding Cover}" Stretch="UniformToFill" AlignmentY="Top" /></Rectangle.Fill>
+                            </Rectangle>
+                        </Grid>
+                    </Border>
+                    <Grid Margin="8,9,8,7">
+                        <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                        <TextBlock Text="{Binding Name}" Foreground="{DynamicResource PrimaryText}" FontSize="15.5" FontWeight="Bold" TextTrimming="CharacterEllipsis" />
+                        <TextBlock Grid.Column="1" Text="→" Foreground="{DynamicResource Accent}" FontSize="15" Margin="8,0,0,0" />
+                        <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding Summary}" Foreground="{DynamicResource MutedText}" FontSize="10.5" Margin="0,4,0,0" TextTrimming="CharacterEllipsis" />
+                    </Grid>
+                </StackPanel>
+            </Button>
+        </DataTemplate>
+        <DataTemplate x:Key="ArtworkGalleryRegionTemplate">
+            <StackPanel Width="{Binding RegionWidth}" Margin="0,0,12,0">
+                <StackPanel Orientation="Horizontal" Margin="2,0,0,6">
+                    <TextBlock Text="{Binding Title}" Foreground="{DynamicResource MutedText}" FontSize="10.5" FontWeight="SemiBold" />
+                    <TextBlock Text="{Binding CountLabel}" Foreground="{DynamicResource SubtleText}" FontSize="10" Margin="8,0,0,0" />
+                </StackPanel>
+                <ItemsControl ItemsSource="{Binding Cards}" ItemTemplate="{StaticResource ArtworkGalleryCardTemplate}" Margin="-6,0,-6,0">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                </ItemsControl>
+            </StackPanel>
+        </DataTemplate>
+        <DataTemplate x:Key="ArtworkGallerySectionTemplate">
+            <StackPanel Width="{Binding SectionWidth}" Margin="0,0,0,12">
+                <StackPanel Orientation="Horizontal" Margin="2,1,0,8">
+                    <TextBlock Text="{Binding Title}" Foreground="{DynamicResource PrimaryText}" FontSize="12" FontWeight="SemiBold" />
+                    <TextBlock Text="{Binding CountLabel}" Foreground="{DynamicResource SubtleText}" FontSize="10.5" Margin="10,0,0,0" />
+                </StackPanel>
+                <ItemsControl ItemsSource="{Binding Regions}" ItemTemplate="{StaticResource ArtworkGalleryRegionTemplate}" Margin="0,0,-12,0">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                </ItemsControl>
+            </StackPanel>
+        </DataTemplate>
+    </UserControl.Resources>
+    <StackPanel>
+        <StackPanel x:Name="GalleryPage">
+            <Border Background="{DynamicResource HomeToolbarSurface}" BorderBrush="{DynamicResource HomeToolbarBorder}" BorderThickness="1" CornerRadius="12" Padding="4" Margin="0,0,0,12">
+            <Grid x:Name="BrowseToolbar" MinHeight="38">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                <Button x:Name="BrowseBackButton" Content="←" Visibility="Collapsed" Width="32" Height="36" Padding="0" Margin="0,0,6,0"
+                        Style="{DynamicResource HomeCrispButton}" Click="BackToCharacters_Click" ToolTip="返回角色图库" AutomationProperties.Name="返回全部角色相册" />
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="5,0,0,0">
+                    <TextBlock x:Name="BrowseTitleText" Text="角色图库" Foreground="{DynamicResource PrimaryText}" FontSize="17" FontWeight="SemiBold" MaxWidth="150" TextTrimming="CharacterEllipsis" ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}" />
+                    <TextBlock x:Name="LibraryCountText" Text="" Foreground="{DynamicResource MutedText}" FontSize="10.5" Margin="9,0,0,0" VerticalAlignment="Center" />
+                </StackPanel>
+                <Grid Grid.Column="2" MinWidth="100" Height="38" Margin="12,0,0,0">
+                    <TextBox x:Name="SearchBox" Style="{DynamicResource HomeSearchTextBox}" Height="38" FontSize="11" TextChanged="Filter_Changed" AutomationProperties.Name="搜索角色或图片" />
+                    <Path Width="13" Height="13" Margin="13,0,0,0" HorizontalAlignment="Left" IsHitTestVisible="False"
+                          Data="M 6,11 A 5,5 0 1 1 6,1 A 5,5 0 1 1 6,11 M 9.5,9.5 L 13.5,13.5" Stretch="Uniform"
+                          Stroke="{DynamicResource MutedText}" StrokeThickness="1.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round" />
+                    <TextBlock x:Name="SearchPlaceholder" Text="搜索角色或图片" Foreground="{DynamicResource SubtleText}" FontSize="11" Margin="40,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False" />
+                </Grid>
+                <ComboBox x:Name="BrowseRegionSelector" Grid.Column="3" Visibility="Collapsed" Width="112" Height="38" Margin="8,0,0,0" Style="{DynamicResource SettingsComboBox}"
+                          SelectedIndex="0" SelectionChanged="BrowseRegion_Changed" AutomationProperties.Name="筛选相册图片位置">
+                    <ComboBoxItem Content="全部位置" Tag="all" /><ComboBoxItem Content="首页横幅" Tag="Hero" />
+                    <ComboBoxItem Content="左侧栏" Tag="Sidebar" /><ComboBoxItem Content="聊天背景" Tag="Chat" />
+                    <ComboBoxItem Content="左侧角色卡" Tag="TaskLeft" /><ComboBoxItem Content="记忆卡" Tag="Memory" />
+                    <ComboBoxItem Content="右侧副卡" Tag="TaskRightSecondary" /><ComboBoxItem Content="右侧主卡" Tag="TaskRightPrimary" />
+                </ComboBox>
+                <ToggleButton x:Name="FavoritesOnly" Grid.Column="4" Style="{StaticResource ArtworkFavoriteFilter}" Height="38" MinWidth="76" Padding="9,0" Margin="8,0,0,0"
+                              Checked="Filter_Changed" Unchecked="Filter_Changed" AutomationProperties.Name="只看收藏图片" />
+                <Button x:Name="RefreshButton" Grid.Column="5" ToolTip="刷新图库" AutomationProperties.Name="刷新图库" Style="{DynamicResource HomeCrispButton}" Height="38" Width="36" Padding="0" Margin="8,0,0,0" Click="Refresh_Click">
+                    <Path Width="13" Height="13" Data="M 19,7 L 19,3 L 15,3 M 19,3 C 16.5,1.2 12.8,1.5 10.5,3.2 C 8.7,4.5 7.7,6.4 7.5,8.4 M 5,17 L 5,21 L 9,21 M 5,21 C 7.5,22.8 11.2,22.5 13.5,20.8 C 15.3,19.5 16.3,17.6 16.5,15.6" Style="{DynamicResource NavIcon}" />
+                </Button>
+                <Button x:Name="ImportButton" Grid.Column="6" Content="＋ 导入图片" Style="{DynamicResource HomePrimaryActionButton}" Height="38" MinWidth="104" Padding="12,0" Margin="8,0,0,0"
+                        Click="Import_Click" AutomationProperties.Name="批量导入角色图片" />
+            </Grid>
+            </Border>
+            <StackPanel x:Name="GalleryPanel">
+                <StackPanel x:Name="CharactersPanel">
+                    <ItemsControl x:Name="CharacterItems" ItemTemplate="{StaticResource CharacterAlbumCardTemplate}" Margin="-6,0,-6,0" AutomationProperties.Name="角色相册列表">
+                        <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </StackPanel>
+                <StackPanel x:Name="AlbumPanel" Visibility="Collapsed">
+                    <ItemsControl x:Name="ArtworkItems" ItemTemplate="{StaticResource ArtworkGallerySectionTemplate}" AutomationProperties.Name="角色相册中的图片">
+                        <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </StackPanel>
+                <Border x:Name="EmptyState" Visibility="Collapsed" Padding="24,32" CornerRadius="14" Background="{DynamicResource SurfaceElevated}"
+                        BorderBrush="{DynamicResource Border}" BorderThickness="1" Effect="{DynamicResource HomeCardShadow}">
+                    <StackPanel>
+                        <TextBlock x:Name="EmptyTitle" Text="还没有匹配的图片" Foreground="{DynamicResource PrimaryText}" FontSize="16" FontWeight="SemiBold" HorizontalAlignment="Center" />
+                        <TextBlock x:Name="EmptyDescription" Text="试试其他搜索，或导入喜欢的图片。" Foreground="{DynamicResource MutedText}" FontSize="11" Margin="0,8,0,0" TextWrapping="Wrap" TextAlignment="Center" />
+                    </StackPanel>
+                </Border>
+                <StackPanel x:Name="PaginationPanel" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,6,0,6">
+                    <Button x:Name="PreviousButton" Content="← 上一页" Style="{DynamicResource HomeCrispButton}" Height="32" Padding="13,0" Click="Previous_Click" />
+                    <TextBlock x:Name="PageText" Foreground="{DynamicResource MutedText}" FontSize="11" VerticalAlignment="Center" Margin="15,0" />
+                    <Button x:Name="NextButton" Content="下一页 →" Style="{DynamicResource HomeCrispButton}" Height="32" Padding="13,0" Click="Next_Click" />
+                </StackPanel>
+            </StackPanel>
+        </StackPanel>
+
+        <StackPanel x:Name="DetailPage" Visibility="Collapsed">
+            <Button x:Name="BackButton" Content="← 返回图库" Style="{DynamicResource HomeCrispButton}" HorizontalAlignment="Left" Height="34" Padding="13,0" Margin="0,0,0,18"
+                    Click="Back_Click" AutomationProperties.Name="返回图库并保留浏览位置" />
+            <Grid Margin="0,0,0,20">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                <StackPanel>
+                    <TextBlock x:Name="SelectedName" Text="图片详情" Foreground="{DynamicResource PrimaryText}" FontSize="25" FontWeight="Bold" Margin="0,0,16,0" TextTrimming="CharacterEllipsis" />
+                    <TextBlock x:Name="SelectedDetail" Foreground="{DynamicResource MutedText}" FontSize="11" Margin="0,8,16,0" TextWrapping="Wrap" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button x:Name="DeleteButton" Content="删除" Visibility="Collapsed" Style="{DynamicResource HomeCrispButton}" Foreground="{DynamicResource Danger}"
+                            Height="36" Padding="12,0" Margin="0,0,8,0" Click="Delete_Click" ToolTip="从图库删除这张导入图片" AutomationProperties.Name="从图库删除所选导入图片" />
+                    <Button x:Name="FavoriteButton" Content="☆ 收藏" Style="{DynamicResource HomeCrispButton}" Height="36" MinWidth="94" Padding="14,0"
+                            Click="Favorite_Click" IsEnabled="False" AutomationProperties.Name="收藏所选图片" />
+                </StackPanel>
+            </Grid>
+            <Grid x:Name="DetailContentGrid">
+                <Grid.ColumnDefinitions><ColumnDefinition x:Name="DetailPreviewColumn" Width="*" /><ColumnDefinition x:Name="DetailControlsColumn" Width="310" /></Grid.ColumnDefinitions>
+                <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                <Border x:Name="PreviewPanel" Margin="0,0,18,0" VerticalAlignment="Top" Padding="18" Background="{DynamicResource SurfaceElevated}"
+                        BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="17">
+                    <StackPanel>
+                        <Grid Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                            <ComboBox x:Name="PreviewModeSelector" Width="144" Height="34" HorizontalAlignment="Left" Style="{DynamicResource SettingsComboBox}" SelectedIndex="0"
+                                      SelectionChanged="PreviewMode_Changed" AutomationProperties.Name="预览方式">
+                                <ComboBoxItem Content="场景预览" /><ComboBoxItem Content="完整原图" />
+                            </ComboBox>
+                            <TextBlock x:Name="PreviewStateText" Grid.Column="1" Text="预览草稿" Foreground="{DynamicResource Teal}" FontSize="11" VerticalAlignment="Center" />
+                        </Grid>
+                        <workbench:ArtworkCanvasControl x:Name="PreviewCanvas" MinHeight="180" Height="240" />
+                        <TextBlock x:Name="PreviewHint" Text="标准尺寸场景预览 · 拖动图片或滚轮缩放" Foreground="{DynamicResource MutedText}" FontSize="11" TextWrapping="Wrap" Margin="2,14,2,0" />
+                        <TextBlock x:Name="RecommendationText" Foreground="{DynamicResource SubtleText}" FontSize="11" TextWrapping="Wrap" Margin="2,6,2,16" />
+                        <WrapPanel>
+                            <Button x:Name="ZoomOutButton" Content="−" ToolTip="缩小构图" AutomationProperties.Name="缩小构图" Style="{DynamicResource HomeCrispButton}" Width="36" Height="34" Padding="0" Click="ZoomOut_Click" />
+                            <Button x:Name="ZoomInButton" Content="＋" ToolTip="放大构图" AutomationProperties.Name="放大构图" Style="{DynamicResource HomeCrispButton}" Width="36" Height="34" Padding="0" Margin="8,0,8,0" Click="ZoomIn_Click" />
+                            <Button x:Name="ResetDraftButton" Content="重置构图" Style="{DynamicResource HomeCrispButton}" Height="34" Padding="13,0" Click="ResetDraft_Click" />
+                        </WrapPanel>
+                    </StackPanel>
+                </Border>
+                <Border x:Name="TargetPanel" Grid.Column="1" VerticalAlignment="Top" Padding="20" Background="{DynamicResource SurfaceElevated}"
+                        BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="17">
+                    <StackPanel>
+                        <TextBlock Text="当前目标" Foreground="{DynamicResource PrimaryText}" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,16" />
+                        <StackPanel x:Name="TargetControls">
+                            <TextBlock Text="主题" Foreground="{DynamicResource MutedText}" FontSize="11" Margin="0,0,0,7" />
+                            <ComboBox x:Name="ThemeSelector" Height="38" Style="{DynamicResource SettingsComboBox}" DisplayMemberPath="Name" Margin="0,0,0,15"
+                                      SelectionChanged="Target_Changed" AutomationProperties.Name="目标主题" />
+                            <TextBlock Text="图片位置" Foreground="{DynamicResource MutedText}" FontSize="11" Margin="0,0,0,7" />
+                            <ComboBox x:Name="RegionSelector" Height="38" Style="{DynamicResource SettingsComboBox}" SelectedIndex="0" Margin="0,0,0,15"
+                                      SelectionChanged="Target_Changed" AutomationProperties.Name="替换区域">
+                                <ComboBoxItem Content="首页横幅" /><ComboBoxItem Content="左侧栏" /><ComboBoxItem Content="聊天背景" />
+                                <ComboBoxItem Content="左侧角色卡" /><ComboBoxItem Content="记忆卡" />
+                                <ComboBoxItem Content="右侧副卡" /><ComboBoxItem Content="右侧主卡" />
+                            </ComboBox>
+                            <TextBlock Text="亮暗模式" Foreground="{DynamicResource MutedText}" FontSize="11" Margin="0,0,0,7" />
+                            <ComboBox x:Name="ModeSelector" Height="38" Style="{DynamicResource SettingsComboBox}" SelectedIndex="0"
+                                      SelectionChanged="Target_Changed" AutomationProperties.Name="替换亮暗模式">
+                                <ComboBoxItem Content="亮色模式" /><ComboBoxItem Content="暗色模式" />
+                            </ComboBox>
+                        </StackPanel>
+                        <TextBlock x:Name="TargetSummary" Foreground="{DynamicResource MutedText}" FontSize="10.5" TextWrapping="Wrap" Margin="0,12,0,12" />
+                        <Border Background="{DynamicResource HomeToolbarSurface}" BorderBrush="{DynamicResource HomeToolbarBorder}" BorderThickness="1" CornerRadius="9" Padding="10,8" Margin="0,0,0,12">
+                            <StackPanel>
+                                <TextBlock Text="已使用图" Foreground="{DynamicResource SubtleText}" FontSize="10" />
+                                <TextBlock x:Name="CurrentImageText" Text="主题原图" Foreground="{DynamicResource PrimaryText}" FontSize="11" Margin="0,4,0,0" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Border>
+                        <Button x:Name="ApplyButton" Content="应用图片" Style="{DynamicResource HomePrimaryActionButton}" Height="42" Click="Apply_Click" IsEnabled="False"
+                                AutomationProperties.Name="应用所选图片到目标位置" />
+                        <Button x:Name="CancelDraftButton" Content="取消预览" Style="{DynamicResource HomeCrispButton}" Height="35" Padding="12,0" Margin="0,9,0,0" Click="CancelDraft_Click" />
+                        <Border BorderBrush="{DynamicResource Border}" BorderThickness="0,1,0,0" Padding="0,15,0,0" Margin="0,18,0,0">
+                            <StackPanel>
+                                <Button x:Name="WorkbenchButton" Content="在图像工作台精细调节 →" ToolTip="打开当前区域已保存的图片。要继续调节此预览，请先应用。"
+                                        Style="{DynamicResource HomeCrispButton}" Height="35" Padding="12,0" Click="Workbench_Click" />
+                                <Grid Margin="0,9,0,0">
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="8" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                    <Button x:Name="RestoreButton" Content="恢复此位置原图" ToolTip="恢复当前主题、当前模式、当前图片位置的原图与推荐构图。" Style="{DynamicResource HomeCrispButton}" Height="34" Padding="5,0" FontSize="10.5" Click="Restore_Click" />
+                                    <Button x:Name="UndoButton" Grid.Column="2" Content="撤销上次更改" ToolTip="撤销最近一次图库应用或恢复操作。"
+                                            Style="{DynamicResource HomeCrispButton}" Height="34" Padding="7,0" Click="Undo_Click" IsEnabled="False" />
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </StackPanel>
+        <TextBlock x:Name="StatusText" Text="" Foreground="{DynamicResource SubtleText}" FontSize="10.5" TextWrapping="Wrap"
+                   Margin="1,16,1,0" AutomationProperties.LiveSetting="Polite" />
+    </StackPanel>
+</UserControl>

@@ -118,12 +118,18 @@
       return null;
     };
     const decorateTaskHeaders = () => {
+      const activeHeaders = new Set();
+      const activeTitles = new Set();
       queryAll(
         document,
         "taskHeader",
         ['[data-testid="app-shell-header-context-menu-surface"]'],
       ).forEach((header) => {
-        if (!header.isConnected) return;
+        // A unified file/chat tab strip reuses the old task-header element.
+        // Never apply content-sized title geometry to the native tab carrier.
+        if (!html.classList.contains("tessalume-is-task") || !isVisibleSurface(header) ||
+            header.closest('[data-app-shell-tab-row="true"]') ||
+            header.querySelector('[role="tab"],[role="tablist"],[data-app-shell-tab-row="true"]')) return;
         const currentTitle = header.querySelector('[data-app-shell-titlebar-content="true"]');
         const titleButton = header.querySelector("span > button.truncate");
         const title = titleButton?.parentElement?.parentElement ||
@@ -131,11 +137,22 @@
         const secondaryTitle = header.querySelector("span > span.truncate")?.parentElement;
         mark(header, roleClass("task-header"));
         markSurface(header, "task-header");
+        activeHeaders.add(header);
         for (const candidate of new Set([currentTitle, title, secondaryTitle])) {
+          if (!candidate || !isVisibleSurface(candidate)) continue;
           mark(candidate, roleClass("task-title"));
           markSurface(candidate, "task-title");
+          activeTitles.add(candidate);
         }
       });
+      for (const [surface, active] of [["task-header", activeHeaders], ["task-title", activeTitles]]) {
+        document.querySelectorAll(`.${roleClass(surface)},[data-tessalume-surface="${surface}"]`).forEach((node) => {
+          if (active.has(node)) return;
+          node.classList.remove(roleClass(surface));
+          if (node.getAttribute("data-tessalume-surface") === surface)
+            node.removeAttribute("data-tessalume-surface");
+        });
+      }
     };
     const decorateOutputPanels = () => {
       const sections = new Set();
@@ -280,7 +297,7 @@
         ?.querySelectorAll("button").forEach((button, index) => {
         setData(button, "card", String(index + 1).padStart(2, "0"));
       });
-      if (!home) decorateTaskHeaders();
+      decorateTaskHeaders();
       decorateSidebar(aside);
     };
 

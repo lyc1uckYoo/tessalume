@@ -38,6 +38,11 @@ public sealed record ThemeArtworkSurfaceMetricsSnapshot(
     ThemeArtworkSurfaceMetric Chat)
 {
     public int ArtworkCompositionProtocolVersion { get; init; }
+
+    public ThemeArtworkSurfaceMetric? TaskLeft { get; init; }
+    public ThemeArtworkSurfaceMetric? Memory { get; init; }
+    public ThemeArtworkSurfaceMetric? TaskRightSecondary { get; init; }
+    public ThemeArtworkSurfaceMetric? TaskRightPrimary { get; init; }
 }
 
 public sealed partial class ThemeRuntime
@@ -88,7 +93,7 @@ public sealed partial class ThemeRuntime
                           };
                         }
                         const rect = element.getBoundingClientRect();
-                        const style = getComputedStyle(element, pseudo);
+                        const style = getComputedStyle(element, pseudo || null);
                         return {
                           available: rect.width > 0 && rect.height > 0,
                           region,
@@ -133,6 +138,24 @@ public sealed partial class ThemeRuntime
                           "chat",
                           'main[data-tessalume-surface="main"]',
                           "::before"),
+                        taskLeft: inspect(
+                          "taskLeft",
+                          '#tessalume-theme-root [data-theme-role="task-left"] [data-theme-part="task-card-art"]',
+                          ""),
+                        memory: inspect(
+                          "memory",
+                          document.querySelector('#tessalume-theme-root [data-tessalume-personal-artwork="memory"]')
+                            ? '#tessalume-theme-root [data-tessalume-personal-artwork="memory"]'
+                            : '#tessalume-theme-root [data-theme-role="memory"]',
+                          ""),
+                        taskRightSecondary: inspect(
+                          "taskRightSecondary",
+                          '#tessalume-theme-root [data-theme-role="task-right"][data-theme-priority="secondary"] [data-theme-part="task-card-art"]',
+                          ""),
+                        taskRightPrimary: inspect(
+                          "taskRightPrimary",
+                          '#tessalume-theme-root [data-theme-role="task-right"][data-theme-priority="primary"] [data-theme-part="task-card-art"]',
+                          ""),
                       };
                     })()
                     """, cancellationToken);

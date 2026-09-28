@@ -119,10 +119,28 @@
       if (!node) return;
       node.setAttribute(dataName(name), String(value));
     };
+    // Full-view file tabs retain the chat DOM offscreen. Size alone is not a
+    // visibility signal: that hidden chat can still have a 792px-wide editor.
+    const isVisibleSurface = (node) => {
+      if (!node?.isConnected || node.closest('[hidden],[inert],[aria-hidden="true"]')) return false;
+      const box = node.getBoundingClientRect();
+      const style = getComputedStyle(node);
+      const pane = node.closest('[data-app-shell-main-content-layout]');
+      if (pane && pane !== node) {
+        const clip = pane.getBoundingClientRect();
+        if (Math.min(box.right, clip.right) - Math.max(box.left, clip.left) <= 1 ||
+            Math.min(box.bottom, clip.bottom) - Math.max(box.top, clip.top) <= 1) return false;
+      }
+      return box.width > 0 && box.height > 0 && box.right > 0 && box.bottom > 0 &&
+        box.left < window.innerWidth && box.top < window.innerHeight &&
+        style.display !== "none" && style.visibility !== "hidden" && style.visibility !== "collapse";
+    };
     const findHome = () => {
-      const icon = queryFirst(document, "homeIcon", ['[data-testid="home-icon"]']);
+      const icon = queryAll(findMain(), "homeIcon", ['[data-testid="home-icon"]']).find((node) =>
+        !node.closest('[hidden],[inert],[aria-hidden="true"]') &&
+        isVisibleSurface(closestFirst(node, "homeAncestor", ['[role="main"]', "main"])));
       const home = closestFirst(icon, "homeAncestor", ['[role="main"]', "main"]);
-      if (!home) return null;
+      if (!isVisibleSurface(home)) return null;
       const markHomePart = (node, part) => {
         if (!node || node.getAttribute("data-tessalume-home-part") === part) return;
         const previous = node.getAttribute("data-tessalume-home-part");
@@ -142,7 +160,7 @@
       markHomePart(composerCarrier, "composer-carrier");
       return home;
     };
-    const findMain = () => queryFirst(
+    const findMain = () => queryAll(
       document,
       "main",
       [
@@ -151,23 +169,27 @@
         "main.main-surface",
         "main",
       ],
-    );
+    ).find(isVisibleSurface) || null;
+    const findTaskWorkspace = (main = findMain()) =>
+      queryAll(main, "workspace", [".thread-scroll-container"]).find(isVisibleSurface) || null;
     const findComposerSurface = () => {
-      const legacySurface = queryFirst(
-        document,
+      const scope = findTaskWorkspace() || findHome();
+      if (!scope) return null;
+      const legacySurface = queryAll(
+        scope,
         "composerLegacySurface",
         [".composer-surface-chrome"],
-      );
-      const editor = queryFirst(
-        document,
+      ).find(isVisibleSurface);
+      const editor = queryAll(
+        scope,
         "composerEditor",
         ['[data-codex-composer="true"]'],
-      );
+      ).find(isVisibleSurface);
       const surface = legacySurface ||
         closestFirst(editor, "composerRootAncestor", ['[class*="ComposerLayoutRoot"]']) ||
         closestFirst(editor, "composerBodyAncestor", ['[class*="ComposerLayoutBody"]'])?.parentElement ||
         null;
-      if (!surface) return null;
+      if (!surface || !scope.contains(surface) || !isVisibleSurface(surface)) return null;
 
       // Codex renamed both the composer root and footer CSS-module classes in
       // mid-2026. Keep the stable Tessalume aliases at the compatibility layer
@@ -256,14 +278,34 @@
       const home = findHome();
       const isHome = Boolean(home);
       const settingsSurface = findSettingsSurface();
+      const isSettings = isVisibleSurface(settingsSurface);
+      const workspace = !isHome && !isSettings ? findTaskWorkspace() : null;
+      const isTask = Boolean(workspace);
+      const scope = workspace || home;
+      for (const [node, className] of marked) {
+        if (className === "composer-surface-chrome" &&
+            (!scope?.contains(node) || !isVisibleSurface(node))) {
+          node.classList.remove(className);
+          if (node.getAttribute("data-tessalume-surface") === "composer")
+            node.removeAttribute("data-tessalume-surface");
+        }
+      }
       mark(settingsSurface, roleClass("settings-surface"));
       markSurface(settingsSurface, "settings");
       html.classList.toggle(roleClass("is-home"), isHome);
-      html.classList.toggle(roleClass("is-task"), !isHome);
-      html.classList.toggle(roleClass("is-settings"), Boolean(settingsSurface));
+      html.classList.toggle(roleClass("is-task"), isTask);
+      html.classList.toggle(roleClass("is-settings"), isSettings);
       html.classList.toggle("tessalume-is-home", isHome);
-      html.classList.toggle("tessalume-is-task", !isHome);
-      html.classList.toggle("tessalume-is-settings", Boolean(settingsSurface));
+      html.classList.toggle("tessalume-is-task", isTask);
+      html.classList.toggle("tessalume-is-settings", isSettings);
+      const pageKind = isHome ? "home" : isTask ? "task" : isSettings ? "settings" : "other";
+      if (root.getAttribute("data-tessalume-page-kind") !== pageKind)
+        root.setAttribute("data-tessalume-page-kind", pageKind);
+      const nativeTabs = queryAll(document, "nativeTabStrip", ['[data-app-shell-tab-row="true"]'])
+        .some(isVisibleSurface);
+      const nativeTabValue = String(nativeTabs);
+      if (root.getAttribute("data-tessalume-native-tab-strip") !== nativeTabValue)
+        root.setAttribute("data-tessalume-native-tab-strip", nativeTabValue);
       return home;
     };
     const findStage = () =>
@@ -272,7 +314,7 @@
       if (!main || !stage) return "";
       const box = main.getBoundingClientRect();
       if (!(box.width > 0 && box.height > 0)) return "";
-      const workspace = queryFirst(main, "workspace", [".thread-scroll-container"]);
+      const workspace = findTaskWorkspace(main);
       const workspaceBox = workspace?.getBoundingClientRect();
       const canvasBox = workspaceBox && workspaceBox.width > 0 &&
         workspaceBox.left >= box.left && workspaceBox.right <= box.right + 1

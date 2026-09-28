@@ -134,6 +134,10 @@ html.tessalume-theme-active.tessalume-is-task main[data-tessalume-surface="main"
 }
 html.tessalume-theme-active.tessalume-is-task body [data-tessalume-surface="task-title"][data-app-shell-titlebar-content="true"] {
   max-width:var(--tessalume-task-title-primary-width,calc(100vw - 24px))!important;
+}
+html.tessalume-theme-active #tessalume-theme-root:is([data-tessalume-page-kind="other"],[data-tessalume-page-kind="settings"]) > *,
+html.tessalume-theme-active #tessalume-theme-root[data-tessalume-native-tab-strip="true"] [data-theme-role="identity"] {
+  display:none!important;
 }`;
   const visualMotionStyle = document.createElement("style");
   visualMotionStyle.id = "tessalume-artwork-motion-style";

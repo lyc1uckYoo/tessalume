@@ -153,6 +153,7 @@ public partial class ArtworkWorkbenchView : UserControl, IDisposable
         Inspector.ResetGroupRequested += Inspector_ResetGroupRequested;
         Inspector.ResetRegionRequested += Inspector_ResetRegionRequested;
         Inspector.ChooseImageRequested += Inspector_ChooseImageRequested;
+        Inspector.ChooseLibraryImageRequested += Inspector_ChooseLibraryImageRequested;
         Inspector.ClearImageRequested += Inspector_ClearImageRequested;
         Inspector.PlacementChanged += Inspector_PlacementChanged;
         Inspector.RestoreOriginalBaselineRequested +=
@@ -178,6 +179,8 @@ public partial class ArtworkWorkbenchView : UserControl, IDisposable
     internal event EventHandler<ArtworkEditingModeChangedEventArgs>? EditingModeChanged;
 
     internal event EventHandler<ArtworkChooseImageEventArgs>? ChooseImageRequested;
+
+    internal event EventHandler<ArtworkChooseImageEventArgs>? ChooseLibraryImageRequested;
 
     internal event Action<string>? NotificationRequested;
 
@@ -397,10 +400,8 @@ public partial class ArtworkWorkbenchView : UserControl, IDisposable
     private static bool ArtworkParametersEqual(
         ThemeVisualSettings left,
         ThemeVisualSettings right) =>
-        ThemeVisualSettingsSemanticComparer.AdjustmentEquals(left.Light.Hero, right.Light.Hero) &&
-        ThemeVisualSettingsSemanticComparer.AdjustmentEquals(left.Light.Sidebar, right.Light.Sidebar) &&
-        ThemeVisualSettingsSemanticComparer.AdjustmentEquals(left.Light.Chat, right.Light.Chat) &&
-        ThemeVisualSettingsSemanticComparer.AdjustmentEquals(left.Dark.Hero, right.Dark.Hero) &&
-        ThemeVisualSettingsSemanticComparer.AdjustmentEquals(left.Dark.Sidebar, right.Dark.Sidebar) &&
-        ThemeVisualSettingsSemanticComparer.AdjustmentEquals(left.Dark.Chat, right.Dark.Chat);
+        Enum.GetValues<ArtworkColorMode>().All(mode => Enum.GetValues<ArtworkRegion>().All(region =>
+            ThemeVisualSettingsSemanticComparer.AdjustmentEquals(
+                ArtworkSettingsAccessor.GetAdjustment(left, mode, region),
+                ArtworkSettingsAccessor.GetAdjustment(right, mode, region))));
 }

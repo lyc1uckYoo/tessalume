@@ -43,7 +43,12 @@ internal static class ArtworkSettingsAccessor
         {
             ArtworkRegion.Sidebar => normalized.Sidebar,
             ArtworkRegion.Chat => normalized.Chat,
-            _ => normalized.Hero,
+            ArtworkRegion.TaskLeft => normalized.TaskLeft,
+            ArtworkRegion.Memory => normalized.Memory,
+            ArtworkRegion.TaskRightSecondary => normalized.TaskRightSecondary,
+            ArtworkRegion.TaskRightPrimary => normalized.TaskRightPrimary,
+            ArtworkRegion.Hero => normalized.Hero,
+            _ => throw new ArgumentOutOfRangeException(nameof(region)),
         };
     }
 
@@ -60,7 +65,12 @@ internal static class ArtworkSettingsAccessor
         {
             ArtworkRegion.Sidebar => normalized with { Sidebar = normalizedReplacement },
             ArtworkRegion.Chat => normalized with { Chat = normalizedReplacement },
-            _ => normalized with { Hero = normalizedReplacement },
+            ArtworkRegion.TaskLeft => normalized with { TaskLeft = normalizedReplacement },
+            ArtworkRegion.Memory => normalized with { Memory = normalizedReplacement },
+            ArtworkRegion.TaskRightSecondary => normalized with { TaskRightSecondary = normalizedReplacement },
+            ArtworkRegion.TaskRightPrimary => normalized with { TaskRightPrimary = normalizedReplacement },
+            ArtworkRegion.Hero => normalized with { Hero = normalizedReplacement },
+            _ => throw new ArgumentOutOfRangeException(nameof(region)),
         }).Normalize();
     }
 

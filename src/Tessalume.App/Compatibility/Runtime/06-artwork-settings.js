@@ -21,7 +21,10 @@
     };
     const nextSlotImageKeys = new Map();
     for (const mode of ["light", "dark"]) {
-      for (const region of ["hero", "sidebar", "chat"]) {
+      for (const region of artworkRegions) {
+        if (cardArtworkSlots[region] && !assetAssignments.some(
+          ([name]) => name === `--tessalume-asset-${nativeArtworkAssetKey(region, mode)}`,
+        )) continue;
         const key = settings?.[mode]?.[region]?.customImageKey;
         if (typeof key === "string" && key) nextSlotImageKeys.set(`${region}-${mode}`, key);
       }
@@ -56,7 +59,7 @@
     visualSlotStates.clear();
     const readability = [];
     for (const mode of ["light", "dark"]) {
-      for (const region of ["hero", "sidebar", "chat"]) {
+      for (const region of artworkRegions) {
         const adjustment = settings?.[mode]?.[region] || {};
         const brightness = readPercent(adjustment.brightness, 100, 20, 180) / 100;
         const contrast = readPercent(adjustment.contrast, 100, 20, 180) / 100;
@@ -91,17 +94,24 @@
         const translateVariable = `--tessalume-visual-${region}-${mode}-translate`;
         const scaleVariable = `--tessalume-visual-${region}-${mode}-scale`;
         const blendVariable = `--tessalume-visual-${region}-${mode}-blend`;
-        const assetVariable = `--tessalume-asset-${region}-${mode}`;
+        const cardSlot = cardArtworkSlots[region];
+        // Card output has separate variables; native package assets remain immutable.
+        const assetVariable = cardSlot
+          ? `--tessalume-visual-${region}-${mode}-image`
+          : `--tessalume-asset-${region}-${mode}`;
         const maskVariable = `--tessalume-visual-${region}-${mode}-mask-image`;
         const themeAssetKey = typeof adjustment.themeAssetKey === "string" && adjustment.themeAssetKey
           ? adjustment.themeAssetKey.replace(/[^a-z0-9_-]/gi, "-")
-          : `${region}-${mode}`;
+          : nativeArtworkAssetKey(region, mode);
         const sourceAssetVariable = `--tessalume-asset-${themeAssetKey}`;
         const originalAssetUrl = assetAssignments.find(
           ([name]) => name === sourceAssetVariable,
         )?.[1] || null;
         const customImageKey = nextSlotImageKeys.get(`${region}-${mode}`);
-        const imageUrl = customImageKey
+        const nativeSlotExists = !cardSlot || assetAssignments.some(
+          ([name]) => name === `--tessalume-asset-${nativeArtworkAssetKey(region, mode)}`,
+        );
+        const imageUrl = !nativeSlotExists ? null : customImageKey
           ? customImageObjectUrls.get(customImageKey) || preparedImageUrls.get(customImageKey)
           : originalAssetUrl;
         if (imageUrl) {
@@ -223,9 +233,7 @@
       }
     }
     html.dataset.tessalumeReadability = readability.join(" ");
-    html.dataset.tessalumeVisualPlacement = [
-      "hero-light", "hero-dark", "sidebar-light", "sidebar-dark", "chat-light", "chat-dark",
-    ].join(" ");
+    html.dataset.tessalumeVisualPlacement = Array.from(visualSlotStates.keys()).join(" ");
     const display = settings?.display || {};
     html.dataset.tessalumeMotion = readChoice(
       display.motionIntensity,

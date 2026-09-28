@@ -34,17 +34,17 @@
             </Grid>
         </Border>
 
-        <TextBlock x:Name="ReleaseHighlightsLabel" Text="2.1 版本亮点" Style="{DynamicResource SectionEyebrowText}" Margin="2,22,0,0" />
+        <TextBlock x:Name="ReleaseHighlightsLabel" Text="2.2 版本亮点" Style="{DynamicResource SectionEyebrowText}" Margin="2,22,0,0" />
         <Grid x:Name="ReleaseHighlightsGrid" Margin="0,10,0,0">
             <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="12" /><ColumnDefinition Width="*" /><ColumnDefinition Width="12" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
             <Border Style="{DynamicResource InsetCard}" Background="{DynamicResource AccentSoft}" BorderBrush="{DynamicResource InfoBorder}" Padding="16">
-                <StackPanel><TextBlock Text="◇" Foreground="{DynamicResource Accent}" FontSize="20" FontWeight="SemiBold" /><TextBlock Text="图像工作台 3.0" Foreground="{DynamicResource PrimaryText}" FontSize="12" FontWeight="SemiBold" Margin="0,9,0,0" /><TextBlock Text="主题推荐值、原图与个人覆盖彻底分层，六个亮暗槽位都能按真实页面尺寸编辑。" Foreground="{DynamicResource MutedText}" FontSize="10" TextWrapping="Wrap" LineHeight="15" Margin="0,5,0,0" /></StackPanel>
+                <StackPanel><TextBlock Text="◇" Foreground="{DynamicResource Accent}" FontSize="20" FontWeight="SemiBold" /><TextBlock Text="角色图库与七个换图位置" Foreground="{DynamicResource PrimaryText}" FontSize="12" FontWeight="SemiBold" Margin="0,9,0,0" /><TextBlock Text="按角色浏览、收藏和导入图片，七个位置亮暗分别预览与保存，支持恢复原图和撤销。" Foreground="{DynamicResource MutedText}" FontSize="10" TextWrapping="Wrap" LineHeight="15" Margin="0,5,0,0" /></StackPanel>
             </Border>
             <Border Grid.Column="2" Style="{DynamicResource InsetCard}" Background="{DynamicResource SkySoft}" BorderBrush="{DynamicResource InfoBorder}" Padding="16">
-                <StackPanel><TextBlock Text="✦" Foreground="{DynamicResource Sky}" FontSize="19" FontWeight="SemiBold" /><TextBlock Text="Codex 宠物中心" Foreground="{DynamicResource PrimaryText}" FontSize="12" FontWeight="SemiBold" Margin="0,9,0,0" /><TextBlock Text="预览全部动态动作，安全安装、修复、备份和卸载当前用户的官方 Pets 资产。" Foreground="{DynamicResource MutedText}" FontSize="10" TextWrapping="Wrap" LineHeight="15" Margin="0,5,0,0" /></StackPanel>
+                <StackPanel><TextBlock Text="✦" Foreground="{DynamicResource Sky}" FontSize="19" FontWeight="SemiBold" /><TextBlock Text="清宵加入宠物画廊" Foreground="{DynamicResource PrimaryText}" FontSize="12" FontWeight="SemiBold" Margin="0,9,0,0" /><TextBlock Text="与飞行雪绒、菲比啾比一起预览真实动作，支持安装、修复、备份恢复和卸载。" Foreground="{DynamicResource MutedText}" FontSize="10" TextWrapping="Wrap" LineHeight="15" Margin="0,5,0,0" /></StackPanel>
             </Border>
             <Border Grid.Column="4" Style="{DynamicResource InsetCard}" Background="{DynamicResource TealSoft}" BorderBrush="{DynamicResource InfoBorder}" Padding="16">
-                <StackPanel><TextBlock Text="✓" Foreground="{DynamicResource Teal}" FontSize="19" FontWeight="SemiBold" /><TextBlock Text="兼容与数据升级" Foreground="{DynamicResource PrimaryText}" FontSize="12" FontWeight="SemiBold" Margin="0,9,0,0" /><TextBlock Text="适配新版 Codex 页面结构，并在迁移前保存旧配置快照，保留主题与个人图片。" Foreground="{DynamicResource MutedText}" FontSize="10" TextWrapping="Wrap" LineHeight="15" Margin="0,5,0,0" /></StackPanel>
+                <StackPanel><TextBlock Text="✓" Foreground="{DynamicResource Teal}" FontSize="19" FontWeight="SemiBold" /><TextBlock Text="分屏与文件预览修复" Foreground="{DynamicResource PrimaryText}" FontSize="12" FontWeight="SemiBold" Margin="0,9,0,0" /><TextBlock Text="角色装饰限定在聊天区域，打开图片和文件时保持标题、标签栏与预览布局清晰。" Foreground="{DynamicResource MutedText}" FontSize="10" TextWrapping="Wrap" LineHeight="15" Margin="0,5,0,0" /></StackPanel>
             </Border>
         </Grid>
 

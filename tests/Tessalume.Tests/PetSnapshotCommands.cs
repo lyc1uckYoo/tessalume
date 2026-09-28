@@ -12,7 +12,8 @@ internal static partial class TestSuite
         string galleryLightPath,
         string galleryDarkPath,
         string detailLightPath,
-        string detailDarkPath)
+        string detailDarkPath,
+        string petId = "phoebe-jiubi")
     {
         var repositoryRoot = FindRepositoryRoot();
         var portableRoot = Path.Combine(
@@ -73,8 +74,9 @@ internal static partial class TestSuite
                         darkMode: true,
                         new Size(1366, 768));
 
-                    var selected = snapshot.Entries.First(entry =>
-                        string.Equals(entry.PetId, "phoebe-jiubi", StringComparison.Ordinal));
+                    var selected = snapshot.Entries.FirstOrDefault(entry =>
+                        string.Equals(entry.PetId, petId, StringComparison.Ordinal))
+                        ?? throw new InvalidOperationException($"Pet snapshot target was not found: {petId}");
                     var detailState = new PetCenterPresentationState
                     {
                         PetId = selected.PetId,

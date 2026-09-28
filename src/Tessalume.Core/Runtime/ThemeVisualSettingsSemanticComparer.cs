@@ -72,7 +72,11 @@ public sealed class ThemeVisualSettingsSemanticComparer : IEqualityComparer<Them
     private static bool ModeEquals(ThemeVisualModeSettings left, ThemeVisualModeSettings right) =>
         AdjustmentEquals(left.Hero, right.Hero) &&
         AdjustmentEquals(left.Sidebar, right.Sidebar) &&
-        AdjustmentEquals(left.Chat, right.Chat);
+        AdjustmentEquals(left.Chat, right.Chat) &&
+        AdjustmentEquals(left.TaskLeft, right.TaskLeft) &&
+        AdjustmentEquals(left.Memory, right.Memory) &&
+        AdjustmentEquals(left.TaskRightSecondary, right.TaskRightSecondary) &&
+        AdjustmentEquals(left.TaskRightPrimary, right.TaskRightPrimary);
 
     private static bool GradientEquals(
         ThemeArtworkGradientVeil? left,
@@ -148,6 +152,11 @@ public sealed class ThemeVisualSettingsSemanticComparer : IEqualityComparer<Them
         AddAdjustment(ref hash, mode.Hero);
         AddAdjustment(ref hash, mode.Sidebar);
         AddAdjustment(ref hash, mode.Chat);
+        AddAdjustment(ref hash, mode.TaskLeft);
+        AddAdjustment(ref hash, mode.Memory);
+        AddAdjustment(ref hash, mode.TaskRightSecondary);
+        AddAdjustment(ref hash, mode.TaskRightPrimary);
+
     }
 
     private static void AddAdjustment(ref HashCode hash, ThemeArtworkAdjustment adjustment)

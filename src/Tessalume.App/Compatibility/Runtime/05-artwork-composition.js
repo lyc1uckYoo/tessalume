@@ -2,27 +2,6 @@
 // TESSALUME_STANDALONE_ENVELOPE_START
 (async () => {
 // TESSALUME_STANDALONE_ENVELOPE_END
-  const artworkSurface = (region) => {
-    if (region === "sidebar") {
-      return { element: document.querySelector('[data-tessalume-surface="sidebar"]'), pseudo: "::after" };
-    }
-    if (region === "chat") {
-      const main = document.querySelector('main[data-tessalume-surface="main"]');
-      return {
-        element: main?.querySelector(".thread-scroll-container") || main,
-        pseudo: "::before",
-      };
-    }
-    return {
-      element: document.querySelector(
-        '[data-tessalume-home-part="banner"]',
-      ) || document.querySelector(
-        '[data-tessalume-surface="home"]>div:first-child>div:first-child>div:first-child',
-      ),
-      pseudo: "::before",
-    };
-  };
-
   const enumName = (value, fallback) => {
     const candidate = String(value || "").trim().toLowerCase();
     return candidate || fallback;
@@ -271,6 +250,7 @@
       if (revision !== visualPlacementRevision || disposed) return false;
       setPlacementVariables(state, placement.size, placement.position);
     }
+    synchronizeCardArtworkLayers();
     return true;
   };
 
@@ -326,6 +306,7 @@
   const rebuildVisualMotionStyle = () => {
     const rules = [];
     for (const state of visualSlotStates.values()) {
+      if (cardArtworkSlots[state.region]) continue; // Preserve theme-owned card animation.
       const motion = state.adjustment?.motion;
       if (enumName(motion?.mode, "none") !== "loop" ||
           !Array.isArray(motion?.keyframes) || motion.keyframes.length < 2) continue;

@@ -44,6 +44,14 @@ internal static partial class TestSuite
             "Tessalume.App",
             "Compatibility")));
 
+    static async Task<(Version Version, int ContractVersion)> ReadSourceCompatibilityProfileAsync(string repositoryRoot)
+    {
+        using var profile = JsonDocument.Parse(await File.ReadAllTextAsync(Path.Combine(
+            repositoryRoot, "src", "Tessalume.App", "Compatibility", ThemePayloadBuilder.CompatibilityProfileFileName)));
+        return (Version.Parse(profile.RootElement.GetProperty("profileVersion").GetString()!),
+            profile.RootElement.GetProperty("runtimeContractVersion").GetInt32());
+    }
+
     static string FindRepositoryRoot()
     {
         foreach (var startingPath in new[] { Directory.GetCurrentDirectory(), AppContext.BaseDirectory })

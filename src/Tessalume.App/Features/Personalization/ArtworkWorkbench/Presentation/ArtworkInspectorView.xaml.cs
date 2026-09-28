@@ -49,6 +49,8 @@ public partial class ArtworkInspectorView : UserControl
 
     internal event EventHandler? ChooseImageRequested;
 
+    internal event EventHandler? ChooseLibraryImageRequested;
+
     internal event EventHandler? ClearImageRequested;
 
     internal ArtworkParameter SelectedParameter => _selectedParameter;
@@ -288,6 +290,9 @@ public partial class ArtworkInspectorView : UserControl
 
     private void ChooseImage_Click(object sender, RoutedEventArgs e) =>
         ChooseImageRequested?.Invoke(this, EventArgs.Empty);
+
+    private void ChooseLibraryImage_Click(object sender, RoutedEventArgs e) =>
+        ChooseLibraryImageRequested?.Invoke(this, EventArgs.Empty);
 
     private void ClearImage_Click(object sender, RoutedEventArgs e) =>
         ClearImageRequested?.Invoke(this, EventArgs.Empty);

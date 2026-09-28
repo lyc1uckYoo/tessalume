@@ -11,7 +11,7 @@ internal static partial class TestSuite
     private static readonly byte[] TwoPixelPng = Convert.FromBase64String(
         "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAFElEQVR4nGP4z8DwH4QZGBgYGMAAAEcABf2R4v8AAAAASUVORK5CYII=");
 
-    static Task ArtworkWorkbenchKeepsSixTargetsIsolatedAsync()
+    static Task ArtworkWorkbenchKeepsAllTargetsIsolatedAsync()
     {
         var original = CreateDistinctArtworkSettings();
         var ordinal = 0;
@@ -512,12 +512,20 @@ internal static partial class TestSuite
             Hero = CreateDistinctAdjustment(1, "personalization/images/light-hero.png"),
             Sidebar = CreateDistinctAdjustment(2, "personalization/images/light-sidebar.png"),
             Chat = CreateDistinctAdjustment(3, "personalization/images/light-chat.png"),
+            TaskLeft = CreateDistinctAdjustment(7, "personalization/images/light-task-left.png"),
+            Memory = CreateDistinctAdjustment(8, "personalization/images/light-memory.png"),
+            TaskRightSecondary = CreateDistinctAdjustment(9, "personalization/images/light-task-right-secondary.png"),
+            TaskRightPrimary = CreateDistinctAdjustment(10, "personalization/images/light-task-right-primary.png"),
         },
         Dark = new ThemeVisualModeSettings
         {
             Hero = CreateDistinctAdjustment(4, "personalization/images/dark-hero.png"),
             Sidebar = CreateDistinctAdjustment(5, "personalization/images/dark-sidebar.png"),
             Chat = CreateDistinctAdjustment(6, "personalization/images/dark-chat.png"),
+            TaskLeft = CreateDistinctAdjustment(11, "personalization/images/dark-task-left.png"),
+            Memory = CreateDistinctAdjustment(12, "personalization/images/dark-memory.png"),
+            TaskRightSecondary = CreateDistinctAdjustment(13, "personalization/images/dark-task-right-secondary.png"),
+            TaskRightPrimary = CreateDistinctAdjustment(14, "personalization/images/dark-task-right-primary.png"),
         },
         Display = new ThemeDisplayPreferences
         {
@@ -561,7 +569,12 @@ internal static partial class TestSuite
         {
             ArtworkRegion.Sidebar => mode.Sidebar,
             ArtworkRegion.Chat => mode.Chat,
-            _ => mode.Hero,
+            ArtworkRegion.Hero => mode.Hero,
+            ArtworkRegion.TaskLeft => mode.TaskLeft,
+            ArtworkRegion.Memory => mode.Memory,
+            ArtworkRegion.TaskRightSecondary => mode.TaskRightSecondary,
+            ArtworkRegion.TaskRightPrimary => mode.TaskRightPrimary,
+            _ => throw new ArgumentOutOfRangeException(nameof(region)),
         };
 
     private static ThemeArtworkAdjustment ResetExpectedGroup(

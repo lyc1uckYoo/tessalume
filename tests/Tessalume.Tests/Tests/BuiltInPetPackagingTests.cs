@@ -179,7 +179,7 @@ internal static partial class TestSuite
                installerSource.Contains("EnsurePetPathHasNoReparsePoints", StringComparison.Ordinal) &&
                installerSource.Contains("RandomNumberGenerator.GetHexString", StringComparison.Ordinal) &&
                installerSource.Contains("FileMode.CreateNew", StringComparison.Ordinal) &&
-               buildSource.Contains("$builtInPetPackageNames = @('flying-snowfluff', 'phoebe-jiubi')", StringComparison.Ordinal) &&
+               buildSource.Contains("$builtInPetPackageNames = @('flying-snowfluff', 'phoebe-jiubi', 'qingxiao')", StringComparison.Ordinal) &&
                buildSource.Contains("Assert-SafeBuiltInPetTree", StringComparison.Ordinal) &&
                buildSource.Contains("Get-PetWebPMetadata", StringComparison.Ordinal) &&
                buildSource.Contains("Get-PetPngMetadata", StringComparison.Ordinal) &&

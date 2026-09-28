@@ -3,7 +3,7 @@
       const accessory = root.querySelector(selector);
       const composer = findComposerSurface();
       if (!main || !accessory || !composer) return;
-      const mainBox = main.getBoundingClientRect();
+      const mainBox = findStage()?.getBoundingClientRect() || main.getBoundingClientRect();
       const composerBox = composer.getBoundingClientRect();
       const left = Math.max(mainBox.left + 14, Math.round(composerBox.left - size - gap));
       const top = Math.max(
@@ -29,7 +29,7 @@
         };
       });
       if (!cardMetrics.flatMap((item) => Object.values(item)).every(Number.isFinite)) return;
-      const mainBox = main.getBoundingClientRect();
+      const mainBox = findStage()?.getBoundingClientRect() || main.getBoundingClientRect();
       const cardsLeft = mainBox.right - Math.max(...cardMetrics.map((item) => item.right + item.width));
       const cardsRight = mainBox.right - Math.min(...cardMetrics.map((item) => item.right));
       const cardsTop = Math.min(...cardMetrics.map((item) => mainBox.bottom - item.bottom - item.height));
@@ -55,9 +55,16 @@
       if (templateVersion !== "1.0") return;
       const primary = Array.from(document.querySelectorAll(
         '[data-tessalume-surface="task-title"]',
-      )).find((node) => node.matches('[data-app-shell-titlebar-content="true"]') ||
-        node.querySelector("button.truncate"));
-      if (!primary?.isConnected) return;
+      )).find((node) => isVisibleSurface(node) &&
+        (node.matches('[data-app-shell-titlebar-content="true"]') || node.querySelector("button.truncate")));
+      if (!primary?.isConnected) {
+        if (taskTitleWidthManaged) {
+          if (taskTitleWidthPrevious) html.style.setProperty("--tessalume-task-title-primary-width", taskTitleWidthPrevious);
+          else html.style.removeProperty("--tessalume-task-title-primary-width");
+          taskTitleWidthManaged = false;
+        }
+        return;
+      }
 
       const primaryBox = primary.getBoundingClientRect();
       if (!(primaryBox.width > 0 && primaryBox.height > 0)) return;
@@ -75,7 +82,7 @@
         .map((box) => box.left);
       const boundary = boundaries.length
         ? Math.min(...boundaries)
-        : window.innerWidth - 24;
+        : (findTaskWorkspace()?.getBoundingClientRect().right || window.innerWidth) - 24;
       const available = Math.max(120, Math.floor(boundary - primaryBox.left - 14));
       const variable = "--tessalume-task-title-primary-width";
       if (!taskTitleWidthManaged) {
@@ -122,7 +129,7 @@
         return;
       }
 
-      const workspace = queryFirst(document, "workspace", [".thread-scroll-container"]) || main;
+      const workspace = findTaskWorkspace(main);
       const composer = findComposerSurface();
 
       const workspaceBox = workspace?.getBoundingClientRect();
@@ -236,7 +243,7 @@
       const home = syncRouteState();
       const stage = findStage();
       const workspace = adaptiveLayout
-        ? queryFirst(document, "workspace", [".thread-scroll-container"]) || main
+        ? findTaskWorkspace(main)
         : null;
       const composer = findComposerSurface();
       const summaryPanel = document.querySelector(
@@ -249,6 +256,7 @@
         : [main]);
       syncStageGeometry(main, stage);
       if (decorate) decorateSharedSurfaces(main, aside, home);
+      else decorateTaskHeaders();
       syncTaskTitleWidth();
       spec.onEnsure?.({ ...api, main, aside, home, stage });
       syncAdaptiveVisibility(main, stage, home);

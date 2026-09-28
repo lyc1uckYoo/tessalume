@@ -133,6 +133,11 @@ internal sealed class PersonalImageStore
         Hero = ResolveAdjustment(mode.Hero),
         Sidebar = ResolveAdjustment(mode.Sidebar),
         Chat = ResolveAdjustment(mode.Chat),
+        TaskLeft = ResolveAdjustment(mode.TaskLeft),
+        Memory = ResolveAdjustment(mode.Memory),
+        TaskRightSecondary = ResolveAdjustment(mode.TaskRightSecondary),
+        TaskRightPrimary = ResolveAdjustment(mode.TaskRightPrimary),
+
     };
 
     private ThemeArtworkAdjustment ResolveAdjustment(ThemeArtworkAdjustment adjustment) =>

@@ -58,6 +58,14 @@ internal sealed class ArtworkThemeDefaultsStore
         ThemePackage package,
         CancellationToken cancellationToken = default)
     {
+        var result = await LoadCoreAsync(package, cancellationToken);
+        return result with { Defaults = ArtworkCardThemeDefaults.Adapt(result.Defaults, package) };
+    }
+
+    private async Task<ArtworkThemeDefaultsLoadResult> LoadCoreAsync(
+        ThemePackage package,
+        CancellationToken cancellationToken = default)
+    {
         ArgumentNullException.ThrowIfNull(package);
         var entry = package.Manifest.EntryPoints.ArtworkDefaults;
         if (string.IsNullOrWhiteSpace(entry))

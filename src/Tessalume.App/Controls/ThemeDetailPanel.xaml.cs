@@ -19,6 +19,8 @@ public partial class ThemeDetailPanel : UserControl
 
     public event EventHandler? CompanionPetRequested;
 
+    public event EventHandler? ArtworkLibraryRequested;
+
     public ThemeDetailPanel()
     {
         InitializeComponent();
@@ -42,6 +44,7 @@ public partial class ThemeDetailPanel : UserControl
         DirectoryText.ToolTip = theme.DirectoryPath;
         AppliedBadge.Visibility = theme.IsApplied ? Visibility.Visible : Visibility.Collapsed;
         ApplyButton.IsEnabled = theme.IsValid;
+        ArtworkLibraryButton.IsEnabled = theme.IsValid;
         ApplyButton.Content = theme.IsApplied ? "重新应用主题" : "应用到 Codex";
         CompanionPetButton.Visibility = string.Equals(
             theme.ThemeId,
@@ -84,4 +87,7 @@ public partial class ThemeDetailPanel : UserControl
 
     private void CompanionPetButton_Click(object sender, RoutedEventArgs e) =>
         CompanionPetRequested?.Invoke(this, EventArgs.Empty);
+
+    private void ArtworkLibraryButton_Click(object sender, RoutedEventArgs e) =>
+        ArtworkLibraryRequested?.Invoke(this, EventArgs.Empty);
 }

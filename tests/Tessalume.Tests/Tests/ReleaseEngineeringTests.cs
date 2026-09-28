@@ -130,6 +130,23 @@ internal static partial class TestSuite
                release.Contains("actions/setup-python@v7", StringComparison.Ordinal) &&
                release.Contains("actions/upload-artifact@v7", StringComparison.Ordinal),
             "Application tags must validate the project version and changelog before publishing a latest GitHub Release.");
+        Ensure(release.Contains("--pattern 'SHA256SUMS.txt'", StringComparison.Ordinal) &&
+               release.Contains("function Read-ReleaseChecksum", StringComparison.Ordinal) &&
+               release.Contains("$Matches['name'] -ceq $AssetName", StringComparison.Ordinal) &&
+               release.Contains("$hashes.Count -ne 1", StringComparison.Ordinal) &&
+               release.Contains("$basisHash -cne $publishedBasisHash", StringComparison.Ordinal) &&
+               release.Contains("refusing to bypass incremental update validation", StringComparison.Ordinal),
+            "A previous-release delta must require one exact checksum entry and verify the downloaded basis before packaging.");
+        Ensure(release.Contains("Refusing a full-only release", StringComparison.Ordinal) &&
+               release.Contains("$manifest.targetSha256 -cne $targetHash", StringComparison.Ordinal) &&
+               release.Contains("$delta.fromSha256 -cne $basisHash", StringComparison.Ordinal) &&
+               release.Contains("$delta.assetName -cne $deltaName", StringComparison.Ordinal) &&
+               release.Contains("Test-Path -LiteralPath $deltaPath -PathType Leaf", StringComparison.Ordinal) &&
+               release.Contains("$delta.assetSha256 -cne $deltaHash", StringComparison.Ordinal) &&
+               release.Contains("Read-ReleaseChecksum $releaseChecksums $assetName", StringComparison.Ordinal) &&
+               release.IndexOf("The release checksum does not match the verified asset", StringComparison.Ordinal) <
+                   release.IndexOf("- name: Publish GitHub Release", StringComparison.Ordinal),
+            "With an existing basis, publication must require a useful delta bound to that basis, the exact target, and all release checksums.");
         Ensure(deltaPackScript.Contains("Tessalume.UpdatePack", StringComparison.Ordinal) &&
                deltaPackScript.Contains("OutputDirectory", StringComparison.Ordinal) &&
                deltaPackScript.Contains("Incremental update output must stay inside the repository", StringComparison.Ordinal),
@@ -145,7 +162,7 @@ internal static partial class TestSuite
         Ensure(packScript.Contains("minimumAppVersion", StringComparison.Ordinal) &&
                packScript.Contains("Tessalume.App.csproj", StringComparison.Ordinal) &&
                packScript.Contains("does not match source profileVersion", StringComparison.Ordinal) &&
-               compatibilityReadme.Contains("New-CompatibilityPack.ps1 -Version 3.0.7", StringComparison.Ordinal) &&
+               compatibilityReadme.Contains("New-CompatibilityPack.ps1 -Version ", StringComparison.Ordinal) &&
                notesScript.Contains("CHANGELOG.md does not contain", StringComparison.Ordinal) &&
                notesScript.All(character => character <= 0x7f),
             "Release scripts must derive compatibility requirements from source, reject version drift, and reject missing release notes.");
@@ -223,6 +240,10 @@ internal static partial class TestSuite
     static async Task CompatibilityPackBuildIsDeterministicAsync()
     {
         var repositoryRoot = FindRepositoryRoot();
+        var sourceProfile = await ReadSourceCompatibilityProfileAsync(repositoryRoot);
+        var profileVersion = sourceProfile.Version.ToString();
+        var mismatchVersion = new Version(sourceProfile.Version.Major, sourceProfile.Version.Minor,
+            Math.Max(0, sourceProfile.Version.Build) + 1).ToString();
         var scriptPath = Path.Combine(repositoryRoot, "tools", "New-CompatibilityPack.ps1");
         var testRoot = Path.Combine(Path.GetTempPath(), $"tessalume-compat-pack-{Guid.NewGuid():N}");
         var firstOutput = Path.Combine(testRoot, "first");
@@ -231,10 +252,10 @@ internal static partial class TestSuite
 
         try
         {
-            var mismatch = await RunPackBuildAsync(mismatchOutput, "3.0.2");
+            var mismatch = await RunPackBuildAsync(mismatchOutput, mismatchVersion);
             Ensure(mismatch.ExitCode != 0 &&
                    mismatch.Output.Contains(
-                       "does not match source profileVersion '3.0.7'",
+                       $"does not match source profileVersion '{profileVersion}'",
                        StringComparison.Ordinal) &&
                    !File.Exists(Path.Combine(
                        mismatchOutput,
@@ -272,9 +293,9 @@ internal static partial class TestSuite
             using var manifestStream = archive.GetEntry("compatibility-pack.json")!.Open();
             using var profileDocument = JsonDocument.Parse(profileStream);
             using var manifestDocument = JsonDocument.Parse(manifestStream);
-            Ensure(profileDocument.RootElement.GetProperty("profileVersion").GetString() == "3.0.7" &&
-                   manifestDocument.RootElement.GetProperty("packVersion").GetString() == "3.0.7" &&
-                   manifestDocument.RootElement.GetProperty("runtimeContractVersion").GetInt32() == 4,
+            Ensure(profileDocument.RootElement.GetProperty("profileVersion").GetString() == profileVersion &&
+                   manifestDocument.RootElement.GetProperty("packVersion").GetString() == profileVersion &&
+                   manifestDocument.RootElement.GetProperty("runtimeContractVersion").GetInt32() == sourceProfile.ContractVersion,
                 "The compatibility archive must preserve the source profile version and runtime contract without rewriting them.");
         }
         finally
@@ -287,7 +308,7 @@ internal static partial class TestSuite
 
         async Task BuildPackAsync(string outputDirectory)
         {
-            var result = await RunPackBuildAsync(outputDirectory, "3.0.7");
+            var result = await RunPackBuildAsync(outputDirectory, profileVersion);
             Ensure(result.ExitCode == 0,
                 $"Compatibility pack build failed. {result.Output}".Trim());
         }
@@ -443,6 +464,7 @@ internal static partial class TestSuite
         var runtimeFragments = new (string FileName, int MaximumLines)[]
         {
             ("00-bootstrap.js", 400),
+            ("04-artwork-surfaces.js", 400),
             ("05-artwork-composition.js", 400),
             ("06-artwork-settings.js", 400),
             ("10-page-recognition.js", 400),

@@ -104,6 +104,9 @@
                     <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="8" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                     <StackPanel Orientation="Horizontal">
                         <Button Style="{DynamicResource SecondaryActionButton}" Content="打开主题目录" Click="OpenFolderButton_Click" MinWidth="116" Height="40" />
+                        <Button x:Name="ArtworkLibraryButton" Style="{DynamicResource SecondaryActionButton}" Content="角色图库"
+                                Click="ArtworkLibraryButton_Click" MinWidth="100" Height="40" Margin="8,0,0,0"
+                                AutomationProperties.Name="查看这个角色的图片" />
                         <Button x:Name="CompanionPetButton" Style="{DynamicResource SecondaryActionButton}" Content="查看配套宠物"
                                 Click="CompanionPetButton_Click" MinWidth="124" Height="40" Margin="8,0,0,0"
                                 Visibility="Collapsed" AutomationProperties.Name="查看主题的配套宠物" />

@@ -65,6 +65,9 @@ jobs:
           $targetVersion = '${{ github.ref_name }}'.TrimStart('v')
           $releases = gh release list --limit 20 --exclude-drafts --exclude-pre-releases --json tagName,publishedAt |
             ConvertFrom-Json
+          if ($LASTEXITCODE -ne 0) {
+            throw 'Could not read previous releases; refusing to bypass incremental update validation.'
+          }
           $previous = $releases |
             Where-Object {
               $_.tagName -ne '${{ github.ref_name }}' -and
@@ -79,13 +82,78 @@ jobs:
 
           $basisDirectory = 'artifacts/delta-basis'
           New-Item -ItemType Directory -Path $basisDirectory -Force | Out-Null
-          gh release download $previous.tagName --pattern 'Tessalume.exe' --dir $basisDirectory --clobber
+          gh release download $previous.tagName --pattern 'Tessalume.exe' --pattern 'SHA256SUMS.txt' --dir $basisDirectory --clobber
+          if ($LASTEXITCODE -ne 0) {
+            throw 'Could not download the previous release EXE and its SHA256SUMS.txt.'
+          }
+
+          function Read-ReleaseChecksum([string]$ChecksumPath, [string]$AssetName) {
+            $hashes = @(foreach ($line in Get-Content -LiteralPath $ChecksumPath) {
+              if ($line -cmatch '^(?<hash>[a-fA-F0-9]{64})[ \t]+\*?(?<name>[^\r\n]+)$' -and
+                  $Matches['name'] -ceq $AssetName) {
+                $Matches['hash'].ToLowerInvariant()
+              }
+            })
+            if ($hashes.Count -ne 1) {
+              throw "Expected exactly one SHA-256 entry for $AssetName in $ChecksumPath."
+            }
+            return $hashes[0]
+          }
+
+          $basisVersion = $previous.tagName.TrimStart('v')
+          $basisPath = "$basisDirectory/Tessalume.exe"
+          $basisHash = (Get-FileHash -LiteralPath $basisPath -Algorithm SHA256).Hash.ToLowerInvariant()
+          $publishedBasisHash = Read-ReleaseChecksum "$basisDirectory/SHA256SUMS.txt" 'Tessalume.exe'
+          if ($basisHash -cne $publishedBasisHash) {
+            throw 'The previous release EXE does not match its published SHA-256.'
+          }
+
+          $releaseDirectory = 'dist/portable-win-x64'
+          $targetPath = "$releaseDirectory/Tessalume.exe"
           .\tools\New-DeltaUpdatePack.ps1 `
-            -BasisExecutable "$basisDirectory/Tessalume.exe" `
+            -BasisExecutable $basisPath `
             -BasisVersion $previous.tagName `
-            -TargetExecutable 'dist/portable-win-x64/Tessalume.exe' `
+            -TargetExecutable $targetPath `
             -TargetVersion $targetVersion `
-            -OutputDirectory 'dist/portable-win-x64'
+            -OutputDirectory $releaseDirectory
+
+          $manifestPath = "$releaseDirectory/Tessalume.update.json"
+          if (-not (Test-Path -LiteralPath $manifestPath -PathType Leaf)) {
+            throw 'A previous release exists, but no useful verified delta was produced. Refusing a full-only release.'
+          }
+          $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+          $targetInfo = Get-Item -LiteralPath $targetPath
+          $targetHash = (Get-FileHash -LiteralPath $targetPath -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($manifest.schemaVersion -ne 1 -or $manifest.targetVersion -cne $targetVersion -or
+              $manifest.targetFileName -cne 'Tessalume.exe' -or $manifest.targetSize -ne $targetInfo.Length -or
+              $manifest.targetSha256 -cne $targetHash -or @($manifest.deltas).Count -ne 1) {
+            throw 'The incremental manifest does not describe the exact EXE that this workflow will publish.'
+          }
+          $delta = $manifest.deltas[0]
+          $deltaName = "Tessalume-$basisVersion-to-$targetVersion.delta"
+          if ($delta.fromVersion -cne $basisVersion -or $delta.fromSha256 -cne $basisHash -or
+              $delta.algorithm -cne 'octodiff-v1' -or $delta.assetName -cne $deltaName) {
+            throw 'The incremental manifest does not bind the verified previous release to the expected delta asset.'
+          }
+          $deltaPath = Join-Path $releaseDirectory $deltaName
+          if (-not (Test-Path -LiteralPath $deltaPath -PathType Leaf)) {
+            throw 'The delta asset declared by the incremental manifest is missing.'
+          }
+          $deltaInfo = Get-Item -LiteralPath $deltaPath
+          $deltaHash = (Get-FileHash -LiteralPath $deltaPath -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($delta.assetSize -ne $deltaInfo.Length -or $deltaInfo.Length -le 0 -or
+              $deltaInfo.Length -ge $targetInfo.Length * 0.85 -or $delta.assetSha256 -cne $deltaHash) {
+            throw 'The declared delta asset failed its size, usefulness, or SHA-256 check.'
+          }
+          $releaseChecksums = "$releaseDirectory/SHA256SUMS.txt"
+          foreach ($assetPath in @($targetPath, $deltaPath, $manifestPath)) {
+            $assetName = [IO.Path]::GetFileName($assetPath)
+            $expectedHash = Read-ReleaseChecksum $releaseChecksums $assetName
+            if ((Get-FileHash -LiteralPath $assetPath -Algorithm SHA256).Hash.ToLowerInvariant() -cne $expectedHash) {
+              throw "The release checksum does not match the verified asset: $assetName."
+            }
+          }
+          Write-Host "Verified incremental release: $basisVersion -> $targetVersion ($($deltaInfo.Length) bytes)."
 
       - name: Publish GitHub Release
         shell: pwsh

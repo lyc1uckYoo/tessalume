@@ -138,6 +138,7 @@ public partial class MainWindow
             _activePort = port.Value;
             _artworkCodexConnectionVerified = true;
             _activeThemeId = package.Manifest.Id;
+            _personalizationThemeOverride = null;
             _lastThemeId = _activeThemeId;
             UpdateAppliedThemeState();
             SetEngineState($"运行中 · 本机 {port.Value}");

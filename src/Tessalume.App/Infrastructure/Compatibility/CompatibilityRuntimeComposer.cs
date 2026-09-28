@@ -11,7 +11,7 @@ internal static class CompatibilityRuntimeComposer
     public const string BundleManifestRelativePath = "Runtime/runtime-bundle.json";
     public const string RuntimeFileName = "theme-runtime-v2.js";
 
-    private const int MaximumFragmentCount = 8;
+    private const int MaximumFragmentCount = 9;
     private const int MaximumRuntimeCharacters = 2 * 1024 * 1024;
     private const string StandaloneEnvelopeMarker = "TESSALUME_STANDALONE_ENVELOPE";
     private static readonly Regex StandaloneEnvelope = new(

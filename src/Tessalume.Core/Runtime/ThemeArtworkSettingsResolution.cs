@@ -45,11 +45,34 @@ public sealed record ThemeArtworkDefaultSlots
     [JsonPropertyName("chat")]
     public ThemeArtworkDefaultSlotModes Chat { get; init; } = new();
 
+    [JsonPropertyName("taskLeft")]
+    public ThemeArtworkDefaultSlotModes TaskLeft { get; init; } = CreateCardModes("task-left", false);
+
+    [JsonPropertyName("memory")]
+    public ThemeArtworkDefaultSlotModes Memory { get; init; } = CreateCardModes("memory", true);
+
+    [JsonPropertyName("taskRightSecondary")]
+    public ThemeArtworkDefaultSlotModes TaskRightSecondary { get; init; } = CreateCardModes("task-right-secondary", false);
+
+    [JsonPropertyName("taskRightPrimary")]
+    public ThemeArtworkDefaultSlotModes TaskRightPrimary { get; init; } = CreateCardModes("task-right-primary", false);
+
+    private static ThemeArtworkDefaultSlotModes CreateCardModes(string asset, bool perMode) => new()
+    {
+        Light = new ThemeArtworkDefaultSlot { Asset = perMode ? asset + "-light" : asset },
+        Dark = new ThemeArtworkDefaultSlot { Asset = perMode ? asset + "-dark" : asset },
+    };
+
     public ThemeArtworkDefaultSlots Normalize() => this with
     {
         Hero = (Hero ?? new ThemeArtworkDefaultSlotModes()).Normalize(),
         Sidebar = (Sidebar ?? new ThemeArtworkDefaultSlotModes()).Normalize(),
         Chat = (Chat ?? new ThemeArtworkDefaultSlotModes()).Normalize(),
+        TaskLeft = (TaskLeft ?? new ThemeArtworkDefaultSlotModes()).Normalize(),
+        Memory = (Memory ?? new ThemeArtworkDefaultSlotModes()).Normalize(),
+        TaskRightSecondary = (TaskRightSecondary ?? new ThemeArtworkDefaultSlotModes()).Normalize(),
+        TaskRightPrimary = (TaskRightPrimary ?? new ThemeArtworkDefaultSlotModes()).Normalize(),
+
     };
 }
 
@@ -335,11 +358,28 @@ public sealed record ThemeVisualModeSettingsOverride
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public ThemeArtworkOverride? Chat { get; init; }
 
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public ThemeArtworkOverride? TaskLeft { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public ThemeArtworkOverride? Memory { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public ThemeArtworkOverride? TaskRightSecondary { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public ThemeArtworkOverride? TaskRightPrimary { get; init; }
+
     public ThemeVisualModeSettingsOverride Normalize() => this with
     {
         Hero = NormalizeSlot(Hero),
         Sidebar = NormalizeSlot(Sidebar),
         Chat = NormalizeSlot(Chat),
+        TaskLeft = NormalizeSlot(TaskLeft),
+        Memory = NormalizeSlot(Memory),
+        TaskRightSecondary = NormalizeSlot(TaskRightSecondary),
+        TaskRightPrimary = NormalizeSlot(TaskRightPrimary),
+
     };
 
     private static ThemeArtworkOverride? NormalizeSlot(ThemeArtworkOverride? value)
@@ -405,7 +445,11 @@ public sealed record ThemeVisualSettingsOverride
 
     private static bool IsModeEmpty(ThemeVisualModeSettingsOverride? value) =>
         value is null ||
-        (value.Hero is null && value.Sidebar is null && value.Chat is null);
+        (value.Hero is null && value.Sidebar is null && value.Chat is null &&
+         value.TaskLeft is null &&
+         value.Memory is null &&
+         value.TaskRightSecondary is null &&
+         value.TaskRightPrimary is null);
 }
 
 public enum ThemeArtworkValueSource
@@ -426,7 +470,11 @@ public sealed record ThemeArtworkSlotResolution(
 public sealed record ThemeVisualModeResolution(
     ThemeArtworkSlotResolution Hero,
     ThemeArtworkSlotResolution Sidebar,
-    ThemeArtworkSlotResolution Chat);
+    ThemeArtworkSlotResolution Chat,
+    ThemeArtworkSlotResolution TaskLeft,
+    ThemeArtworkSlotResolution Memory,
+    ThemeArtworkSlotResolution TaskRightSecondary,
+    ThemeArtworkSlotResolution TaskRightPrimary);
 
 public sealed record ThemeVisualSettingsResolution(
     string ThemeId,
@@ -459,12 +507,22 @@ public static class ThemeArtworkSettingsResolver
                     Hero = light.Hero.Adjustment,
                     Sidebar = light.Sidebar.Adjustment,
                     Chat = light.Chat.Adjustment,
+                    TaskLeft = light.TaskLeft.Adjustment,
+                    Memory = light.Memory.Adjustment,
+                    TaskRightSecondary = light.TaskRightSecondary.Adjustment,
+                    TaskRightPrimary = light.TaskRightPrimary.Adjustment,
+
                 },
                 Dark = new ThemeVisualModeSettings
                 {
                     Hero = dark.Hero.Adjustment,
                     Sidebar = dark.Sidebar.Adjustment,
                     Chat = dark.Chat.Adjustment,
+                    TaskLeft = dark.TaskLeft.Adjustment,
+                    Memory = dark.Memory.Adjustment,
+                    TaskRightSecondary = dark.TaskRightSecondary.Adjustment,
+                    TaskRightPrimary = dark.TaskRightPrimary.Adjustment,
+
                 },
                 Display = display,
             }.Normalize(),
@@ -516,7 +574,23 @@ public static class ThemeArtworkSettingsResolver
         ResolveSlot(
             dark ? defaults.Chat.Dark : defaults.Chat.Light,
             overrides?.Chat,
-            supportsReadabilityMask: true));
+            supportsReadabilityMask: true),
+        ResolveSlot(
+            dark ? defaults.TaskLeft.Dark : defaults.TaskLeft.Light,
+            overrides?.TaskLeft,
+            supportsReadabilityMask: false),
+        ResolveSlot(
+            dark ? defaults.Memory.Dark : defaults.Memory.Light,
+            overrides?.Memory,
+            supportsReadabilityMask: false),
+        ResolveSlot(
+            dark ? defaults.TaskRightSecondary.Dark : defaults.TaskRightSecondary.Light,
+            overrides?.TaskRightSecondary,
+            supportsReadabilityMask: false),
+        ResolveSlot(
+            dark ? defaults.TaskRightPrimary.Dark : defaults.TaskRightPrimary.Light,
+            overrides?.TaskRightPrimary,
+            supportsReadabilityMask: false));
 
     private static ThemeArtworkSlotResolution ResolveSlot(
         ThemeArtworkDefaultSlot defaults,
@@ -709,6 +783,11 @@ public static class ThemeArtworkSettingsResolver
             Hero = MigrateSlot(value.Hero),
             Sidebar = MigrateSlot(value.Sidebar),
             Chat = MigrateSlot(value.Chat),
+            TaskLeft = MigrateSlot(value.TaskLeft),
+            Memory = MigrateSlot(value.Memory),
+            TaskRightSecondary = MigrateSlot(value.TaskRightSecondary),
+            TaskRightPrimary = MigrateSlot(value.TaskRightPrimary),
+
         }.Normalize();
     }
 
@@ -759,6 +838,11 @@ public static class ThemeArtworkSettingsResolver
             Hero = CreateSlotOverride(baseline.Hero, resolved.Hero),
             Sidebar = CreateSlotOverride(baseline.Sidebar, resolved.Sidebar),
             Chat = CreateSlotOverride(baseline.Chat, resolved.Chat),
+            TaskLeft = CreateSlotOverride(baseline.TaskLeft, resolved.TaskLeft),
+            Memory = CreateSlotOverride(baseline.Memory, resolved.Memory),
+            TaskRightSecondary = CreateSlotOverride(baseline.TaskRightSecondary, resolved.TaskRightSecondary),
+            TaskRightPrimary = CreateSlotOverride(baseline.TaskRightPrimary, resolved.TaskRightPrimary),
+
         };
 
     private static ThemeArtworkOverride CreateSlotOverride(

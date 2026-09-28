@@ -341,13 +341,15 @@ internal static partial class TestSuite
                 var petGalleryLightPath,
                 var petGalleryDarkPath,
                 var petDevelopmentLightPath,
-                var petDevelopmentDarkPath])
+                var petDevelopmentDarkPath,
+                .. var petSnapshotOptions] && petSnapshotOptions.Length <= 1)
         {
             return await RenderPetGallerySnapshotsAsync(
                 petGalleryLightPath,
                 petGalleryDarkPath,
                 petDevelopmentLightPath,
-                petDevelopmentDarkPath);
+                petDevelopmentDarkPath,
+                petSnapshotOptions.Length == 1 ? petSnapshotOptions[0] : "phoebe-jiubi");
         }
 
         if (args is [
@@ -400,8 +402,34 @@ internal static partial class TestSuite
                 basicPetDarkSnapshotPath);
         }
 
+        if (args is ["--artwork-library-delete-snapshots", var libraryDeleteOutputDirectory])
+        {
+            return await RenderArtworkLibraryDeleteSnapshotsAsync(libraryDeleteOutputDirectory);
+        }
+
+        if (args is ["--artwork-library-card-snapshots", var libraryCardOutputDirectory])
+        {
+            return await RenderArtworkLibraryCardSnapshotsAsync(libraryCardOutputDirectory);
+        }
+
+        if (args is ["--artwork-library-album-snapshots", var libraryAlbumOutputDirectory])
+        {
+            return await RenderArtworkLibraryAlbumSnapshotsAsync(libraryAlbumOutputDirectory);
+        }
+
+        if (args is ["--artwork-library-flow-snapshots", var libraryOutputDirectory])
+        {
+            return await RenderArtworkLibraryFlowSnapshotsAsync(libraryOutputDirectory);
+        }
+
+        if (args is ["--artwork-library-snapshots", var libraryLight, var libraryDark, var libraryCompact])
+        {
+            return await RenderArtworkLibrarySnapshotsAsync(libraryLight, libraryDark, libraryCompact);
+        }
+
+        var libraryProfile = args is ["--artwork-library-tests"];
         var buildProfile = args is ["--build"];
-        if (!buildProfile && args.Length != 0 && args is not ["--full"])
+        if (!buildProfile && !libraryProfile && args.Length != 0 && args is not ["--full"])
         {
             Console.Error.WriteLine("Unknown test profile. Use --build for daily builds or --full for release validation.");
             return 2;
@@ -414,6 +442,7 @@ internal static partial class TestSuite
             ("pet installer transactions are atomic and scoped", PetInstallerTransactionsAreAtomicAndScopedAsync),
             ("pet status state and ID scanning stay truthful", PetStatusStateAndIdScanningRemainTruthfulAsync),
             ("built-in pet package publishes and extracts safely", BuiltInPetPackageIsPublishedAndExtractedSafelyAsync),
+            ("qingxiao pet publishes and installs from release package", QingxiaoPetPublishesAndInstallsFromReleasePackageAsync),
             ("published pet sources stay separate and packages validate", PublishedPetSourcesStaySeparateAndPackagesValidateAsync),
             ("pet gallery uses one refreshable package library", PetGalleryUsesOneRefreshablePackageLibraryAsync),
             ("pet gallery presents one unified preview surface", PetGalleryPresentsOneUnifiedPreviewSurfaceAsync),
@@ -443,7 +472,7 @@ internal static partial class TestSuite
             ("artwork adjustments are runtime-owned", ArtworkAdjustmentsAreRuntimeOwnedAsync),
             ("artwork workbench supports precise input and image-source actions", ArtworkWorkbenchSupportsPreciseInputAndSourceActionsAsync),
             ("artwork workbench history and display settings work", ArtworkWorkbenchHistoryAndDisplaySettingsWorkAsync),
-            ("artwork workbench keeps six targets isolated", ArtworkWorkbenchKeepsSixTargetsIsolatedAsync),
+            ("artwork workbench keeps all targets isolated", ArtworkWorkbenchKeepsAllTargetsIsolatedAsync),
             ("artwork workbench local reset scopes are strict", ArtworkWorkbenchLocalResetScopesAreStrictAsync),
             ("artwork workbench history coalesces and stays bounded", ArtworkWorkbenchHistoryCoalescesAndStaysBoundedAsync),
             ("artwork workbench canvas mapping and offline session work", ArtworkWorkbenchCanvasMappingAndOfflineSessionWorkAsync),
@@ -457,6 +486,31 @@ internal static partial class TestSuite
             ("artwork undo preserves external display preferences", ArtworkWorkbenchUndoPreservesExternalDisplayAsync),
             ("artwork studio route stays reachable across layouts", ArtworkStudioRouteLayoutsStayReachableAsync),
             ("personal images are stored and resolved safely", PersonalImagesAreStoredSafelyAsync),
+            ("artwork library indexes originals and migrates existing pictures", ArtworkLibraryIndexesOriginalsAndMigratesWithoutChangingSettingsAsync),
+            ("artwork library persists favorites and isolates composition targets", ArtworkLibraryPersistsFavoritesAndIsolatesCompositionTargetsAsync),
+            ("artwork library rejects unsafe metadata and preserves unsupported catalogs", ArtworkLibraryRejectsUnsafeMetadataAndPreservesUnsupportedCatalogAsync),
+            ("artwork library backup round-trips and legacy restore preserves catalog", ArtworkLibraryBackupRoundTripsAndLegacyRestorePreservesNewCatalogAsync),
+            ("artwork library keeps prepared images across theme changes", ArtworkLibraryPreservesPreparedPicturesAcrossThemeRemovalAndUpdatesAsync),
+            ("artwork library imports keep independent classification", ArtworkLibraryGeneralImportsKeepIndependentClassificationAsync),
+            ("artwork library browsing and cancel are draft only", ArtworkLibraryBrowsingIsDraftOnlyAsync),
+            ("artwork library applies only the captured slot", ArtworkLibraryAppliesOnlyTheCapturedSlotAsync),
+            ("artwork library rolls back failed saves and preserves undo", ArtworkLibrarySaveFailureRestoresCleanStateAndUndoAsync),
+            ("artwork library rejects stale previews", ArtworkLibraryRejectsStalePreviewAsync),
+            ("artwork library back navigation invalidates pending previews", ArtworkLibraryBackInvalidatesPendingPreviewAsync),
+            ("artwork library preserves original thumbnail proportions", ArtworkLibraryBrowsingPreservesOriginalAspectRatiosAsync),
+            ("artwork library respects independent entry hints", ArtworkLibraryRespectsEntryTargetHintsAsync),
+            ("artwork library general pictures do not inherit previous detail targets", ArtworkLibraryGeneralPicturesDoNotInheritPreviousDetailTargetsAsync),
+            ("artwork library keeps large catalogs paged", ArtworkLibraryLargeCatalogKeepsPagesBoundedAsync),
+            ("artwork library character albums keep context and compact toolbar", ArtworkLibraryCharacterAlbumsKeepBrowseContextAndCompactToolbarAsync),
+            ("artwork library indexes every published original and target", ArtworkLibraryIndexesEveryPublishedOriginalAndTargetAsync),
+            ("artwork library card targets apply restore undo and persist exactly", ArtworkLibraryCardTargetsApplyRestoreUndoAndPersistExactlyAsync),
+            ("artwork library card targets roll back failed operations", ArtworkLibraryCardTargetsRollBackFailedApplyRestoreAndUndoAsync),
+            ("artwork library card overrides produce independent runtime slots", ArtworkLibraryCardSlotsProduceIndependentRuntimeImageOverridesAsync),
+            ("artwork library deletion protects original and prepared identities", ArtworkLibraryDeletionProtectsOriginalAndPreparedIdentitiesAsync),
+            ("artwork library deleted imports stay hidden and reimport cleanly", ArtworkLibraryDeletedImportsStayHiddenAndReimportCleanlyAsync),
+            ("artwork library deletion failures preserve catalogs", ArtworkLibraryDeletionFailuresPreserveWritableAndReadOnlyCatalogsAsync),
+            ("artwork library deleted imports survive backup round trip", ArtworkLibraryDeletedImportsSurviveBackupRoundTripAsync),
+            ("artwork library deletion confirmation preserves applied state", ArtworkLibraryDeletionConfirmationAndNavigationPreserveAppliedStateAsync),
             ("theme library state is normalized and version aware", ThemeLibraryStateIsNormalizedAndVersionAwareAsync),
             ("theme library details and recent sorting work", ThemeLibraryDetailsAndRecentSortingWorkAsync),
             ("cold-start settings are immediately interactive", ColdStartSettingsAreImmediatelyInteractiveAsync),
@@ -542,7 +596,9 @@ internal static partial class TestSuite
             nameof(ReleaseNotesExtractionWorksAcrossPowerShellHostsAsync),
             nameof(CompatibilityPackBuildIsDeterministicAsync),
         };
-        var selectedTests = buildProfile
+        var selectedTests = libraryProfile
+            ? tests.Where(test => test.Run.Method.Name.StartsWith("ArtworkLibrary", StringComparison.Ordinal)).ToArray()
+            : buildProfile
             ? tests.Where(test => !releaseOnlyChecks.Contains(test.Run.Method.Name)).ToArray()
             : tests;
 

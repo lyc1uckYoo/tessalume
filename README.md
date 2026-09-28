@@ -2,9 +2,9 @@
 
 **把 Codex Desktop 变成属于你的主题工作空间。**
 
-Tessalume 是一款开源、便携、以本机为中心的 Windows 主题与伴侣工作室。它可以统一管理 Codex 的完整角色主题、三大图像区域、阅读体验与官方 Pets 资产，也能让你直接借助 Codex 创建、体检和导出自己的主题。
+Tessalume 是一款开源、便携、以本机为中心的 Windows 主题与伴侣工作室。它可以统一管理 Codex 的完整角色主题、主题图片、阅读体验与官方 Pets 资产，也能让你直接借助 Codex 创建、体检和导出自己的主题。
 
-![Release](https://img.shields.io/badge/release-2.1.3-6C5CE7?style=flat-square)
+![Release](https://img.shields.io/badge/release-2.2.0-6C5CE7?style=flat-square)
 ![Platform](https://img.shields.io/badge/platform-Windows%20x64-2563EB?style=flat-square)
 ![Local first](https://img.shields.io/badge/data-local%20first-0F9D87?style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT-F59E0B?style=flat-square)
@@ -14,7 +14,7 @@ Tessalume 是一款开源、便携、以本机为中心的 Windows 主题与伴�
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset=".github/assets/screenshots/tessalume-dark.png">
   <source media="(prefers-color-scheme: light)" srcset=".github/assets/screenshots/tessalume-light.png">
-  <img alt="Tessalume 2.1 主题画廊" src=".github/assets/screenshots/tessalume-light.png">
+  <img alt="Tessalume 主题画廊" src=".github/assets/screenshots/tessalume-light.png">
 </picture>
 
 ## 一个软件，完成整套主题体验
@@ -24,9 +24,10 @@ Tessalume 内置 12 套同时支持亮色与暗色的完整角色主题。你可
 | 能力 | 你可以做什么 |
 |---|---|
 | **主题画廊** | 管理完整角色主题，查看亮暗预览、主题信息和状态，快速收藏、导入与切换。 |
-| **图像工作台 3.0** | 分别调整首页横幅、左栏图片和聊天背景；亮暗模式独立保存原图、构图、滤镜与遮罩。 |
+| **图像工作台 3.0** | 调整页面背景与角色卡片的构图、滤镜和遮罩，亮暗模式分别保存。 |
+| **角色图库** | 按角色进入相册，浏览完整原图、搜索、收藏和批量导入，再预览并替换到七个指定位置。 |
 | **显示偏好** | 按主题调整动效强度、正文字号与界面密度，让阅读更稳定舒适。 |
-| **Codex 宠物画廊** | 浏览飞行雪绒与菲比啾比，按真实 Codex 图集预览全部动作，并安全安装、修复、恢复或卸载官方 Pets 资产。 |
+| **Codex 宠物画廊** | 浏览飞行雪绒、菲比啾比与清宵，按真实 Codex 图集预览全部动作，并安全安装、修复、恢复或卸载官方 Pets 资产。 |
 | **创作项目中心** | 用 Codex 创建主题，再完成项目体检、运行验收、问题修复提示和最终导出。 |
 | **兼容与恢复** | 通过小型兼容补丁适配页面变化；完整更新支持 SHA-256、健康检查与上一版本恢复。 |
 
@@ -34,19 +35,27 @@ Tessalume 内置 12 套同时支持亮色与暗色的完整角色主题。你可
 
 ## 个性化不再需要手改 CSS
 
-图像工作台把 12 套主题原先写死在 CSS 中的裁切、亮度、遮罩和静态变换提取为可版本化的“主题推荐值”。首页横幅、左栏图片和聊天背景在亮暗模式下形成六个独立槽位；每个槽位都可以在主题推荐、真正原图和个人覆盖之间安全切换。
+图像工作台把 12 套主题原先写死在 CSS 中的裁切、亮度、遮罩和静态变换提取为可版本化的“主题推荐值”。角色图库支持七个换图位置：**首页横幅、左栏图片、聊天背景、左侧角色卡、记忆卡、右侧副卡、右侧主卡**。每个位置的亮色和暗色分别设置，可以使用主题原图或自己的图片；主题未提供的卡片位置不会开放替换。
 
-编辑器支持真实页面尺寸、拖动与滚轮缩放、精确 CSS 长度、适合/填充/居中、原图对比、亮度/对比度/饱和度/透明度、叠色、渐变、暗角、混合模式和可读性保护。修改可撤销，恢复只作用于明确的参数或当前槽位，不会连带重置另外两个区域。
+编辑器支持真实页面尺寸、拖动与滚轮缩放、精确 CSS 长度、适合/填充/居中、原图对比、亮度/对比度/饱和度/透明度、叠色、渐变、暗角、混合模式和可读性保护。修改可撤销，参数恢复只作用于选定范围。
+
+角色图库可以从侧栏、主题详情或图像工作台进入，按 **角色 → 相册 → 图片详情** 浏览。角色封面卡展示独立相册，搜索、收藏和导入集中在紧凑顶栏。进入相册后，首页、左栏、聊天图片分列显示，角色卡片在下方独立排列；缩略图按原图比例完整显示，也可按使用位置筛选。点击图片后，在详情选择目标主题、使用位置和亮暗模式，查看已使用图、预览并调整构图；逐级返回会保留筛选、页码和浏览位置。
+
+原文件保持质量，浏览时只解码当前页的缩略图；点击“应用”后才保存，每张图按目标分别记住构图，也可进入工作台精细调节。“恢复此位置原图”只恢复当前主题、当前位置和当前亮暗模式的原图与推荐构图，保存状态与预览随即更新；应用和恢复均支持撤销。
+
+主题原图不可删除。自己导入的图片可在详情页点击“删除”，确认“从图库删除”后从相册和收藏中移除，刷新或重启后不会重新出现。已应用的位置和撤销继续可用，导入前的原始文件保留；重新导入同一图片可让它回到图库。删空相册后仍保留该角色的名称和导入入口。
+
+图库和个人图片保存在便携目录的 `data/personalization/`，随用户数据一起备份；已有个人图片会自动登记，旧版备份恢复也会保留新图库。页面场景使用示例内容，标准尺寸预览不依赖 Codex 连接。
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset=".github/assets/screenshots/tessalume-personalization-dark.png">
   <source media="(prefers-color-scheme: light)" srcset=".github/assets/screenshots/tessalume-personalization-light.png">
-  <img alt="Tessalume 2.1 图像工作台" src=".github/assets/screenshots/tessalume-personalization-light.png">
+  <img alt="Tessalume 图像工作台" src=".github/assets/screenshots/tessalume-personalization-light.png">
 </picture>
 
 ## Codex 宠物画廊，仍然保持本机边界
 
-宠物画廊目前内置“飞行雪绒”和“菲比啾比”，集中展示伙伴封面、版本、资源状态和配套主题，并支持搜索与重新检查。进入详情后，可以按照真实 Codex v2 图集与动作时序逐项预览待机、移动、交互、任务状态、16 向转身和动态九宫格；资源文件变化后，画廊会安全刷新并保留最后一次可用预览。
+宠物画廊目前内置“飞行雪绒”“菲比啾比”和“清宵”三位伙伴，集中展示封面、版本、资源状态和配套主题，并支持搜索与重新检查。进入详情后，可以按照真实 Codex v2 图集与动作时序逐项预览待机、移动、交互、任务状态、16 向转身和动态九宫格；资源文件变化后，画廊会安全刷新并保留最后一次可用预览。
 
 只有通过完整清单、尺寸和 SHA-256 校验的发布包才会开放安装。Tessalume 只管理当前用户 `.codex\pets` 中的官方 Pets 文件，覆盖前保留备份，并提供更新、修复、恢复和受管卸载。仓库中的 `pet-projects/` 同时保留可继续交给 Codex 修改的宠物源工程；重新构建发布资源后，在画廊刷新即可验收。
 
@@ -55,7 +64,7 @@ Tessalume 不会启动独立桌宠进程，不读取 Codex 对话、账号或日
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset=".github/assets/screenshots/tessalume-pets-dark.png">
   <source media="(prefers-color-scheme: light)" srcset=".github/assets/screenshots/tessalume-pets-light.png">
-  <img alt="Tessalume 2.1 Codex 宠物画廊" src=".github/assets/screenshots/tessalume-pets-light.png">
+  <img alt="Tessalume Codex 宠物画廊" src=".github/assets/screenshots/tessalume-pets-light.png">
 </picture>
 
 ## 让 Codex 帮你制作自己的皮肤
@@ -85,7 +94,7 @@ Tessalume 会检查结构、素材、Template 1.0 契约、六槽图像推荐值
 - 即使浏览器将程序保存为 `Tessalume (1).exe` 或你手动改名，更新、重启和上一版本恢复仍会作用于当前这个 EXE。
 - Codex 页面结构的小变化可以通过独立兼容包修复，不必重新下载完整软件。
 
-从 2.0.2 升级到当前 2.1.x 时，Schema 5 配置会先原样备份，再迁移为 Schema 7。已经使用 2.1.0 或更新版本的用户无需再次迁移；收藏、最近主题、亮暗图像参数、本地图片路径、动效/字号/密度、创作草稿和工作区记录都会保留，已经移出产品的旧方案字段不会继续写回。
+从 2.0.2 升级到 2.1.0 或更新版本时，Schema 5 配置会先原样备份，再迁移为 Schema 7。已经使用 2.1.0 或更新版本的用户无需再次迁移；收藏、最近主题、亮暗图像参数、本地图片路径、动效/字号/密度、创作草稿和工作区记录都会保留，已经移出产品的旧方案字段不会继续写回。
 
 ## 本机优先与安全边界
 

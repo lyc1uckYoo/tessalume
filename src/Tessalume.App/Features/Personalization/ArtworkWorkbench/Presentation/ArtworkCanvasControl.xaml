@@ -290,6 +290,10 @@
                     </Grid>
                 </Grid>
 
+                <Viewbox x:Name="ScenePreviewLayer" Visibility="Collapsed" Stretch="Fill" IsHitTestVisible="False">
+                    <Grid x:Name="ScenePreviewSurface" />
+                </Viewbox>
+
                 <Canvas x:Name="GuideLayer" IsHitTestVisible="False">
                     <Rectangle x:Name="SafeAreaRectangle"
                                Stroke="#E8FFFFFF"

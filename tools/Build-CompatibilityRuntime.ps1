@@ -14,7 +14,7 @@ if ($manifest.schemaVersion -ne 1 -or $manifest.output -ne 'theme-runtime-v2.js'
 }
 
 $fragmentNames = @($manifest.fragments)
-if ($fragmentNames.Count -eq 0 -or $fragmentNames.Count -gt 8) {
+if ($fragmentNames.Count -eq 0 -or $fragmentNames.Count -gt 9) {
     throw 'Compatibility runtime fragment count is invalid.'
 }
 

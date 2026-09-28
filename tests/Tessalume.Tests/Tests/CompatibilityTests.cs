@@ -214,6 +214,11 @@ internal static partial class TestSuite
     static async Task CompatibilityPacksInstallValidateAndRollBackAsync()
     {
         var repositoryRoot = FindRepositoryRoot();
+        var sourceProfile = await ReadSourceCompatibilityProfileAsync(repositoryRoot);
+        var firstVersion = new Version(sourceProfile.Version.Major, sourceProfile.Version.Minor,
+            Math.Max(0, sourceProfile.Version.Build) + 1);
+        var secondVersion = new Version(firstVersion.Major, firstVersion.Minor, firstVersion.Build + 1);
+        var futureLegacyVersion = new Version(secondVersion.Major, secondVersion.Minor, secondVersion.Build + 1);
         var root = Path.Combine(Path.GetTempPath(), $"tessalume-compatibility-pack-{Guid.NewGuid():N}");
         var builtIn = Path.Combine(root, "Compatibility");
         var data = Path.Combine(root, "data");
@@ -311,8 +316,8 @@ internal static partial class TestSuite
                 new Version(1, 4, 1),
                 ThemeRuntime.ContractVersion);
             var baseline = store.Resolve();
-            Ensure(baseline.IsBuiltIn && baseline.PackVersion == new Version(3, 0, 7),
-                "Contract 3 pack 3.0.2 must be rejected after upgrading to contract 4 and the embedded 3.0.7 baseline.");
+            Ensure(baseline.IsBuiltIn && baseline.PackVersion == sourceProfile.Version,
+                "The legacy-contract pack must be rejected in favor of the current embedded compatibility baseline.");
             using (var repairedState = JsonDocument.Parse(await File.ReadAllBytesAsync(
                        Path.Combine(data, "compatibility", "state.json"))))
             {
@@ -367,7 +372,7 @@ internal static partial class TestSuite
             var legacyContractArchive = await CreateCompatibilityArchiveAsync(
                 root,
                 sourceAssets,
-                new Version(3, 0, 10),
+                futureLegacyVersion,
                 runtimeContractVersion: 3);
             var legacyContractHash = Convert.ToHexString(
                 SHA256.HashData(await File.ReadAllBytesAsync(legacyContractArchive)));
@@ -399,19 +404,19 @@ internal static partial class TestSuite
             Directory.CreateDirectory(stalePackDirectory);
             ZipFile.ExtractToDirectory(staleArchive, stalePackDirectory);
 
-            var firstArchive = await CreateCompatibilityArchiveAsync(root, sourceAssets, new Version(3, 0, 8));
+            var firstArchive = await CreateCompatibilityArchiveAsync(root, sourceAssets, firstVersion);
             var firstHash = Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(firstArchive)));
             var firstInstall = await store.InstallAsync(firstArchive, firstHash);
             Ensure(firstInstall.Changed && !firstInstall.ActivePack.IsBuiltIn &&
-                   firstInstall.ActivePack.PackVersion == new Version(3, 0, 8),
+                   firstInstall.ActivePack.PackVersion == firstVersion,
                 "A fully verified official compatibility pack must become active without replacing the executable.");
 
             await File.WriteAllTextAsync(
                 Path.Combine(data, "compatibility", "state.json"),
-                """
+                $$"""
                 {
                   "schemaVersion": 1,
-                  "activePackVersion": "3.0.8",
+                  "activePackVersion": "{{firstVersion}}",
                   "previousPackVersion": "3.0.1"
                 }
                 """);
@@ -420,18 +425,18 @@ internal static partial class TestSuite
                 "Rollback must prefer the embedded baseline over an older previous pack.");
 
             firstInstall = await store.InstallAsync(firstArchive, firstHash);
-            Ensure(firstInstall.Changed && firstInstall.ActivePack.PackVersion == new Version(3, 0, 8),
+            Ensure(firstInstall.Changed && firstInstall.ActivePack.PackVersion == firstVersion,
                 "A newer verified pack must remain installable after falling back to the embedded baseline.");
 
-            var secondArchive = await CreateCompatibilityArchiveAsync(root, sourceAssets, new Version(3, 0, 9));
+            var secondArchive = await CreateCompatibilityArchiveAsync(root, sourceAssets, secondVersion);
             var secondHash = Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(secondArchive)));
             var secondInstall = await store.InstallAsync(secondArchive, secondHash);
-            Ensure(secondInstall.ActivePack.PackVersion == new Version(3, 0, 9) &&
-                   secondInstall.PreviousPack.PackVersion == new Version(3, 0, 8),
+            Ensure(secondInstall.ActivePack.PackVersion == secondVersion &&
+                   secondInstall.PreviousPack.PackVersion == firstVersion,
                 "Installing a newer compatibility pack must preserve the last known-good pack for rollback.");
 
             var rolledBack = store.Rollback();
-            Ensure(!rolledBack.IsBuiltIn && rolledBack.PackVersion == new Version(3, 0, 8),
+            Ensure(!rolledBack.IsBuiltIn && rolledBack.PackVersion == firstVersion,
                 "A failed active compatibility pack must roll back atomically to the previous verified pack.");
 
             await File.AppendAllTextAsync(rolledBack.RuntimeAssets.RuntimePath, "\n// corrupted by fixture");

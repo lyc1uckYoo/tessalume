@@ -128,10 +128,15 @@
                                 <ColumnDefinition Width="7" />
                                 <ColumnDefinition Width="1.15*" />
                             </Grid.ColumnDefinitions>
-                            <UniformGrid Columns="3">
+                            <UniformGrid Columns="4">
                                 <Button x:Name="HeroRegionButton" Style="{StaticResource WorkbenchSegmentButton}" Tag="active" CommandParameter="hero" Content="首页横幅" Click="Region_Click" Margin="0,0,3,0" AutomationProperties.Name="编辑首页横幅" />
                                 <Button x:Name="SidebarRegionButton" Style="{StaticResource WorkbenchSegmentButton}" Tag="inactive" CommandParameter="sidebar" Content="左栏图片" Click="Region_Click" Margin="0,0,3,0" AutomationProperties.Name="编辑左栏图片" />
                                 <Button x:Name="ChatRegionButton" Style="{StaticResource WorkbenchSegmentButton}" Tag="inactive" CommandParameter="chat" Content="聊天背景" Click="Region_Click" AutomationProperties.Name="编辑聊天背景" />
+                                <ComboBox x:Name="CardRegionSelector" Style="{DynamicResource SettingsComboBox}" FontSize="10.5" Margin="3,0,0,0" SelectedIndex="0"
+                                          SelectionChanged="CardRegion_Changed" ToolTip="选择角色卡片位置" AutomationProperties.Name="编辑角色卡片位置">
+                                    <ComboBoxItem Content="卡片" /><ComboBoxItem Content="左卡" /><ComboBoxItem Content="记忆卡" />
+                                    <ComboBoxItem Content="右副卡" /><ComboBoxItem Content="右主卡" />
+                                </ComboBox>
                             </UniformGrid>
                             <UniformGrid Grid.Column="2" Columns="2">
                                 <Button x:Name="LightModeButton" Style="{StaticResource WorkbenchSegmentButton}" Content="亮色" Click="EditingMode_Click" Tag="active" CommandParameter="light" ToolTip="编辑亮色参数" AutomationProperties.Name="编辑亮色参数" />

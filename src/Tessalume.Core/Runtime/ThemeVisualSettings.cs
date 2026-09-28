@@ -215,11 +215,24 @@ public sealed record ThemeVisualModeSettings
 
     public ThemeArtworkAdjustment Chat { get; init; } = new();
 
+    public ThemeArtworkAdjustment TaskLeft { get; init; } = new();
+
+    public ThemeArtworkAdjustment Memory { get; init; } = new();
+
+    public ThemeArtworkAdjustment TaskRightSecondary { get; init; } = new();
+
+    public ThemeArtworkAdjustment TaskRightPrimary { get; init; } = new();
+
     public ThemeVisualModeSettings Normalize() => this with
     {
         Hero = (Hero ?? new ThemeArtworkAdjustment()).Normalize(),
         Sidebar = (Sidebar ?? new ThemeArtworkAdjustment()).Normalize(),
         Chat = (Chat ?? new ThemeArtworkAdjustment()).Normalize(),
+        TaskLeft = (TaskLeft ?? new ThemeArtworkAdjustment()).Normalize(),
+        Memory = (Memory ?? new ThemeArtworkAdjustment()).Normalize(),
+        TaskRightSecondary = (TaskRightSecondary ?? new ThemeArtworkAdjustment()).Normalize(),
+        TaskRightPrimary = (TaskRightPrimary ?? new ThemeArtworkAdjustment()).Normalize(),
+
     };
 }
 

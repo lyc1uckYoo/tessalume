@@ -500,10 +500,18 @@ internal static partial class TestSuite
         var deferredIndex = mutationBlock.IndexOf("schedule(true);", StringComparison.Ordinal);
         Ensure(immediateIndex >= 0 && deferredIndex > immediateIndex,
             "Task surfaces must be decorated before the debounced full repair is scheduled.");
-        Ensure(runtime.Contains(
-                "context.observe(document.documentElement, { childList:true, subtree:true }, onDocumentMutations);",
-                StringComparison.Ordinal),
+        var documentObserver = System.Text.RegularExpressions.Regex.Match(runtime,
+            @"context\.observe\(document\.documentElement,\s*\{(?<options>[^{}]*)\},\s*onDocumentMutations\);");
+        Ensure(documentObserver.Success &&
+               System.Text.RegularExpressions.Regex.IsMatch(documentObserver.Groups["options"].Value, @"childList\s*:\s*true") &&
+               System.Text.RegularExpressions.Regex.IsMatch(documentObserver.Groups["options"].Value, @"subtree\s*:\s*true"),
             "The document observer must use the immediate task-surface callback.");
+        Ensure(System.Text.RegularExpressions.Regex.IsMatch(documentObserver.Groups["options"].Value, @"attributes\s*:\s*true") &&
+               documentObserver.Groups["options"].Value.Contains("\"aria-hidden\"", StringComparison.Ordinal) &&
+               documentObserver.Groups["options"].Value.Contains("\"hidden\"", StringComparison.Ordinal) &&
+               documentObserver.Groups["options"].Value.Contains("\"inert\"", StringComparison.Ordinal) &&
+               documentObserver.Groups["options"].Value.Contains("\"data-app-shell-workspace-layout\"", StringComparison.Ordinal),
+            "Retained chat visibility and native pane layout changes must trigger task-surface repair.");
         Ensure(runtime.Contains("const syncTaskTitleWidth = () => {", StringComparison.Ordinal) &&
                runtime.Contains("--tessalume-task-title-primary-width", StringComparison.Ordinal) &&
                runtime.Contains("syncTaskTitleWidth();", StringComparison.Ordinal),

@@ -33,6 +33,8 @@ internal static class ArtworkImageSourceResolver
         ArgumentNullException.ThrowIfNull(personalImageStore);
         ArgumentNullException.ThrowIfNull(adjustment);
 
+        if (!IsRegionSupported(themePackage, region, mode)) return null;
+
         var personalImage = TryResolvePersonalImage(personalImageStore, adjustment.CustomImagePath);
         if (personalImage is not null)
         {
@@ -42,7 +44,7 @@ internal static class ArtworkImageSourceResolver
                 "本地图片");
         }
 
-        var assetKey = adjustment.Normalize().ThemeAssetKey ?? GetAssetKey(region, mode);
+        var assetKey = adjustment.Normalize().ThemeAssetKey ?? GetAssetKey(themePackage, region, mode);
         if (!TryGetAssetPath(themePackage.AssetPaths, assetKey, out var storedAssetPath))
         {
             return null;
@@ -59,11 +61,16 @@ internal static class ArtworkImageSourceResolver
 
     internal static string GetAssetKey(ArtworkRegion region, ArtworkColorMode mode)
     {
+        if (!Enum.IsDefined(mode)) throw new ArgumentOutOfRangeException(nameof(mode));
+        if (region == ArtworkRegion.TaskLeft) return "task-left";
+        if (region == ArtworkRegion.TaskRightSecondary) return "task-right-secondary";
+        if (region == ArtworkRegion.TaskRightPrimary) return "task-right-primary";
         var regionKey = region switch
         {
             ArtworkRegion.Hero => "hero",
             ArtworkRegion.Sidebar => "sidebar",
             ArtworkRegion.Chat => "chat",
+            ArtworkRegion.Memory => "memory",
             _ => throw new ArgumentOutOfRangeException(nameof(region), region, null),
         };
         var modeKey = mode switch
@@ -73,6 +80,30 @@ internal static class ArtworkImageSourceResolver
             _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null),
         };
         return $"{regionKey}-{modeKey}";
+    }
+
+    internal static string GetAssetKey(ThemePackage package, ArtworkRegion region, ArtworkColorMode mode)
+    {
+        var key = GetAssetKey(region, mode);
+        // Some authored themes use distinct dark card artwork. Only use that
+        // variant when the manifest actually declares its original file.
+        if (mode == ArtworkColorMode.Dark &&
+            region is ArtworkRegion.TaskLeft or ArtworkRegion.TaskRightSecondary or ArtworkRegion.TaskRightPrimary &&
+            TryGetAssetPath(package.AssetPaths, key + "-dark", out var darkPath) &&
+            TryResolveThemeAsset(package.RootDirectory, darkPath) is not null)
+            return key + "-dark";
+        return key;
+    }
+
+    internal static bool IsRegionSupported(ThemePackage package, ArtworkRegion region, ArtworkColorMode mode)
+    {
+        if (!Enum.IsDefined(region) || !Enum.IsDefined(mode) ||
+            (mode == ArtworkColorMode.Light && !package.Manifest.Capabilities.Light) ||
+            (mode == ArtworkColorMode.Dark && !package.Manifest.Capabilities.Dark)) return false;
+        // The original three surfaces historically permit local-only artwork.
+        if (region is ArtworkRegion.Hero or ArtworkRegion.Sidebar or ArtworkRegion.Chat) return true;
+        return TryGetAssetPath(package.AssetPaths, GetAssetKey(package, region, mode), out var path) &&
+               TryResolveThemeAsset(package.RootDirectory, path) is not null;
     }
 
     private static string? TryResolvePersonalImage(
@@ -97,7 +128,9 @@ internal static class ArtworkImageSourceResolver
             var path = Path.IsPathRooted(storedPath)
                 ? Path.GetFullPath(storedPath)
                 : Path.GetFullPath(Path.Combine(rootDirectory, storedPath));
-            return File.Exists(path) ? path : null;
+            var relative = Path.GetRelativePath(Path.GetFullPath(rootDirectory), path);
+            return relative == ".." || relative.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal) ||
+                   Path.IsPathRooted(relative) || !File.Exists(path) ? null : path;
         }
         catch (Exception exception) when (IsRecoverablePathFailure(exception))
         {

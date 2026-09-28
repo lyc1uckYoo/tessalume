@@ -15,13 +15,17 @@ public partial class ArtworkWorkbenchView
     {
         if (PreviewCanvas is null || Inspector is null) return;
         var available = CanEdit();
+        var targetAvailable = available && _package is not null &&
+            ArtworkImageSourceResolver.IsRegionSupported(_package, _region, _mode);
         HeroRegionButton.IsEnabled = available;
         SidebarRegionButton.IsEnabled = available;
         ChatRegionButton.IsEnabled = available;
+        RenderCardRegions(available);
         LightModeButton.IsEnabled = available;
         DarkModeButton.IsEnabled = available;
         CanvasCard.IsEnabled = available;
-        InspectorScroller.IsEnabled = available;
+        InspectorScroller.IsEnabled = targetAvailable;
+        PreviewCanvas.IsEnabled = targetAvailable;
 
         SetSelectionButton(HeroRegionButton, _region == ArtworkRegion.Hero);
         SetSelectionButton(SidebarRegionButton, _region == ArtworkRegion.Sidebar);
@@ -33,6 +37,7 @@ public partial class ArtworkWorkbenchView
         PreviewCanvas.SetRegion(_region);
         PreviewCanvas.SetColorMode(_mode);
         RenderSurfaceMetrics();
+        PreviewCanvas.SetScenePreview(_region is ArtworkRegion.TaskLeft or ArtworkRegion.Memory or ArtworkRegion.TaskRightSecondary or ArtworkRegion.TaskRightPrimary);
         PreviewCanvas.SetComposition(
             adjustment,
             CurrentSlotResolution?.ThemeDefaultAdjustment.Placement ??
@@ -44,7 +49,7 @@ public partial class ArtworkWorkbenchView
         Inspector.SetAdjustment(adjustment);
         Inspector.SetFixedWidthComposition(
             _region == ArtworkRegion.Sidebar,
-            responsiveCover: _region is ArtworkRegion.Hero or ArtworkRegion.Chat);
+            responsiveCover: _region != ArtworkRegion.Sidebar);
         RenderPlacementEditor(adjustment);
         Inspector.SetProvenance(CurrentSlotResolution?.Provenance);
         Inspector.SetTargetSummary(
@@ -143,6 +148,9 @@ public partial class ArtworkWorkbenchView
         {
             ArtworkRegion.Sidebar => new ArtworkSize(260d, 800d),
             ArtworkRegion.Chat => new ArtworkSize(1440d, 900d),
+            ArtworkRegion.TaskLeft => new ArtworkSize(146d, 234d),
+            ArtworkRegion.Memory => new ArtworkSize(146d, 165d),
+            ArtworkRegion.TaskRightSecondary or ArtworkRegion.TaskRightPrimary => new ArtworkSize(156d, 278d),
             _ => new ArtworkSize(1440d, 420d),
         };
         return new ArtworkSurfacePreviewMetrics(
@@ -208,6 +216,10 @@ public partial class ArtworkWorkbenchView
         {
             ArtworkRegion.Sidebar => mode.Sidebar,
             ArtworkRegion.Chat => mode.Chat,
+            ArtworkRegion.TaskLeft => mode.TaskLeft,
+            ArtworkRegion.Memory => mode.Memory,
+            ArtworkRegion.TaskRightSecondary => mode.TaskRightSecondary,
+            ArtworkRegion.TaskRightPrimary => mode.TaskRightPrimary,
             _ => mode.Hero,
         };
     }
@@ -355,6 +367,10 @@ public partial class ArtworkWorkbenchView
     {
         ArtworkRegion.Sidebar => "左栏图片",
         ArtworkRegion.Chat => "聊天背景",
+        ArtworkRegion.TaskLeft => "左侧角色卡",
+        ArtworkRegion.Memory => "记忆卡",
+        ArtworkRegion.TaskRightSecondary => "右侧副卡",
+        ArtworkRegion.TaskRightPrimary => "右侧主卡",
         _ => "首页横幅",
     };
 

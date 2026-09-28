@@ -9,6 +9,7 @@
         xmlns:personalization="clr-namespace:Tessalume.App.Features.Personalization"
         xmlns:pets="clr-namespace:Tessalume.App.Features.Pets"
         xmlns:artwork="clr-namespace:Tessalume.App.Features.Personalization.ArtworkWorkbench.Presentation"
+        xmlns:library="clr-namespace:Tessalume.App.Features.ArtworkLibrary.Presentation"
         Title="{x:Static local:BrandInfo.WindowTitle}"
         Icon="{x:Static local:BrandInfo.AppIcon}"
         Width="1280" Height="820" MinWidth="760" MinHeight="420"
@@ -101,6 +102,12 @@
                     </Button>
                     <Border Height="1" Background="{DynamicResource SidebarBrandBorder}" Margin="10,13,10,12" />
                     <TextBlock Text="个性化" Style="{StaticResource SidebarSectionLabel}" />
+                    <Button x:Name="ArtworkLibraryButton" Style="{StaticResource NavButton}" Click="ArtworkLibrary_Click">
+                        <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="27" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                            <Path Style="{StaticResource NavIcon}" Data="M 3,4 L 21,4 L 21,20 L 3,20 Z M 3,16 L 9,10 L 15,16 L 18,13 L 21,16 M 15,8 L 17,8" />
+                            <TextBlock Grid.Column="1" Text="角色图库" VerticalAlignment="Center" />
+                        </Grid>
+                    </Button>
                     <Button x:Name="PetsButton" Style="{StaticResource NavButton}" Click="Pets_Click">
                         <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="27" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
                             <Path Style="{StaticResource NavIcon}" Data="M 7,10 C 4,10 3,7 4.5,5.5 C 6,4 8.5,5 9,7.2 M 15,7.2 C 15.5,5 18,4 19.5,5.5 C 21,7 20,10 17,10 M 7,12 C 7,8 17,8 17,12 C 20,13 20,18 16.5,19.5 C 14,20.6 13,19 12,19 C 11,19 10,20.6 7.5,19.5 C 4,18 4,13 7,12 Z" />
@@ -607,6 +614,7 @@
                                    CloseRequested="ThemeDetailPanel_CloseRequested"
                                    ApplyRequested="ThemeDetailPanel_ApplyRequested"
                                    OpenFolderRequested="ThemeDetailPanel_OpenFolderRequested"
+                                   ArtworkLibraryRequested="ThemeDetailPanel_ArtworkLibraryRequested"
                                    CompanionPetRequested="ThemeDetailPanel_CompanionPetRequested" />
 
         <Border x:Name="ThemeDropOverlay" Grid.Column="1" Margin="34,28,34,26" Panel.ZIndex="60"
@@ -626,6 +634,9 @@
 
         <Grid x:Name="InfoPage" Grid.Column="1" Margin="32,25,32,22" Visibility="Collapsed">
             <ScrollViewer x:Name="InfoScroll" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" FocusVisualStyle="{x:Null}">
+                <ScrollViewer.Resources>
+                    <Style TargetType="ScrollBar" BasedOn="{StaticResource SidebarScrollBar}" />
+                </ScrollViewer.Resources>
                 <Grid x:Name="InfoContentHost"
                       Width="{Binding ViewportWidth, ElementName=InfoScroll}"
                       MinHeight="{Binding ViewportHeight, ElementName=InfoScroll}"
@@ -687,6 +698,8 @@
                     <creator:CreatorCenterView x:Name="CreatorCenter" Visibility="Collapsed" VerticalAlignment="Top" />
 
                     <pets:PetCenterView x:Name="PetCenterPage" Visibility="Collapsed" VerticalAlignment="Top" />
+
+                    <library:ArtworkLibraryView x:Name="ArtworkLibraryPage" Visibility="Collapsed" VerticalAlignment="Top" />
 
                     <Grid x:Name="PersonalizationInfoPanel" Visibility="Collapsed" VerticalAlignment="Top" Margin="0,0,0,4">
                         <Grid.ColumnDefinitions>

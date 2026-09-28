@@ -70,7 +70,7 @@ public sealed partial class ThemeRuntime
         foreach (var modeName in new[] { "light", "dark" })
         {
             if (root[modeName] is not JsonObject mode) continue;
-            foreach (var regionName in new[] { "hero", "sidebar", "chat" })
+            foreach (var regionName in new[] { "hero", "sidebar", "chat", "taskLeft", "memory", "taskRightSecondary", "taskRightPrimary" })
             {
                 if (mode[regionName] is not JsonObject adjustment) continue;
                 var path = adjustment["customImagePath"]?.GetValue<string?>();

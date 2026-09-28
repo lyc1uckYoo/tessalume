@@ -178,6 +178,7 @@ public partial class MainWindow : Window, IAsyncDisposable
         InitializeComponent();
         InitializePetCenterFeature();
         InitializeArtworkWorkbench();
+        InitializeArtworkLibrary();
         DiagnosticsPage.RefreshRequested += DiagnosticsPage_RefreshRequested;
         DiagnosticsPage.DebugPortPreferenceSaveRequested +=
             DiagnosticsPage_DebugPortPreferenceSaveRequested;
@@ -414,6 +415,7 @@ public partial class MainWindow : Window, IAsyncDisposable
         _visualApplyCancellation?.Dispose();
         _visualApplyCancellation = null;
         _personalizationCancellation.Cancel();
+        await DisposeArtworkLibraryAsync();
         _personalizationCancellation.Dispose();
         if (_petGalleryService is not null)
         {

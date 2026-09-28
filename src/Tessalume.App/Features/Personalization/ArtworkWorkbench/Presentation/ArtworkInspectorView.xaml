@@ -346,6 +346,7 @@
             <Border Height="1" Background="{DynamicResource SettingsControlBorder}" Margin="0,12,0,10" />
 
             <TextBlock Text="图片来源" Foreground="{DynamicResource PrimaryText}" FontSize="10.5" FontWeight="SemiBold" Margin="1,0,0,7" />
+            <Button x:Name="ChooseLibraryImageButton" Style="{StaticResource InspectorAccentActionButton}" Content="从角色图库选择" Click="ChooseLibraryImage_Click" Margin="0,0,0,8" AutomationProperties.Name="从角色图库预览并选择图片" />
             <Grid>
                 <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="8" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
                 <Button x:Name="ChooseImageButton" Style="{StaticResource InspectorAccentActionButton}" Content="更换本地图片" Click="ChooseImage_Click" ToolTip="替换当前区域与亮暗模式的图片" AutomationProperties.Name="选择本地替换图片" />

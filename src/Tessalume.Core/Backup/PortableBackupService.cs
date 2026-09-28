@@ -214,6 +214,12 @@ public sealed partial class PortableBackupService
             }
         }
 
+        var artworkLibrary = Path.Combine(_dataDirectory, "personalization", "library.json");
+        if (File.Exists(artworkLibrary) && !IsReparsePoint(artworkLibrary))
+        {
+            AddSource(result, artworkLibrary, "data/personalization/library.json", themeDirectoryName: null);
+        }
+
         if (!options.IncludeImportedThemes || !Directory.Exists(_themesDirectory)) return result;
         foreach (var directory in Directory.EnumerateDirectories(_themesDirectory)
                      .Order(StringComparer.OrdinalIgnoreCase))
@@ -443,7 +449,10 @@ public sealed partial class PortableBackupService
                 segments[1].Equals("personalization", StringComparison.OrdinalIgnoreCase) &&
                 segments[2].Equals("images", StringComparison.OrdinalIgnoreCase) &&
                 PersonalImageExtensions.Contains(Path.GetExtension(segments[3]));
-            if (!isRootDataFile && !isPersonalImage)
+            var isArtworkLibrary = segments.Length == 3 &&
+                segments[1].Equals("personalization", StringComparison.OrdinalIgnoreCase) &&
+                segments[2].Equals("library.json", StringComparison.OrdinalIgnoreCase);
+            if (!isRootDataFile && !isPersonalImage && !isArtworkLibrary)
             {
                 throw new InvalidDataException($"备份包含不允许恢复的数据文件：{dataPath}");
             }
@@ -588,15 +597,41 @@ public sealed partial class PortableBackupService
                 Path.Combine(rollbackRoot, "data", name),
                 isDirectory: false));
         }
-        if (manifest.Files.Any(file => file.Path.StartsWith(
-                "data/personalization/images/",
-                StringComparison.OrdinalIgnoreCase)))
+        var libraryFile = manifest.Files.FirstOrDefault(file => file.Path.Equals(
+            "data/personalization/library.json", StringComparison.OrdinalIgnoreCase));
+        var imageFiles = manifest.Files.Where(file => file.Path.StartsWith(
+            "data/personalization/images/", StringComparison.OrdinalIgnoreCase)).ToArray();
+        if (libraryFile is not null)
         {
             targets.Add(new RestoreTarget(
-                Path.Combine(stagedRoot, "data", "personalization"),
-                Path.Combine(_dataDirectory, "personalization"),
-                Path.Combine(rollbackRoot, "data", "personalization"),
+                Path.Combine(stagedRoot, "data", "personalization", "library.json"),
+                Path.Combine(_dataDirectory, "personalization", "library.json"),
+                Path.Combine(rollbackRoot, "data", "personalization", "library.json"),
+                isDirectory: false));
+            // A catalog makes this a complete gallery snapshot, including an
+            // empty personal store. Leftover files would be rediscovered on load.
+            var stagedImages = Path.Combine(stagedRoot, "data", "personalization", "images");
+            Directory.CreateDirectory(stagedImages);
+            targets.Add(new RestoreTarget(
+                stagedImages,
+                Path.Combine(_dataDirectory, "personalization", "images"),
+                Path.Combine(rollbackRoot, "data", "personalization", "images"),
                 isDirectory: true));
+        }
+        else
+        {
+            // Pre-library backups know nothing about the user's newer catalog.
+            // Restore their immutable pictures individually, preserving newer
+            // originals, classifications, favorites and composition history.
+            foreach (var file in imageFiles)
+            {
+                var name = Path.GetFileName(file.Path);
+                targets.Add(new RestoreTarget(
+                    Path.Combine(stagedRoot, "data", "personalization", "images", name),
+                    Path.Combine(_dataDirectory, "personalization", "images", name),
+                    Path.Combine(rollbackRoot, "data", "personalization", "images", name),
+                    isDirectory: false));
+            }
         }
         foreach (var directoryName in manifest.Files
                      .Where(file => file.Path.StartsWith("themes/", StringComparison.OrdinalIgnoreCase))

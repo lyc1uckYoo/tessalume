@@ -59,7 +59,7 @@ $replacementBackup = Join-Path $distRoot ".previous-portable-$Runtime"
 $sourceThemes = Join-Path $root 'themes'
 $optimizedThemes = Join-Path $root 'optimized-themes'
 $sourcePets = Join-Path $root 'pets'
-$builtInPetPackageNames = @('flying-snowfluff', 'phoebe-jiubi')
+$builtInPetPackageNames = @('flying-snowfluff', 'phoebe-jiubi', 'qingxiao')
 $themeOptimizer = Join-Path $root 'tools\optimize-theme-assets.py'
 $windowsTargetProperties = @(
     '-p:TargetPlatformDisplayName=Windows'
@@ -591,6 +591,10 @@ function Assert-BuiltInPetPackages([string]$PetsRoot, [string[]]$ExpectedPackage
         }
         $seenPreviews = [Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
         foreach ($expectedPreview in $expectedPreviews) {
+            # Qingxiao's accepted direction loop and nine-cell showcase retain
+            # the same compact 576x624 canvas as its action previews.
+            $expectedWidth = if ($expectedName -ceq 'qingxiao') { 576 } else { $expectedPreview.Width }
+            $expectedHeight = if ($expectedName -ceq 'qingxiao') { 624 } else { $expectedPreview.Height }
             $matches = @($previews | Where-Object { [string]$_.path -ceq $expectedPreview.Path })
             if ($matches.Count -ne 1 -or
                 -not $seenPreviews.Add([string]$matches[0].path) -or
@@ -601,8 +605,8 @@ function Assert-BuiltInPetPackages([string]$PetsRoot, [string[]]$ExpectedPackage
                 [string]::IsNullOrWhiteSpace([string]$matches[0].label) -or
                 [int]$matches[0].expectedFrameCount -lt 2 -or
                 [int]$matches[0].expectedFrameCount -gt 24 -or
-                [int]$matches[0].width -ne $expectedPreview.Width -or
-                [int]$matches[0].height -ne $expectedPreview.Height -or
+                [int]$matches[0].width -ne $expectedWidth -or
+                [int]$matches[0].height -ne $expectedHeight -or
                 [int]$matches[0].representativeFrame -ne 0 -or
                 [bool]$matches[0].loop -ne $true -or
                 -not $filesByPath.ContainsKey($expectedPreview.Path) -or
@@ -610,7 +614,7 @@ function Assert-BuiltInPetPackages([string]$PetsRoot, [string[]]$ExpectedPackage
                 throw "Built-in pet package '$expectedName' has invalid preview metadata: '$($expectedPreview.Path)'."
             }
             $gif = Get-PetGifMetadata (Join-Path $package.FullName ($expectedPreview.Path -replace '/', [IO.Path]::DirectorySeparatorChar))
-            if ($gif.Width -ne $expectedPreview.Width -or $gif.Height -ne $expectedPreview.Height -or
+            if ($gif.Width -ne $expectedWidth -or $gif.Height -ne $expectedHeight -or
                 $gif.FrameCount -ne [int]$matches[0].expectedFrameCount) {
                 throw "Built-in pet package '$expectedName' has an invalid animated preview boundary: '$($expectedPreview.Path)'."
             }

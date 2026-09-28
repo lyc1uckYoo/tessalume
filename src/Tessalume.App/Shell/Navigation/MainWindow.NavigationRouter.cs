@@ -27,7 +27,7 @@ public partial class MainWindow
         // workspace and uses the full viewport; reading routes stay compact.
         InfoContentHost.MaxWidth = route switch
         {
-            AppRoute.ArtworkStudio => 1440,
+            AppRoute.ArtworkStudio or AppRoute.ArtworkLibrary => 1440,
             AppRoute.Pets => double.PositiveInfinity,
             _ => 940,
         };
@@ -40,6 +40,7 @@ public partial class MainWindow
         CreatorCenter.Visibility = route == AppRoute.CreatorCenter ? Visibility.Visible : Visibility.Collapsed;
         PetCenterPage.Visibility = route == AppRoute.Pets ? Visibility.Visible : Visibility.Collapsed;
         PetCenterPage.SetPageActive(route == AppRoute.Pets);
+        ArtworkLibraryPage.Visibility = route == AppRoute.ArtworkLibrary ? Visibility.Visible : Visibility.Collapsed;
         PersonalizationInfoPanel.Visibility = isPersonalization ? Visibility.Visible : Visibility.Collapsed;
         SettingsInfoPanel.Visibility = route == AppRoute.ArtworkStudio ? Visibility.Visible : Visibility.Collapsed;
         DisplayPreferencesInfoPanel.Visibility = route == AppRoute.DisplayPreferences ? Visibility.Visible : Visibility.Collapsed;

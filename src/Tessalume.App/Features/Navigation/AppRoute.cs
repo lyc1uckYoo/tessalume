@@ -8,6 +8,7 @@ internal enum AppRoute
 {
     ThemeLibrary,
     ImportTheme,
+    ArtworkLibrary,
     ArtworkStudio,
     DisplayPreferences,
     Pets,

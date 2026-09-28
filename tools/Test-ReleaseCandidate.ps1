@@ -49,7 +49,9 @@ try {
     & $runtimeBuilder -Destination $runtimePath
     node --check $runtimePath
     if ($LASTEXITCODE -ne 0) { throw 'Assembled compatibility runtime syntax is invalid.' }
-    $compatibility = & $compatibilityBuilder -Version 3.0.7 -OutputDirectory $compatibilityOutput
+    $compatibilityProfile = Get-Content -LiteralPath (Join-Path $repositoryRoot 'src\Tessalume.App\Compatibility\compatibility-profile-v3.json') -Raw -Encoding UTF8 |
+        ConvertFrom-Json
+    $compatibility = & $compatibilityBuilder -Version ([string]$compatibilityProfile.profileVersion) -OutputDirectory $compatibilityOutput
 
     if (-not $SkipPublish) {
         if (-not (Test-Path -LiteralPath $executablePath -PathType Leaf) -or

@@ -72,7 +72,10 @@
     }
     spec.onMount?.(api);
     validateTemplateStructure();
-    context.observe(document.documentElement, { childList:true, subtree:true }, onDocumentMutations);
+    context.observe(document.documentElement, {
+      childList:true, subtree:true, attributes:true,
+      attributeFilter:["aria-hidden", "hidden", "inert", "data-app-shell-workspace-layout", "data-app-shell-unified-tab-strip"],
+    }, onDocumentMutations);
     context.on(window, "resize", () => {
       syncLiveLayout();
       startLayoutTracking();

@@ -131,7 +131,12 @@ public partial class MainWindow
     {
         ArtworkRegion.Sidebar => "左栏图片",
         ArtworkRegion.Chat => "聊天背景",
-        _ => "首页横幅",
+        ArtworkRegion.TaskLeft => "左上角色卡",
+        ArtworkRegion.Memory => "左下记忆卡",
+        ArtworkRegion.TaskRightSecondary => "右侧次卡",
+        ArtworkRegion.TaskRightPrimary => "右侧主卡",
+        ArtworkRegion.Hero => "首页横幅",
+        _ => "图片位置",
     };
 
     private static string GetArtworkModeDisplayName(ArtworkColorMode mode) =>

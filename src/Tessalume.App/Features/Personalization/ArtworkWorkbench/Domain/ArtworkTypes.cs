@@ -2,9 +2,14 @@ namespace Tessalume.App.Features.Personalization.ArtworkWorkbench.Domain;
 
 internal enum ArtworkRegion
 {
-    Hero,
-    Sidebar,
-    Chat,
+    Hero = 0,
+    Sidebar = 1,
+    Chat = 2,
+    TaskLeft = 3,
+    Memory = 4,
+    TaskRightSecondary = 5,
+    TaskRightPrimary = 6,
+
 }
 
 internal enum ArtworkColorMode

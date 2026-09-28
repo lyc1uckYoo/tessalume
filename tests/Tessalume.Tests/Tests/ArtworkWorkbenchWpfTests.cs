@@ -199,13 +199,20 @@ internal static partial class TestSuite
                 host.UpdateLayout();
                 Ensure(view.PreviewCanvas.MinHeight == 360,
                     "Switching to Sidebar must retain a compact but useful framing canvas.");
-                Ensure(Math.Abs(
-                           view.PreviewCanvas.ViewportBorder.ActualWidth /
-                           view.PreviewCanvas.ViewportBorder.ActualHeight -
-                           275d / 998d) < .001d &&
+                var sidebarAspectRatio = 275d / 998d;
+                var viewportDpi = VisualTreeHelper.GetDpi(view.PreviewCanvas.ViewportBorder);
+                // The requested geometry remains exact, while WPF rounds the
+                // arranged width and height independently to physical pixels.
+                // Measure that rounding in pixels instead of a ratio whose
+                // error grows as a portrait preview becomes narrower.
+                Ensure(Math.Abs(view.PreviewCanvas.ViewportBorder.Width /
+                                view.PreviewCanvas.ViewportBorder.Height - sidebarAspectRatio) < .000001d &&
+                       Math.Abs(view.PreviewCanvas.ViewportBorder.ActualWidth -
+                                view.PreviewCanvas.ViewportBorder.ActualHeight * sidebarAspectRatio) *
+                           viewportDpi.DpiScaleX <= 1d &&
                        view.PreviewCanvas.ViewportBorder.ActualWidth < 220d &&
                        view.PreviewCanvas.ViewportBorder.ActualHeight <=
-                       view.PreviewCanvas.CanvasHost.ActualHeight - 22d + .001d,
+                       view.PreviewCanvas.CanvasHost.ActualHeight - 22d + 1d / viewportDpi.DpiScaleY,
                     "The arranged Sidebar canvas must display the full portrait at its true aspect ratio without enlarging it " +
                     $"(viewport {view.PreviewCanvas.ViewportBorder.ActualWidth:0.##}×" +
                     $"{view.PreviewCanvas.ViewportBorder.ActualHeight:0.##}, " +

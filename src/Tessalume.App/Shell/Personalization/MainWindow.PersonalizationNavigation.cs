@@ -12,11 +12,13 @@ public partial class MainWindow
 
     private void Settings_Click(object sender, RoutedEventArgs e)
     {
+        _personalizationThemeOverride = null;
         OpenPersonalizationPage(Features.Navigation.AppRoute.ArtworkStudio);
     }
 
     private void DisplayPreferences_Click(object sender, RoutedEventArgs e)
     {
+        _personalizationThemeOverride = null;
         OpenPersonalizationPage(Features.Navigation.AppRoute.DisplayPreferences);
     }
 
@@ -49,7 +51,7 @@ public partial class MainWindow
             return;
         }
 
-        var currentId = _activeThemeId ?? GetVisualAdjustmentTheme()?.ThemeId;
+        var currentId = GetVisualAdjustmentTheme()?.ThemeId ?? _activeThemeId;
         var currentIndex = Array.FindIndex(candidates, theme =>
             string.Equals(theme.ThemeId, currentId, StringComparison.OrdinalIgnoreCase));
         if (currentIndex < 0)
@@ -87,6 +89,13 @@ public partial class MainWindow
 
     private ThemeCardModel? GetVisualAdjustmentTheme()
     {
+        if (_personalizationThemeOverride is not null)
+        {
+            var target = _themes.FirstOrDefault(theme => theme.IsValid &&
+                string.Equals(theme.ThemeId, _personalizationThemeOverride, StringComparison.OrdinalIgnoreCase));
+            if (target is not null) return target;
+            _personalizationThemeOverride = null;
+        }
         if (!string.IsNullOrWhiteSpace(_activeThemeId))
         {
             var active = _themes.FirstOrDefault(theme =>
@@ -107,16 +116,16 @@ public partial class MainWindow
             ? null
             : _themes.FirstOrDefault(theme =>
                 string.Equals(theme.ThemeId, _activeThemeId, StringComparison.OrdinalIgnoreCase));
-        var positionTheme = activeTheme ?? adjustmentTheme;
+        var positionTheme = adjustmentTheme ?? activeTheme;
         var position = positionTheme is null
             ? -1
             : Array.FindIndex(candidates, theme =>
                 string.Equals(theme.ThemeId, positionTheme.ThemeId, StringComparison.OrdinalIgnoreCase));
 
-        SettingsCurrentThemeNameText.Text = activeTheme?.Name
-            ?? adjustmentTheme?.Name
+        SettingsCurrentThemeNameText.Text = adjustmentTheme?.Name
+            ?? activeTheme?.Name
             ?? "Codex 默认外观";
-        SettingsThemeStateText.Text = activeTheme is not null
+        SettingsThemeStateText.Text = activeTheme is not null && activeTheme.ThemeId == adjustmentTheme?.ThemeId
             ? "已应用到 Codex"
             : adjustmentTheme is not null
                 ? "本地编辑 · 尚未应用到 Codex"
@@ -124,7 +133,7 @@ public partial class MainWindow
         SettingsThemePositionText.Text = position >= 0
             ? $"{position + 1:00} / {candidates.Length:00}"
             : $"— / {candidates.Length:00}";
-        SettingsLiveDot.Fill = (Brush)Resources[activeTheme is not null
+        SettingsLiveDot.Fill = (Brush)Resources[activeTheme is not null && activeTheme.ThemeId == adjustmentTheme?.ThemeId
             ? "Positive"
             : adjustmentTheme is not null ? "Amber" : "SubtleText"];
         SettingsPreviousThemeButton.IsEnabled = candidates.Length > 0;

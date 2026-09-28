@@ -164,14 +164,18 @@ public partial class MainWindow
         SetArtworkSurfaceMetric(ArtworkRegion.Hero, currentSnapshot.Hero, currentSnapshot);
         SetArtworkSurfaceMetric(ArtworkRegion.Sidebar, currentSnapshot.Sidebar, currentSnapshot);
         SetArtworkSurfaceMetric(ArtworkRegion.Chat, currentSnapshot.Chat, currentSnapshot);
+        SetArtworkSurfaceMetric(ArtworkRegion.TaskLeft, currentSnapshot.TaskLeft, currentSnapshot);
+        SetArtworkSurfaceMetric(ArtworkRegion.Memory, currentSnapshot.Memory, currentSnapshot);
+        SetArtworkSurfaceMetric(ArtworkRegion.TaskRightSecondary, currentSnapshot.TaskRightSecondary, currentSnapshot);
+        SetArtworkSurfaceMetric(ArtworkRegion.TaskRightPrimary, currentSnapshot.TaskRightPrimary, currentSnapshot);
     }
 
     private void SetArtworkSurfaceMetric(
         ArtworkRegion region,
-        ThemeArtworkSurfaceMetric metric,
+        ThemeArtworkSurfaceMetric? metric,
         ThemeArtworkSurfaceMetricsSnapshot snapshot)
     {
-        if (!metric.Available || metric.Rect is not { Width: > 0d, Height: > 0d } rect)
+        if (metric is not { Available: true, Rect: { Width: > 0d, Height: > 0d } rect })
         {
             ArtworkWorkbench.SetSurfaceMetrics(
                 region,
@@ -181,7 +185,7 @@ public partial class MainWindow
                     snapshot.DevicePixelRatio,
                     IsLive: false,
                     $"当前 Codex {snapshot.Route} 路由无法测量此区域：" +
-                    (metric.UnavailableReason ?? "surface 不可用")));
+                    (metric?.UnavailableReason ?? "surface 不可用")));
             return;
         }
         var computed = metric.Computed;

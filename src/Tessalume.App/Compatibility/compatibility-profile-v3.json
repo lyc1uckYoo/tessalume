@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "profileVersion": "3.0.7",
+  "profileVersion": "3.0.8",
   "runtimeContractVersion": 4,
   "selectors": {
     "main": [
@@ -64,6 +64,9 @@
     ],
     "taskHeader": [
       "[data-testid=\"app-shell-header-context-menu-surface\"]"
+    ],
+    "nativeTabStrip": [
+      "[data-app-shell-tab-row=\"true\"]"
     ],
     "outputPanelItem": [
       "[data-slot=\"thread-summary-panel-item-button\"]"

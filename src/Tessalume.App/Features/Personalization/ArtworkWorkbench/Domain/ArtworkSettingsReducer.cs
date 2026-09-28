@@ -346,6 +346,7 @@ internal static class ArtworkSettingsReducer
         new ThemeArtworkAdjustment
         {
             CustomImagePath = (adjustment ?? new ThemeArtworkAdjustment()).Normalize().CustomImagePath,
+            ThemeAssetKey = adjustment?.Normalize().ThemeAssetKey,
         }.Normalize();
 }
 
