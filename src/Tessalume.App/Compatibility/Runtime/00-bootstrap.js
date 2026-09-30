@@ -112,11 +112,18 @@
       return part ? `${home} [data-tessalume-home-part="${part}"]` : selector;
     },
   );
-  style.textContent = retargetHomeCss(`${templateCssText}\n${cssText}`);
+  // React rewrites the native composer's className while submitting. Match its
+  // stable attribute as well, at the same specificity, so the editor and its
+  // surrounding fade never fall back to native colors between repair passes.
+  const retargetComposerCss = (source) => source.replace(
+    /\.composer-surface-chrome(?![\w-])/g,
+    ':is(.composer-surface-chrome,[data-composer-surface-variant])',
+  );
+  style.textContent = retargetComposerCss(retargetHomeCss(`${templateCssText}\n${cssText}`));
   const compatibilityStyle = document.createElement("style");
   compatibilityStyle.id = "tessalume-runtime-compatibility-style";
   compatibilityStyle.dataset.themeId = themeId;
-  compatibilityStyle.textContent = `
+  compatibilityStyle.textContent = retargetComposerCss(`
 html.tessalume-theme-active.tessalume-is-home [data-tessalume-surface="home"] [data-tessalume-home-part="composer-carrier"] {
   top:0!important;
   left:auto!important;
@@ -125,6 +132,13 @@ html.tessalume-theme-active.tessalume-is-home [data-tessalume-surface="home"] [d
 html.tessalume-theme-active :is(main,[role="main"]):has(.composer-surface-chrome) .thread-scroll-container .sticky.bottom-0.tessalume-composer-fade-carrier {
   pointer-events:none!important;
   z-index:0!important;
+}
+/* The solid footer backdrop can be replaced independently of the composer.
+   Clear only its empty decoration from its first paint, without a JS marker. */
+html.tessalume-theme-active .thread-scroll-container [data-thread-scroll-footer="true"] > [aria-hidden="true"].pointer-events-none.absolute:empty {
+  background:transparent!important;
+  background-color:transparent!important;
+  background-image:none!important;
 }
 html.tessalume-theme-active.tessalume-is-task main[data-tessalume-surface="main"]::before,
 html.tessalume-theme-active.tessalume-is-task main[data-tessalume-surface="main"]::after {
@@ -135,10 +149,15 @@ html.tessalume-theme-active.tessalume-is-task main[data-tessalume-surface="main"
 html.tessalume-theme-active.tessalume-is-task body [data-tessalume-surface="task-title"][data-app-shell-titlebar-content="true"] {
   max-width:var(--tessalume-task-title-primary-width,calc(100vw - 24px))!important;
 }
+/* Codex moved the fixed titlebar outside main. Keep its painted task header
+   below the canonical stage (9), so it cannot cover the centered identity. */
+html.tessalume-theme-active.tessalume-is-task header[data-app-shell-titlebar="true"]:has([data-tessalume-surface="task-header"]) {
+  z-index:8!important;
+}
 html.tessalume-theme-active #tessalume-theme-root:is([data-tessalume-page-kind="other"],[data-tessalume-page-kind="settings"]) > *,
 html.tessalume-theme-active #tessalume-theme-root[data-tessalume-native-tab-strip="true"] [data-theme-role="identity"] {
   display:none!important;
-}`;
+}`);
   const visualMotionStyle = document.createElement("style");
   visualMotionStyle.id = "tessalume-artwork-motion-style";
   visualMotionStyle.dataset.themeId = themeId;

@@ -7,6 +7,13 @@ page recognition, adaptive layout, surface decoration, and cleanup/recovery resp
 fixed `runtime-bundle.json` order is assembled into `theme-runtime-v2.js` when built-in resources are
 installed or an official compatibility pack is created.
 
+Compatibility 3.0.9 adapts to Codex 26.928: it restores home artwork when the
+decorative home icon is aria-hidden, keeps the title identity above the native
+header, and prevents native composer backdrops from flashing during submission.
+Composer layout uses its persistent shell and treats the shell's own inert
+submission state as visible, so task cards remain stable while sending.
+After installing the update, apply the current theme again to activate it.
+
 Small official compatibility releases use tags named `compat-vX.Y.Z` and contain:
 
 - `Tessalume-Compatibility.zip`
@@ -16,7 +23,7 @@ The ZIP still contains only `compatibility-pack.json`, assembled `theme-runtime-
 `compatibility-profile-v3.json`. Build it with:
 
 ```powershell
-.\tools\New-CompatibilityPack.ps1 -Version 3.0.8
+.\tools\New-CompatibilityPack.ps1 -Version 3.0.9
 ```
 
 Compatibility releases must be created with GitHub's “latest” flag disabled so they never replace

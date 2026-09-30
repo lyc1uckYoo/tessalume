@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "profileVersion": "3.0.8",
+  "profileVersion": "3.0.9",
   "runtimeContractVersion": 4,
   "selectors": {
     "main": [
@@ -24,6 +24,9 @@
     ],
     "composerLegacySurface": [
       ".composer-surface-chrome"
+    ],
+    "composerNativeSurface": [
+      "[data-composer-surface-variant]"
     ],
     "composerEditor": [
       "[data-codex-composer=\"true\"]"

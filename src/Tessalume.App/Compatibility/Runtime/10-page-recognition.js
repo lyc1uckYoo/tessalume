@@ -121,8 +121,10 @@
     };
     // Full-view file tabs retain the chat DOM offscreen. Size alone is not a
     // visibility signal: that hidden chat can still have a 792px-wide editor.
-    const isVisibleSurface = (node) => {
-      if (!node?.isConnected || node.closest('[hidden],[inert],[aria-hidden="true"]')) return false;
+    const isVisibleSurface = (node, options = null) => {
+      if (!node?.isConnected || node.closest('[hidden],[aria-hidden="true"]')) return false;
+      const inertScope = options?.allowSelfInert === true ? node.parentElement : node;
+      if (inertScope?.closest('[inert]')) return false;
       const box = node.getBoundingClientRect();
       const style = getComputedStyle(node);
       const pane = node.closest('[data-app-shell-main-content-layout]');
@@ -135,9 +137,16 @@
         box.left < window.innerWidth && box.top < window.innerHeight &&
         style.display !== "none" && style.visibility !== "hidden" && style.visibility !== "collapse";
     };
+    // Submission disables the native shell with inert; it remains visible and
+    // still defines the space available for cards. Inert page ancestors still
+    // exclude offscreen/hidden tabs, as do all the usual visibility checks.
+    const isVisibleComposerSurface = (node) => isVisibleSurface(node, { allowSelfInert: true });
     const findHome = () => {
+      // The native home icon is decorative and now carries aria-hidden itself.
+      // Only hidden ancestors exclude its page; the icon remains a route marker.
       const icon = queryAll(findMain(), "homeIcon", ['[data-testid="home-icon"]']).find((node) =>
-        !node.closest('[hidden],[inert],[aria-hidden="true"]') &&
+        !node.closest('[hidden],[inert]') &&
+        !node.parentElement?.closest('[aria-hidden="true"]') &&
         isVisibleSurface(closestFirst(node, "homeAncestor", ['[role="main"]', "main"])));
       const home = closestFirst(icon, "homeAncestor", ['[role="main"]', "main"]);
       if (!isVisibleSurface(home)) return null;
@@ -175,26 +184,49 @@
     const findComposerSurface = () => {
       const scope = findTaskWorkspace() || findHome();
       if (!scope) return null;
+      // The native shell survives submission and read-only previews. The
+      // editor's data-codex-composer flag is assigned later by a React effect
+      // and can disappear while the shell still occupies the same space.
+      const nativeSurface = queryAll(
+        scope,
+        "composerNativeSurface",
+        ['[data-composer-surface-variant]'],
+      ).find(isVisibleComposerSurface);
       const legacySurface = queryAll(
         scope,
         "composerLegacySurface",
         [".composer-surface-chrome"],
-      ).find(isVisibleSurface);
+      ).find(isVisibleComposerSurface);
       const editor = queryAll(
         scope,
         "composerEditor",
         ['[data-codex-composer="true"]'],
       ).find(isVisibleSurface);
-      const surface = legacySurface ||
+      const surface = nativeSurface || legacySurface ||
         closestFirst(editor, "composerRootAncestor", ['[class*="ComposerLayoutRoot"]']) ||
         closestFirst(editor, "composerBodyAncestor", ['[class*="ComposerLayoutBody"]'])?.parentElement ||
         null;
-      if (!surface || !scope.contains(surface) || !isVisibleSurface(surface)) return null;
+      if (!surface || !scope.contains(surface) || !isVisibleComposerSurface(surface)) return null;
 
       // Codex renamed both the composer root and footer CSS-module classes in
       // mid-2026. Keep the stable Tessalume aliases at the compatibility layer
       // so every existing theme can continue styling the native composer.
       mark(surface, "composer-surface-chrome");
+      // Newer Codex footers split the backdrop into a short gradient and a
+      // solid floor. Only clear the empty, noninteractive decoration beside
+      // this composer; the editor and status/control surfaces keep their skin.
+      const scrollFooter = surface.closest('[data-thread-scroll-footer="true"]');
+      if (scrollFooter && scope.contains(scrollFooter)) {
+        for (const backdrop of scrollFooter.children) {
+          if (backdrop.getAttribute("aria-hidden") !== "true" ||
+              backdrop.childNodes.length !== 0) continue;
+          const backdropStyle = getComputedStyle(backdrop);
+          if (backdropStyle.position === "absolute" &&
+              backdropStyle.pointerEvents === "none") {
+            mark(backdrop, "tessalume-composer-native-fade");
+          }
+        }
+      }
       const surfaceBox = surface.getBoundingClientRect();
       let bottomCarrier = surface.parentElement;
       while (bottomCarrier && bottomCarrier !== document.body) {
@@ -284,7 +316,7 @@
       const scope = workspace || home;
       for (const [node, className] of marked) {
         if (className === "composer-surface-chrome" &&
-            (!scope?.contains(node) || !isVisibleSurface(node))) {
+            (!scope?.contains(node) || !isVisibleComposerSurface(node))) {
           node.classList.remove(className);
           if (node.getAttribute("data-tessalume-surface") === "composer")
             node.removeAttribute("data-tessalume-surface");
