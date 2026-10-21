@@ -167,14 +167,8 @@
       const editor = queryFirst(home, "composerEditor", ['[data-codex-composer="true"]']);
       const composerCarrier = editor?.closest('[class*="z-20"][class*="pb-4"]');
       markHomePart(composerCarrier, "composer-carrier");
-      // Codex 26.1016 inserts an empty 46px home mode toolbar above the actual
-      // home page. Keep a semantic handle for the shared template so it can
-      // collapse only the empty spacer without hiding future native controls.
-      const modeToggle = queryFirst(
-        findMain(),
-        "homeModeToggle",
-        ['[class*="home-mode-toggle"]'],
-      );
+      // Mark Codex 26.1016's empty 46px toolbar without hiding future controls.
+      const modeToggle = queryFirst(findMain(), "homeModeToggle", ['[class*="home-mode-toggle"]']);
       if (modeToggle && modeToggle.parentElement?.contains(home)) {
         markHomePart(modeToggle, "mode-toggle");
       }
@@ -237,31 +231,21 @@
             mark(backdrop, "tessalume-composer-native-fade");
           }
         }
-        // Codex 26.1016 moved the short footer fade out of the footer and made
-        // it an absolutely positioned sibling ending exactly at the composer's
-        // top edge. Discover that semantic paint by geometry and behavior,
-        // rather than its generated CSS-module name.
+        // Codex 26.1016 moved the short footer fade to an absolute sibling.
+        // Discover it by geometry and behavior, not a generated class name.
         const footerBox = scrollFooter.getBoundingClientRect();
-        const footerParent = scrollFooter.parentElement;
-        if (footerParent) {
-          for (const candidate of footerParent.querySelectorAll('[aria-hidden="true"]')) {
-            if (candidate === scrollFooter || scrollFooter.contains(candidate)) continue;
-            const candidateStyle = getComputedStyle(candidate);
-            const candidateClass = typeof candidate.className === "string"
-              ? candidate.className
-              : "";
-            if (candidateStyle.position !== "absolute" ||
-                candidateStyle.pointerEvents !== "none" ||
-                (!candidateStyle.backgroundImage.includes("gradient") &&
-                 !candidateClass.includes("from-surface") &&
-                 !candidateClass.includes("fade"))) continue;
-            const candidateBox = candidate.getBoundingClientRect();
-            const horizontallyCoversFooter = candidateBox.width >= footerBox.width * .8 &&
-              candidateBox.right > footerBox.left && candidateBox.left < footerBox.right;
-            const endsAtComposer = Math.abs(candidateBox.bottom - footerBox.top) < 2;
-            if (candidateBox.height > 0 && horizontallyCoversFooter && endsAtComposer) {
-              mark(candidate, "tessalume-composer-native-fade");
-            }
+        for (const candidate of scrollFooter.parentElement?.querySelectorAll('[aria-hidden="true"]') || []) {
+          if (candidate === scrollFooter || scrollFooter.contains(candidate)) continue;
+          const style = getComputedStyle(candidate);
+          const classes = typeof candidate.className === "string" ? candidate.className : "";
+          const hasFadePaint = style.backgroundImage.includes("gradient") ||
+            classes.includes("from-surface") || classes.includes("fade");
+          if (style.position !== "absolute" || style.pointerEvents !== "none" || !hasFadePaint) continue;
+          const box = candidate.getBoundingClientRect();
+          if (box.height > 0 && box.width >= footerBox.width * .8 &&
+              box.right > footerBox.left && box.left < footerBox.right &&
+              Math.abs(box.bottom - footerBox.top) < 2) {
+            mark(candidate, "tessalume-composer-native-fade");
           }
         }
       }
