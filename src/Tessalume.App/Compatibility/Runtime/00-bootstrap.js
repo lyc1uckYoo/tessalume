@@ -124,6 +124,11 @@
   compatibilityStyle.id = "tessalume-runtime-compatibility-style";
   compatibilityStyle.dataset.themeId = themeId;
   compatibilityStyle.textContent = retargetComposerCss(`
+/* Keep compatibility packs self-contained: older app builds do not have the
+   Codex 26.1016 home toolbar rule in their embedded Template 1.0 stylesheet. */
+html.tessalume-theme-active.tessalume-is-home [data-tessalume-home-part="mode-toggle"]:not(:has(button,a,input,select,[role="button"],[role="tab"])) {
+  display:none!important;
+}
 html.tessalume-theme-active.tessalume-is-home [data-tessalume-surface="home"] [data-tessalume-home-part="composer-carrier"] {
   top:0!important;
   left:auto!important;

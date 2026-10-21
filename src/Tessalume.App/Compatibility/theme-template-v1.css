@@ -408,6 +408,13 @@ html.tessalume-theme-active [data-tessalume-surface="home"] {
   overflow-x:hidden!important;
 }
 
+/* Codex 26.1016 reserves a home-mode toolbar even when it contains no native
+   control. Collapse only that empty spacer; a future populated toolbar keeps
+   its native height and remains interactive. */
+html.tessalume-theme-active.tessalume-is-home [data-tessalume-home-part="mode-toggle"]:not(:has(button,a,input,select,[role="button"],[role="tab"])) {
+  display:none!important;
+}
+
 html.tessalume-theme-active [data-tessalume-surface="home"] > div:first-child {
   min-height:100%!important;
   padding-top:14px!important;

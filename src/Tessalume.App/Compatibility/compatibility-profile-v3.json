@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "profileVersion": "3.0.9",
+  "profileVersion": "3.0.10",
   "runtimeContractVersion": 4,
   "selectors": {
     "main": [
@@ -15,6 +15,9 @@
     "homeAncestor": [
       "[role=\"main\"]",
       "main"
+    ],
+    "homeModeToggle": [
+      "[class*=\"home-mode-toggle\"]"
     ],
     "sidebar": [
       "aside.app-shell-left-panel"

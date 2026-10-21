@@ -126,11 +126,14 @@
         ['[data-testid="app-shell-header-context-menu-surface"]'],
       ).forEach((header) => {
         // A unified file/chat tab strip reuses the old task-header element.
-        // Never apply content-sized title geometry to the native tab carrier.
-        if (!html.classList.contains("tessalume-is-task") || !isVisibleSurface(header) ||
-            header.closest('[data-app-shell-tab-row="true"]') ||
-            header.querySelector('[role="tab"],[role="tablist"],[data-app-shell-tab-row="true"]')) return;
+        // Never apply content-sized title geometry to an actual tab carrier.
+        // Codex 26.1016 also wraps an ordinary task title in
+        // data-app-shell-tab-row, so that attribute alone is no longer proof
+        // that the header contains tabs.
         const currentTitle = header.querySelector('[data-app-shell-titlebar-content="true"]');
+        const containsTabs = Boolean(header.querySelector('[role="tab"],[role="tablist"]'));
+        if (!html.classList.contains("tessalume-is-task") || !isVisibleSurface(header) ||
+            header.closest('[data-app-shell-tab-row="true"]') || containsTabs || !currentTitle) return;
         const titleButton = header.querySelector("span > button.truncate");
         const title = titleButton?.parentElement?.parentElement ||
           header.querySelector("span > span.truncate")?.parentElement;

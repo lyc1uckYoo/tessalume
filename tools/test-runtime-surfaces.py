@@ -44,9 +44,18 @@ def payload(extra_css=""):
              '[data-theme-role="task-right"][data-theme-priority="primary"]'], 320, 56, 40);
         }});
     }});"""
+    # Compatibility packs do not ship the shared template stylesheet. Remove
+    # the new home-toolbar rule here so every home case proves that runtime
+    # 3.0.10 also fixes existing 2.2.0 installations on its own.
+    template_css = re.sub(
+        r'/\* Codex 26\.1016 reserves a home-mode toolbar.*?\n}\n',
+        '',
+        (COMPAT / "theme-template-v1.css").read_text("utf-8"),
+        flags=re.DOTALL,
+    )
     values = {
         "THEME_ID_JSON": json.dumps("qa.surface-isolation"),
-        "TEMPLATE_CSS_JSON": json.dumps((COMPAT / "theme-template-v1.css").read_text("utf-8")),
+        "TEMPLATE_CSS_JSON": json.dumps(template_css),
         "CSS_JSON": json.dumps(extra_css), "HAS_SCRIPT": "true", "SCRIPT_BODY": script,
         "ASSETS_JSON": "{}", "CONFIG_JSON": "{}", "ALLOW_PET_OVERLAY": "false",
         "FINGERPRINT_JSON": json.dumps("qa-home-footer-20260930"),
@@ -66,7 +75,7 @@ main{position:relative;margin-left:190px;top:52px;width:calc(100% - 190px);heigh
 #pane{position:absolute;inset:0;width:100%;overflow:hidden}.thread-scroll-container{position:absolute;inset:0;overflow:auto}
 .composer-carrier{position:absolute;bottom:16px;left:35%;width:28%;height:90px}.ComposerLayoutRoot{position:relative;width:100%;height:90px}
 [data-codex-composer]{height:60px}#viewer{position:absolute;right:0;top:0;height:100%;width:0;overflow:hidden}
-</style></head><body><header data-testid="app-shell-header-context-menu-surface"><div data-app-shell-titlebar-content="true" class="title"><span><button class="truncate">A task title</button></span></div></header>
+</style></head><body><header data-testid="app-shell-header-context-menu-surface"><div data-app-shell-tab-row="true"><div data-app-shell-titlebar-content="true" class="title"><span><button class="truncate">A task title</button></span></div></div></header>
 <main data-app-shell-main-surface="default"><div id="pane" data-app-shell-main-content-layout="thread-edge-scroll" data-app-shell-workspace-layout="split" data-app-shell-focus-area="main">
 <div class="thread-scroll-container"><div class="composer-carrier"><div class="ComposerLayoutRoot" data-composer-surface-variant="default"><div data-codex-composer="true" contenteditable="true"></div></div></div></div></div>
 <aside id="viewer" data-app-shell-focus-area="right-panel"><div role="tabpanel">Image preview</div></aside></main></body></html>"""
@@ -109,26 +118,27 @@ TITLEBAR_PROBE = """(() => {
 # Preserve the native wrapper depth: discovery also marks these banner layers.
 HOME_HTML = """<!doctype html><html><head><style>
 *{box-sizing:border-box}body{margin:0}main{position:relative;margin-left:190px;top:52px;width:calc(100% - 190px);height:calc(100vh - 52px)}
-[role=main]{position:relative;width:100%;height:100%}.home-layout{height:100%;display:flex;flex-direction:column}
+#home-shell{height:100%;display:flex;flex-direction:column}.home-mode-toggle{height:46px;flex:0 0 46px}[role=main]{position:relative;width:100%;min-height:0;flex:1}.home-layout{height:100%;display:flex;flex-direction:column}
 .contents{display:contents}.hero-region{display:flex;align-items:center;justify-content:center;flex:1}
 .banner{width:100%}.banner-inner{width:80%;margin:auto}.native-title{height:112px}
 .icon-wrapper{display:flex;flex-direction:column;align-items:center}[data-testid=home-icon]{width:56px;height:56px}
 .home-composer{position:absolute;bottom:16px;left:30%;width:40%;height:90px}.ComposerLayoutRoot{height:90px}
 [data-codex-composer]{height:60px}
-</style></head><body><main data-app-shell-main-surface="default"><div id="home" role="main">
+</style></head><body><main data-app-shell-main-surface="default"><div id="home-shell"><div id="home-mode" class="home-mode-toggle"><div></div></div><div id="home" role="main">
 <div id="home-layout" class="home-layout"><div class="contents"><div class="hero-region">
 <div class="banner" aria-hidden="false"><div class="banner-inner"><div class="native-title"><div class="icon-wrapper">
 <div data-testid="home-icon" aria-hidden="true"></div><h1>What would you like to build?</h1>
 </div></div></div></div></div></div></div>
 <div class="home-composer z-20 pb-4"><div class="ComposerLayoutRoot"><div data-codex-composer="true" contenteditable="true"></div></div></div>
-</div></main></body></html>"""
+</div></div></main></body></html>"""
 
 HOME_PROBE = """(() => {
- const root=document.querySelector('#tessalume-theme-root'),home=document.querySelector('#home');
+ const root=document.querySelector('#tessalume-theme-root'),home=document.querySelector('#home'),mode=document.querySelector('#home-mode');
  return {kind:root.dataset.tessalumePageKind,home:document.documentElement.classList.contains('tessalume-is-home'),
    task:document.documentElement.classList.contains('tessalume-is-task'),
    homeMarked:home.getAttribute('data-tessalume-surface')==='home',
-   parts:[...home.querySelectorAll('[data-tessalume-home-part]')].map(n=>n.dataset.tessalumeHomePart),
+   parts:[...document.querySelectorAll('[data-tessalume-home-part]')].map(n=>n.dataset.tessalumeHomePart),
+   modeDisplay:getComputedStyle(mode).display,modeMarked:mode.dataset.tessalumeHomePart==='mode-toggle',
    heroDisplay:getComputedStyle(root.querySelector('[data-theme-role="hero"]')).display,
    chromeCount:document.querySelectorAll('.composer-surface-chrome').length,
    liveComposerMarked:!!home.querySelector('.composer-surface-chrome'),
@@ -142,12 +152,14 @@ FOOTER_HTML = """<!doctype html><html><head><style>
 [data-app-shell-main-content-layout],.thread-scroll-container{position:absolute;inset:0}.absolute{position:absolute}.bottom-0{bottom:0}.inset-x-0{left:0;right:0}
 .pointer-events-none{pointer-events:none}.bg-surface{background:rgb(24,24,24)}
 #footer{position:absolute;bottom:0;width:100%;height:130px}#native-floor{height:115px}
+#new-sibling-fade{height:32px;bottom:130px;background-image:linear-gradient(to top,rgb(24,24,24),transparent)}
 .composer-carrier{position:absolute;bottom:0;left:25%;width:50%;height:100px}
 .ComposerLayoutRoot{height:100px;background:rgb(43,53,63)}[data-codex-composer]{height:70px}
 #footer-action{position:absolute;right:0;bottom:0;width:90px;height:50px;background:rgb(54,64,74)}
 #unrelated-floor{height:120px;top:0;bottom:auto;background:rgb(65,75,85)}
 </style></head><body><main data-app-shell-main-surface="default"><div data-app-shell-main-content-layout="thread-edge-scroll">
 <div class="thread-scroll-container"><div id="unrelated-floor" aria-hidden="true" class="pointer-events-none absolute inset-x-0 bottom-0 bg-surface"></div>
+<div id="new-sibling-fade" aria-hidden="true" class="pointer-events-none absolute inset-x-0 from-surface"></div>
 <div id="footer" data-thread-scroll-footer="true"><div id="native-floor" aria-hidden="true" class="pointer-events-none absolute inset-x-0 bottom-0 mt-8 bg-surface"></div>
 <div class="composer-carrier"><div id="editor-surface" class="ComposerLayoutRoot"><div data-codex-composer="true" contenteditable="true"></div></div></div>
 <button id="footer-action" class="absolute bottom-0 bg-surface">Action</button>
@@ -156,7 +168,7 @@ FOOTER_HTML = """<!doctype html><html><head><style>
 FOOTER_PROBE = """(() => {
  const paint=id=>{let n=document.getElementById(id),s=getComputedStyle(n);return {background:s.backgroundColor,image:s.backgroundImage,marked:n.classList.contains('tessalume-composer-native-fade')}};
  return {kind:document.querySelector('#tessalume-theme-root')?.dataset.tessalumePageKind,
-   floor:paint('native-floor'),editor:paint('editor-surface'),action:paint('footer-action'),unrelated:paint('unrelated-floor')};
+   floor:paint('native-floor'),siblingFade:paint('new-sibling-fade'),editor:paint('editor-surface'),action:paint('footer-action'),unrelated:paint('unrelated-floor')};
 })()"""
 
 # These are native root attributes, retained when React replaces its className.
@@ -308,7 +320,8 @@ def run_home_case(cdp, source, width, dark):
         assert state["home"] and state["kind"] == "home" and not state["task"], state
         assert state["homeMarked"] and state["heroDisplay"] != "none", state
         assert state["chromeCount"] == 1 and state["liveComposerMarked"], state
-        assert {"layout", "hero-region", "banner", "banner-inner", "native-title", "composer-carrier"}.issubset(state["parts"]), state
+        assert {"layout", "hero-region", "banner", "banner-inner", "native-title", "composer-carrier", "mode-toggle"}.issubset(state["parts"]), state
+        assert state["modeMarked"] and state["modeDisplay"] == "none", state
         states[name] = state
 
     check_visible("decorative_icon")
@@ -345,11 +358,13 @@ def run_footer_case(cdp, source, width, dark):
     load_fixture(cdp, FOOTER_HTML, width, dark)
     before = cdp.evaluate(FOOTER_PROBE)
     assert before["floor"]["background"] == "rgb(24, 24, 24)", before
+    assert "linear-gradient" in before["siblingFade"]["image"], before
     cdp.evaluate(source)
     cdp.settle()
     after = cdp.evaluate(FOOTER_PROBE)
     assert after["kind"] == "task", after
     assert after["floor"]["marked"] and after["floor"]["background"] == "rgba(0, 0, 0, 0)" and after["floor"]["image"] == "none", after
+    assert after["siblingFade"]["marked"] and after["siblingFade"]["image"] == "none", after
     for name in ["editor", "action", "unrelated"]:
         assert after[name] == before[name], (name, before[name], after[name])
     return {"width": width, "dark": dark, "before": before, "solid_footer": after}
