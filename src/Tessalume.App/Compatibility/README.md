@@ -7,10 +7,10 @@ page recognition, adaptive layout, surface decoration, and cleanup/recovery resp
 fixed `runtime-bundle.json` order is assembled into `theme-runtime-v2.js` when built-in resources are
 installed or an official compatibility pack is created.
 
-Compatibility 3.0.10 adapts to Codex 26.1016: it collapses the new empty home
-mode toolbar, recognizes ordinary task titles inside the unified title-row
-wrapper, and clears the new composer-top fade sibling. It retains the 3.0.9
-home-icon, title stacking, submission backdrop and inert-composer protections.
+Compatibility 3.0.11 adapts to Codex 26.1103: it safely skips cross-origin
+window proxies while discovering a previous runtime, preventing the new Codex
+renderer from aborting theme injection with a SecurityError. It retains the
+3.0.10 home, title-row and composer-fade protections.
 After installing the update, apply the current theme again to activate it.
 
 Small official compatibility releases use tags named `compat-vX.Y.Z` and contain:
@@ -22,7 +22,7 @@ The ZIP still contains only `compatibility-pack.json`, assembled `theme-runtime-
 `compatibility-profile-v3.json`. Build it with:
 
 ```powershell
-.\tools\New-CompatibilityPack.ps1 -Version 3.0.10
+.\tools\New-CompatibilityPack.ps1 -Version 3.0.11
 ```
 
 Compatibility releases must be created with GitHub's “latest” flag disabled so they never replace

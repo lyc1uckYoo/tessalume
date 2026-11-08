@@ -51,6 +51,8 @@ internal static partial class TestSuite
         var runtime = await ReadCompatibilityRuntimeSourceAsync(repositoryRoot);
         Ensure(runtime.Contains("Object.getOwnPropertyNames(window)", StringComparison.Ordinal),
             "The runtime must discover an already injected compatible predecessor without retaining its brand key.");
+        Ensure(runtime.Contains("} catch { continue; }", StringComparison.Ordinal),
+            "Predecessor discovery must skip cross-origin Window proxies exposed by Codex.");
         Ensure(runtime.Contains("typeof candidate.context.mountCanonicalTheme === \"function\"", StringComparison.Ordinal),
             "Predecessor discovery must require the canonical Tessalume runtime shape.");
         Ensure(runtime.Contains(
@@ -175,7 +177,8 @@ internal static partial class TestSuite
                source.Contains("delete window.__CODEX_THEME_STUDIO_THEME_ID__", StringComparison.Ordinal),
             "Restore must remove the predecessor runtime and marker after a brand migration.");
         Ensure(source.Contains("Object.getOwnPropertyNames(window)", StringComparison.Ordinal) &&
-               source.Contains("candidate.context.mountCanonicalTheme", StringComparison.Ordinal),
+               source.Contains("candidate.context.mountCanonicalTheme", StringComparison.Ordinal) &&
+               source.Contains("} catch { continue; }", StringComparison.Ordinal),
             "Restore must also discover compatible runtime brands by canonical shape.");
         Ensure(source.Contains("await _applyLock.WaitAsync(cancellationToken);", StringComparison.Ordinal),
             "Restore must serialize with live theme application.");

@@ -15,19 +15,21 @@ public sealed partial class ThemeRuntime : IAsyncDisposable
             if (direct && typeof direct.dispose === 'function') candidates.add(direct);
           }
           for (const key of Object.getOwnPropertyNames(window)) {
-            const descriptor = Object.getOwnPropertyDescriptor(window, key);
-            const candidate = descriptor && 'value' in descriptor ? descriptor.value : null;
-            if (
-              candidate &&
-              typeof candidate === 'object' &&
-              typeof candidate.dispose === 'function' &&
-              typeof candidate.themeId === 'string' &&
-              typeof candidate.fingerprint === 'string' &&
-              candidate.context &&
-              typeof candidate.context.mountCanonicalTheme === 'function'
-            ) {
-              candidates.add(candidate);
-            }
+            try {
+              const descriptor = Object.getOwnPropertyDescriptor(window, key);
+              const candidate = descriptor && 'value' in descriptor ? descriptor.value : null;
+              if (
+                candidate &&
+                typeof candidate === 'object' &&
+                typeof candidate.dispose === 'function' &&
+                typeof candidate.themeId === 'string' &&
+                typeof candidate.fingerprint === 'string' &&
+                candidate.context &&
+                typeof candidate.context.mountCanonicalTheme === 'function'
+              ) {
+                candidates.add(candidate);
+              }
+            } catch { continue; }
           }
           for (const candidate of candidates) await candidate.dispose();
           window.__CODEX_DREAM_SKIN_STATE__?.cleanup?.();

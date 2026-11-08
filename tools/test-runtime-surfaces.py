@@ -256,6 +256,12 @@ def run_case(cdp, source, width, dark):
     cdp.call("Page.navigate", {"url": "about:blank"})
     cdp.call("Page.setDocumentContent", {"frameId": cdp.call("Page.getFrameTree")["frameTree"]["frame"]["id"], "html": HTML})
     cdp.evaluate(f"document.documentElement.classList.toggle('electron-dark',{str(dark).lower()})")
+    blocked = cdp.evaluate("""new Promise(resolve=>{const frame=document.createElement('iframe');
+      frame.hidden=true;frame.setAttribute('sandbox','');frame.onload=()=>{
+        window.__qaCrossOriginWindow__=frame.contentWindow;
+        try{void window.__qaCrossOriginWindow__.dispose;resolve(false)}catch(error){resolve(error.name==='SecurityError')}};
+      frame.srcdoc='<p>isolated</p>';document.body.append(frame)})""")
+    assert blocked, "The cross-origin WindowProxy fixture did not reproduce Codex 26.1103."
     cdp.evaluate(source)
     cdp.settle()
     chat = cdp.evaluate(PROBE)

@@ -63,20 +63,22 @@
     }
     for (const key of Object.getOwnPropertyNames(window)) {
       if (key === RUNTIME_KEY) continue;
-      const descriptor = Object.getOwnPropertyDescriptor(window, key);
-      const candidate = descriptor && "value" in descriptor ? descriptor.value : null;
-      if (
-        candidate &&
-        typeof candidate === "object" &&
-        typeof candidate.dispose === "function" &&
-        typeof candidate.themeId === "string" &&
-        typeof candidate.fingerprint === "string" &&
-        candidate.context &&
-        typeof candidate.context.mountCanonicalTheme === "function"
-      ) {
-        await candidate.dispose({ preserveSharedAppearance });
-        return true;
-      }
+      try {
+        const descriptor = Object.getOwnPropertyDescriptor(window, key);
+        const candidate = descriptor && "value" in descriptor ? descriptor.value : null;
+        if (
+          candidate &&
+          typeof candidate === "object" &&
+          typeof candidate.dispose === "function" &&
+          typeof candidate.themeId === "string" &&
+          typeof candidate.fingerprint === "string" &&
+          candidate.context &&
+          typeof candidate.context.mountCanonicalTheme === "function"
+        ) {
+          await candidate.dispose({ preserveSharedAppearance });
+          return true;
+        }
+      } catch { continue; }
     }
     return false;
   };
