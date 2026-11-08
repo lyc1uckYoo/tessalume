@@ -7,6 +7,8 @@ namespace Tessalume.Core.Runtime;
 public sealed partial class ThemeRuntime : IAsyncDisposable
 {
     public const int ContractVersion = 4;
+    private static readonly TimeSpan TargetReconciliationInterval = TimeSpan.FromMilliseconds(750);
+    private const int KnownTargetVerificationInterval = 8;
     private const string ThemeScriptFailureMarker = "TESSALUME_THEME_SCRIPT:";
     private const string RemoveCompatibleRuntimesScript = """
         (async () => {
@@ -56,11 +58,16 @@ public sealed partial class ThemeRuntime : IAsyncDisposable
         """;
 
     private readonly SemaphoreSlim _applyLock = new(1, 1);
+    private readonly SemaphoreSlim _watcherLifecycleLock = new(1, 1);
     private readonly LoopbackCdpDiscovery _discovery;
     private readonly ThemePayloadBuilder _payloadBuilder;
     private readonly ImageDataUrlCache _visualImageDataUrlCache;
     private readonly Func<ThemeVisualSettings, ThemeVisualSettings>? _visualSettingsResolver;
     private readonly ThemeRuntimeAcceptanceProbe _acceptanceProbe;
+    private CancellationTokenSource? _watcherCancellation;
+    private Task? _watcherTask;
+    private int _disposeStarted;
+    private bool _disposed;
     private static readonly JsonSerializerOptions VisualSettingsJsonOptions = new(JsonSerializerDefaults.Web);
 
     public ThemeRuntime(
@@ -85,15 +92,40 @@ public sealed partial class ThemeRuntime : IAsyncDisposable
         ThemeVisualSettings visualSettings,
         CancellationToken cancellationToken = default)
     {
+        ObjectDisposedException.ThrowIf(_disposed, this);
         var payload = await BuildPayloadAsync(package, cancellationToken);
-        await ApplyToAllAsync(
-            port,
-            package,
-            payload,
-            await BuildVisualSettingsPayloadAsync(visualSettings, cancellationToken),
-            force: true,
-            processedTargets: null,
-            cancellationToken);
+        var visualSettingsPayload = await BuildVisualSettingsPayloadAsync(visualSettings, cancellationToken);
+
+        await _watcherLifecycleLock.WaitAsync(cancellationToken);
+        try
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            await StopWatcherCoreAsync();
+
+            var processedTargets = new HashSet<string>(StringComparer.Ordinal);
+            await ApplyToAllAsync(
+                port,
+                package,
+                payload,
+                visualSettingsPayload,
+                force: true,
+                processedTargets,
+                cancellationToken);
+
+            var watcherCancellation = new CancellationTokenSource();
+            _watcherCancellation = watcherCancellation;
+            _watcherTask = ReconcileTargetsLoopAsync(
+                port,
+                package,
+                payload,
+                visualSettingsPayload,
+                processedTargets,
+                watcherCancellation.Token);
+        }
+        finally
+        {
+            _watcherLifecycleLock.Release();
+        }
 
         StatusChanged?.Invoke(this, $"{package.Manifest.Name} 已应用");
     }
@@ -144,20 +176,30 @@ public sealed partial class ThemeRuntime : IAsyncDisposable
     }
     public async Task RemoveAsync(int port, CancellationToken cancellationToken = default)
     {
-        await _applyLock.WaitAsync(cancellationToken);
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        await _watcherLifecycleLock.WaitAsync(cancellationToken);
         try
         {
-            var targets = await _discovery.DiscoverAsync(port, cancellationToken);
-            foreach (var target in targets)
+            await StopWatcherCoreAsync();
+            await _applyLock.WaitAsync(cancellationToken);
+            try
             {
-                await using var session = new CdpSession();
-                await session.ConnectAsync(target.WebSocketDebuggerUrl, cancellationToken);
-                await session.EvaluateAsync(RemoveCompatibleRuntimesScript, cancellationToken);
+                var targets = await _discovery.DiscoverAsync(port, cancellationToken);
+                foreach (var target in targets)
+                {
+                    await using var session = new CdpSession();
+                    await session.ConnectAsync(target.WebSocketDebuggerUrl, cancellationToken);
+                    await session.EvaluateAsync(RemoveCompatibleRuntimesScript, cancellationToken);
+                }
+            }
+            finally
+            {
+                _applyLock.Release();
             }
         }
         finally
         {
-            _applyLock.Release();
+            _watcherLifecycleLock.Release();
         }
 
         StatusChanged?.Invoke(this, "已恢复 Codex 默认外观");
@@ -276,44 +318,73 @@ public sealed partial class ThemeRuntime : IAsyncDisposable
                 """
                 (async () => {
                   const bridge = window.electronBridge;
-                  if (typeof bridge?.sendMessageFromView !== 'function' ||
-                      typeof bridge?.getSystemThemeVariant !== 'function') {
+                  if (typeof bridge?.getSystemThemeVariant !== 'function') {
                     throw new Error('当前 Codex 版本未提供原生外观设置接口');
                   }
 
                   const current = bridge.getSystemThemeVariant() === 'dark' ? 'dark' : 'light';
                   const next = current === 'dark' ? 'light' : 'dark';
-                  const requestId = crypto.randomUUID();
-                  await new Promise((resolve, reject) => {
-                    const timeout = setTimeout(() => {
-                      window.removeEventListener('message', onMessage);
-                      reject(new Error('Codex 原生外观设置响应超时'));
-                    }, 5000);
-                    const onMessage = event => {
-                      const message = event.data;
-                      if (message?.type !== 'fetch-response' || message.requestId !== requestId) return;
-                      clearTimeout(timeout);
-                      window.removeEventListener('message', onMessage);
-                      if (message.responseType === 'error') {
-                        reject(new Error(message.error || 'Codex 拒绝了外观设置'));
-                      } else {
-                        resolve(message);
+                  const findSettingsService = async () => {
+                    for (const script of Array.from(document.scripts)) {
+                      if (!script.src) continue;
+                      try {
+                        const entry = await import(script.src);
+                        const require = entry?.__webpack_require__;
+                        if (typeof require !== 'function') continue;
+                        for (const cachedModule of Object.values(require.c || {})) {
+                          const settings = cachedModule?.exports?.appServices?.settings;
+                          if (typeof settings?.write === 'function') return settings;
+                        }
+                      } catch {
+                        // Entry chunks can include non-module preload scripts. Keep scanning.
                       }
-                    };
-                    window.addEventListener('message', onMessage);
-                    bridge.sendMessageFromView({
-                      type: 'fetch',
-                      requestId,
-                      method: 'POST',
-                      url: 'vscode://codex/set-setting',
-                      headers: { 'content-type': 'application/json' },
-                      body: JSON.stringify({ key: 'appearanceTheme', value: next })
-                    }).catch(error => {
-                      clearTimeout(timeout);
-                      window.removeEventListener('message', onMessage);
-                      reject(error);
+                    }
+                    return null;
+                  };
+                  const writeWithLegacyBridge = async () => {
+                    if (typeof bridge?.sendMessageFromView !== 'function') {
+                      throw new Error('当前 Codex 版本未提供可用的外观设置服务');
+                    }
+                    const requestId = crypto.randomUUID();
+                    await new Promise((resolve, reject) => {
+                      const timeout = setTimeout(() => {
+                        window.removeEventListener('message', onMessage);
+                        reject(new Error('Codex 原生外观设置响应超时'));
+                      }, 5000);
+                      const onMessage = event => {
+                        const message = event.data;
+                        if (message?.type !== 'fetch-response' || message.requestId !== requestId) return;
+                        clearTimeout(timeout);
+                        window.removeEventListener('message', onMessage);
+                        if (message.responseType === 'error') {
+                          reject(new Error(message.error || 'Codex 拒绝了外观设置'));
+                        } else {
+                          resolve(message);
+                        }
+                      };
+                      window.addEventListener('message', onMessage);
+                      bridge.sendMessageFromView({
+                        type: 'fetch',
+                        requestId,
+                        method: 'POST',
+                        url: 'vscode://codex/set-setting',
+                        headers: { 'content-type': 'application/json' },
+                        body: JSON.stringify({ key: 'appearanceTheme', value: next })
+                      }).catch(error => {
+                        clearTimeout(timeout);
+                        window.removeEventListener('message', onMessage);
+                        reject(error);
+                      });
                     });
-                  });
+                  };
+
+                  const settings = await findSettingsService();
+                  if (settings) {
+                    await settings.write('appearanceTheme', next);
+                  } else {
+                    // Codex builds before the settings service exposed its renderer API.
+                    await writeWithLegacyBridge();
+                  }
 
                   const findQueryClient = () => {
                     const rootNode = document.querySelector('#root') || document.body;
@@ -386,16 +457,37 @@ public sealed partial class ThemeRuntime : IAsyncDisposable
 
     public async Task StopAsync()
     {
-        await _applyLock.WaitAsync();
-        _applyLock.Release();
+        await _watcherLifecycleLock.WaitAsync();
+        try
+        {
+            await StopWatcherCoreAsync();
+        }
+        finally
+        {
+            _watcherLifecycleLock.Release();
+        }
     }
 
     public async ValueTask DisposeAsync()
     {
-        await Task.CompletedTask;
+        if (Interlocked.Exchange(ref _disposeStarted, 1) != 0) return;
+
+        await _watcherLifecycleLock.WaitAsync();
+        try
+        {
+            if (_disposed) return;
+            _disposed = true;
+            await StopWatcherCoreAsync();
+        }
+        finally
+        {
+            _watcherLifecycleLock.Release();
+        }
+
         _visualImageDataUrlCache.Dispose();
         _applyLock.Dispose();
         _discovery.Dispose();
+        _watcherLifecycleLock.Dispose();
     }
 
     private async Task ApplyToAllAsync(
@@ -430,7 +522,6 @@ public sealed partial class ThemeRuntime : IAsyncDisposable
         IReadOnlyList<CdpTarget> targets = [];
         try
         {
-            var themeId = package.Manifest.Id;
             targets = await _discovery.DiscoverAsync(port, cancellationToken);
             if (targets.Count == 0)
             {
@@ -453,74 +544,14 @@ public sealed partial class ThemeRuntime : IAsyncDisposable
                     continue;
                 }
 
-                await using var session = new CdpSession();
-                await session.ConnectAsync(target.WebSocketDebuggerUrl, cancellationToken);
-
-                if (!package.Manifest.Compatibility.PetOverlay &&
-                    target.Url.Contains("avatar-overlay", StringComparison.OrdinalIgnoreCase))
-                {
-                    await session.EvaluateAsync(
-                        $"window.__TESSALUME_THEME_ID__ = {JsonSerializer.Serialize(themeId)}; true",
-                        cancellationToken);
-                    processedTargets?.Add(targetKey);
-                    continue;
-                }
-
-                if (!force)
-                {
-                    var marker = await session.EvaluateAsync("window.__TESSALUME_THEME_ID__ || null", cancellationToken);
-                    if (marker.ValueKind == JsonValueKind.String && marker.GetString() == themeId)
-                    {
-                        processedTargets?.Add(targetKey);
-                        continue;
-                    }
-                }
-
-                try
-                {
-                    await StageAssetsAsync(session, package.AssetPaths, cancellationToken);
-                }
-                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-                {
-                    throw;
-                }
-                catch (Exception exception)
-                {
-                    throw new ThemeRuntimeException(
-                        ThemeRuntimeFailureStage.ResourcePreflightFailed,
-                        "主题素材在发送到 Codex 前未能完整读取，当前页面已统一恢复默认外观。",
-                        exception);
-                }
-
-                await StageVisualSettingsAsync(session, visualSettings, cancellationToken);
-
-                try
-                {
-                    await session.EvaluateAsync(payload, cancellationToken);
-                }
-                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-                {
-                    throw;
-                }
-                catch (Exception exception)
-                {
-                    var themeScriptFailed = exception.Message.Contains(
-                        ThemeScriptFailureMarker,
-                        StringComparison.Ordinal);
-                    throw new ThemeRuntimeException(
-                        themeScriptFailed
-                            ? ThemeRuntimeFailureStage.ThemeScriptFailed
-                            : ThemeRuntimeFailureStage.RuntimeInjectionFailed,
-                        themeScriptFailed
-                            ? "主题脚本执行失败，所有 Codex 页面已统一恢复默认外观。"
-                            : "主题运行时注入失败，所有 Codex 页面已统一恢复默认外观。",
-                        exception);
-                }
-                finally
-                {
-                    await ClearStagedVisualSettingsAsync(session);
-                }
-                processedTargets?.Add(targetKey);
+                await ApplyTargetAsync(
+                    target,
+                    package,
+                    payload,
+                    visualSettings,
+                    force,
+                    processedTargets,
+                    cancellationToken);
             }
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)

@@ -459,6 +459,8 @@ internal static partial class TestSuite
             ("runtime disposes compatible predecessor injection", RuntimeDisposesCompatiblePredecessorInjectionAsync),
             ("runtime preflights assets before replacing the active theme", RuntimePreflightsAssetsBeforeReplacementAsync),
             ("runtime failures are classified and partial pages roll back", RuntimeFailuresAreClassifiedAndRolledBackAsync),
+            ("runtime reconciles Codex targets created after startup", RuntimeReconcilesLateCodexTargetsAsync),
+            ("runtime uses the current Codex settings service", RuntimeUsesCurrentCodexSettingsServiceAsync),
             ("restore removes predecessor runtime brands", RestoreRemovesPredecessorRuntimeBrandsAsync),
             ("runtime diagnostics use Tessalume markers", RuntimeDiagnosticsUseTessalumeMarkersAsync),
             ("skipped pet overlays retain the processed marker", SkippedPetOverlaysRetainProcessedMarkerAsync),

@@ -110,12 +110,10 @@ internal static partial class TestSuite
     {
         var repositoryRoot = FindRepositoryRoot();
         var runtimeAdapterPath = GetSourceRuntimeAssets(repositoryRoot).RuntimePath;
-        var runtimeSource = await File.ReadAllTextAsync(Path.Combine(
-            repositoryRoot,
-            "src",
-            "Tessalume.Core",
-            "Runtime",
-            "ThemeRuntime.cs"));
+        var runtimeRoot = Path.Combine(repositoryRoot, "src", "Tessalume.Core", "Runtime");
+        var runtimeSource = string.Concat(
+            await File.ReadAllTextAsync(Path.Combine(runtimeRoot, "ThemeRuntime.cs")),
+            await File.ReadAllTextAsync(Path.Combine(runtimeRoot, "ThemeRuntime.Reconciliation.cs")));
         var adapterSource = await File.ReadAllTextAsync(runtimeAdapterPath);
         Ensure(ThemeRuntime.ContractVersion == 4 &&
                adapterSource.Contains("TESSALUME_THEME_SCRIPT:", StringComparison.Ordinal) &&
@@ -162,6 +160,60 @@ internal static partial class TestSuite
         }
         Ensure(pageFailure?.Stage == ThemeRuntimeFailureStage.PageTargetsMissing,
             "A reachable test port without Codex pages must report the page-discovery stage.");
+    }
+
+    static async Task RuntimeReconcilesLateCodexTargetsAsync()
+    {
+        var repositoryRoot = FindRepositoryRoot();
+        var runtimeRoot = Path.Combine(repositoryRoot, "src", "Tessalume.Core", "Runtime");
+        var source = string.Concat(
+            await File.ReadAllTextAsync(Path.Combine(runtimeRoot, "ThemeRuntime.cs")),
+            await File.ReadAllTextAsync(Path.Combine(runtimeRoot, "ThemeRuntime.Reconciliation.cs")));
+
+        Ensure(source.Contains("ReconcileTargetsLoopAsync(", StringComparison.Ordinal) &&
+               source.Contains("TargetReconciliationInterval", StringComparison.Ordinal) &&
+               source.Contains("processedTargets.IntersectWith(currentTargetKeys);", StringComparison.Ordinal),
+            "The active theme must keep discovering Codex renderer targets created after startup.");
+        Ensure(source.Contains("verifyKnownTargets: iteration % KnownTargetVerificationInterval == 0", StringComparison.Ordinal) &&
+               source.Contains("window.__TESSALUME_RUNTIME__?.themeId === window.__TESSALUME_THEME_ID__", StringComparison.Ordinal) &&
+               source.Contains("classList.contains('tessalume-theme-active')", StringComparison.Ordinal),
+            "Known renderer targets must be checked periodically and repaired if their runtime marker disappears.");
+        Ensure(source.Contains("await StopWatcherCoreAsync();", StringComparison.Ordinal) &&
+               source.Contains("_watcherCancellation = null;", StringComparison.Ordinal) &&
+               source.Contains("_watcherTask = null;", StringComparison.Ordinal),
+            "Theme replacement, restore, and shutdown must stop the previous target watcher before continuing.");
+        var reconciliationStart = source.IndexOf("private async Task ReconcileTargetsAsync(", StringComparison.Ordinal);
+        var reconciliationEnd = source.IndexOf("private async Task StopWatcherCoreAsync()", reconciliationStart, StringComparison.Ordinal);
+        Ensure(reconciliationStart >= 0 && reconciliationEnd > reconciliationStart,
+            "The late-target reconciliation routine is missing.");
+        var reconciliationSource = source[reconciliationStart..reconciliationEnd];
+        Ensure(!reconciliationSource.Contains("CleanupTargetsAsync", StringComparison.Ordinal) &&
+               reconciliationSource.Contains("processedTargets.Remove(targetKey);", StringComparison.Ordinal),
+            "A transient renderer replacement must be retried without rolling healthy Codex pages back.");
+    }
+
+    static async Task RuntimeUsesCurrentCodexSettingsServiceAsync()
+    {
+        var repositoryRoot = FindRepositoryRoot();
+        var source = await File.ReadAllTextAsync(Path.Combine(
+            repositoryRoot,
+            "src",
+            "Tessalume.Core",
+            "Runtime",
+            "ThemeRuntime.cs"));
+
+        var serviceLookup = source.IndexOf("const findSettingsService = async () =>", StringComparison.Ordinal);
+        var serviceWrite = source.IndexOf("await settings.write('appearanceTheme', next);", StringComparison.Ordinal);
+        var legacyWrite = source.IndexOf("await writeWithLegacyBridge();", StringComparison.Ordinal);
+        Ensure(serviceLookup >= 0 &&
+               source.Contains("entry?.__webpack_require__", StringComparison.Ordinal) &&
+               source.Contains("cachedModule?.exports?.appServices?.settings", StringComparison.Ordinal) &&
+               serviceWrite > serviceLookup,
+            "Appearance switching must discover and use Codex's current renderer settings service.");
+        Ensure(legacyWrite > serviceWrite &&
+               source.Contains("bridge.sendMessageFromView({", StringComparison.Ordinal) &&
+               source.Contains("Codex builds before the settings service", StringComparison.Ordinal),
+            "The deprecated message-from-view fetch route must remain fallback-only for older Codex builds.");
     }
 
     static async Task RestoreRemovesPredecessorRuntimeBrandsAsync()
@@ -223,6 +275,8 @@ internal static partial class TestSuite
         Ensure(payload.Contains("tessalume-composer-native-fade", StringComparison.Ordinal) &&
                payload.Contains("style.pointerEvents !== \"none\"", StringComparison.Ordinal) &&
                payload.Contains("style.backgroundImage.includes(\"linear-gradient\")", StringComparison.Ordinal) &&
+               payload.Contains("alignsWithCurrentFooter =", StringComparison.Ordinal) &&
+               payload.Contains("Math.abs(box.top - footerBox.top) < 2", StringComparison.Ordinal) &&
                payload.Contains("carrierStyle.position === \"absolute\"", StringComparison.Ordinal) &&
                payload.Contains("carrierStyle.position === \"fixed\"", StringComparison.Ordinal) &&
                payload.Contains("const fadeSearchRoot = bottomCarrier.parentElement || bottomCarrier", StringComparison.Ordinal) &&

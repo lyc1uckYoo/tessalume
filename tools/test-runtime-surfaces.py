@@ -153,6 +153,7 @@ FOOTER_HTML = """<!doctype html><html><head><style>
 .pointer-events-none{pointer-events:none}.bg-surface{background:rgb(24,24,24)}
 #footer{position:absolute;bottom:0;width:100%;height:130px}#native-floor{height:115px}
 #new-sibling-fade{height:32px;bottom:130px;background-image:linear-gradient(to top,rgb(24,24,24),transparent)}
+#current-sibling-fade{height:30px;bottom:100px;background-image:linear-gradient(to top,rgb(24,24,24),transparent)}
 .composer-carrier{position:absolute;bottom:0;left:25%;width:50%;height:100px}
 .ComposerLayoutRoot{height:100px;background:rgb(43,53,63)}[data-codex-composer]{height:70px}
 #footer-action{position:absolute;right:0;bottom:0;width:90px;height:50px;background:rgb(54,64,74)}
@@ -160,6 +161,7 @@ FOOTER_HTML = """<!doctype html><html><head><style>
 </style></head><body><main data-app-shell-main-surface="default"><div data-app-shell-main-content-layout="thread-edge-scroll">
 <div class="thread-scroll-container"><div id="unrelated-floor" aria-hidden="true" class="pointer-events-none absolute inset-x-0 bottom-0 bg-surface"></div>
 <div id="new-sibling-fade" aria-hidden="true" class="pointer-events-none absolute inset-x-0 from-surface"></div>
+<div id="current-sibling-fade" class="pointer-events-none absolute inset-x-0 from-surface"></div>
 <div id="footer" data-thread-scroll-footer="true"><div id="native-floor" aria-hidden="true" class="pointer-events-none absolute inset-x-0 bottom-0 mt-8 bg-surface"></div>
 <div class="composer-carrier"><div id="editor-surface" class="ComposerLayoutRoot"><div data-codex-composer="true" contenteditable="true"></div></div></div>
 <button id="footer-action" class="absolute bottom-0 bg-surface">Action</button>
@@ -168,7 +170,7 @@ FOOTER_HTML = """<!doctype html><html><head><style>
 FOOTER_PROBE = """(() => {
  const paint=id=>{let n=document.getElementById(id),s=getComputedStyle(n);return {background:s.backgroundColor,image:s.backgroundImage,marked:n.classList.contains('tessalume-composer-native-fade')}};
  return {kind:document.querySelector('#tessalume-theme-root')?.dataset.tessalumePageKind,
-   floor:paint('native-floor'),siblingFade:paint('new-sibling-fade'),editor:paint('editor-surface'),action:paint('footer-action'),unrelated:paint('unrelated-floor')};
+   floor:paint('native-floor'),siblingFade:paint('new-sibling-fade'),currentSiblingFade:paint('current-sibling-fade'),editor:paint('editor-surface'),action:paint('footer-action'),unrelated:paint('unrelated-floor')};
 })()"""
 
 # These are native root attributes, retained when React replaces its className.
@@ -365,12 +367,14 @@ def run_footer_case(cdp, source, width, dark):
     before = cdp.evaluate(FOOTER_PROBE)
     assert before["floor"]["background"] == "rgb(24, 24, 24)", before
     assert "linear-gradient" in before["siblingFade"]["image"], before
+    assert "linear-gradient" in before["currentSiblingFade"]["image"], before
     cdp.evaluate(source)
     cdp.settle()
     after = cdp.evaluate(FOOTER_PROBE)
     assert after["kind"] == "task", after
     assert after["floor"]["marked"] and after["floor"]["background"] == "rgba(0, 0, 0, 0)" and after["floor"]["image"] == "none", after
     assert after["siblingFade"]["marked"] and after["siblingFade"]["image"] == "none", after
+    assert after["currentSiblingFade"]["marked"] and after["currentSiblingFade"]["image"] == "none", after
     for name in ["editor", "action", "unrelated"]:
         assert after[name] == before[name], (name, before[name], after[name])
     return {"width": width, "dark": dark, "before": before, "solid_footer": after}

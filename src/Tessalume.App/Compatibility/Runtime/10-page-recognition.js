@@ -220,6 +220,7 @@
       // Newer Codex footers split the backdrop into a short gradient and a
       // solid floor. Only clear the empty, noninteractive decoration beside
       // this composer; the editor and status/control surfaces keep their skin.
+      const surfaceBox = surface.getBoundingClientRect();
       const scrollFooter = surface.closest('[data-thread-scroll-footer="true"]');
       if (scrollFooter && scope.contains(scrollFooter)) {
         for (const backdrop of scrollFooter.children) {
@@ -234,7 +235,7 @@
         // Codex 26.1016 moved the short footer fade to an absolute sibling.
         // Discover it by geometry and behavior, not a generated class name.
         const footerBox = scrollFooter.getBoundingClientRect();
-        for (const candidate of scrollFooter.parentElement?.querySelectorAll('[aria-hidden="true"]') || []) {
+        for (const candidate of scrollFooter.parentElement?.querySelectorAll('[aria-hidden="true"],[class*="fade"],[class*="from-surface"],[style*="gradient"]') || []) {
           if (candidate === scrollFooter || scrollFooter.contains(candidate)) continue;
           const style = getComputedStyle(candidate);
           const classes = typeof candidate.className === "string" ? candidate.className : "";
@@ -242,14 +243,14 @@
             classes.includes("from-surface") || classes.includes("fade");
           if (style.position !== "absolute" || style.pointerEvents !== "none" || !hasFadePaint) continue;
           const box = candidate.getBoundingClientRect();
+          const alignsWithLegacyFooter = Math.abs(box.bottom - footerBox.top) < 2, alignsWithCurrentFooter = Math.abs(box.top - footerBox.top) < 2 && box.bottom <= surfaceBox.top + 2;
           if (box.height > 0 && box.width >= footerBox.width * .8 &&
               box.right > footerBox.left && box.left < footerBox.right &&
-              Math.abs(box.bottom - footerBox.top) < 2) {
+              (alignsWithLegacyFooter || alignsWithCurrentFooter)) {
             mark(candidate, "tessalume-composer-native-fade");
           }
         }
       }
-      const surfaceBox = surface.getBoundingClientRect();
       let bottomCarrier = surface.parentElement;
       while (bottomCarrier && bottomCarrier !== document.body) {
         const carrierStyle = getComputedStyle(bottomCarrier);
