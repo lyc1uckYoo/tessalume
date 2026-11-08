@@ -260,7 +260,7 @@
       return `html.tessalume-theme-active${color} [data-tessalume-surface="sidebar"]::after`;
     }
     if (region === "chat") {
-      return `html.tessalume-theme-active${color}.tessalume-is-task ` +
+      return `html.tessalume-theme-active${color}:is(.tessalume-is-task,.tessalume-task-backdrop) ` +
         `main[data-tessalume-surface="main"]::before`;
     }
     return `html.tessalume-theme-active${color}.tessalume-is-home ` +

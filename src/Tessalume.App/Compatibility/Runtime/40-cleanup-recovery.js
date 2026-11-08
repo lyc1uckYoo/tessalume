@@ -59,6 +59,7 @@
         "tessalume-is-home",
         "tessalume-is-task",
         "tessalume-is-settings",
+        "tessalume-task-backdrop",
         "tessalume-has-output",
       );
       root.removeAttribute("data-tessalume-template-version");

@@ -145,23 +145,21 @@ public sealed partial class ThemeRuntime
         }
     }
 
-    private static async Task StageAssetsAsync(
+    private async Task StageAssetsAsync(
         CdpSession session,
         IReadOnlyDictionary<string, string> assetPaths,
+        Task<string>? stagedAssetsExpression,
         CancellationToken cancellationToken)
     {
-        await session.EvaluateAsync(
-            "window.__TESSALUME_STAGED_ASSETS__ = Object.create(null); true",
-            cancellationToken);
         try
         {
-            foreach (var (name, path) in assetPaths)
-            {
-                var dataUrl = await ThemePayloadBuilder.ReadDataUrlAsync(path, cancellationToken);
-                var expression =
-                    $"window.__TESSALUME_STAGED_ASSETS__['{name}'] = '{dataUrl}'; true";
-                await session.EvaluateAsync(expression, cancellationToken);
-            }
+            var expression = stagedAssetsExpression is null
+                ? await BuildStagedAssetsExpressionAsync(
+                    assetPaths,
+                    _themeAssetDataUrlCache,
+                    cancellationToken)
+                : await stagedAssetsExpression.WaitAsync(cancellationToken);
+            await session.EvaluateAsync(expression, cancellationToken);
         }
         catch
         {
@@ -177,5 +175,26 @@ public sealed partial class ThemeRuntime
 
             throw;
         }
+    }
+
+    internal static async Task<string> BuildStagedAssetsExpressionAsync(
+        IReadOnlyDictionary<string, string> assetPaths,
+        ImageDataUrlCache cache,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(assetPaths);
+        ArgumentNullException.ThrowIfNull(cache);
+        var pending = assetPaths.Select(async item => new KeyValuePair<string, string>(
+            item.Key,
+            await cache.GetAsync(item.Value, cancellationToken))).ToArray();
+        var loaded = await Task.WhenAll(pending);
+        var assets = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var item in loaded)
+        {
+            assets.Add(item.Key, item.Value);
+        }
+        var payload = JsonSerializer.Serialize(assets);
+        return $"window.__TESSALUME_STAGED_ASSETS__ = " +
+            $"Object.assign(Object.create(null), {payload}); true";
     }
 }

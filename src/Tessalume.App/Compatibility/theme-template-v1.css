@@ -93,21 +93,21 @@ html.tessalume-theme-active.tessalume-code-review-open #tessalume-theme-root [da
 }
 
 /* Stable task canvas and transparent native carriers. */
-html.tessalume-theme-active.tessalume-is-task [data-tessalume-surface="main"] {
+html.tessalume-theme-active:is(.tessalume-is-task,.tessalume-task-backdrop) [data-tessalume-surface="main"] {
   position:relative!important;
   isolation:isolate;
 }
 
-html.tessalume-theme-active.tessalume-is-task [data-tessalume-surface="main"]::before,
-html.tessalume-theme-active.tessalume-is-task [data-tessalume-surface="main"]::after {
+html.tessalume-theme-active:is(.tessalume-is-task,.tessalume-task-backdrop) [data-tessalume-surface="main"]::before,
+html.tessalume-theme-active:is(.tessalume-is-task,.tessalume-task-backdrop) [data-tessalume-surface="main"]::after {
   content:"";
   position:absolute;
   inset:0;
   pointer-events:none;
 }
 
-html.tessalume-theme-active.tessalume-is-task [data-tessalume-surface="main"]::before { z-index:-2; }
-html.tessalume-theme-active.tessalume-is-task [data-tessalume-surface="main"]::after { z-index:-1; }
+html.tessalume-theme-active:is(.tessalume-is-task,.tessalume-task-backdrop) [data-tessalume-surface="main"]::before { z-index:-2; }
+html.tessalume-theme-active:is(.tessalume-is-task,.tessalume-task-backdrop) [data-tessalume-surface="main"]::after { z-index:-1; }
 
 /* Settings reuse the task artwork canvas, but Codex paints an opaque native
    carrier above it. Keep only the semantically discovered settings carrier
@@ -227,7 +227,7 @@ html.tessalume-theme-active.electron-dark [data-tessalume-surface="sidebar"]::af
   background-blend-mode:var(--tessalume-visual-sidebar-dark-blend,normal)!important;
 }
 
-html.tessalume-theme-active:not(.electron-dark).tessalume-is-task main[data-tessalume-surface="main"]::before {
+html.tessalume-theme-active:not(.electron-dark):is(.tessalume-is-task,.tessalume-task-backdrop) main[data-tessalume-surface="main"]::before {
   filter:var(--tessalume-visual-chat-light-filter,brightness(1) contrast(1) saturate(1) grayscale(0) hue-rotate(0deg) blur(0))!important;
   opacity:var(--tessalume-visual-chat-light-opacity,1)!important;
   translate:var(--tessalume-visual-chat-light-translate,0px 0px)!important;
@@ -235,7 +235,7 @@ html.tessalume-theme-active:not(.electron-dark).tessalume-is-task main[data-tess
   background-blend-mode:var(--tessalume-visual-chat-light-blend,normal)!important;
 }
 
-html.tessalume-theme-active.electron-dark.tessalume-is-task main[data-tessalume-surface="main"]::before {
+html.tessalume-theme-active.electron-dark:is(.tessalume-is-task,.tessalume-task-backdrop) main[data-tessalume-surface="main"]::before {
   filter:var(--tessalume-visual-chat-dark-filter,brightness(1) contrast(1) saturate(1) grayscale(0) hue-rotate(0deg) blur(0))!important;
   opacity:var(--tessalume-visual-chat-dark-opacity,1)!important;
   translate:var(--tessalume-visual-chat-dark-translate,0px 0px)!important;
@@ -245,14 +245,14 @@ html.tessalume-theme-active.electron-dark.tessalume-is-task main[data-tessalume-
 
 /* Chat readability masks are independent from the artwork layer. They stay
    fixed to the reading surface while the image is cropped, filtered, or moved. */
-html.tessalume-theme-active:not(.electron-dark).tessalume-is-task main[data-tessalume-surface="main"]::after {
+html.tessalume-theme-active:not(.electron-dark):is(.tessalume-is-task,.tessalume-task-backdrop) main[data-tessalume-surface="main"]::after {
   background-image:var(--tessalume-visual-chat-light-mask-image,none)!important;
   background-size:100% 100%!important;
   background-position:center!important;
   background-repeat:no-repeat!important;
 }
 
-html.tessalume-theme-active.electron-dark.tessalume-is-task main[data-tessalume-surface="main"]::after {
+html.tessalume-theme-active.electron-dark:is(.tessalume-is-task,.tessalume-task-backdrop) main[data-tessalume-surface="main"]::after {
   background-image:var(--tessalume-visual-chat-dark-mask-image,none)!important;
   background-size:100% 100%!important;
   background-position:center!important;
@@ -295,7 +295,7 @@ html[data-tessalume-visual-placement~="sidebar-dark"].tessalume-theme-active.ele
   transform-origin:center!important;
 }
 
-html[data-tessalume-visual-placement~="chat-light"].tessalume-theme-active:not(.electron-dark).tessalume-is-task main[data-tessalume-surface="main"]::before {
+html[data-tessalume-visual-placement~="chat-light"].tessalume-theme-active:not(.electron-dark):is(.tessalume-is-task,.tessalume-task-backdrop) main[data-tessalume-surface="main"]::before {
   background-image:var(--tessalume-asset-chat-light)!important;
   background-size:var(--tessalume-visual-chat-light-background-size,cover)!important;
   background-position:var(--tessalume-visual-chat-light-background-position,center)!important;
@@ -304,7 +304,7 @@ html[data-tessalume-visual-placement~="chat-light"].tessalume-theme-active:not(.
   transform-origin:center!important;
 }
 
-html[data-tessalume-visual-placement~="chat-dark"].tessalume-theme-active.electron-dark.tessalume-is-task main[data-tessalume-surface="main"]::before {
+html[data-tessalume-visual-placement~="chat-dark"].tessalume-theme-active.electron-dark:is(.tessalume-is-task,.tessalume-task-backdrop) main[data-tessalume-surface="main"]::before {
   background-image:var(--tessalume-asset-chat-dark)!important;
   background-size:var(--tessalume-visual-chat-dark-background-size,cover)!important;
   background-position:var(--tessalume-visual-chat-dark-background-position,center)!important;

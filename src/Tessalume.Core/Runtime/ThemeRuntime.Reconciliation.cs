@@ -68,6 +68,7 @@ public sealed partial class ThemeRuntime
                         visualSettings,
                         force: false,
                         processedTargets,
+                        stagedAssetsExpression: null,
                         cancellationToken);
                 }
                 catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -129,6 +130,7 @@ public sealed partial class ThemeRuntime
         VisualSettingsPayload visualSettings,
         bool force,
         HashSet<string>? processedTargets,
+        Task<string>? stagedAssetsExpression,
         CancellationToken cancellationToken)
     {
         var themeId = package.Manifest.Id;
@@ -142,7 +144,7 @@ public sealed partial class ThemeRuntime
             await session.EvaluateAsync(
                 $"window.__TESSALUME_THEME_ID__ = {JsonSerializer.Serialize(themeId)}; true",
                 cancellationToken);
-            processedTargets?.Add(targetKey);
+            MarkTargetProcessed(processedTargets, targetKey);
             return;
         }
 
@@ -155,14 +157,18 @@ public sealed partial class ThemeRuntime
                 cancellationToken);
             if (marker.ValueKind == JsonValueKind.String && marker.GetString() == themeId)
             {
-                processedTargets?.Add(targetKey);
+                MarkTargetProcessed(processedTargets, targetKey);
                 return;
             }
         }
 
         try
         {
-            await StageAssetsAsync(session, package.AssetPaths, cancellationToken);
+            await StageAssetsAsync(
+                session,
+                package.AssetPaths,
+                stagedAssetsExpression,
+                cancellationToken);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -204,6 +210,15 @@ public sealed partial class ThemeRuntime
         {
             await ClearStagedVisualSettingsAsync(session);
         }
-        processedTargets?.Add(targetKey);
+        MarkTargetProcessed(processedTargets, targetKey);
+    }
+
+    private static void MarkTargetProcessed(HashSet<string>? processedTargets, string targetKey)
+    {
+        if (processedTargets is null) return;
+        lock (processedTargets)
+        {
+            processedTargets.Add(targetKey);
+        }
     }
 }

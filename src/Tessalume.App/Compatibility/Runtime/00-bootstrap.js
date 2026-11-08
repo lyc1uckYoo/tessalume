@@ -147,8 +147,8 @@ html.tessalume-theme-active .thread-scroll-container [data-thread-scroll-footer=
   background-color:transparent!important;
   background-image:none!important;
 }
-html.tessalume-theme-active.tessalume-is-task main[data-tessalume-surface="main"]::before,
-html.tessalume-theme-active.tessalume-is-task main[data-tessalume-surface="main"]::after {
+html.tessalume-theme-active:is(.tessalume-is-task,.tessalume-task-backdrop) main[data-tessalume-surface="main"]::before,
+html.tessalume-theme-active:is(.tessalume-is-task,.tessalume-task-backdrop) main[data-tessalume-surface="main"]::after {
   left:var(--tessalume-chat-canvas-left,0px)!important;
   right:auto!important;
   width:var(--tessalume-chat-canvas-width,100%)!important;

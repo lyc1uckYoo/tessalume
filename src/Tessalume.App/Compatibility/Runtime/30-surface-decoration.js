@@ -1,4 +1,13 @@
 // TESSALUME_RUNTIME_FRAGMENT: sidebar, message, task, output, and shared surface decoration
+    const primeTaskBackdrop = (event) => {
+      const target = event.target instanceof Element ? event.target : event.target?.parentElement;
+      const row = target?.closest?.('[data-app-action-sidebar-thread-row]');
+      const interactive = target?.closest?.("button,a,input,select,textarea");
+      if (!row || (interactive && interactive !== row)) return;
+      html.classList.add("tessalume-task-backdrop");
+      window.setTimeout(syncRouteState, 0);
+    };
+    context.on(document, "click", primeTaskBackdrop);
     let observedSidebar = null;
     let sidebarObserver = null;
     let sidebarNeedsDecoration = true;

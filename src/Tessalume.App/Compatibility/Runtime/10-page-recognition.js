@@ -34,7 +34,6 @@
     const chatCanvasStyles = new Map();
     const adaptiveLayout = spec.adaptiveLayout === true ||
       (spec.adaptiveLayout && typeof spec.adaptiveLayout === "object");
-
     const roleClass = (role) => `${namespace}-${role}`;
     const dataName = (name) => `data-${namespace}-${name}`;
     const validateTemplateStructure = () => {
@@ -353,6 +352,7 @@
       html.classList.toggle("tessalume-is-home", isHome);
       html.classList.toggle("tessalume-is-task", isTask);
       html.classList.toggle("tessalume-is-settings", isSettings);
+      if (isTask || isHome || isSettings) html.classList.toggle("tessalume-task-backdrop", isTask);
       const pageKind = isHome ? "home" : isTask ? "task" : isSettings ? "settings" : "other";
       if (root.getAttribute("data-tessalume-page-kind") !== pageKind)
         root.setAttribute("data-tessalume-page-kind", pageKind);

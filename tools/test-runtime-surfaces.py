@@ -136,6 +136,7 @@ HOME_PROBE = """(() => {
  const root=document.querySelector('#tessalume-theme-root'),home=document.querySelector('#home'),mode=document.querySelector('#home-mode');
  return {kind:root.dataset.tessalumePageKind,home:document.documentElement.classList.contains('tessalume-is-home'),
    task:document.documentElement.classList.contains('tessalume-is-task'),
+   backdrop:document.documentElement.classList.contains('tessalume-task-backdrop'),
    homeMarked:home.getAttribute('data-tessalume-surface')==='home',
    parts:[...document.querySelectorAll('[data-tessalume-home-part]')].map(n=>n.dataset.tessalumeHomePart),
    modeDisplay:getComputedStyle(mode).display,modeMarked:mode.dataset.tessalumeHomePart==='mode-toggle',
@@ -217,7 +218,8 @@ PROBE = """(() => {
  const rect=n=>{let b=n.getBoundingClientRect();return {left:b.left,top:b.top,right:b.right,bottom:b.bottom,width:b.width,height:b.height}};
  const shown=n=>{if(!n)return false;for(let x=n;x;x=x.parentElement){let s=getComputedStyle(x);if(s.display==='none'||s.visibility==='hidden'||Number(s.opacity)===0)return false;}return rect(n).width>0};
  const root=document.querySelector('#tessalume-theme-root'),stage=root.querySelector('[data-theme-stage]');
- return {task:document.documentElement.classList.contains('tessalume-is-task'),kind:root.dataset.tessalumePageKind,
+ return {task:document.documentElement.classList.contains('tessalume-is-task'),
+   backdrop:document.documentElement.classList.contains('tessalume-task-backdrop'),kind:root.dataset.tessalumePageKind,
    stage:rect(stage),main:rect(document.querySelector('main')),pane:rect(document.querySelector('#pane')),viewer:rect(document.querySelector('#viewer')),
    stageShown:shown(stage),identityShown:shown(root.querySelector('[data-theme-role="identity"]')),
    headerMarked:!!document.querySelector('[data-tessalume-surface="task-header"],[data-tessalume-surface="task-title"]'),
@@ -267,7 +269,7 @@ def run_case(cdp, source, width, dark):
     cdp.evaluate(source)
     cdp.settle()
     chat = cdp.evaluate(PROBE)
-    assert chat["task"] and chat["kind"] == "task" and chat["chromeCount"] == 1, chat
+    assert chat["task"] and chat["backdrop"] and chat["kind"] == "task" and chat["chromeCount"] == 1, chat
     assert abs(chat["stage"]["width"] - chat["pane"]["width"]) < 1, chat
     assert chat["headerMarked"], chat
     cdp.evaluate("""document.querySelector('header').setAttribute('data-app-shell-tab-row','true');
@@ -276,7 +278,7 @@ def run_case(cdp, source, width, dark):
       document.querySelector('#pane').style.width='65%'; document.querySelector('#viewer').style.width='35%';""")
     cdp.settle()
     split = cdp.evaluate(PROBE)
-    assert split["task"] and not split["headerMarked"] and not split["identityShown"], split
+    assert split["task"] and split["backdrop"] and not split["headerMarked"] and not split["identityShown"], split
     assert abs(split["stage"]["width"] - split["pane"]["width"]) < 1, split
     for item in split["decorations"]:
         if item["role"] != "hero":
@@ -289,6 +291,7 @@ def run_case(cdp, source, width, dark):
     cdp.settle()
     file_only = cdp.evaluate(PROBE)
     assert not file_only["task"] and file_only["kind"] == "other", file_only
+    assert file_only["backdrop"], file_only
     assert not file_only["stageShown"] and not file_only["identityShown"] and not file_only["decorations"], file_only
     assert not file_only["headerMarked"] and file_only["chromeCount"] == 0, file_only
     assert file_only["header"] == split["header"] and file_only["title"] == split["title"], file_only
@@ -297,6 +300,7 @@ def run_case(cdp, source, width, dark):
     cdp.settle()
     transition = cdp.evaluate(PROBE)
     assert not transition["task"] and not transition["decorations"], transition
+    assert transition["backdrop"], transition
     cdp.evaluate("document.querySelector('#pane').setAttribute('aria-hidden','true')")
     # Keep the hidden old thread first in DOM; discovery must choose the new one.
     cdp.evaluate("""const stale=document.querySelector('#pane');const live=stale.cloneNode(true);
@@ -305,7 +309,7 @@ def run_case(cdp, source, width, dark):
       stale.after(live);document.querySelector('#viewer').style.width='35%';""")
     cdp.settle()
     restored = cdp.evaluate(PROBE)
-    assert restored["task"] and restored["chromeCount"] == 1 and not restored["headerMarked"], restored
+    assert restored["task"] and restored["backdrop"] and restored["chromeCount"] == 1 and not restored["headerMarked"], restored
     assert abs(restored["stage"]["width"] - restored["pane"]["width"]) < 1, restored
     return {"width": width, "dark": dark, "chat": chat, "split": split, "file": file_only, "transition": transition, "restored": restored}
 
@@ -325,7 +329,7 @@ def run_home_case(cdp, source, width, dark):
 
     def check_visible(name):
         state = cdp.evaluate(HOME_PROBE)
-        assert state["home"] and state["kind"] == "home" and not state["task"], state
+        assert state["home"] and state["kind"] == "home" and not state["task"] and not state["backdrop"], state
         assert state["homeMarked"] and state["heroDisplay"] != "none", state
         assert state["chromeCount"] == 1 and state["liveComposerMarked"], state
         assert {"layout", "hero-region", "banner", "banner-inner", "native-title", "composer-carrier", "mode-toggle"}.issubset(state["parts"]), state
@@ -339,13 +343,21 @@ def run_home_case(cdp, source, width, dark):
     check_visible("legacy_icon")
     cdp.evaluate("document.querySelector('[data-testid=home-icon]').setAttribute('aria-hidden','true')")
 
+    primed = cdp.evaluate("""(() => { const row=document.createElement('div');
+      row.setAttribute('data-app-action-sidebar-thread-row','');row.setAttribute('role','button');
+      row.textContent='Previous chat';document.body.append(row);row.click();
+      return document.documentElement.classList.contains('tessalume-task-backdrop'); })()""")
+    assert primed, "A history-chat click must prime the themed task background before navigation."
+    cdp.settle()
+    check_visible("history_click_without_navigation")
+
     for attribute in ["aria-hidden", "hidden", "inert"]:
         # The surrounding role=main keeps its size: recognition must check the
         # icon's ancestors, not only the dimensions of the containing page.
         cdp.evaluate(f"document.querySelector('#home-layout').setAttribute({json.dumps(attribute)},'true')")
         cdp.settle()
         state = cdp.evaluate(HOME_PROBE)
-        assert not state["home"] and state["kind"] == "other" and not state["task"], state
+        assert not state["home"] and state["kind"] == "other" and not state["task"] and not state["backdrop"], state
         assert state["heroDisplay"] == "none" and state["chromeCount"] == 0, state
         states[f"ancestor_{attribute}"] = state
         cdp.evaluate(f"document.querySelector('#home-layout').removeAttribute({json.dumps(attribute)})")

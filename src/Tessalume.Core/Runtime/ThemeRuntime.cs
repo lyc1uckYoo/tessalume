@@ -61,6 +61,7 @@ public sealed partial class ThemeRuntime : IAsyncDisposable
     private readonly SemaphoreSlim _watcherLifecycleLock = new(1, 1);
     private readonly LoopbackCdpDiscovery _discovery;
     private readonly ThemePayloadBuilder _payloadBuilder;
+    private readonly ImageDataUrlCache _themeAssetDataUrlCache;
     private readonly ImageDataUrlCache _visualImageDataUrlCache;
     private readonly Func<ThemeVisualSettings, ThemeVisualSettings>? _visualSettingsResolver;
     private readonly ThemeRuntimeAcceptanceProbe _acceptanceProbe;
@@ -77,6 +78,7 @@ public sealed partial class ThemeRuntime : IAsyncDisposable
     {
         _discovery = discovery ?? throw new ArgumentNullException(nameof(discovery));
         _payloadBuilder = payloadBuilder ?? throw new ArgumentNullException(nameof(payloadBuilder));
+        _themeAssetDataUrlCache = new ImageDataUrlCache();
         _visualImageDataUrlCache = new ImageDataUrlCache();
         _visualSettingsResolver = visualSettingsResolver;
         _acceptanceProbe = new ThemeRuntimeAcceptanceProbe(_discovery);
@@ -484,6 +486,7 @@ public sealed partial class ThemeRuntime : IAsyncDisposable
             _watcherLifecycleLock.Release();
         }
 
+        _themeAssetDataUrlCache.Dispose();
         _visualImageDataUrlCache.Dispose();
         _applyLock.Dispose();
         _discovery.Dispose();
@@ -536,22 +539,24 @@ public sealed partial class ThemeRuntime : IAsyncDisposable
                 processedTargets.IntersectWith(currentTargetKeys);
             }
 
-            foreach (var target in targets)
+            var targetsToApply = targets.Where(target =>
+                force || !skipKnownTargets ||
+                processedTargets?.Contains(GetTargetKey(target)) != true).ToArray();
+            if (targetsToApply.Length > 0)
             {
-                var targetKey = GetTargetKey(target);
-                if (!force && skipKnownTargets && processedTargets?.Contains(targetKey) == true)
-                {
-                    continue;
-                }
-
-                await ApplyTargetAsync(
+                var stagedAssetsExpression = BuildStagedAssetsExpressionAsync(
+                    package.AssetPaths,
+                    _themeAssetDataUrlCache,
+                    cancellationToken);
+                await Task.WhenAll(targetsToApply.Select(target => ApplyTargetAsync(
                     target,
                     package,
                     payload,
                     visualSettings,
                     force,
                     processedTargets,
-                    cancellationToken);
+                    stagedAssetsExpression,
+                    cancellationToken)));
             }
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)

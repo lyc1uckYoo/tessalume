@@ -99,6 +99,10 @@ html.ae3-theme,.ae3-theme body,.ae3-theme #root {
   font-family:"Microsoft YaHei UI","Segoe UI",sans-serif;
 }
 
+html.ae3-theme main.ae3-main {
+  background:var(--ae3-bg)!important;
+}
+
 html.ae3-theme.ae3-is-task main.ae3-main {
   background:linear-gradient(145deg,#f8f3f7,#f3edf5 56%,#eaf5f7)!important;
 }

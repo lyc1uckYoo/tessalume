@@ -20,6 +20,12 @@ internal static partial class TestSuite
             "The open runtime must own Template 1.0 outer DOM and generic surface markers.");
         Ensure(runtime.Contains("syncRouteState();", StringComparison.Ordinal),
             "The canonical host must synchronize route state before its debounced repair.");
+        Ensure(runtime.Contains("tessalume-task-backdrop", StringComparison.Ordinal) &&
+               runtime.Contains(
+                   "if (isTask || isHome || isSettings) html.classList.toggle(\"tessalume-task-backdrop\", isTask);",
+                   StringComparison.Ordinal) &&
+               sharedCss.Contains(":is(.tessalume-is-task,.tessalume-task-backdrop)", StringComparison.Ordinal),
+            "Task artwork must remain painted through transient Codex route replacement without retaining task widgets.");
         Ensure(runtime.Contains("const decorateOutputPanels = () => {", StringComparison.Ordinal) &&
                runtime.Contains("[data-slot=\"thread-summary-panel-item-button\"]", StringComparison.Ordinal),
             "The canonical host must bind environment panels by their stable item slot, not only visible labels.");
@@ -69,7 +75,9 @@ internal static partial class TestSuite
             if (directory == "aemeath-star-voyage")
             {
                 Ensure(script.Contains("stageDecorations:", StringComparison.Ordinal) &&
-                       script.Contains("ae3-orbit", StringComparison.Ordinal),
+                       script.Contains("ae3-orbit", StringComparison.Ordinal) &&
+                       css.Contains("html.ae3-theme main.ae3-main", StringComparison.Ordinal) &&
+                       css.Contains("background:var(--ae3-bg)!important", StringComparison.Ordinal),
                     "Aemeath's character-specific stage orbit must survive shared-DOM migration.");
             }
             if (directory == "danya.bubble-void-duality")

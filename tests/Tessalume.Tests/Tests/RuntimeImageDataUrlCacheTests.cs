@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Tessalume.Core.Runtime;
 
 internal static partial class TestSuite
@@ -30,6 +31,82 @@ internal static partial class TestSuite
                    cache.CachedBytes > 0 &&
                    cache.CachedBytes <= cache.MemoryBudgetBytes,
                 "The runtime image cache must account for cached data under its explicit memory budget.");
+
+            var stagedPaths = Enumerable.Range(0, 3).ToDictionary(
+                index => index == 2 ? "unsafe'] = globalThis.pwned //" : $"asset-{index}",
+                index => Path.Combine(root, $"staged-{index}.png"),
+                StringComparer.Ordinal);
+            var stagedIndex = 0;
+            foreach (var path in stagedPaths.Values)
+            {
+                await File.WriteAllBytesAsync(
+                    path,
+                    Enumerable.Repeat((byte)(0x41 + stagedIndex++), 96).ToArray());
+            }
+            var stagedReadCount = 0;
+            var activeReads = 0;
+            var peakReads = 0;
+            var allReadsStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            using var stagedCache = new ImageDataUrlCache(
+                readAllBytesAsync: async (path, cancellationToken) =>
+                {
+                    var active = Interlocked.Increment(ref activeReads);
+                    Interlocked.Increment(ref stagedReadCount);
+                    var observedPeak = Volatile.Read(ref peakReads);
+                    while (active > observedPeak)
+                    {
+                        var previous = Interlocked.CompareExchange(ref peakReads, active, observedPeak);
+                        if (previous == observedPeak) break;
+                        observedPeak = previous;
+                    }
+                    if (Volatile.Read(ref stagedReadCount) == stagedPaths.Count)
+                    {
+                        allReadsStarted.TrySetResult();
+                    }
+                    await allReadsStarted.Task.WaitAsync(TimeSpan.FromSeconds(2), cancellationToken);
+                    try
+                    {
+                        return await File.ReadAllBytesAsync(path, cancellationToken);
+                    }
+                    finally
+                    {
+                        Interlocked.Decrement(ref activeReads);
+                    }
+                });
+            var stagedExpression = await ThemeRuntime.BuildStagedAssetsExpressionAsync(
+                stagedPaths,
+                stagedCache).WaitAsync(TimeSpan.FromSeconds(3));
+            var repeatedExpression = await ThemeRuntime.BuildStagedAssetsExpressionAsync(
+                stagedPaths,
+                stagedCache);
+            const string stagedPrefix =
+                "window.__TESSALUME_STAGED_ASSETS__ = Object.assign(Object.create(null), ";
+            const string stagedSuffix = "); true";
+            Ensure(peakReads == stagedPaths.Count && stagedReadCount == stagedPaths.Count,
+                "Theme assets must be read concurrently and retained for repeated theme switches.");
+            Ensure(stagedExpression == repeatedExpression &&
+                   stagedExpression.StartsWith(stagedPrefix, StringComparison.Ordinal) &&
+                   stagedExpression.EndsWith(stagedSuffix, StringComparison.Ordinal),
+                "Theme asset staging must emit one deterministic batched assignment.");
+            using var stagedJson = JsonDocument.Parse(stagedExpression[
+                stagedPrefix.Length..^stagedSuffix.Length]);
+            Ensure(stagedJson.RootElement.EnumerateObject().Count() == stagedPaths.Count &&
+                   stagedJson.RootElement.TryGetProperty("unsafe'] = globalThis.pwned //", out _),
+                "Theme asset names must be serialized as data instead of interpolated into executable JavaScript.");
+            var repositoryRoot = FindRepositoryRoot();
+            var runtimeSource = await File.ReadAllTextAsync(Path.Combine(
+                repositoryRoot,
+                "src",
+                "Tessalume.Core",
+                "Runtime",
+                "ThemeRuntime.cs"));
+            Ensure(runtimeSource.Contains(
+                       "Task.WhenAll(targetsToApply.Select(target => ApplyTargetAsync(",
+                       StringComparison.Ordinal) &&
+                   runtimeSource.Contains(
+                       "var stagedAssetsExpression = BuildStagedAssetsExpressionAsync(",
+                       StringComparison.Ordinal),
+                "A theme switch must reuse one staged payload while applying independent Codex renderers concurrently.");
 
             var firstDataUrl = concurrent[0];
             var previousWriteTime = File.GetLastWriteTimeUtc(imagePath);
